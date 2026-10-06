@@ -39,8 +39,16 @@ PanelWindow {
     var a = null
     for (var i = 0; info && !a && i < info.anchors.length; i++) a = surface.anchorFor(info.anchors[i])
     var gap = barWindow.gap
-    var cellX = a ? a.x + gap : width - gap - 200
-    placed = Sheets.place(shownSheet, cellX, a ? a.width : 100, view.width, width)
+    // Measured from the bar, which is always mapped: this window has no
+    // width yet on the frame it maps, which pinned every sheet left.
+    var screenW = barWindow.width + 2 * gap
+    var cellX = a ? a.x + gap : screenW - gap - 200
+    placed = Sheets.place(shownSheet, cellX, a ? a.width : 100, view.width, screenW)
+  }
+  onWidthChanged: Qt.callLater(place)
+  Connections {
+    target: win.barWindow
+    function onWidthChanged() { Qt.callLater(win.place) }
   }
 
   screen: barWindow.screen
@@ -122,6 +130,7 @@ PanelWindow {
 
   SheetView {
     id: view
+    onWidthChanged: Qt.callLater(win.place)
     x: win.placed.x
     y: win.atBottom ? win.height - win.strip - height : win.strip
     sheet: win.shownSheet
