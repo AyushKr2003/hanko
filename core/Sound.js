@@ -70,7 +70,8 @@ function outputs(sinks, liveName, available) {
     var live = String(n.name) === String(liveName || "")
     var b = bus(n)
     rows.push({ id: n.id, name: String(n.name || ""), label: label(n), detail: detail(n),
-                current: live, note: live ? "Live" : b === "Bluetooth" ? "Paired" : "" })
+                current: live, note: live ? "Live" : b === "Bluetooth" ? "Paired" : "",
+                bus: b === "Bluetooth" ? "BT" : b === "Built-in" ? "Analog" : b })
   }
   rows.sort(function(a, b) { return (b.current ? 1 : 0) - (a.current ? 1 : 0) })
   return rows
@@ -111,6 +112,7 @@ function sheet(volumeSink, liveSink, sinks, streamList, source, available) {
     outputs: outputs(sinks, liveSink ? liveSink.name : "", available),
     streams: streams(streamList),
     input: inputNote(source),
-    inputMuted: !!(source && source.muted)
+    inputMuted: !!(source && source.muted),
+    inputLevel: source ? Math.max(0, Math.min(1, Number(source.volume) || 0)) : -1
   }
 }

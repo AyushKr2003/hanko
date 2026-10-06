@@ -54,15 +54,16 @@ function heading(d) {
   }
 }
 
-// Fourteen days around today: five behind, today, eight ahead, moved a week
-// at a time by `shift`. Each day: { day "06", letter "T", weekend, past,
+// `count` days around today (fourteen by default): five behind, today, the
+// rest ahead, moved a week at a time by `shift`. Each day: { day "06", letter "T", weekend, past,
 // today, weekStart (a Monday, ruled off) }. `month` names the month most of
 // the ribbon is in.
-function ribbon(d, shift) {
+function ribbon(d, shift, count) {
+  var n = count || 14
   var today = startOfDay(d)
   var start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5 + 7 * (shift || 0))
   var days = []
-  for (var i = 0; i < 14; i++) {
+  for (var i = 0; i < n; i++) {
     var x = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
     var dow = x.getDay()
     days.push({
@@ -74,8 +75,28 @@ function ribbon(d, shift) {
       weekStart: dow === 1 && i > 0
     })
   }
-  var mid = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7)
-  return { month: MONTHS[mid.getMonth()] + " " + mid.getFullYear(), days: days }
+  var mid = new Date(start.getFullYear(), start.getMonth(), start.getDate() + Math.floor(n / 2))
+  var prev = new Date(mid.getFullYear(), mid.getMonth() - 1, 1)
+  var next = new Date(mid.getFullYear(), mid.getMonth() + 1, 1)
+  return { month: MONTHS[mid.getMonth()] + " " + mid.getFullYear(), days: days,
+           before: MONTHS[prev.getMonth()], after: MONTHS[next.getMonth()], current: MONTHS[mid.getMonth()] }
+}
+
+var ORDINALS = ["", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
+  "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth", "seventeenth",
+  "eighteenth", "nineteenth", "twentieth", "twenty-first", "twenty-second", "twenty-third",
+  "twenty-fourth", "twenty-fifth", "twenty-sixth", "twenty-seventh", "twenty-eighth", "twenty-ninth",
+  "thirtieth", "thirty-first"]
+var NUMBERS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+  "Eleven", "Twelve"]
+
+// "the sixth": the day of the month in words, for the scroll's Time title.
+function ordinal(day) { return "the " + (ORDINALS[day] || String(day)) }
+
+// "Three letters", "One letter", "No letters", "14 letters".
+function counted(n, one, many) {
+  var w = n >= 0 && n < NUMBERS.length ? NUMBERS[n] : String(n)
+  return w + " " + (n === 1 ? one : many)
 }
 
 // ------------------------------------------------------------ Elsewhen
@@ -154,8 +175,20 @@ function zoneRow(zone, info, now, localOffset, hour24) {
     ready: true,
     time: time,
     date: WEEKDAYS[t.getUTCDay()].slice(0, 3) + " " + pad2(t.getUTCDate()) + (info.abbr ? " · " + info.abbr : ""),
-    rel: relative(info.offset - localOffset)
+    rel: relative(info.offset - localOffset),
+    // Whether it is already tomorrow (or still yesterday) there.
+    day: dayAcross(now, info.offset, localOffset)
   }
+}
+
+// "tomorrow", "yesterday" or "" for a zone `offset` minutes east of UTC,
+// against the local calendar day.
+function dayAcross(now, offset, localOffset) {
+  var there = new Date(now.getTime() + offset * 60000)
+  var here = new Date(now.getTime() + localOffset * 60000)
+  var a = Date.UTC(there.getUTCFullYear(), there.getUTCMonth(), there.getUTCDate())
+  var b = Date.UTC(here.getUTCFullYear(), here.getUTCMonth(), here.getUTCDate())
+  return a > b ? "tomorrow" : a < b ? "yesterday" : ""
 }
 
 function zoneRows(zones, probe, now, localOffset, hour24) {

@@ -22,10 +22,12 @@ const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "batter
   "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age"])
 const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
-  "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow"])
+  "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
 const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs", "streams", "master", "inputNote", "sheet"])
 const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", "securityName", "connectHow", "sheet"])
 const Pw = load("core/Power.js", ["keyValues", "profiles", "stateLabel", "blurb", "details", "sheet"])
+const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell", "layout", "centred", "nearest",
+  "clampTrack", "landing", "position", "sliver"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -188,7 +190,7 @@ test("window geometry becomes fractions of the usable area", () => {
     { at: [100, 100], size: [300, 300], floating: true }
   ], area)
   assert.equal(l.length, 2)
-  assert.deepEqual(l[0], { x: 0, y: 0, w: 0.5, h: 1, focused: true })
+  assert.deepEqual(l[0], { x: 0, y: 0, w: 0.5, h: 1, focused: true, name: "", address: "" })
   assert.equal(l[1].x, 0.5)
   assert.equal(l[1].h, 0.5)
   assert.deepEqual(W.layoutOf([{ at: [0, 0], size: [1, 1] }], null), [])
@@ -467,6 +469,62 @@ test("inbox: bodies, one copy per notification, and how long ago", () => {
   assert.equal(St.age(0, 12 * 60000), "12m")
   assert.equal(St.age(0, 3 * 3600000), "3h")
   assert.equal(St.age(0, 50 * 3600000), "2d")
+})
+
+test("scroll: six sections on one paper, interludes between", () => {
+  const l = Sc.layout(1)
+  assert.deepEqual(l.xs, [0, 670, 1400, 2010, 2500, 3270])
+  assert.equal(l.width, 3270 + 560)
+  assert.equal(Sc.layout(1.5).widths[0], 900)
+  assert.equal(Sc.indexOf("spaces"), 4)
+  assert.equal(Sc.forCell("brightness"), "power")
+  assert.equal(Sc.forCell("media"), "")
+})
+
+test("scroll: centring a section, and landing a pan on the nearest", () => {
+  const view = 1300
+  assert.equal(Sc.centred(1, view), 650 - (670 + 330))
+  for (let i = 0; i < 6; i++) assert.equal(Sc.nearest(Sc.centred(i, view), view), i)
+  // A little push from Sound lands back on Sound; a fling carries on.
+  const at = Sc.centred(1, view)
+  assert.equal(Sc.landing(at - 100, 0, view), 1)
+  assert.equal(Sc.landing(at - 100, -3000, view), 2)
+  assert.equal(Sc.clampTrack(99999, view), Sc.centred(0, view))
+  assert.equal(Sc.clampTrack(-99999, view), Sc.centred(5, view))
+  assert.deepEqual(Sc.position(3), { x: 0.5, width: 1 / 6 })
+})
+
+test("scroll: interludes are two-tone dither, fading out at the ends", () => {
+  const w = 20, h = 60, px = Sc.sliver(w, h, 1)
+  assert.equal(px.length, w * h)
+  assert.ok(px.every(v => v === 0 || v === 1))
+  const row = y => px.slice(y * w, y * w + w).reduce((a, b) => a + b, 0)
+  assert.equal(row(0), 0)
+  assert.deepEqual(Sc.sliver(w, h, 1), px)
+  assert.notDeepEqual(Sc.sliver(w, h, 2), px)
+})
+
+test("spaces carry each window's app and address for the scroll's map", () => {
+  const area = { x: 0, y: 0, width: 100, height: 100 }
+  const l = W.layoutOf([{ at: [0, 0], size: [50, 100], name: "Firefox", address: "0xabc" }], area)
+  assert.equal(l[0].name, "Firefox")
+  assert.equal(l[0].address, "0xabc")
+})
+
+test("words for the scroll: ordinals, counts, and the day across midnight", () => {
+  assert.equal(Tm.ordinal(6), "the sixth")
+  assert.equal(Tm.ordinal(31), "the thirty-first")
+  assert.equal(Tm.counted(3, "letter", "letters"), "Three letters")
+  assert.equal(Tm.counted(1, "letter", "letters"), "One letter")
+  assert.equal(Tm.counted(0, "letter", "letters"), "No letters")
+  assert.equal(Tm.counted(14, "space", "spaces"), "14 spaces")
+  const now = new Date(Date.UTC(2026, 9, 6, 21, 44))
+  assert.equal(Tm.dayAcross(now, 540, 0), "tomorrow")
+  assert.equal(Tm.dayAcross(now, -600, 120), "")
+  assert.equal(Tm.dayAcross(new Date(Date.UTC(2026, 9, 6, 2, 0)), -420, 0), "yesterday")
+  const r = Tm.ribbon(new Date(2026, 9, 6), 0, 18)
+  assert.equal(r.days.length, 18)
+  assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

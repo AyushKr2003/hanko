@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import "../core/Spaces.js" as Spaces
+import "../core/Title.js" as Title
 
 // Hyprland, reduced to the plain data the left zone draws and the few
 // actions it takes. Window geometry only lives in each toplevel's
@@ -26,7 +27,8 @@ Singleton {
       if (!d || !d.workspace) continue
       var id = d.workspace.id
       if (!byWs[id]) byWs[id] = []
-      byWs[id].push({ at: d.at, size: d.size, floating: !!d.floating, focus: d.focusHistoryID === undefined ? 1e9 : d.focusHistoryID })
+      byWs[id].push({ at: d.at, size: d.size, floating: !!d.floating, focus: d.focusHistoryID === undefined ? 1e9 : d.focusHistoryID,
+                      name: Title.appName(d.class || ""), address: d.address || "" })
     }
     var out = []
     var wss = Hyprland.workspaces.values
@@ -97,6 +99,10 @@ Singleton {
 
   function focusWorkspace(id) { Hyprland.dispatch("hl.dsp.focus({ workspace = " + luaStr(id) + " })") }
   function stepWorkspace(delta) { focusWorkspace(delta > 0 ? "r+1" : "r-1") }
+  function focusWindow(address) {
+    if (/^0x[0-9a-fA-F]+$/.test(String(address)))
+      Hyprland.dispatch("hl.dsp.focus({ window = " + luaStr("address:" + address) + " })")
+  }
 
   function openMenu() { Quickshell.execDetached(["omarchy-shell", "shell", "toggle", "omarchy.menu", "{\"menu\":\"root\"}"]) }
   function openTerminal() { Quickshell.execDetached(["xdg-terminal-exec"]) }

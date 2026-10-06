@@ -5,13 +5,16 @@ import "../../../core/Style.js" as S
 import "../../../core/Sheets.js" as Sheets
 import "../../../bar"
 import "../../../bar/sheets"
+import "../../../bar/scroll"
 
 // Desks: a bar with one sheet open under the cell it drops from, as
-// bar/SheetWindow.qml places it. render.py passes `params`:
+// bar/SheetWindow.qml places it, or with the handscroll unrolled under it.
+// render.py passes `params`:
 //   { theme, width, now, title, ...bar data as in Strips.qml...,
-//     desks: [ { label, doc, sheet, cell, feed, height } ] }
+//     desks: [ { label, doc, sheet, cell, feed, height, scroll, current } ] }
 // `feed` is the sheet's plain data (SheetView.feed); `cell` overrides the
-// bar cell the sheet hangs from.
+// bar cell the sheet hangs from. With `scroll: true` the desk shows the
+// scroll at section `current` instead of a sheet.
 Rectangle {
   id: sheet
 
@@ -69,8 +72,9 @@ Rectangle {
           readonly property var style: S.resolve(deskColumn.modelData.doc || {})
           readonly property bool atBottom: style.position === "bottom"
           readonly property date now: new Date(deskColumn.modelData.now || sheet.p.now || "2026-10-06T21:44:00")
-          readonly property string key: deskColumn.modelData.sheet
-          readonly property string cell: deskColumn.modelData.cell || Sheets.byKey(key).anchors[0]
+          readonly property string key: deskColumn.modelData.sheet || ""
+          readonly property bool scroll: !!deskColumn.modelData.scroll
+          readonly property string cell: deskColumn.modelData.cell || (scroll ? "" : Sheets.byKey(key).anchors[0])
           property var placed: ({ x: 0, tearX: 0, tearWidth: 0 })
 
           width: parent.width
@@ -83,7 +87,7 @@ Rectangle {
             var a = bar.anchorFor(cell) || { x: bar.width - 200, width: 100 }
             placed = Sheets.place(key, a.x, a.width, view.width, bar.width)
           }
-          Component.onCompleted: Qt.callLater(place)
+          Component.onCompleted: if (!scroll) Qt.callLater(place)
 
           BarSurface {
             id: bar
@@ -106,11 +110,30 @@ Rectangle {
             dnd: !!sheet.pick(deskColumn.modelData, "dnd")
           }
 
+          ScrollView {
+            visible: desk.scroll
+            x: bar.x + Math.round(bar.width * 0.069)
+            width: bar.width - 2 * Math.round(bar.width * 0.069)
+            height: implicitHeight
+            y: desk.atBottom ? bar.y - height : bar.y + bar.height
+            atBottom: desk.atBottom
+            current: deskColumn.modelData.current || 0
+            ink: deskColumn.modelData.ink !== undefined ? deskColumn.modelData.ink : 1
+            reveal: deskColumn.modelData.reveal !== undefined ? deskColumn.modelData.reveal : 1
+            feed: {
+              var f = Object.assign({}, deskColumn.modelData.feed || {})
+              f.now = desk.now
+              if (!f.spaces) f.spaces = deskColumn.modelData.spaces || sheet.p.spaces || []
+              return f
+            }
+          }
+
           SheetView {
             id: view
+            visible: !desk.scroll
             x: bar.x + desk.placed.x
             y: desk.atBottom ? bar.y - height : bar.y + bar.height
-            sheet: desk.key
+            sheet: desk.scroll ? "" : desk.key
             atBottom: desk.atBottom
             tearX: desk.placed.tearX
             tearWidth: desk.placed.tearWidth
