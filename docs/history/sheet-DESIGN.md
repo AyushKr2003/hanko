@@ -34,11 +34,11 @@ A single `bar`-kind plugin (`hanko.bar`, same model as Omacale): `manifest.json`
 
 ## Mockups
 
-- `docs/../mockups/beta1/01-desktop.png`: the bar in situ on the signature theme
-- `docs/../mockups/beta1/02-bar-anatomy.png`: anatomy, states, type and ink
-- `docs/../mockups/beta1/03-sound-sheet.png`: the Sound sheet open
-- `docs/../mockups/beta1/04-time-sheet-kanagawa.png`: the Time sheet (calendar, day rule, Elsewhen) on Kanagawa
-- `docs/../mockups/beta1/05-themes.png`: six Omarchy themes, light and dark
-- `docs/../mockups/beta1/source/`: the HTML these were rendered from (`node shoot.mjs <file.html> <out.png>`)
+- `docs/mockups/sheet/01-desktop.png`: the bar in situ on the signature theme
+- `docs/mockups/sheet/02-bar-anatomy.png`: anatomy, states, type and ink
+- `docs/mockups/sheet/03-sound-sheet.png`: the Sound sheet open
+- `docs/mockups/sheet/04-time-sheet-kanagawa.png`: the Time sheet (calendar, day rule, Elsewhen) on Kanagawa
+- `docs/mockups/sheet/05-themes.png`: six Omarchy themes, light and dark
+- `docs/mockups/sheet/source/`: the HTML these were rendered from (`node shoot.mjs <file.html> <out.png>`)
 
 Wallpapers in the mockups are procedural dither prints made for this, not part of the plugin.

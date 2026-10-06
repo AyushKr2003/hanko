@@ -2,7 +2,7 @@
 
 // The ink ramp: the theme's foreground walked toward its background until
 // each tier lands on a fixed contrast against the paper (WCAG ratios). The
-// gama1 mockups were drawn with this same tier() function.
+// Typeset mockups were drawn with this same tier() function.
 // Colours here are "#rrggbb" strings; Ink.qml turns them into QML colours.
 
 var TIERS = { ink: 12, inkDim: 9, inkMuted: 6.2, inkFaint: 4.6 }

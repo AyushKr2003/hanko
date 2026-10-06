@@ -791,7 +791,7 @@ Rectangle {
             font.pixelSize: Type.px(12)
           }
 
-          // The timings, as alpha1's motion sheet gives them.
+          // The timings, as Scroll's motion sheet gives them.
           Rectangle {
             width: parent.width
             height: timings.implicitHeight + Type.px(16)

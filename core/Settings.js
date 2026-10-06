@@ -16,7 +16,7 @@ var RAIL = [
 ]
 
 var PRESET_BLURBS = {
-  Sheet: "beta1, as drawn", Scroll: "alpha1, as drawn", Hanko: "the merge",
+  Sheet: "the printed bar", Scroll: "the handscroll", Hanko: "the two together",
   Quiet: "least on screen", Instrument: "most on screen", Islet: "floating, inset"
 }
 

@@ -20,7 +20,7 @@ QtObject {
   readonly property string jp: "Noto Sans CJK JP"
   readonly property string jpSerif: "Noto Serif CJK JP"
 
-  // The gama1 sheets were drawn at Omarchy's default 12px base; everything
+  // The Typeset mockups were drawn at Omarchy's default 12px base; everything
   // scales with `[font] base-size` like the rest of the shell.
   readonly property real scale: Style.font.body / 12
 

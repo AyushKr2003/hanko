@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick
 import qs.Commons
 
-// Motion 動 (alpha1 sheet 05, "Paper moves like paper"): every timing and
+// Motion 動 (Scroll mockup 05, "Paper moves like paper"): every timing and
 // curve Hanko moves with, in one place. No springs, no glow; everything is
 // under 320 ms except the now-notch's creep, and the stamp is the only
 // overshoot. `still` (the style's motion: still, or Omarchy's reduced

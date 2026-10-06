@@ -2,7 +2,7 @@
 
 A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-![The Typesetting settings page](docs/mockups/gama1/01-settings.png)
+![The Typesetting settings page](docs/mockups/typeset/01-settings.png)
 
 ## What you get
 

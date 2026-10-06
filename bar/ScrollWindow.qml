@@ -13,7 +13,7 @@ import "scroll"
 // bar strip to the bar, a brief Exclusive keyboard prime, a click anywhere
 // else rolling it up, and clear twins on other screens.
 //
-// Motion (alpha1, "Paper moves like paper"): the paper unrolls in 300 ms,
+// Motion (Scroll, "Paper moves like paper"): the paper unrolls in 300 ms,
 // the ink fades in over 200 ms after 120 ms, a pan carries on with its
 // speed and lands centred on a section in 260 ms. Omarchy's reduced motion
 // (animations off) or motion: still cuts every one to its end frame

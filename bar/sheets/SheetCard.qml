@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 
-// The paper a sheet is printed on (beta1 grammar, docs/COMPONENTS.md,
+// The paper a sheet is printed on (Sheet grammar, docs/COMPONENTS.md,
 // "Panels"). It hangs flush from the bar: no gap, no bubble, and no rule
 // on the side that joins the bar; a bone tear marks where it left the cell.
 // Crop marks sit on the two free corners. It prints top-down when it opens

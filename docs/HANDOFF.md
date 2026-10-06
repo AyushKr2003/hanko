@@ -39,7 +39,7 @@ Last updated: 2026-10-06, after the Bluetooth cell styles and the weather leaf (
 
 These come from the user's own messages and reactions:
 
-- **Design first, with many mockup images.** Each design direction lived on its own branch (`beta1`, `alpha1`, `gama1`) with a full set of rendered sheets. The user picks a direction, then asks for the next.
+- **Design first, with many mockup images.** Each design direction (Sheet, then Scroll, then Typeset) got a full set of rendered mockups; all three now live on the `docs` branch. The user picks a direction, then asks for the next.
 - **Build step by step, not all at once.** Verbatim: *"work on this properly with roadmap and all in step by step … no need to do all at once and commit after a part is done."* One phase (or a clear part of a phase) per commit, pushed right away.
 - **Work happens on `dev`.** Verbatim: *"merge this branch in main and from there create a new branch name dev and start working in that."* Do not merge `dev` into `main` again unless the user asks.
 - **Read the real docs.** The user pointed at the Omarchy manual and its third-party plugin docs. Base every integration decision on the Omarchy source, not on guesses.
@@ -52,31 +52,21 @@ These come from the user's own messages and reactions:
 
 Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at `/tmp/claude-0/hanko`.
 
-| Branch | What it holds | State |
-|---|---|---|
-| `beta1` | Design direction 1, **"Sheet"**: the bar as a printed running head. Seal, label-over-value cells, tick meters, the 24-hour day rule along the foot, folio workspaces, flush sheets that drop from a cell. 5 mockups + HTML. Doc: `docs/history/beta1-DESIGN.md` (on later branches). | Frozen. The user later said to set it aside, but it lives on as the Sheet preset. |
-| `alpha1` | Design direction 2, **"Scroll"**: a calm one-line bar that unrolls into a horizontal handscroll (emakimono) holding every panel (Time, Sound, Network, Power, Spaces, Inbox), with rollers, an index plate and dithered interludes. Workspace-numeral seal, real-layout workspace glyphs, serif byline, kanji glyph status, notification stamps, the rod. 6 mockups. Doc: `docs/history/alpha1-DESIGN.md`. | Frozen. Lives on as the Scroll preset. |
-| `gama1` | Design direction 3, **the merge the user chose**: every part of the bar is a setting (15 settings, 6 presets, 2,985,984 combinations), with a Typesetting 組版 settings page. 19 sheets in `docs/mockups/gama1/`, spec in `docs/COMPONENTS.md`, overview in `docs/DESIGN.md`. | Frozen design. This is the spec the plugin implements. |
-| `gama1-plugin` | Roadmap + Phase 0 + Phase 1 of the plugin. | Merged into `main` (fast-forward), no longer used. |
-| `main` | = `gama1-plugin` at `101a6b6` (Phase 1). | Only updated when the user asks. |
-| **`dev`** | **All current work.** Phases 2–5 on top of main. | **Active branch.** |
-| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phases 5–9, the Display and Bluetooth panels, and Phase 10 (motion, per-monitor UI). | Fast-forward `dev` to it when the user agrees. |
+| Branch | What it holds |
+|---|---|
+| `main` | The released state. Updated only when the user asks (by merging `dev`). |
+| **`dev`** | **All current work.** The active branch. |
+| `docs` | Every design direction in one place: Sheet, Scroll and Typeset, each with its mockups, HTML source, README and changelog. |
 
-`git log --oneline dev`:
+The design directions, in the order they were drawn:
 
-```
-bb1cc08 Phase 4: the right zone, how things are
-528154b Phase 3: the centre, when
-49e1d5b Phase 2: the left zone, where you are
-101a6b6 Phase 1: a bar that loads in Omarchy
-5bb25e3 Phase 0: style logic, ink ramp and an offline dev loop
-4abd0cb docs: add the plugin roadmap
-db3f434 gama1: merge beta1 and alpha1 into one configurable bar
-efda228 Hanko alpha1: redesign as a calm bar that unrolls into a handscroll
-647880b Hanko beta1: design direction and mockups
-```
+1. **Sheet**: the bar as a printed running head. Seal, label-over-value cells, tick meters, the 24-hour day rule along the foot, folio workspaces, flush sheets that drop from a cell. 5 mockups. Lives on as the Sheet preset.
+2. **Scroll**: a calm one-line bar that unrolls into a horizontal handscroll (emakimono) holding every panel, with rollers, an index plate and dithered interludes. Workspace-numeral seal, real-layout workspace glyphs, serif byline, kanji glyph status, notification stamps, the rod. 6 mockups. Lives on as the Scroll preset.
+3. **Typeset** (chosen): the two merged; every part of the bar is a setting, with a Typesetting 組版 settings page. 19 mockups in `docs/mockups/typeset/`, spec in `docs/COMPONENTS.md`, overview in `docs/DESIGN.md`. This is the spec the plugin implements.
 
-A future design iteration (if the user asks for one) follows the same pattern: a new branch with a Greek-ish name, a full set of mockup sheets, a design doc, and the earlier directions moved under `docs/history/`.
+Older commit messages call these designs beta1, alpha1 and gama1.
+
+A future design direction (if the user asks for one) gets a plain descriptive name, a full set of mockups under `docs/mockups/<name>/`, a design doc, and lands on the `docs` branch.
 
 ## 4. Hard rules (commits, git, privacy)
 
@@ -91,7 +81,7 @@ A future design iteration (if the user asks for one) follows the same pattern: a
 - **Push with** `git push -u origin dev`. The git proxy in cloud sessions **rejects tag pushes**; use branches, never tags.
 - **Only this repo.** Do not use GitHub's `create_repository` or any `search_*` tool. Reference repos are cloned read-only into a scratch folder (§8).
 - **The repo is private.** Never publish its content anywhere outside the project.
-- **Project chat (Claude projects):** replies go through the thread's `reply` tool. A thread can hold at most 24 attached outputs; the Hanko thread is at that limit, so link files by path (`/mnt/project-files/...`) in the text instead of attaching them. Renders are copied to `/mnt/project-files/ryoku-shell/gama1/phaseN-render.png`.
+- **Project chat (Claude projects):** replies go through the thread's `reply` tool. A thread can hold at most 24 attached outputs; the Hanko thread is at that limit, so link files by path (`/mnt/project-files/...`) in the text instead of attaching them. Renders are copied to `/mnt/project-files/ryoku-shell/typeset/phaseN-render.png`.
 
 ## 5. The design in one page
 
@@ -119,7 +109,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | Right | `status` | **`cells`**, `glyphs`, `numerals` |
 | Right | `meters` | **`ticks`**, `off` |
 | Right | `notif` | `count`, **`stamps`** |
-| Right | `bluetooth` | **`device`**, `marks`, `count`, `off` (added after gama1; `on` reads as `device`) |
+| Right | `bluetooth` | **`device`**, `marks`, `count`, `off` (added after Typeset; `on` reads as `device`) |
 | Edge | `edge` | `hairline`, `dayrule`, `rod`, **`rodrule`** |
 | Edge | `rules` | **`on`**, `off` |
 | Frame | `height` | `32`, `36`, **`40`**, `44` |
@@ -129,7 +119,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 
 ### Presets
 
-| Setting | Sheet (=beta1) | Scroll (=alpha1) | **Hanko** (default) | Quiet | Instrument | Islet |
+| Setting | Sheet | Scroll | **Hanko** (default) | Quiet | Instrument | Islet |
 |---|---|---|---|---|---|---|
 | seal | stamp | workspace | workspace | stamp | stamp | workspace |
 | spaces | folio | layout | layout | dots | kanji | kanji |
@@ -175,17 +165,17 @@ Resolution: preset → `edits` → `monitors[name]`. Invalid keys/values are dro
 
 ### Mockups
 
-`docs/mockups/gama1/*.png` (19 sheets; index in COMPONENTS.md §8) are the visual target for every phase. Compare each phase's render against the matching sheet. The HTML kit that drew them is `docs/mockups/gama1/source/` (`cat.html`, `desk.html`, `studio.html`, `gama.css`, `gama.js`, `shootq.mjs`), rendered with Node + Playwright:
+`docs/mockups/typeset/*.png` (19 sheets; index in COMPONENTS.md §8) are the visual target for every phase. Compare each phase's render against the matching sheet. The HTML kit that drew them is `docs/mockups/typeset/source/` (`cat.html`, `desk.html`, `studio.html`, `typeset.css`, `typeset.js`, `shootq.mjs`), rendered with Node + Playwright:
 
 ```sh
-cd docs/mockups/gama1/source
+cd docs/mockups/typeset/source
 node shootq.mjs "file://$PWD/cat.html?page=status&theme=gruvbox" out.png
 node shootq.mjs "file://$PWD/desk.html?preset=Quiet&o={\"spaces\":\"kanji\"}&panel=sheet-time" out.png
 ```
 
 `cat.html` pages: `identity | time | status | signals | edge | frame | presets | shuffle | themes`. `desk.html` takes `preset`, `theme`, `o` (JSON overrides), `panel` (`sheet-sound`, `sheet-time`, `scroll-0`…`scroll-5`) and `wins=1`. When a phase needs a detail the sheets don't show (sheet contents, scroll sections), read the HTML/CSS in this kit: it is the exact design.
 
-beta1 and alpha1 mockups: `docs/mockups/beta1/`, `docs/mockups/alpha1/`. Copies of the gama1 sheets also sit in `/mnt/project-files/ryoku-shell/gama1/`.
+Sheet and Scroll mockups: `docs/mockups/sheet/`, `docs/mockups/scroll/`.
 
 ## 6. How a bar plugin plugs into Omarchy
 
@@ -287,7 +277,7 @@ core/
                          line, lineSoft, lineStrong, light, alpha(), paperAt()
   Type.qml  (singleton)  FontLoaders; display (Fraunces), text (Space Grotesk), mono,
                          jp, jpSerif; scale; px()
-  Motion.qml (singleton) every timing and curve (alpha1 sheet 05); still (motion: still
+  Motion.qml (singleton) every timing and curve (Scroll mockup 05); still (motion: still
                          or Omarchy's reduced motion), live (awake and not still), ms()
   Typeset.qml (singleton) style.json FileView + watch; doc, warnings, current,
                          ownsPosition; styleFor(monitor), set, applyPreset, reset,
@@ -340,7 +330,7 @@ tests/
   harness/stubs/         fake Quickshell, Quickshell.Io/Hyprland/Wayland/Services.*,
                          qs.Commons, just enough to lint and render
 docs/                    ROADMAP, COMPONENTS (spec), DESIGN, HANDOFF (this), history/,
-                         mockups/{beta1,alpha1,gama1}
+                         mockups/{sheet,scroll,typeset}
 ```
 
 **IPC target `hanko`** (Bar.qml): `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings`. All typed, all return strings.
@@ -351,7 +341,7 @@ docs/                    ROADMAP, COMPONENTS (spec), DESIGN, HANDOFF (this), his
 
 ## 8. Dev environment from scratch
 
-There is **no Omarchy machine** in the cloud session. Everything is verified with unit tests, `qmllint`, and offscreen renders compared by eye against the gama1 sheets.
+There is **no Omarchy machine** in the cloud session. Everything is verified with unit tests, `qmllint`, and offscreen renders compared by eye against the Typeset mockups.
 
 ```sh
 # 1. The repo (cloud sessions used /tmp/claude-0/hanko)
@@ -385,7 +375,7 @@ OMARCHY_SRC=../src/omarchy tests/run   # use Omarchy's real manifest validator
 
 **Expected lint output:** only these stub-typing warnings, which are fine: `core/Type.qml` `Member "family"/"body" not found on type "QObject"`, and `Member "values" not found` in `services/Hypr.qml`, `Media.qml`, `Status.qml`. Anything else is new and must be fixed. `bar/BarWindow.qml` warnings are filtered (the stubs don't model layer-shell attached properties).
 
-**Lint does not catch everything.** A render failing to load is the real check (it caught the `gc` id clash). Always run the full `tests/run`, then open `tests/out/phaseN.png` and compare with the gama1 sheet.
+**Lint does not catch everything.** A render failing to load is the real check (it caught the `gc` id clash). Always run the full `tests/run`, then open `tests/out/phaseN.png` and compare with the Typeset mockup.
 
 **On a real Omarchy machine** (the user's): `scripts/hanko dev` symlinks the checkout and selects it (edits hot-reload), `scripts/hanko style preset Sheet` switches look, `scripts/hanko uninstall` restores the previous bar, `scripts/hanko doctor` checks the install. Logs: `journalctl --user -f` or the omarchy-shell log for QML errors.
 
@@ -418,10 +408,10 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Status clicks called `omarchy-shell shell toggle omarchy.audio|…` as a stand-in; Phase 6 replaced that with Hanko's own sheets.
 
 ### Phase 5 · Edge and frame ✅ (`7834503`)
-- `core/Edge.js` (+5 unit tests) and `bar/Edge.qml`, replacing the plain hairline. All four edges from the kit's CSS (`alpha.css` `.rod`, `beta-parts.css` `.dayrule`, `gama.css` `.rodrule`): day rule = base `line`, spent part `lineStrong`, ticks 3 px (6/12/18 h 5 px, `lineStrong`), red now-notch 2×7 px with a 3 px head; rod = 2 px `lineStrong`, 6 px `inkMuted` caps, 34×4 paper grip; rodrule adds the spent part in `inkMuted`, ticks above the rod and an 8 px notch. Nothing changes the bar's height (the kit draws edges inside the bar), so `barSize` is unchanged. The rod sits 2 px up so its caps fit inside the window.
+- `core/Edge.js` (+5 unit tests) and `bar/Edge.qml`, replacing the plain hairline. All four edges from the kit's CSS (`scroll.css` `.rod`, `sheet-parts.css` `.dayrule`, `typeset.css` `.rodrule`): day rule = base `line`, spent part `lineStrong`, ticks 3 px (6/12/18 h 5 px, `lineStrong`), red now-notch 2×7 px with a 3 px head; rod = 2 px `lineStrong`, 6 px `inkMuted` caps, 34×4 paper grip; rodrule adds the spent part in `inkMuted`, ticks above the rod and an 8 px notch. Nothing changes the bar's height (the kit draws edges inside the bar), so `barSize` is unchanged. The rod sits 2 px up so its caps fit inside the window.
 - At `position: bottom` the edge is mirrored as a whole onto the top side.
 - Rod interaction: an 8 px band along the edge; hover lifts the grip 2 px, pressing inks the rod, a drag of 24 px (scaled) away from the bar emits `pulled()` → `BarSurface.edgePulled` → `Bar.edgePulled(screenName)`, which has no receiver until Phase 7.
-- Inset: `BarWindow` sets 8 px margins on the anchored edge and both sides (hidden: parks at `-(height + 8)`); the paper gets a 1 px `Ink.line` frame with 7 px corners (the kit's `gama.css`; COMPONENTS.md says 3 px, the rendered sheets show 7, the sheets won).
+- Inset: `BarWindow` sets 8 px margins on the anchored edge and both sides (hidden: parks at `-(height + 8)`); the paper gets a 1 px `Ink.line` frame with 7 px corners (the kit's `typeset.css`; COMPONENTS.md says 3 px, the rendered sheets show 7, the sheets won).
 - Transparency: `Bar.transparent` follows `barConfig.transparent`; `toggleTransparency()` writes `bar.transparent` through `shell.mutateShellConfig` exactly like Omarchy's own bar (falls back to a session-only flip). `BarWindow.shown` turns `solid` into `glass` while it is on; glass and inset are left alone. style.json is never written.
 - Blur: Omarchy requests no blur for its own bar (no layer rule in `default/hypr/apps/omarchy-shell.lua`), so Hanko doesn't either; README documents a `hl.layer_rule` for namespace `hanko-bar`.
 - Harness: `phase5.json` (every edge × top/bottom, day rule at 00:30/06:00/21:44, rodrule + clock right, rules off, four heights, three surfaces over a backdrop, inset bottom and inset hairline, four presets) and `phase5-light.json`.
@@ -443,7 +433,7 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **No `Super+Space`**: Omarchy binds it (and every `Super+…+Space`) already, and has no plugin hook for binds; README documents `o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")`.
 - `Spaces.layoutOf` carries each window's `name` (`Title.appName`) and `address`. `Time.ribbon` takes a day count and names the months around it; `Time.ordinal`, `Time.counted`, `Time.dayAcross` (tomorrow/yesterday for a city). `Sound.sheet` adds `inputLevel` and each output's `bus`.
 - Harness: `phase7.json` and `phase7-light.json` (the `Sheets` scene takes `scroll: true`, `current`, `reveal`, `ink`). `tests/run` now lints `bar/sheets` and `bar/scroll` too. Unit tests: 48.
-- Not done from the alpha1 motion sheet: the rod "lifting into a roller" as the paper drops (the paper simply unrolls under the bar) and the stamp press (done in Phase 10).
+- Not done from the Scroll motion sheet: the rod "lifting into a roller" as the paper drops (the paper simply unrolls under the bar) and the stamp press (done in Phase 10).
 
 ### Phase 8 · Settings window and CLI parity ✅ (`56cd19f` page, `0555318` window and CLI)
 - **Draft** in `core/Typeset.qml`: `draft` (null or a document), `live = draft || doc`; `current`, `styleFor` and `ownsPosition` read `live`, so the real bar shows every edit at once. `draftSet(key, value)` (also `sealGlyph`), `draftPreset`, `draftMonitor`, `draftClearMonitor`, `draftReset` (edits dropped, glyph and monitors kept), `draftShuffle`, `save()` (commits the draft through the usual debounced write), `revert()`. `setFor(monitor, key, value)` saves a per-monitor value at once (CLI). A CLI `style set` while a draft is open changes `doc` but the bar keeps showing the draft until Save/Revert.
@@ -475,7 +465,7 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Harness: `tests/harness/widgets/FakeWidget.qml` (an Omarchy-style widget reading `bar.barForeground`/`fontFamily`), `phase9.json` (indicators, keyboard, mic, tray, hosted, everything at once in five presets). Unit tests: 58.
 
 ### Phase 10 · Motion ✅ and per-monitor overrides ✅ (release: the user's, after testing)
-- **`core/Motion.qml`**: the timings from alpha1's sheet 05 (unroll 300, roll up 220, ink 200 after 120, pan 260, stamp 140 with the only overshoot `[0.3, 1.4, 0.5, 1]`, sheet print 180, plate slide 160, value fade 140, now-notch creep 1200) and their curves. `still` = harness `forceStill`, Omarchy's `Style.reduceMotion`, or `style.motion === "still"`; `ms(v)` gives 0 when still. `awake` turns on 1.5 s after start and `live = awake && !still` gates the Behaviours that would otherwise slide in from 0 while the bar lays out.
+- **`core/Motion.qml`**: the timings from Scroll's sheet 05 (unroll 300, roll up 220, ink 200 after 120, pan 260, stamp 140 with the only overshoot `[0.3, 1.4, 0.5, 1]`, sheet print 180, plate slide 160, value fade 140, now-notch creep 1200) and their curves. `still` = harness `forceStill`, Omarchy's `Style.reduceMotion`, or `style.motion === "still"`; `ms(v)` gives 0 when still. `awake` turns on 1.5 s after start and `live = awake && !still` gates the Behaviours that would otherwise slide in from 0 while the bar lays out.
 - **Where it moves**: Workspaces folio/kanji draw one bone plate behind the row that slides to the live cell (`liveCell` from `spaces`, not `itemAt(i).on`, which lint can't type); dots stretch. Segmented controls (settings) slide their plate the same way. `FadeText` on every reading, the numerals and the clock. The Edge notches creep (`Notch.creeps`). Inbox stamps: `known` (keys of what was on the bar, refreshed with `Qt.callLater` after the delegates build) and `primed`; a stamp that wasn't known runs `press` 0→1 (scale 1.45→1, −12°→0, opacity). SheetView prints in `Motion.sheetPrint` (`print` is not a legal QML property name). ScrollWindow uses the shared curves. The few remaining fixed Behaviours (grip, sheet foot, index plate, settings rail) switch off when still.
 - **`motion` in style.json** (`paper` | `still`), beside `sealGlyph`: `normalize` keeps it, `withSetting(doc, "motion" | "sealGlyph", v)` sets either (so `hanko style set motion still` works through the same IPC), presets, resets and shuffles keep it, and `Settings.changes` counts it. Not in `OPTIONS`, not counted.
 - **Settings**: the Motion 動 page (the switch as a `SettingsCard` with `MOTION_CARD`, then the timings table read from `Motion`; "cut" when still; a red line when Omarchy's animations are off). Advanced's per-monitor block: a Segmented of monitor names (`overrideMonitor`, first by default), the override count and Clear, then every setting in two columns (down each column) with its value *for that monitor* (`S.resolve(draft, monitor)`); a red tick marks an override; picking the general value drops it. `monitorPicked(monitor, key, value)` → `Typeset.draftMonitor`. `scrollToEnd()` for the harness.
@@ -505,13 +495,13 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 
 ## 10. Instructions for the remaining phase (10)
 
-Each phase: read the matching gama1 sheets and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
+Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
 
 ### Phase 10 · Motion and release
 
 Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 
-1. ~~The alpha1 motion spec across the bar: inversion plates slide between items (one indicator, like Ryoku's rail); values crossfade; the now-notch creeps; a new stamp is pressed down oversized and tilted, then settles (140 ms, the only overshoot anywhere); sheets print top-down (~180 ms). A global **reduced motion** switch (Motion 動 page + style key, outside the 16 settings) that cuts every transition to its end frame.~~
+1. ~~The Scroll motion spec across the bar: inversion plates slide between items (one indicator, like Ryoku's rail); values crossfade; the now-notch creeps; a new stamp is pressed down oversized and tilted, then settles (140 ms, the only overshoot anywhere); sheets print top-down (~180 ms). A global **reduced motion** switch (Motion 動 page + style key, outside the 16 settings) that cuts every transition to its end frame.~~
 2. ~~Per-monitor override UI on the settings page (Advanced).~~
 3. README install guide (screenshots from renders), `manifest.json` version `0.1.0` → release version, CHANGELOG entry, listing on omarchyplugins.com (ask the user before publishing anything; the repo is private).
 4. Merge `dev` into `main` **only when the user asks**.
@@ -524,10 +514,10 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 4. Components → `bar/*.qml`, pure: props in, signals out. Services → `services/*.qml` singletons registered in `services/qmldir`. Wire in `BarSurface` (props/signals) and `BarWindow` (services → props, signals → service actions).
 5. Add stubs under `tests/harness/stubs/` for any new Quickshell module/type you import, just enough for lint and render.
 6. Add `tests/harness/params/phaseN.json` (every option × state, plus presets) and, if needed, pass new fields through `tests/harness/scenes/Strips.qml` (use its `pick(strip, key)` helper).
-7. `tests/run`; fix every new lint warning; open `tests/out/phaseN.png` and compare with the gama1 sheet; iterate until it matches.
+7. `tests/run`; fix every new lint warning; open `tests/out/phaseN.png` and compare with the Typeset mockup; iterate until it matches.
 8. Update `docs/ROADMAP.md` (phase ✅), `README.md` (status "phase N of 10" and the "Right now it draws…" sentence), and this file (§9, §12, "Last updated").
 9. Commit (`Phase N: …` + trailer), `git push -u origin dev`.
-10. Copy the render to `/mnt/project-files/ryoku-shell/gama1/phaseN-render.png`; reply to the user with what's new, how to try it, what to check on their machine, and what's next. Update project memory.
+10. Copy the render to `/mnt/project-files/ryoku-shell/typeset/phaseN-render.png`; reply to the user with what's new, how to try it, what to check on their machine, and what's next. Update project memory.
 
 ## 12. Known issues and things to verify on a real machine
 
@@ -565,5 +555,5 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 - Omarchy: `github.com/omacom/omarchy` (manual `manual/32-shell-plugins.md`, `docs/omarchy-shell.md`, `shell/`, `bin/`, `default/hypr/`).
 - Ryoku (style only): `github.com/Ryoku-dev/ryoku` branch `unstable-dev` (the Settings app), and `ryoku.dev` (blocked by the cloud network; use a web fetch tool).
 - Plugin integration references (not design): `AyushKr2003/omacale` (closest model: a full `bar` plugin; its `CLAUDE.md` is worth reading), `HANCORE-linux/Shibumi-Shell`, `gitcoder89431/ruixen-shell`.
-- In this repo: [ROADMAP.md](ROADMAP.md), [COMPONENTS.md](COMPONENTS.md), [DESIGN.md](DESIGN.md), [history/beta1-DESIGN.md](history/beta1-DESIGN.md), [history/alpha1-DESIGN.md](history/alpha1-DESIGN.md), `docs/mockups/`.
-- Project files (Claude project): `/mnt/project-files/ryoku-shell/{alpha1,gama1}/` hold mockups and phase renders; project memory notes `hanko-bar-design`.
+- In this repo: [ROADMAP.md](ROADMAP.md), [COMPONENTS.md](COMPONENTS.md), [DESIGN.md](DESIGN.md), [history/sheet-DESIGN.md](history/sheet-DESIGN.md), [history/scroll-DESIGN.md](history/scroll-DESIGN.md), `docs/mockups/`.
+- Project files (Claude project): `/mnt/project-files/ryoku-shell/{scroll,typeset}/` hold mockups and phase renders; project memory notes `hanko-bar-design`.
