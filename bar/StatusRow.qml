@@ -59,6 +59,14 @@ Item {
     return out
   }
 
+  // The drawn reading for a key (volume, network, ...), for anchoring a
+  // sheet under it; null when it isn't showing.
+  function cellFor(key) {
+    return _cells[key] || null
+  }
+  // key -> the drawn Reading; kept by the delegates themselves.
+  property var _cells: ({})
+
   visible: items.length > 0
   implicitWidth: visible ? row.implicitWidth : 0
   implicitHeight: barHeight
@@ -77,6 +85,8 @@ Item {
         required property var modelData
         required property int index
         height: row.height
+        Component.onCompleted: root._cells[slot.modelData.key] = readingItem
+        Component.onDestruction: if (root._cells[slot.modelData.key] === readingItem) delete root._cells[slot.modelData.key]
 
         // Cells are ruled off by hairlines; numerals by a middle dot.
         Item {
@@ -102,6 +112,7 @@ Item {
         }
 
         Reading {
+          id: readingItem
           anchors.verticalCenter: parent.verticalCenter
           r: slot.modelData
         }

@@ -20,6 +20,9 @@ const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
   "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY"])
+const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
+const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
+  "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -276,6 +279,100 @@ test("a rod pull goes away from the bar's own edge", () => {
   assert.ok(!E.pulled(E.PULL_THRESHOLD - 1, false))
   assert.ok(!E.pulled(40, true))
   assert.ok(E.pulled(-40, true))
+})
+
+test("sheets answer to bar cells and to Omarchy's panel ids", () => {
+  assert.equal(Sh.forCell("clock"), "time")
+  assert.equal(Sh.forCell("volume"), "sound")
+  assert.equal(Sh.forCell("brightness"), "power")
+  assert.equal(Sh.forCell("battery"), "power")
+  assert.equal(Sh.forCell("media"), "")
+  assert.equal(Sh.forOmarchyId("omarchy.audio"), "sound")
+  assert.equal(Sh.forOmarchyId("omarchy.elsewhen"), "time")
+  assert.equal(Sh.forOmarchyId("omarchy.bluetooth"), "")
+})
+
+test("Tab walks the sheets that can open, wrapping", () => {
+  assert.equal(Sh.step("time", 1), "sound")
+  assert.equal(Sh.step("inbox", 1), "time")
+  assert.equal(Sh.step("time", -1), "inbox")
+  assert.equal(Sh.step("time", 1, ["time", "inbox"]), "inbox")
+  assert.equal(Sh.step("nope", 1, ["sound"]), "sound")
+})
+
+test("togglePanelAt right N counts distinct Omarchy panels on the right", () => {
+  const cells = ["media", "network", "volume", "brightness", "battery", "notif", "clock"]
+  assert.equal(Sh.panelAt(cells, 1), "omarchy.network")
+  assert.equal(Sh.panelAt(cells, 2), "omarchy.audio")
+  assert.equal(Sh.panelAt(cells, 3), "omarchy.power")
+  assert.equal(Sh.panelAt(cells, 4), "omarchy.clock")
+  assert.equal(Sh.panelAt(cells, 5), "")
+  assert.equal(Sh.panelAt(cells, "0"), "")
+})
+
+test("sheet placement: centred under the clock, hanging left from the right zone", () => {
+  const t = Sh.place("time", 760, 80, 500, 1600)
+  assert.equal(t.x, 550)
+  assert.deepEqual([t.tearX, t.tearWidth], [202, 96])
+  const s = Sh.place("sound", 1380, 100, 430, 1600)
+  assert.equal(s.x, 1090)
+  const edge = Sh.place("sound", 1500, 90, 430, 1600)
+  assert.equal(edge.x, 1162)
+  assert.ok(edge.tearX + edge.tearWidth <= 430)
+  assert.equal(Sh.place("time", 0, 40, 500, 1600).x, 8)
+})
+
+test("the year: day of year, ISO week, leap years, time left", () => {
+  const d = new Date(2026, 9, 6, 21, 44)
+  assert.equal(Tm.dayOfYear(d), 279)
+  assert.equal(Tm.daysInYear(2026), 365)
+  assert.equal(Tm.daysInYear(2028), 366)
+  assert.equal(Tm.daysInYear(2100), 365)
+  assert.equal(Tm.isoWeek(d), 41)
+  assert.equal(Tm.isoWeek(new Date(2027, 0, 1)), 53)
+  assert.equal(Tm.leftInDay(d), "2h 16m left in the day")
+  assert.equal(Tm.leftInDay(new Date(2026, 9, 6, 23, 30)), "30m left in the day")
+  assert.deepEqual(Tm.heading(d), { week: 41, title: "Tuesday", blurb: "Day 279 of 365 · 2h 16m left in the day" })
+})
+
+test("the day ribbon: fourteen days, today sixth, weeks ruled on Mondays", () => {
+  const r = Tm.ribbon(new Date(2026, 9, 6, 21, 44), 0)
+  assert.equal(r.days.length, 14)
+  assert.equal(r.month, "October 2026")
+  assert.equal(r.days[0].day, "01")
+  assert.ok(r.days[5].today && !r.days[5].past)
+  assert.ok(r.days[4].past && !r.days[6].past)
+  assert.equal(r.days[5].letter, "T")
+  assert.deepEqual(r.days.filter(x => x.weekStart).map(x => x.day), ["05", "12"])
+  assert.deepEqual(r.days.filter(x => x.weekend).map(x => x.day), ["03", "04", "10", "11"])
+  const back = Tm.ribbon(new Date(2026, 9, 6), -1)
+  assert.equal(back.days[0].day, "24")
+  assert.equal(back.month, "October 2026")
+  assert.ok(back.days[12].today)
+  assert.ok(!Tm.ribbon(new Date(2026, 9, 6), 2).days.some(x => x.today))
+})
+
+test("Elsewhen zones: parsed from Omarchy's bar layout, seeded when unset", () => {
+  assert.deepEqual(Tm.parseZones("Tokyo|Asia/Tokyo, Europe/Lisbon, bad zone!"),
+    [{ label: "Tokyo", id: "Asia/Tokyo" }, { label: "Lisbon", id: "Europe/Lisbon" }])
+  const cfg = { layout: { right: [{ id: "omarchy.clock" }, { id: "omarchy.elsewhen", zones: "Home|America/New_York" }] } }
+  assert.deepEqual(Tm.zonesFromBarConfig(cfg), [{ label: "Home", id: "America/New_York" }])
+  assert.equal(Tm.zonesFromBarConfig({}).length, 3)
+  assert.deepEqual(Tm.probeCommand(["Asia/Tokyo"]).slice(-1), ["Asia/Tokyo"])
+})
+
+test("Elsewhen rows tick from a date probe", () => {
+  const probe = Tm.parseProbe("Asia/Tokyo|JST|+0900\nEurope/Lisbon|WEST|+0100\nAmerica/St_Johns|NDT|-0230\njunk")
+  assert.deepEqual(probe["Asia/Tokyo"], { abbr: "JST", offset: 540 })
+  assert.equal(probe["America/St_Johns"].offset, -150)
+  const now = new Date(Date.UTC(2026, 9, 6, 21, 44))
+  const tokyo = Tm.zoneRow({ label: "Tokyo", id: "Asia/Tokyo" }, probe["Asia/Tokyo"], now, 0, true)
+  assert.deepEqual([tokyo.time, tokyo.date, tokyo.rel], ["06:44", "Wed 07 · JST", "+9"])
+  const lis = Tm.zoneRow({ label: "Lisbon", id: "Europe/Lisbon" }, probe["Europe/Lisbon"], now, 0, false)
+  assert.deepEqual([lis.time, lis.rel], ["10:44 PM", "+1"])
+  assert.equal(Tm.relative(-150), "-2:30")
+  assert.equal(Tm.relative(0), "±0")
+  assert.equal(Tm.zoneRow({ label: "X", id: "X/Y" }, null, now, 0, true).ready, false)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

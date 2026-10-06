@@ -70,7 +70,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Surface: `solid` / `glass` / `inset`. Position: top or bottom, with edge details flipping side.
 - Follows Omarchy's `bar.position` and transparency toggle unless Hanko overrides them. The toggle turns solid paper into glass.
 
-### Phase 6 · Sheets ⬜
+### Phase 6 · Sheets 🔨
 - `panels: sheets`: a flush sheet drops from the clicked cell, joined to the bar.
 - Sheets: Sound (master, outputs, per-app mixer), Time (day ribbon, Elsewhen), Network, Power (battery, profiles), Inbox.
 - Keyboard: `Esc`, arrow keys, and `Tab` between sheets. The host's panel hotkeys open the matching sheet.

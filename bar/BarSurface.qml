@@ -41,6 +41,27 @@ Item {
   // The rod was pulled away from the bar (edge: rod | rodrule).
   signal edgePulled()
 
+  // The right zone's cells in order, for `togglePanelAt right N`.
+  readonly property var rightCells: {
+    var out = []
+    var items = status.visible ? status.items : []
+    for (var i = 0; i < items.length; i++) out.push(items[i].key)
+    out.push("notif")
+    if (clockRight) out.push("clock")
+    return out
+  }
+
+  // Where a cell sits along the bar ({ x, width } in this item), so a sheet
+  // can drop from under it; null when the cell isn't showing.
+  function anchorFor(cell) {
+    var item = cell === "clock" ? (clockRight ? rightClock : centreClock)
+      : cell === "notif" ? inbox
+      : status.cellFor(cell)
+    if (!item || !item.visible) return null
+    var p = item.mapToItem(root, 0, 0)
+    return { x: Math.round(p.x), width: Math.round(item.width) }
+  }
+
   readonly property int barHeight: Type.px(style.height || 40)
   readonly property bool atBottom: style.position === "bottom"
   // Inset: the window floats 8 px off the screen (BarWindow) and the paper

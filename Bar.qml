@@ -2,7 +2,9 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import "core"
+import "core/Sheets.js" as Sheets
 import "bar"
 import "services"
 
@@ -81,6 +83,93 @@ Item {
     return "HH:mm"
   }
 
+  // ------------------------------------------------------------- sheets
+  //
+  // One sheet open at a time, across every screen. panels: scroll falls
+  // back to sheets until the handscroll lands (Phase 7).
+  property string sheet: ""
+  property string sheetScreen: ""
+  // Weeks the Time sheet's ribbon is moved from today.
+  property int timeShift: 0
+  // The sheets built so far.
+  readonly property var sheetsReady: ["time"]
+
+  function sheetReady(key) { return !!key && sheetsReady.indexOf(key) >= 0 }
+
+  function focusedScreen() {
+    var m = Hyprland.focusedMonitor
+    if (m && m.name) return m.name
+    return Quickshell.screens.length ? Quickshell.screens[0].name : ""
+  }
+
+  function openSheet(key, screenName) {
+    if (!sheetReady(key) || barHidden) return false
+    if (key !== sheet) timeShift = 0
+    sheetScreen = screenName || focusedScreen()
+    sheet = key
+    return true
+  }
+  function closeSheet() { sheet = "" }
+  function toggleSheet(key, screenName) {
+    if (sheet === key && sheetScreen === screenName) closeSheet()
+    else openSheet(key, screenName)
+  }
+  function cycleSheet(delta) {
+    if (sheet) openSheet(Sheets.step(sheet, delta, sheetsReady), sheetScreen)
+  }
+  // Something a sheet asked for: pages, values, devices.
+  function sheetRequest(key, what, arg) {
+    if (key === "time" && what === "shift") timeShift = Number(arg) || 0
+  }
+
+  onBarHiddenChanged: if (barHidden) closeSheet()
+
+  Binding { target: Zones; property: "barConfig"; value: root.barConfig }
+  Binding { target: Zones; property: "wanted"; value: root.sheet === "time" }
+
+  // BarWindows by screen name, for the host's per-screen questions.
+  property var windows: ({})
+  function registerWindow(name, w) {
+    var next = Object.assign({}, windows)
+    next[name] = w
+    windows = next
+  }
+  function unregisterWindow(name, w) {
+    if (windows[name] !== w) return
+    var next = Object.assign({}, windows)
+    delete next[name]
+    windows = next
+  }
+
+  // ------------------------------------------------- host: bar widgets
+  //
+  // Omarchy's audio, clock, network and power panels are kind bar-widget,
+  // so with Hanko as the bar `omarchy-shell shell toggle omarchy.audio`
+  // (and SUPER+CTRL+A, W, P, ALT+D, ALT+E) land here. Hanko answers with
+  // its own sheets. The host asks isBarWidgetOpen first: summon opens,
+  // never toggles.
+  function summonBarWidget(id) {
+    var key = Sheets.forOmarchyId(id)
+    return sheetReady(key) && openSheet(key, focusedScreen())
+  }
+  function hideBarWidget(id) {
+    var key = Sheets.forOmarchyId(id)
+    if (!sheetReady(key)) return false
+    if (sheet === key) closeSheet()
+    return true
+  }
+  function isBarWidgetOpen(id) {
+    var key = Sheets.forOmarchyId(id)
+    return key !== "" && sheet === key
+  }
+  // `togglePanelAt right N` (SUPER+CTRL+1..9): the Nth Omarchy panel among
+  // Hanko's right-zone cells, on the focused screen.
+  function panelWidgetIdAt(section, index) {
+    if (barHidden || String(section) !== "right") return ""
+    var w = windows[focusedScreen()]
+    return w ? Sheets.panelAt(w.surface.rightCells, index) : ""
+  }
+
   // Omarchy's choice of media player, when the host offers it.
   Binding {
     target: Media
@@ -153,5 +242,10 @@ Item {
     function styleReset(): string { Typeset.reset(); return "ok" }
     function styleShuffle(): string { Typeset.shuffle(); return "ok" }
     function warnings(): string { return Typeset.warnings.join("\n") }
+    function sheet(name: string): string {
+      if (root.sheet === name) { root.closeSheet(); return "closed" }
+      return root.openSheet(name, root.focusedScreen()) ? "open" : "unknown"
+    }
+    function sheetClose(): string { root.closeSheet(); return "ok" }
   }
 }

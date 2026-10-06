@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import "../core"
+import "../core/Sheets.js" as Sheets
 import "../services"
 
 // One layer-shell bar per screen. It reserves its own height and, when the
@@ -51,7 +52,22 @@ PanelWindow {
     right: win.gap
   }
 
+  readonly property string screenName: screen ? screen.name : ""
+  readonly property alias surface: surface
+
+  Component.onCompleted: bar.registerWindow(screenName, win)
+  Component.onDestruction: bar.unregisterWindow(screenName, win)
+
+  // A click on a cell with a sheet opens (or closes) that sheet; anything
+  // else goes to the service as before.
+  function cellClicked(cell, how, fallback) {
+    var key = Sheets.forCell(cell)
+    if (how === "click" && bar.sheetReady(key)) bar.toggleSheet(key, screenName)
+    else fallback()
+  }
+
   BarSurface {
+    id: surface
     anchors.fill: parent
     style: win.shown
     now: win.bar.now
@@ -74,9 +90,16 @@ PanelWindow {
     onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
     onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
     onMediaAction: function(name) { Media.act(name) }
-    onStatusAction: function(name, how) { Status.act(name, how) }
-    onInboxAction: function(how) { Status.act("notif", how) }
+    onStatusAction: function(name, how) { win.cellClicked(name, how, function() { Status.act(name, how) }) }
+    onInboxAction: function(how) { win.cellClicked("notif", how, function() { Status.act("notif", how) }) }
+    onClockClicked: win.cellClicked("clock", "click", function() {})
     // The rod unrolls the scroll; Phase 7 gives it somewhere to go.
     onEdgePulled: win.bar.edgePulled(win.screen ? win.screen.name : "")
+  }
+
+  SheetWindow {
+    bar: win.bar
+    barWindow: win
+    surface: surface
   }
 }
