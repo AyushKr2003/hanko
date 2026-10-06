@@ -4,7 +4,7 @@
   "name": "Hanko",
   "version": "0.1.0",
   "author": "AyushKr2003",
-  "description": "A printed bar in your theme's paper and ink. Every part of it is a setting: fifteen settings, six presets.",
+  "description": "A printed bar in your theme's paper and ink. Every part of it is a setting: sixteen settings, six presets.",
   "kinds": ["bar"],
   "entryPoints": {
     "bar": "Bar.qml"

@@ -1,50 +1,106 @@
-# Hanko
+# Hanko 判子
 
-判子 · a configurable bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
+A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-**Status: feature-complete, being tested before a first release.** gama1 merges the beta1 and alpha1 directions into one bar where every part is a setting: 16 settings, 6 presets, 11,943,936 combinations. The plugin (`hanko.bar`, a full-bar Omarchy plugin) is being built phase by phase; see the [roadmap](docs/ROADMAP.md). Right now it draws the seal, your workspaces, the window title, the clock (stacked, inline or mono, following your 12- or 24-hour setting), what is playing, your sound, network, Bluetooth (as a device name, kanji marks per device or a count), battery and brightness, and your notifications on your theme's paper, edged with a hairline, a day rule, a scroll rod or the rod carrying the day, solid, glass or floating inset. Clicking the clock, a status cell or the inbox drops a sheet from it (Time, Sound, Network, Bluetooth, Power, Display for LUM, Inbox), and Omarchy's own panel hotkeys open the same sheets; with `panels: scroll` the same clicks unroll a handscroll of all of them plus your spaces instead, opening on the day's weather beside the clock. Indicators, the keyboard layout, the microphone and the tray appear as small marks in Hanko's ink, and any other widget in your Omarchy bar layout (weather, Tailscale, third-party ones) is hosted in the right zone. Everything moves like paper (the alpha1 motion: plates slide, values fade, a new stamp is pressed down) unless you choose still or turn Omarchy's animations off. Anything on the bar can be hidden on the settings window's Widgets page: Hanko's own parts, each reading, each indicator and mark, each tray app, and every Omarchy or third-party widget it hosts. Every setting can be changed in Hanko's settings window (`scripts/hanko settings`), which shows each change on the bar at once and writes `~/.config/hanko/style.json` when you Save.
+![The Typesetting settings page](docs/mockups/gama1/01-settings.png)
 
-## Try it
+## What you get
+
+- **Every part is a setting:** 16 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
+- **Left:** a seal, your workspaces and the window title.
+- **Centre:** the clock and what's playing.
+- **Right:** sound, network, Bluetooth, battery, brightness and notifications.
+- **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather.
+- **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
+- **Follows your theme,** light or dark, and switches with it live.
+- **Safe to try:** if Hanko fails to load, Omarchy puts its own bar back.
+
+## Requirements
+
+- Omarchy with its shell running (`omarchy-shell`)
+- `jq` and `rsync` for the CLI; `curl` for the weather
+- Noto CJK fonts for the kanji (Omarchy installs them)
+
+## Install
 
 ```sh
 git clone -b dev https://github.com/AyushKr2003/hanko.git
 cd hanko
-scripts/hanko install      # or `scripts/hanko dev` to symlink the checkout
-scripts/hanko settings     # the settings window
-scripts/hanko style preset Sheet
-scripts/hanko style set --monitor DP-2 height 32
-scripts/hanko style set motion still   # every move cuts to its end frame
-scripts/hanko hide tray                # take any part off the bar; `show` puts it back
-scripts/hanko menu add     # Setup › Hanko in the Omarchy menu
-scripts/hanko uninstall    # puts your previous bar back
+scripts/hanko install
 ```
 
-Hanko only replaces the bar. If it ever fails to load, Omarchy falls back to its own bar on its own.
+- This copies Hanko to `~/.config/omarchy/plugins/hanko.bar` and makes it your bar.
+- It remembers the bar you had, so uninstalling puts that one back.
+- **For development:** `scripts/hanko dev` symlinks the checkout instead, and saving a file reloads the bar.
+- **Check the install:** `scripts/hanko doctor`.
 
-**A key for the scroll.** Omarchy already uses `SUPER + SPACE`, so Hanko doesn't take a key of its own. To unroll the scroll from the keyboard, add this to `~/.config/hypr/bindings.lua`:
+## Update
+
+```sh
+cd hanko && git pull && scripts/hanko install
+```
+
+## Uninstall
+
+```sh
+scripts/hanko menu remove   # only if you added the menu entry
+scripts/hanko uninstall
+```
+
+- This switches back to your previous bar and removes the plugin folder.
+- Your style is kept in `~/.config/hanko/`. Delete that folder to remove it too.
+
+## Use
+
+| Do this | Command |
+|---|---|
+| Open the settings window | `scripts/hanko settings` |
+| Pick a preset | `scripts/hanko style preset Sheet` |
+| Change one setting | `scripts/hanko style set clock mono` |
+| Change it on one monitor | `scripts/hanko style set --monitor DP-2 height 32` |
+| Random look | `scripts/hanko style shuffle` |
+| Back to the preset | `scripts/hanko style reset` |
+| See the current style | `scripts/hanko style get` |
+| Hide or show a part | `scripts/hanko hide tray` / `scripts/hanko show tray` |
+| Unroll the scroll | `scripts/hanko scroll` |
+| Turn motion off | `scripts/hanko style set motion still` |
+| Add Setup › Hanko to the Omarchy menu | `scripts/hanko menu add` |
+
+- Changes show on the bar at once and are saved to `~/.config/hanko/style.json`.
+- Every setting and option is listed in [COMPONENTS.md](docs/COMPONENTS.md).
+- Parts you can hide include `seal`, `clock`, `volume`, `weather`, `tray`, `indicator:<name>`, `tray:<app>` and `hosted:<widget id>`.
+
+## Optional extras
+
+**A key for the scroll.** Add this to `~/.config/hypr/bindings.lua`:
 
 ```lua
 o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")
 ```
 
-**Glass needs a blur rule.** The `glass` surface (and Omarchy's bar transparency toggle, which Hanko shows as glass) draws the paper at 74 %. Omarchy doesn't blur its own bar, so Hanko doesn't change your Hyprland config either; for the frosted look, add this to `~/.config/hypr/hyprland.lua`:
+**Frosted glass.** The `glass` surface needs a blur rule in `~/.config/hypr/hyprland.lua`:
 
 ```lua
 hl.layer_rule({ match = { namespace = "hanko-bar" }, blur = true, ignore_alpha = 0.5 })
 ```
 
-![The Typesetting settings page](docs/mockups/gama1/01-settings.png)
-![Six presets](docs/mockups/gama1/03-presets.png)
+## Troubleshooting
 
-- **[Every component and combination](docs/COMPONENTS.md)**
-- [Handoff: the full state of the build](docs/HANDOFF.md)
+- **Bar didn't change:** run `scripts/hanko doctor`.
+- **QML errors:** check `journalctl --user -f`.
+- **A setting was ignored:** `omarchy-shell hanko warnings` lists what `style.json` got wrong.
+- **No weather on the scroll:** it needs `curl` and a network connection, and only shows on screens about 1600 px wide or more.
+
+## Docs
+
+- [Every component and combination](docs/COMPONENTS.md)
 - [Design overview](docs/DESIGN.md)
-- [Twelve random combinations](docs/mockups/gama1/04-shuffle.png)
-- [Presets across themes](docs/mockups/gama1/05-presets-x-themes.png)
-- [Hanko preset with the scroll open](docs/mockups/gama1/20-desk-hanko-scroll.png)
-- [Sheet preset with a sheet open](docs/mockups/gama1/21-desk-sheet-sound.png)
-- [All gama1 sheets](docs/mockups/gama1/)
+- [Roadmap](docs/ROADMAP.md)
+- [Handoff: the full state of the build](docs/HANDOFF.md)
+- [Changelog](CHANGELOG.md)
+- Earlier design directions are on the `docs` branch.
 
-Earlier directions: [beta1](docs/history/beta1-DESIGN.md) and [alpha1](docs/history/alpha1-DESIGN.md).
+## Credits
 
-Design language inspired by [Ryoku](https://github.com/Ryoku-dev/ryoku)'s settings app and [ryoku.dev](https://ryoku.dev). The wallpaper plates in the mockups are procedural and made for them.
+- Design language inspired by [Ryoku](https://github.com/Ryoku-dev/ryoku)'s settings app and [ryoku.dev](https://ryoku.dev). No Ryoku code is used.
+- Bundled fonts: Fraunces and Space Grotesk, under the SIL Open Font License (`assets/fonts/`).
