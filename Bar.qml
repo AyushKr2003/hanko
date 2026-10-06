@@ -39,6 +39,30 @@ Item {
 
   property alias now: clock.date
 
+  // Omarchy's bar transparency (`omarchy-shell shell toggleBarTransparency`,
+  // stored as bar.transparent in shell.json). Hanko shows it as glass: a
+  // solid surface turns to glass; glass and inset stay as they are.
+  property bool transparent: false
+  onBarConfigChanged: transparent = !!(barConfig && barConfig.transparent === true)
+
+  // The rod was pulled on a screen (edge: rod | rodrule). Phase 7 unrolls
+  // the scroll from here.
+  signal edgePulled(string screenName)
+
+  // Called by the host. Like Omarchy's own bar it writes bar.transparent to
+  // shell.json through the host, so the choice survives a restart and the
+  // new barConfig comes back to us; without that API it flips for this
+  // session only. Either way style.json is left alone.
+  function toggleTransparency() {
+    var next = !transparent
+    var written = shell && typeof shell.mutateShellConfig === "function"
+      && shell.mutateShellConfig(function(config) {
+        if (!config.bar || typeof config.bar !== "object" || Array.isArray(config.bar)) config.bar = {}
+        config.bar.transparent = next
+      })
+    if (!written) transparent = next
+  }
+
   // 12- or 24-hour, from Omarchy's own clock (the `format` on omarchy.clock
   // in shell.json). Only the hour style carries over: Hanko lays out the
   // date itself.

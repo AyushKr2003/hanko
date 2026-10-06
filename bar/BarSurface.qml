@@ -38,9 +38,15 @@ Item {
   signal clockClicked()
   signal statusAction(string name, string how)
   signal inboxAction(string how)
+  // The rod was pulled away from the bar (edge: rod | rodrule).
+  signal edgePulled()
 
   readonly property int barHeight: Type.px(style.height || 40)
   readonly property bool atBottom: style.position === "bottom"
+  // Inset: the window floats 8 px off the screen (BarWindow) and the paper
+  // carries a hairline frame. Glass: only the paper is translucent; the
+  // seal, stamps and inverted plates draw their own opaque fills.
+  readonly property bool inset: style.surface === "inset"
 
   implicitHeight: barHeight
 
@@ -48,6 +54,9 @@ Item {
     id: paper
     anchors.fill: parent
     color: root.style.surface === "glass" ? Ink.paperAt(0.74) : Ink.paper
+    radius: root.inset ? 7 : 0
+    border.width: root.inset ? 1 : 0
+    border.color: Ink.line
   }
 
   readonly property bool ruled: style.rules !== "off"
@@ -199,13 +208,18 @@ Item {
     }
   }
 
-  // Edge: a hairline on the side facing the desktop.
-  Rectangle {
+  // Edge: the side facing the desktop (hairline, day rule, rod or both),
+  // inside the frame when inset.
+  Edge {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: root.atBottom ? undefined : parent.bottom
     anchors.top: root.atBottom ? parent.top : undefined
-    height: 1
-    color: Ink.line
+    anchors.margins: root.inset ? 1 : 0
+    mode: root.style.edge || "rodrule"
+    now: root.now
+    atBottom: root.atBottom
+    inset: root.inset
+    onPulled: root.edgePulled()
   }
 }
