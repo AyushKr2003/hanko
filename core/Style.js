@@ -131,6 +131,22 @@ function withSetting(doc, key, value) {
   return d
 }
 
+// One setting for one monitor only (style.json `monitors`); a value equal
+// to what the monitor would get anyway drops the override. An empty
+// override list drops the monitor.
+function withMonitorSetting(doc, monitor, key, value) {
+  var d = normalize(doc)
+  var name = String(monitor || "").trim()
+  var v = coerce(key, value)
+  if (!name || v === undefined) return null
+  var own = d.monitors[name] || {}
+  delete own[key]
+  if (resolve({ preset: d.preset, edits: d.edits, sealGlyph: d.sealGlyph, monitors: {} })[key] !== v) own[key] = v
+  if (Object.keys(own).length) d.monitors[name] = own
+  else delete d.monitors[name]
+  return d
+}
+
 function withPreset(doc, name) {
   var preset = presetName(name)
   if (!preset) return null

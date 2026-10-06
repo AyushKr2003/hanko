@@ -14,7 +14,9 @@ function load(file, names) {
 }
 
 const S = load("core/Style.js", ["OPTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
-  "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations"])
+  "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting"])
+const Se = load("core/Settings.js", ["RAIL", "CARDS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "selected", "changes",
+  "status", "presetLine", "matches", "pageMatches"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -525,6 +527,58 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   const r = Tm.ribbon(new Date(2026, 9, 6), 0, 18)
   assert.equal(r.days.length, 18)
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
+})
+
+test("settings: six cards hold every one of the fifteen settings once", () => {
+  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph")
+  assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
+  assert.equal(Se.CARDS.length, 6)
+  assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 8)
+})
+
+test("settings: options, the lit one, and the seal glyph's typed case", () => {
+  assert.deepEqual(Se.optionsFor("height", S.OPTIONS), ["32", "36", "40", "44"])
+  assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["印", "力", "侍", "A", "…"])
+  const st = S.resolve({})
+  assert.equal(Se.selected("height", st, "印"), "40")
+  assert.equal(Se.selected("sealGlyph", st, "侍"), "侍")
+  assert.equal(Se.selected("sealGlyph", st, "鷹"), "…")
+})
+
+test("settings: counting what the draft changes", () => {
+  const saved = S.normalize({})
+  assert.equal(Se.changes(saved, saved, S.resolve), 0)
+  const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
+  assert.equal(Se.changes(saved, two, S.resolve), 2)
+  // A preset switch counts every setting it moves.
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 5)
+  const glyph = S.normalize({ sealGlyph: "侍" })
+  assert.equal(Se.changes(saved, glyph, S.resolve), 1)
+  assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
+  assert.equal(Se.status(0), "Saved · as on your bar")
+  assert.equal(Se.status(2), "Edited · live on your bar · 2 changes")
+  assert.equal(Se.presetLine(two), "Preset · Hanko + edits")
+  assert.equal(Se.presetLine(saved), "Preset · Hanko")
+})
+
+test("settings: search finds rows by name, detail and option", () => {
+  const row = Se.CARDS[0].rows[1]
+  assert.ok(Se.matches(row, "", S.OPTIONS))
+  assert.ok(Se.matches(row, "WORK", S.OPTIONS))
+  assert.ok(Se.matches(row, "kanji", S.OPTIONS))
+  assert.ok(!Se.matches(row, "battery", S.OPTIONS))
+  assert.ok(Se.pageMatches({ key: "motion", label: "Motion", jp: "動" }, "mot"))
+})
+
+test("per-monitor settings: set, and dropped when they match", () => {
+  const d = S.withMonitorSetting(S.normalize({}), "DP-2", "height", "32")
+  assert.deepEqual(d.monitors, { "DP-2": { height: 32 } })
+  assert.equal(S.resolve(d, "DP-2").height, 32)
+  assert.equal(S.resolve(d, "eDP-1").height, 40)
+  assert.deepEqual(S.withMonitorSetting(d, "DP-2", "height", 40).monitors, {})
+  assert.equal(S.withMonitorSetting(d, "DP-2", "height", 33), null)
+  assert.equal(S.withMonitorSetting(d, "", "height", 32), null)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

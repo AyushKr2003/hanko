@@ -12,6 +12,9 @@ import "Style.js" as S
 //   Typeset.styleFor(name)     the style with that monitor's overrides
 //   Typeset.set(key, value)    change one setting
 //   Typeset.applyPreset(name)  start again from a preset
+//   Typeset.draft              the settings window's unsaved document: while
+//                              it is set the bar shows it; save() keeps it,
+//                              revert() drops it
 QtObject {
   id: root
 
@@ -25,13 +28,58 @@ QtObject {
   // The normalized document: { preset, edits, sealGlyph, monitors }.
   property var doc: S.normalize({})
   property var warnings: []
-  readonly property var current: S.resolve(doc)
+  // Edits in the settings window print live on the bar but only reach
+  // style.json on save().
+  property var draft: null
+  readonly property var live: draft || doc
+  readonly property var current: S.resolve(live)
 
   // True when position comes from Hanko rather than Omarchy's bar.position.
-  readonly property bool ownsPosition: doc.edits.position !== undefined
+  readonly property bool ownsPosition: live.edits.position !== undefined
 
   function styleFor(screenName) {
-    return S.resolve(doc, String(screenName || ""))
+    return S.resolve(live, String(screenName || ""))
+  }
+
+  // The settings window's edits: each returns false when the value is not
+  // one the setting takes.
+  function draftSet(key, value) {
+    var next = key === "sealGlyph" ? S.normalize(Object.assign({}, live, { sealGlyph: value })) : S.withSetting(live, key, value)
+    if (!next) return false
+    draft = next
+    return true
+  }
+  function draftPreset(name) {
+    var next = S.withPreset(live, name)
+    if (!next) return false
+    draft = next
+    return true
+  }
+  function draftMonitor(monitor, key, value) {
+    var next = S.withMonitorSetting(live, monitor, key, value)
+    if (!next) return false
+    draft = next
+    return true
+  }
+  // Back to the preset the draft is on, edits dropped (monitors and the
+  // seal glyph kept, as reset() does).
+  function draftReset() {
+    draft = S.normalize({ preset: live.preset, sealGlyph: live.sealGlyph, monitors: live.monitors })
+  }
+  function save() {
+    if (!draft) return
+    var next = draft
+    draft = null
+    _commit(next)
+  }
+  function revert() { draft = null }
+
+  // One setting for one monitor, saved at once (the CLI's --monitor).
+  function setFor(monitor, key, value) {
+    var next = S.withMonitorSetting(doc, monitor, key, value)
+    if (!next) return false
+    _commit(next)
+    return true
   }
 
   function set(key, value) {
