@@ -2,12 +2,12 @@
 
 判子 · a configurable bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-**Status: early plugin (phase 1 of 10).** gama1 merges the beta1 and alpha1 directions into one bar where every part is a setting: 15 settings, 6 presets, 2,985,984 combinations. The plugin (`hanko.bar`, a full-bar Omarchy plugin) is being built phase by phase; see the [roadmap](docs/ROADMAP.md). Right now it draws the seal and the clock on your theme's paper, and reads every setting from `~/.config/hanko/style.json`.
+**Status: early plugin (phase 2 of 10).** gama1 merges the beta1 and alpha1 directions into one bar where every part is a setting: 15 settings, 6 presets, 2,985,984 combinations. The plugin (`hanko.bar`, a full-bar Omarchy plugin) is being built phase by phase; see the [roadmap](docs/ROADMAP.md). Right now it draws the seal, your workspaces, the window title and the clock on your theme's paper, and reads every setting from `~/.config/hanko/style.json`.
 
 ## Try it
 
 ```sh
-git clone https://github.com/AyushKr2003/hanko.git
+git clone -b dev https://github.com/AyushKr2003/hanko.git
 cd hanko
 scripts/hanko install      # or `scripts/hanko dev` to symlink the checkout
 scripts/hanko style preset Sheet

@@ -66,7 +66,9 @@ Rectangle {
             height: implicitHeight
             style: S.resolve(modelData.doc || {})
             now: new Date(sheet.p.now || "2026-10-06T21:44:00")
-            workspace: modelData.workspace || 3
+            spaces: modelData.spaces || sheet.p.spaces || []
+            activeWindow: modelData.window !== undefined ? modelData.window : (sheet.p.window || null)
+            home: "/home/ayush"
           }
         }
       }

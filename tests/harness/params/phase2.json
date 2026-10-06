@@ -1,0 +1,331 @@
+{
+ "title": "Phase 2 · where you are",
+ "width": 1600,
+ "theme": {
+  "foreground": "#ddd5c7",
+  "background": "#0a0a09",
+  "red": "#d8452f"
+ },
+ "spaces": [
+  {
+   "id": 1,
+   "active": false,
+   "urgent": false,
+   "count": 2,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "active": false,
+   "urgent": false,
+   "count": 1,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1,
+     "focused": true
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "active": true,
+   "urgent": false,
+   "count": 3,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "active": false,
+   "urgent": true,
+   "count": 4,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "active": false,
+   "urgent": false,
+   "count": 0,
+   "windows": []
+  }
+ ],
+ "window": {
+  "cls": "Alacritty",
+  "title": "nvim /home/ayush/code/hanko/Bar.qml"
+ },
+ "strips": [
+  {
+   "label": "HANKO PRESET · SEAL WORKSPACE · SPACES LAYOUT · TITLE BYLINE",
+   "doc": {
+    "edits": {}
+   }
+  },
+  {
+   "label": "SEAL STAMP · SPACES FOLIO · TITLE CELL · DIVIDERS ON",
+   "doc": {
+    "edits": {
+     "seal": "stamp",
+     "spaces": "folio",
+     "title": "cell"
+    }
+   }
+  },
+  {
+   "label": "SEAL NONE · SPACES KANJI · TITLE BYLINE",
+   "doc": {
+    "edits": {
+     "seal": "none",
+     "spaces": "kanji"
+    }
+   }
+  },
+  {
+   "label": "SEAL STAMP · SPACES DOTS · TITLE NONE · DIVIDERS OFF",
+   "doc": {
+    "edits": {
+     "seal": "stamp",
+     "spaces": "dots",
+     "title": "none",
+     "rules": "off"
+    }
+   }
+  },
+  {
+   "label": "SCROLL PRESET · DIVIDERS OFF · 40 PX",
+   "doc": {
+    "edits": {},
+    "preset": "Scroll"
+   }
+  },
+  {
+   "label": "SHEET PRESET · 36 PX",
+   "doc": {
+    "edits": {},
+    "preset": "Sheet"
+   }
+  },
+  {
+   "label": "QUIET PRESET · 32 PX · DOTS",
+   "doc": {
+    "edits": {},
+    "preset": "Quiet"
+   }
+  },
+  {
+   "label": "COMPACT CELL TITLE · 32 PX · FOLIO",
+   "doc": {
+    "edits": {
+     "height": 32,
+     "spaces": "folio",
+     "title": "cell",
+     "seal": "stamp"
+    }
+   }
+  },
+  {
+   "label": "INSTRUMENT PRESET · 44 PX · KANJI · CELL",
+   "doc": {
+    "edits": {
+     "clockAt": "center"
+    },
+    "preset": "Instrument"
+   }
+  },
+  {
+   "label": "FIREFOX TITLE · SUFFIX DROPPED",
+   "doc": {
+    "edits": {}
+   },
+   "window": {
+    "cls": "firefox",
+    "title": "Hanko · omarchy plugin — Mozilla Firefox"
+   }
+  },
+  {
+   "label": "EMPTY WORKSPACE · NO TITLE",
+   "doc": {
+    "edits": {}
+   },
+   "window": null,
+   "spaces": [
+    {
+     "id": 1,
+     "active": false,
+     "urgent": false,
+     "count": 2,
+     "windows": [
+      {
+       "x": 0,
+       "y": 0,
+       "w": 0.5,
+       "h": 1,
+       "focused": true
+      },
+      {
+       "x": 0.5,
+       "y": 0,
+       "w": 0.5,
+       "h": 1,
+       "focused": false
+      }
+     ]
+    },
+    {
+     "id": 2,
+     "active": false,
+     "urgent": false,
+     "count": 1,
+     "windows": [
+      {
+       "x": 0,
+       "y": 0,
+       "w": 1,
+       "h": 1,
+       "focused": true
+      }
+     ]
+    },
+    {
+     "id": 3,
+     "active": false,
+     "urgent": false,
+     "count": 3,
+     "windows": [
+      {
+       "x": 0,
+       "y": 0,
+       "w": 0.5,
+       "h": 1,
+       "focused": true
+      },
+      {
+       "x": 0.5,
+       "y": 0,
+       "w": 0.5,
+       "h": 0.5,
+       "focused": false
+      },
+      {
+       "x": 0.5,
+       "y": 0.5,
+       "w": 0.5,
+       "h": 0.5,
+       "focused": false
+      }
+     ]
+    },
+    {
+     "id": 4,
+     "active": false,
+     "urgent": true,
+     "count": 4,
+     "windows": [
+      {
+       "x": 0,
+       "y": 0,
+       "w": 0.5,
+       "h": 0.5,
+       "focused": true
+      },
+      {
+       "x": 0.5,
+       "y": 0,
+       "w": 0.5,
+       "h": 0.5,
+       "focused": false
+      },
+      {
+       "x": 0,
+       "y": 0.5,
+       "w": 0.5,
+       "h": 0.5,
+       "focused": false
+      },
+      {
+       "x": 0.5,
+       "y": 0.5,
+       "w": 0.5,
+       "h": 0.5,
+       "focused": false
+      }
+     ]
+    },
+    {
+     "id": 5,
+     "active": true,
+     "urgent": false,
+     "count": 0,
+     "windows": []
+    }
+   ]
+  }
+ ]
+}

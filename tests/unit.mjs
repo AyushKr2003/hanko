@@ -16,6 +16,8 @@ function load(file, names) {
 const S = load("core/Style.js", ["OPTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
+const T = load("core/Title.js", ["appName", "describe", "tildify"])
+const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 
 let passed = 0
 function test(name, fn) {
@@ -129,6 +131,59 @@ test("tiers land close to their targets, not just above them", () => {
 test("light and dark papers are told apart", () => {
   assert.equal(I.isLight("#FFFCF0"), true)
   assert.equal(I.isLight("#0a0a09"), false)
+})
+
+test("app names read the way people say them", () => {
+  assert.equal(T.appName("Alacritty"), "Alacritty")
+  assert.equal(T.appName("firefox"), "Firefox")
+  assert.equal(T.appName("org.gnome.Nautilus"), "Files")
+  assert.equal(T.appName("com.mitchellh.ghostty"), "Ghostty")
+  assert.equal(T.appName("org.kde.dolphin"), "Dolphin")
+  assert.equal(T.appName("chrome-web_app"), "Chrome web app")
+  assert.equal(T.appName(""), "")
+})
+
+test("titles split into head, receding folders and the file", () => {
+  assert.deepEqual(T.describe("Alacritty", "nvim ~/code/hanko/Bar.qml"),
+    { app: "Alacritty", head: "nvim", dir: "~/code/hanko/", leaf: "Bar.qml" })
+  assert.deepEqual(T.describe("Alacritty", "~/code/hanko"),
+    { app: "Alacritty", head: "", dir: "~/code/", leaf: "hanko" })
+  assert.deepEqual(T.describe("firefox", "Hanko · GitHub — Mozilla Firefox"),
+    { app: "Firefox", head: "Hanko · GitHub", dir: "", leaf: "" })
+  assert.deepEqual(T.describe("Spotify", "Spotify"), { app: "Spotify", head: "", dir: "", leaf: "" })
+  assert.equal(T.describe("x", "a/b is not a path").dir, "")
+  assert.equal(T.tildify("/home/ayush/code", "/home/ayush"), "~/code")
+})
+
+test("workspace numerals and folios", () => {
+  assert.equal(W.numeral(3), "参")
+  assert.equal(W.numeral(10), "拾")
+  assert.equal(W.numeral(12), "12")
+  assert.equal(W.folio(4), "04")
+})
+
+test("workspace list keeps 1-5, adds occupied ones and skips specials", () => {
+  const l = W.list([{ id: 7, windows: [{}] }, { id: 8, windows: [] }, { id: -98, windows: [{}] }, { id: 2, urgent: true }], 3)
+  assert.deepEqual(l.map(w => w.id), [1, 2, 3, 4, 5, 7])
+  assert.equal(l[2].active, true)
+  assert.equal(l[1].urgent, true)
+  assert.deepEqual(W.list([], 9).map(w => w.id), [1, 2, 3, 4, 5, 9])
+})
+
+test("window geometry becomes fractions of the usable area", () => {
+  const area = W.usableArea({ x: 0, y: 0, width: 3840, height: 2160, scale: 2, transform: 0, reserved: [0, 40, 0, 0] })
+  assert.deepEqual(area, { x: 0, y: 40, width: 1920, height: 1040 })
+  const l = W.layoutOf([
+    { at: [0, 40], size: [960, 1040], focused: true },
+    { at: [960, 40], size: [960, 520] },
+    { at: [100, 100], size: [300, 300], floating: true }
+  ], area)
+  assert.equal(l.length, 2)
+  assert.deepEqual(l[0], { x: 0, y: 0, w: 0.5, h: 1, focused: true })
+  assert.equal(l[1].x, 0.5)
+  assert.equal(l[1].h, 0.5)
+  assert.deepEqual(W.layoutOf([{ at: [0, 0], size: [1, 1] }], null), [])
+  assert.deepEqual(W.usableArea({ x: 0, y: 0, width: 1080, height: 1920, scale: 1, transform: 1, reserved: [0, 0, 0, 0] }).width, 1920)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

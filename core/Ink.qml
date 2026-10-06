@@ -24,7 +24,7 @@ QtObject {
 
   // Inversion plates: the selected thing turns into solid ink.
   readonly property color bone: Color.foreground
-  readonly property color onBone: Color.background
+  readonly property color boneInk: Color.background
 
   // Hairlines are the foreground at a fixed alpha, so they sit on glass too.
   readonly property color line: alpha(Color.foreground, 0.22)

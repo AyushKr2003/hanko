@@ -1,6 +1,6 @@
 # Hanko roadmap: from gama1 design to a working Omarchy bar
 
-gama1 is the design: one bar where every part is a setting ([COMPONENTS.md](COMPONENTS.md)). This roadmap turns it into a real `bar`-kind plugin for Omarchy. Each phase ends in something that runs, and each one lands as its own commit (or a few) on the `gama1-plugin` branch.
+gama1 is the design: one bar where every part is a setting ([COMPONENTS.md](COMPONENTS.md)). This roadmap turns it into a real `bar`-kind plugin for Omarchy. Each phase ends in something that runs, and each one lands as its own commit (or a few) on the `dev` branch, which merges into `main` when a phase is ready to try.
 
 Status key: ✅ done · 🔨 in progress · ⬜ not started
 
@@ -49,7 +49,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - A first bar: the seal (`stamp`) and the clock (`stacked`), on paper, with a hairline edge.
 - The `hanko` CLI: `install`, `uninstall` (restores your previous bar), `dev` (symlinks the checkout), `style get|set|preset|reset`, and `doctor`.
 
-### Phase 2 · Left zone: where you are ⬜
+### Phase 2 · Left zone: where you are ✅
 - Seal: `stamp` / `workspace` / `none`. Clicking it opens the Omarchy menu, right-clicking opens a terminal, and scrolling walks workspaces.
 - Workspaces: `folio` / `layout` / `kanji` / `dots`, from Hyprland. `layout` draws each workspace's real tiling from client geometry. Urgent workspaces get the red dot.
 - Window title: `cell` / `byline` / `none`, with app-name cleanup and a path that recedes.

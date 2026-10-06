@@ -34,9 +34,9 @@ fi
 step "qmllint"
 # Errors fail the run. Warnings are printed: the stubs in tests/harness/stubs
 # do not model layer-shell attached properties, so BarWindow.qml shows a few.
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml 2>&1 \
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml services/*.qml 2>&1 \
   | grep -E '^(Error|Warning)' | grep -v 'bar/BarWindow.qml' || true
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
 
 [[ ${1:-} == --quick ]] && exit $status
 
