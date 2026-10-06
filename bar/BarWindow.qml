@@ -96,6 +96,17 @@ PanelWindow {
     brightness: Status.brightness
     notifications: Status.notifications
     dnd: Status.doNotDisturb
+    hosted: win.bar.hostedEntries
+    host: win.bar
+    indicators: Extras.indicators
+    keyboard: Extras.keyboard
+    mic: Extras.mic
+    tray: Extras.tray
+    onIndicatorAction: function(key, how) { Extras.indicatorAction(key, how) }
+    onKeyboardAction: function(how) { Extras.keyboardAction(how) }
+    // Middle-click on the mic opens Sound, where the input is.
+    onMicAction: function(how) { if (how === "middle") win.bar.openPanel("sound", win.screenName); else Extras.micAction(how) }
+    onTrayAction: function(id, how, cell) { Extras.trayAction(id, how, cell) }
 
     onSealClicked: function(button) {
       if (button === Qt.RightButton) Hypr.openTerminal()

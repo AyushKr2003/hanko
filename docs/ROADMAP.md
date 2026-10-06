@@ -86,9 +86,10 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Advanced: any seal glyph, each monitor's overrides, the raw document. Presets 型: the six as bars, plus shuffle. The other rail pages say what they will hold.
 - Open it with `hanko settings` (IPC `hanko settings`), or `hanko menu add` for Setup › Hanko in the Omarchy menu. CLI parity: `hanko style set --monitor DP-2 height 32`.
 
-### Phase 9 · Hosting other widgets ⬜
-- Third-party bar widgets from `bar.layout` render in Hanko's right zone, with Hanko's spacing and ink.
-- Tray support.
+### Phase 9 · Hosting other widgets ✅
+- Widgets in Omarchy's bar layout that Hanko doesn't draw (weather, Bluetooth, monitors, system update, third-party widgets) are hosted in the right zone from the host's widget registry, in Hanko's ink, with their own panels and Omarchy's hotkeys still reaching them.
+- Hanko's own marks for the rest: the indicators as kanji (録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light; only what's on, red only for "now"), the keyboard layout as a mono code, the microphone as 声 (red when muted), and the tray with every icon inked.
+- When the right zone fills up, what is playing gives way first, then the tray folds into 盆 with a count, then hosted widgets drop out whole; nothing ever runs into the clock.
 
 ### Phase 10 · Motion and release ⬜
 - The motion spec from alpha1: paper-like timings, stamp press, and the reduced-motion cut.

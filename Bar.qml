@@ -6,6 +6,7 @@ import Quickshell.Hyprland
 import "core"
 import "core/Sheets.js" as Sheets
 import "core/Scroll.js" as Scroll
+import "core/Hosted.js" as Hosted
 import "bar"
 import "services"
 
@@ -102,6 +103,7 @@ Item {
   function openSheet(key, screenName) {
     if (!sheetReady(key) || barHidden) return false
     closeScroll()
+    closeHostedPopout()
     if (key !== sheet) timeShift = 0
     sheetScreen = screenName || focusedScreen()
     sheet = key
@@ -152,6 +154,87 @@ Item {
     }
   }
 
+  // ------------------------------------------------------------- hosted
+  //
+  // Widgets from Omarchy's bar layout that Hanko neither is nor draws its
+  // own way (weather, Bluetooth, monitors, third-party), created from the
+  // host's widget registry with a facade (bar/HostBar.qml).
+  readonly property var hostedEntries: {
+    var reg = barWidgetRegistry
+    if (!reg) return []
+    void reg.revision
+    var widgets = reg.widgets || {}
+    var list = Hosted.hosted(barConfig, function(id) { return !!widgets[id] },
+      function(id) { return !!(widgets[id] && widgets[id].metadata && widgets[id].metadata.allowMultiple) })
+    return list.map(function(e) {
+      var w = widgets[e.id]
+      return { id: e.id, key: e.key, settings: e.settings, component: w.component,
+               pluginId: w.metadata && w.metadata.pluginId ? w.metadata.pluginId : e.id }
+    })
+  }
+  readonly property var own: Hosted.own(barConfig)
+  Binding { target: Extras; property: "wantIndicators"; value: root.own.indicators }
+  Binding { target: Extras; property: "wantKeyboard"; value: root.own.keyboard }
+  Binding { target: Extras; property: "wantMic"; value: root.own.mic }
+  Binding { target: Extras; property: "wantTray"; value: root.own.tray }
+  Binding {
+    target: Extras
+    property: "idleProxy"
+    value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.idle") : null
+  }
+  Binding {
+    target: Extras
+    property: "nightProxy"
+    value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.nightlight") : null
+  }
+
+  // One popout at a time across Hanko's sheets, its scroll and hosted
+  // widgets' panels.
+  property var hostedPopout: null
+  function requestHostedPopout(owner) {
+    if (hostedPopout && hostedPopout !== owner) closeHostedPopout()
+    closeSheet()
+    closeScroll()
+    hostedPopout = owner
+  }
+  function releaseHostedPopout(owner) { if (hostedPopout === owner) hostedPopout = null }
+  function closeHostedPopout() {
+    var p = hostedPopout
+    hostedPopout = null
+    try { if (p && typeof p.close === "function") p.close() } catch (e) {}
+  }
+
+  // Live hosted widget items by entry key (one per screen).
+  property var hostedItems: ({})
+  function registerHosted(key, item) {
+    var next = Object.assign({}, hostedItems)
+    next[key] = (next[key] || []).filter(function(i) { return i !== item }).concat([item])
+    hostedItems = next
+  }
+  function unregisterHosted(key, item) {
+    if (!hostedItems[key]) return
+    var next = Object.assign({}, hostedItems)
+    next[key] = next[key].filter(function(i) { return i !== item })
+    hostedItems = next
+  }
+  function hostedWidgets(id) {
+    var out = []
+    for (var k in hostedItems) if (k === id || k.indexOf(id + "#") === 0) out = out.concat(hostedItems[k])
+    return out
+  }
+  // The hosted widget on the focused screen (or any), for the host's panel
+  // calls.
+  function hostedItemFor(id) {
+    var items = hostedWidgets(id)
+    var screen = focusedScreen()
+    for (var i = 0; i < items.length; i++) {
+      var w = items[i] && items[i].QsWindow ? items[i].QsWindow.window : null
+      if (w && w.screen && w.screen.name === screen) return items[i]
+    }
+    return items.length ? items[0] : null
+  }
+  function run(command) { if (command) Quickshell.execDetached(["sh", "-c", String(command)]) }
+
   // ------------------------------------------------------------- settings
   //
   // The settings window edits Typeset's draft; closing it unsaved drops
@@ -180,6 +263,7 @@ Item {
   function openScroll(key, screenName) {
     if (barHidden) return false
     closeSheet()
+    closeHostedPopout()
     var i = Scroll.indexOf(key)
     if (i >= 0) scrollSection = i
     scrollScreen = screenName || focusedScreen()
@@ -244,18 +328,27 @@ Item {
   // (and SUPER+CTRL+A, W, P, ALT+D, ALT+E) land here. Hanko answers with
   // its own sheets, or the scroll at that section under panels: scroll.
   // The host asks isBarWidgetOpen first: summon opens, never toggles.
+  // A hosted widget answers for its own id through its open()/close().
   function summonBarWidget(id) {
     var key = Sheets.forOmarchyId(id)
-    return sheetReady(key) && openPanel(key, focusedScreen())
+    if (sheetReady(key)) return openPanel(key, focusedScreen())
+    var w = hostedItemFor(String(id))
+    if (w && typeof w.open === "function") { w.open(); return true }
+    return false
   }
   function hideBarWidget(id) {
     var key = Sheets.forOmarchyId(id)
-    if (!sheetReady(key)) return false
-    closePanel(key)
-    return true
+    if (sheetReady(key)) { closePanel(key); return true }
+    var items = hostedWidgets(String(id))
+    for (var i = 0; i < items.length; i++) if (typeof items[i].close === "function") items[i].close()
+    return items.length > 0
   }
   function isBarWidgetOpen(id) {
-    return panelOpen(Sheets.forOmarchyId(id))
+    var key = Sheets.forOmarchyId(id)
+    if (key) return panelOpen(key)
+    var items = hostedWidgets(String(id))
+    for (var i = 0; i < items.length; i++) if (items[i].opened === true) return true
+    return false
   }
   // `togglePanelAt right N` (SUPER+CTRL+1..9): the Nth Omarchy panel among
   // Hanko's right-zone cells, on the focused screen.

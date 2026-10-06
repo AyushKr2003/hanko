@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import "../core"
 
@@ -25,6 +26,15 @@ Item {
   property var brightness: null
   property var notifications: []
   property bool dnd: false
+  // Hosted widgets: [{ id, key, settings, component, pluginId }] (Bar.qml
+  // hostedEntries) and the host they talk to (Bar.qml, null in the harness).
+  property var hosted: []
+  property var host: null
+  // Hanko's own marks (core/Extras.js shapes): indicators, keyboard, mic, tray.
+  property var indicators: []
+  property var keyboard: null
+  property var mic: null
+  property var tray: []
 
   readonly property int workspace: {
     for (var i = 0; i < spaces.length; i++) if (spaces[i].active) return spaces[i].id
@@ -38,6 +48,10 @@ Item {
   signal clockClicked()
   signal statusAction(string name, string how)
   signal inboxAction(string how)
+  signal indicatorAction(string key, string how)
+  signal keyboardAction(string how)
+  signal micAction(string how)
+  signal trayAction(string id, string how, Item cell)
   // The rod was pulled away from the bar (edge: rod | rodrule), at x.
   signal edgePulled(real x)
 
@@ -46,6 +60,7 @@ Item {
     var out = []
     var items = status.visible ? status.items : []
     for (var i = 0; i < items.length; i++) out.push(items[i].key)
+    for (var h = 0; h < hosted.length; h++) out.push("hosted:" + hosted[h].id)
     out.push("notif")
     if (clockRight) out.push("clock")
     return out
@@ -164,6 +179,27 @@ Item {
 
   readonly property bool clockRight: style.clockAt === "right"
 
+  // Room the right zone has for what is playing: from the centre clock (or
+  // the window title's minimum when the clock is on the right) to the
+  // right edge, less everything else in the zone and its dividers.
+  readonly property real zoneStart: clockRight ? width * 0.45 : centreClock.x + centreClock.width + Type.px(24)
+  readonly property real fixedRight: status.implicitWidth + inbox.implicitWidth
+    + (clockRight ? rightClock.implicitWidth : 0) + 4 * (Type.px(12) * 2 + 1)
+  // Room for the marks and hosted widgets, which never cross the clock.
+  readonly property real extrasRoom: Math.max(0, width - Type.px(10) - zoneStart - fixedRight)
+  readonly property real mediaRoom: extrasRoom - extras.width
+  // What the hosted widgets would take if they all showed (collapsed ones
+  // included), for deciding when the tray folds: the tray folds before any
+  // widget is dropped.
+  readonly property real hostedWidth: {
+    var w = 0
+    for (var i = 0; i < hostedRow.children.length; i++) {
+      var c = hostedRow.children[i]
+      if (c.naturalWidth !== undefined) w += c.naturalWidth
+    }
+    return w
+  }
+
   // Centre: when. Anchored to the exact screen centre, or left empty on
   // purpose when the clock joins the right zone.
   Clock {
@@ -191,6 +227,10 @@ Item {
     NowPlaying {
       id: media
       anchors.verticalCenter: parent.verticalCenter
+      // What is playing gives way first when the right zone fills up, and
+      // goes when there's no real room left for it.
+      maxWidth: Math.min(Type.px(mode === "cell" ? 300 : 260), root.mediaRoom)
+      visible: root.media !== null && mode !== "none" && root.mediaRoom >= Type.px(90)
       mode: root.style.media || "underline"
       media: root.media
       barHeight: root.barHeight
@@ -213,7 +253,71 @@ Item {
       onAction: function(name, how) { root.statusAction(name, how) }
     }
 
-    Divider { ruled: root.ruled; visible: media.visible || status.visible }
+    Divider { ruled: root.ruled; visible: extras.implicitWidth > 0 && (media.visible || status.visible) }
+
+    // Hanko's own marks, then other widgets from Omarchy's bar layout, in
+    // Hanko's ink. One row, so the zone knows how much room they take.
+    Item {
+      id: extras
+      height: root.barHeight
+      width: Math.min(extrasRow.implicitWidth, root.extrasRoom)
+      implicitWidth: width
+      clip: extrasRow.implicitWidth > width
+
+    Row {
+      id: extrasRow
+      height: root.barHeight
+
+      Marks {
+        id: marks
+        anchors.verticalCenter: parent.verticalCenter
+        indicators: root.indicators
+        keyboard: root.keyboard
+        mic: root.mic
+        tray: root.tray
+        barHeight: root.barHeight
+        compactTray: marks.fullWidth + root.hostedWidth > root.extrasRoom
+        onIndicatorAction: function(key, how) { root.indicatorAction(key, how) }
+        onKeyboardAction: function(how) { root.keyboardAction(how) }
+        onMicAction: function(how) { root.micAction(how) }
+        onTrayAction: function(id, how, cell) { root.trayAction(id, how, cell) }
+      }
+
+      Row {
+        id: hostedRow
+        height: root.barHeight
+      Repeater {
+        model: root.hosted
+        Row {
+          id: hostedCell
+          required property var modelData
+          required property int index
+          readonly property real naturalWidth: slot.implicitWidth > 0 ? slot.implicitWidth + Type.px(12) * 2 + 1 : 0
+          height: root.barHeight
+          Divider {
+            id: slotDivider
+            ruled: root.ruled
+            visible: slot.implicitWidth > 0 && slot.fits && (hostedCell.index > 0 || marks.visible)
+          }
+          HostedSlot {
+            id: slot
+            anchors.verticalCenter: parent.verticalCenter
+            entry: hostedCell.modelData
+            component: hostedCell.modelData.component
+            pluginId: hostedCell.modelData.pluginId || hostedCell.modelData.id
+            host: root.host
+            barHeight: root.barHeight
+            position: root.atBottom ? "bottom" : "top"
+            // Measured from the cells before it only, so it can't loop.
+            fits: marks.width + hostedCell.x + (Type.px(12) * 2 + 1) + implicitWidth <= root.extrasRoom
+          }
+        }
+      }
+      }
+    }
+    }
+
+    Divider { ruled: root.ruled; visible: media.visible || status.visible || extras.implicitWidth > 0 }
 
     Inbox {
       id: inbox

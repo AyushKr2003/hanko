@@ -5,3 +5,4 @@ singleton Zones 1.0 Zones.qml
 singleton Sound 1.0 Sound.qml
 singleton Net 1.0 Net.qml
 singleton Power 1.0 Power.qml
+singleton Extras 1.0 Extras.qml

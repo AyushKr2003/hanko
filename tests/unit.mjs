@@ -30,6 +30,8 @@ const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", 
 const Pw = load("core/Power.js", ["keyValues", "profiles", "stateLabel", "blurb", "details", "sheet"])
 const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell", "layout", "centred", "nearest",
   "clampTrack", "landing", "position", "sliver"])
+const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
+const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -579,6 +581,59 @@ test("per-monitor settings: set, and dropped when they match", () => {
   assert.deepEqual(S.withMonitorSetting(d, "DP-2", "height", 40).monitors, {})
   assert.equal(S.withMonitorSetting(d, "DP-2", "height", 33), null)
   assert.equal(S.withMonitorSetting(d, "", "height", 32), null)
+})
+
+test("hosting: Omarchy's default layout, minus what Hanko draws itself", () => {
+  const cfg = { layout: {
+    left: [{ id: "omarchy.menu" }, { id: "omarchy.workspaces" }],
+    center: [{ id: "omarchy.indicators" }, { id: "omarchy.elsewhen" }, { id: "omarchy.clock" },
+             { id: "omarchy.keyboard-layout" }, { id: "omarchy.weather", units: "C" }, { id: "omarchy.system-update" }],
+    right: [{ id: "omarchy.tray" }, { id: "omarchy.agents" }, { id: "omarchy.bluetooth" }, { id: "omarchy.network" },
+            { id: "omarchy.audio" }, { id: "omarchy.monitor" }, { id: "omarchy.power" }, { id: "daz.toggl" }, "daz.toggl"] } }
+  const all = id => id !== "omarchy.agents"
+  const h = H.hosted(cfg, all, () => false)
+  assert.deepEqual(h.map(x => x.id), ["omarchy.weather", "omarchy.system-update", "omarchy.bluetooth", "omarchy.monitor", "daz.toggl"])
+  assert.equal(h[0].settings.units, "C")
+  const many = H.hosted(cfg, all, id => id === "daz.toggl")
+  assert.deepEqual(many.slice(-2).map(x => x.key), ["daz.toggl", "daz.toggl#1"])
+  assert.deepEqual(H.own(cfg), { tray: true, indicators: true, keyboard: true, mic: false })
+  assert.deepEqual(H.own({}), { tray: true, indicators: true, keyboard: true, mic: false })
+  assert.deepEqual(H.own({ layout: { right: [{ id: "omarchy.microphone" }] } }), { tray: false, indicators: false, keyboard: false, mic: true })
+  assert.equal(H.idOfCell(H.cell("omarchy.weather")), "omarchy.weather")
+  assert.equal(H.idOfCell("volume"), "")
+})
+
+test("togglePanelAt counts hosted widgets in their place", () => {
+  const cells = ["network", "volume", "hosted:omarchy.bluetooth", "battery", "notif"]
+  assert.equal(Sh.panelAt(cells, 3), "omarchy.bluetooth")
+  assert.equal(Sh.panelAt(cells, 4), "omarchy.power")
+})
+
+test("own marks: only the indicators that are on, red only for now", () => {
+  assert.deepEqual(X.indicators({}), [])
+  const all = X.indicators({ recording: true, dictation: "recording", reminders: 2, awake: true, night: true })
+  assert.deepEqual(all.map(i => i.glyph), ["録", "書", "鈴", "醒", "夜"])
+  assert.deepEqual(all.map(i => i.red), [true, true, false, false, false])
+  assert.equal(all[2].count, 2)
+  assert.equal(X.indicators({ dictation: "transcribing" })[0].red, false)
+  assert.deepEqual(X.moduleJson('warm up\n{"count":1,"tooltip":"tea"}'), { count: 1, tooltip: "tea" })
+  assert.deepEqual(X.moduleJson("plain"), { text: "plain" })
+})
+
+test("keyboard layout from hyprctl devices", () => {
+  const json = JSON.stringify({ keyboards: [
+    { name: "power-button", layout: "us", active_layout_index: 0 },
+    { name: "at-translated-set-2-keyboard", main: true, layout: "us,de", active_layout_index: 1, active_keymap: "German" }] })
+  assert.deepEqual(X.keyboard(json), { label: "DE", count: 2, keyboard: "at-translated-set-2-keyboard", keymap: "German" })
+  assert.equal(X.keyboard(JSON.stringify({ keyboards: [{ name: "kb", layout: "us" }] })).count, 1)
+  assert.equal(X.keyboard("not json"), null)
+  assert.equal(X.keyboard(JSON.stringify({ keyboards: [] })), null)
+})
+
+test("tray rows: titles, symbolic icons, a letter to fall back on", () => {
+  const t = X.tray([{ id: "nm-applet", title: "Network", icon: "image://icon/nm-signal-75-symbolic" },
+                    { id: "steam", tooltipTitle: "Steam", icon: "" }, null])
+  assert.deepEqual(t.map(x => [x.id, x.letter, x.symbolic]), [["nm-applet", "N", true], ["steam", "S", false]])
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

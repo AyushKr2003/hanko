@@ -66,11 +66,14 @@ function step(key, delta, available) {
 
 // `togglePanelAt right N`: the Nth distinct Omarchy panel among the right
 // zone's cells, 1-based, so the hotkey still means "the Nth thing on the
-// right" in Hanko. "" when there is none.
+// right" in Hanko; hosted widgets with a panel count in their place. ""
+// when there is none.
 function panelAt(cells, index) {
   var ids = []
   for (var i = 0; i < (cells || []).length; i++) {
-    var id = omarchyIdForCell(cells[i])
+    var c = String(cells[i] || "")
+    // A hosted widget ("hosted:omarchy.bluetooth") is its own panel.
+    var id = c.indexOf("hosted:") === 0 ? c.slice(7) : omarchyIdForCell(c)
     if (id && ids.indexOf(id) < 0) ids.push(id)
   }
   var n = parseInt(index, 10)
