@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import "../core"
+import "../services"
 
 // One layer-shell bar per screen. It reserves its own height and, when the
 // bar is hidden, parks just past the screen edge instead of unmapping, the
@@ -15,7 +15,6 @@ PanelWindow {
 
   readonly property int barHeight: Type.px(style.height)
   readonly property bool atBottom: bar.position === "bottom"
-  readonly property var monitor: Hyprland.monitorFor(screen)
 
   color: "transparent"
   implicitHeight: barHeight
@@ -45,6 +44,26 @@ PanelWindow {
       return s
     }
     now: win.bar.now
-    workspace: win.monitor && win.monitor.activeWorkspace ? win.monitor.activeWorkspace.id : 1
+    spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
+    activeWindow: Hypr.activeWindow
+    home: Hypr.home
+    media: Media.now
+    timeFormat: win.bar.timeFormat
+    volume: Status.volume
+    network: Status.network
+    battery: Status.battery
+    brightness: Status.brightness
+    notifications: Status.notifications
+    dnd: Status.doNotDisturb
+
+    onSealClicked: function(button) {
+      if (button === Qt.RightButton) Hypr.openTerminal()
+      else Hypr.openMenu()
+    }
+    onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
+    onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
+    onMediaAction: function(name) { Media.act(name) }
+    onStatusAction: function(name, how) { Status.act(name, how) }
+    onInboxAction: function(how) { Status.act("notif", how) }
   }
 }

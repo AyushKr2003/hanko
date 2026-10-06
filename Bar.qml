@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import "core"
 import "bar"
+import "services"
 
 // Hanko · entry point of the `hanko.bar` plugin (manifest.json, kind "bar").
 // omarchy-shell loads this file in place of its own bar and injects the
@@ -37,6 +38,37 @@ Item {
   readonly property string fontFamily: Type.mono
 
   property alias now: clock.date
+
+  // 12- or 24-hour, from Omarchy's own clock (the `format` on omarchy.clock
+  // in shell.json). Only the hour style carries over: Hanko lays out the
+  // date itself.
+  readonly property string timeFormat: {
+    var f = omarchyClockFormat
+    return /h/.test(f.replace(/HH?/g, "")) || /ap/i.test(f) ? "h:mm AP" : "HH:mm"
+  }
+  readonly property string omarchyClockFormat: {
+    var layout = barConfig && barConfig.layout ? barConfig.layout : {}
+    var sections = ["left", "center", "right"]
+    for (var s = 0; s < sections.length; s++) {
+      var list = Array.isArray(layout[sections[s]]) ? layout[sections[s]] : []
+      for (var i = 0; i < list.length; i++)
+        if (list[i] && list[i].id === "omarchy.clock" && list[i].format) return String(list[i].format)
+    }
+    return "HH:mm"
+  }
+
+  // Omarchy's choice of media player, when the host offers it.
+  Binding {
+    target: Media
+    property: "proxy"
+    value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.media") : null
+  }
+
+  Binding {
+    target: Status
+    property: "notificationsProxy"
+    value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.notifications") : null
+  }
 
   SystemClock {
     id: clock

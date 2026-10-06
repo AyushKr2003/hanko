@@ -1,0 +1,3 @@
+singleton Hypr 1.0 Hypr.qml
+singleton Media 1.0 Media.qml
+singleton Status 1.0 Status.qml

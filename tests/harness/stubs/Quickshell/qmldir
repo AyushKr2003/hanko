@@ -4,3 +4,4 @@ SystemClock 1.0 SystemClock.qml
 Variants 1.0 Variants.qml
 PanelWindow 1.0 PanelWindow.qml
 ExclusionMode 1.0 ExclusionMode.qml
+Singleton 1.0 Singleton.qml
