@@ -165,7 +165,7 @@ Resolution: preset → `edits` → `monitors[name]`. Invalid keys/values are dro
 
 ### Mockups
 
-`docs/mockups/typeset/*.png` (19 sheets; index in COMPONENTS.md §8) are the visual target for every phase. Compare each phase's render against the matching sheet. The HTML kit that drew them is `docs/mockups/typeset/source/` (`cat.html`, `desk.html`, `studio.html`, `typeset.css`, `typeset.js`, `shootq.mjs`), rendered with Node + Playwright:
+`docs/mockups/typeset/*.webp` (19 sheets; index in COMPONENTS.md §8) are the visual target for every phase. Compare each phase's render against the matching sheet. The HTML kit that drew them is `docs/mockups/typeset/source/` (`cat.html`, `desk.html`, `studio.html`, `typeset.css`, `typeset.js`, `shootq.mjs`), rendered with Node + Playwright:
 
 ```sh
 cd docs/mockups/typeset/source

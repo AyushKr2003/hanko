@@ -8,7 +8,7 @@ Typeset merges the two earlier directions into one bar. Sheet (the printed runni
 
 Sixteen settings give **5,971,968** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
-![The settings page](mockups/typeset/01-settings.png)
+![The settings page](mockups/typeset/01-settings.webp)
 
 ## Contents
 
@@ -44,7 +44,7 @@ Each setting has a key (used in the config file), its options, the default (from
 
 ### Left: where you are
 
-![Seal and workspaces](mockups/typeset/10-seal-workspaces.png)
+![Seal and workspaces](mockups/typeset/10-seal-workspaces.webp)
 
 #### Seal `seal` 印
 
@@ -67,7 +67,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (印 力 
 
 #### Window title `title` 窓
 
-![Title and clock](mockups/typeset/11-title-clock.png)
+![Title and clock](mockups/typeset/11-title-clock.webp)
 
 | Option | What it does | From |
 |---|---|---|
@@ -104,7 +104,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (印 力 
 
 #### Status `status` 音
 
-![Status and meters](mockups/typeset/12-status-meters.png)
+![Status and meters](mockups/typeset/12-status-meters.webp)
 
 | Option | What it does | From |
 |---|---|---|
@@ -123,7 +123,7 @@ All six status × meters pairs are drawn on sheet 12.
 
 #### Notifications `notif` 報
 
-![Media and notifications](mockups/typeset/13-media-notifications.png)
+![Media and notifications](mockups/typeset/13-media-notifications.webp)
 
 | Option | What it does | From |
 |---|---|---|
@@ -145,7 +145,7 @@ In every style a click opens the Bluetooth panel and a middle- or right-click tu
 
 #### Bottom edge `edge` 軸
 
-![Edge and dividers](mockups/typeset/14-edge-dividers.png)
+![Edge and dividers](mockups/typeset/14-edge-dividers.webp)
 
 | Option | What it does | From |
 |---|---|---|
@@ -163,7 +163,7 @@ In every style a click opens the Bluetooth panel and a middle- or right-click tu
 
 ### Frame
 
-![Height, surface, position](mockups/typeset/15-height-surface-position.png)
+![Height, surface, position](mockups/typeset/15-height-surface-position.webp)
 
 #### Height `height` 高
 
@@ -239,7 +239,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ## 4. Presets
 
-![Six presets](mockups/typeset/03-presets.png)
+![Six presets](mockups/typeset/03-presets.webp)
 
 A preset sets all sixteen settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
@@ -269,7 +269,7 @@ A preset sets all sixteen settings at once. Change any setting afterwards and th
 - **Instrument**: the most on screen. Kanji pages, a mono clock on the right, every meter, 44 px.
 - **Islet**: a floating inset strip with kanji status and stamps.
 
-![Presets on four themes](mockups/typeset/05-presets-x-themes.png)
+![Presets on four themes](mockups/typeset/05-presets-x-themes.webp)
 
 ---
 
@@ -298,7 +298,7 @@ A preset sets all sixteen settings at once. Change any setting afterwards and th
 
 That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position and panels, is 2,985,984 combinations.
 
-![Twelve random combinations](mockups/typeset/04-shuffle.png)
+![Twelve random combinations](mockups/typeset/04-shuffle.webp)
 
 Sheet 04 draws twelve of them at random with a fixed seed. None is a preset. The settings page will have a **Shuffle** button that does the same, for discovering combinations you would not have picked.
 
@@ -306,8 +306,8 @@ Sheet 04 draws twelve of them at random with a fixed seed. None is a preset. The
 
 ## 6. The settings page
 
-![Settings, dark](mockups/typeset/01-settings.png)
-![Settings, light](mockups/typeset/02-settings-light.png)
+![Settings, dark](mockups/typeset/01-settings.webp)
+![Settings, light](mockups/typeset/02-settings-light.webp)
 
 Hanko's settings open as their own window in the Ryoku Hub grammar: a numbered rail on the left, a page on the right, an action bar at the foot.
 
@@ -389,29 +389,29 @@ Panels { mode: style.panels }
 
 ## 8. Sheets
 
-All images are in `docs/mockups/typeset/`, rendered from the HTML in `docs/mockups/typeset/source/`.
+All images are in `docs/mockups/typeset/`, rendered from the HTML in `docs/mockups/typeset/source/` and saved as lossless WebP (`Image.open('out.png').save('out.webp', lossless=True, method=6)` with Pillow).
 
 | File | Shows |
 |---|---|
-| `01-settings.png` | The Typesetting settings page, Hanko theme |
-| `02-settings-light.png` | The same page on Flexoki Light |
-| `03-presets.png` | The six presets |
-| `04-shuffle.png` | Twelve random combinations |
-| `05-presets-x-themes.png` | Sheet, Hanko and Islet on Hanko, Tokyo Night, Gruvbox and Rosé Pine Dawn |
-| `10-seal-workspaces.png` | Seal × 3, workspaces × 4 |
-| `11-title-clock.png` | Title × 3, clock × 3, clock position × 2 |
-| `12-status-meters.png` | Status × meters, all 6 pairs |
-| `13-media-notifications.png` | Now playing × 3, notifications × 2 |
-| `14-edge-dividers.png` | Edge × 4, dividers × 2 |
-| `15-height-surface-position.png` | Height × 4, surface × 3, position × 2 |
-| `16-seal-workspaces-flexoki-light.png` | Sheet 10 on Flexoki Light |
-| `17-status-meters-rose-pine.png` | Sheet 12 on Rosé Pine Dawn |
-| `20-desk-hanko-scroll.png` | Hanko preset, scroll open on Sound |
-| `21-desk-sheet-sound.png` | Sheet preset, Sound sheet open, with windows |
-| `22-desk-instrument-time.png` | Instrument preset, Time sheet open from the right-hand clock |
-| `23-desk-quiet-bottom.png` | Quiet preset at the bottom of the screen |
-| `24-desk-islet-kanagawa.png` | Islet preset on Kanagawa, scroll open on Spaces |
-| `25-desk-scroll-flexoki-light.png` | Scroll preset on Flexoki Light, scroll open on Time |
+| `01-settings.webp` | The Typesetting settings page, Hanko theme |
+| `02-settings-light.webp` | The same page on Flexoki Light |
+| `03-presets.webp` | The six presets |
+| `04-shuffle.webp` | Twelve random combinations |
+| `05-presets-x-themes.webp` | Sheet, Hanko and Islet on Hanko, Tokyo Night, Gruvbox and Rosé Pine Dawn |
+| `10-seal-workspaces.webp` | Seal × 3, workspaces × 4 |
+| `11-title-clock.webp` | Title × 3, clock × 3, clock position × 2 |
+| `12-status-meters.webp` | Status × meters, all 6 pairs |
+| `13-media-notifications.webp` | Now playing × 3, notifications × 2 |
+| `14-edge-dividers.webp` | Edge × 4, dividers × 2 |
+| `15-height-surface-position.webp` | Height × 4, surface × 3, position × 2 |
+| `16-seal-workspaces-flexoki-light.webp` | Sheet 10 on Flexoki Light |
+| `17-status-meters-rose-pine.webp` | Sheet 12 on Rosé Pine Dawn |
+| `20-desk-hanko-scroll.webp` | Hanko preset, scroll open on Sound |
+| `21-desk-sheet-sound.webp` | Sheet preset, Sound sheet open, with windows |
+| `22-desk-instrument-time.webp` | Instrument preset, Time sheet open from the right-hand clock |
+| `23-desk-quiet-bottom.webp` | Quiet preset at the bottom of the screen |
+| `24-desk-islet-kanagawa.webp` | Islet preset on Kanagawa, scroll open on Spaces |
+| `25-desk-scroll-flexoki-light.webp` | Scroll preset on Flexoki Light, scroll open on Time |
 
 To render any combination yourself (Node with Playwright):
 
