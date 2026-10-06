@@ -34,7 +34,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 
 ## Phases
 
-### Phase 0 · Roadmap and scaffolding 🔨
+### Phase 0 · Roadmap and scaffolding ✅
 - This roadmap.
 - A dev loop that works without an Omarchy machine. `qmllint` checks every QML file. An offscreen render harness (PySide6 plus small stubs for Quickshell and `qs.Commons`) draws the bar to PNG, so each phase is checked by eye against the gama1 sheets.
 - Node tests for the pure logic: style resolution and the ink ramp.

@@ -1,0 +1,54 @@
+#!/bin/bash
+# Hanko's checks, runnable without an Omarchy machine.
+#   tests/run           unit tests, manifest, lint, renders (tests/out/*.png)
+#   tests/run --quick   unit tests and lint only
+#
+# Lint and renders need PySide6 (pip install PySide6-Essentials). Renders use
+# fonts from $HANKO_HARNESS_FONTS when set (Noto CJK and a mono face).
+
+set -uo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+status=0
+step() { printf '\n== %s\n' "$1"; }
+
+step "unit tests"
+node tests/unit.mjs || status=1
+
+step "manifest"
+VALIDATE="$(command -v omarchy-plugin-validate || true)"
+[[ -z $VALIDATE && -n ${OMARCHY_SRC:-} ]] && VALIDATE="$OMARCHY_SRC/bin/omarchy-plugin-validate"
+if [[ -n $VALIDATE && -x $VALIDATE ]]; then
+  "$VALIDATE" . && echo "manifest ok" || status=1
+else
+  jq -e '.schemaVersion == 1 and .id == "hanko.bar" and (.kinds | index("bar")) and .entryPoints.bar == "Bar.qml"' manifest.json >/dev/null \
+    && echo "manifest ok (basic check; set OMARCHY_SRC for the full validator)" || status=1
+fi
+
+PYSIDE="$(python3 -c 'import PySide6, os; print(os.path.dirname(PySide6.__file__))' 2>/dev/null || true)"
+if [[ -z $PYSIDE ]]; then
+  echo "PySide6 not installed: skipping lint and renders"
+  exit $status
+fi
+
+step "qmllint"
+# Errors fail the run. Warnings are printed: the stubs in tests/harness/stubs
+# do not model layer-shell attached properties, so BarWindow.qml shows a few.
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml 2>&1 \
+  | grep -E '^(Error|Warning)' | grep -v 'bar/BarWindow.qml' || true
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
+
+[[ ${1:-} == --quick ]] && exit $status
+
+step "renders"
+mkdir -p tests/out
+for params in tests/harness/params/*.json; do
+  name="$(basename "$params" .json)"
+  if timeout 60 python3 tests/harness/render.py tests/harness/scenes/Strips.qml "$params" "tests/out/$name.png"; then
+    echo "tests/out/$name.png"
+  else
+    status=1
+  fi
+done
+
+exit $status
