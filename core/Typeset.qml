@@ -1,0 +1,116 @@
+pragma Singleton
+import QtQuick
+import Quickshell
+import Quickshell.Io
+import "Style.js" as S
+
+// The live style. Reads ~/.config/hanko/style.json (watched, so the CLI and
+// hand edits apply at once), resolves it with Style.js, and writes changes
+// back. The file only exists once something differs from the defaults.
+//
+//   Typeset.current            the resolved style for the default monitor
+//   Typeset.styleFor(name)     the style with that monitor's overrides
+//   Typeset.set(key, value)    change one setting
+//   Typeset.applyPreset(name)  start again from a preset
+QtObject {
+  id: root
+
+  readonly property string dir: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/hanko"
+  readonly property string path: dir + "/style.json"
+
+  readonly property var options: S.OPTIONS
+  readonly property var presets: S.PRESETS
+  readonly property var presetNames: S.PRESET_NAMES
+
+  // The normalized document: { preset, edits, sealGlyph, monitors }.
+  property var doc: S.normalize({})
+  property var warnings: []
+  readonly property var current: S.resolve(doc)
+
+  // True when position comes from Hanko rather than Omarchy's bar.position.
+  readonly property bool ownsPosition: doc.edits.position !== undefined
+
+  function styleFor(screenName) {
+    return S.resolve(doc, String(screenName || ""))
+  }
+
+  function set(key, value) {
+    var next = S.withSetting(doc, key, value)
+    if (!next) return false
+    _commit(next)
+    return true
+  }
+
+  function applyPreset(name) {
+    var next = S.withPreset(doc, name)
+    if (!next) return false
+    _commit(next)
+    return true
+  }
+
+  function reset() {
+    _commit(S.normalize({ sealGlyph: doc.sealGlyph, monitors: doc.monitors }))
+  }
+
+  function setSealGlyph(glyph) {
+    var next = S.normalize(doc)
+    next.sealGlyph = glyph
+    _commit(S.normalize(next))
+  }
+
+  function shuffle() {
+    _commit(S.shuffled(doc, Math.random))
+  }
+
+  function serialized() {
+    return JSON.stringify(doc, null, 2) + "\n"
+  }
+
+  function _commit(next) {
+    doc = next
+    _pending = serialized()
+    saveTimer.restart()
+  }
+
+  function _load(text) {
+    var parsed = {}
+    var w = []
+    if (String(text || "").trim() !== "") {
+      try {
+        parsed = JSON.parse(text)
+      } catch (e) {
+        w.push("style.json is not valid JSON: " + e.message + "; using defaults until it is fixed")
+        parsed = {}
+      }
+    }
+    var next = S.normalize(parsed, w)
+    warnings = w
+    for (var i = 0; i < w.length; i++) console.warn("hanko: " + w[i])
+    if (JSON.stringify(next) !== JSON.stringify(doc)) doc = next
+  }
+
+  // What the next save writes; kept apart from doc so a save never races a
+  // reload of the same file.
+  property string _pending: ""
+
+  // Coalesce bursts (the settings page, a shuffle held down) into one write.
+  property Timer saveTimer: Timer {
+    interval: 200
+    onTriggered: root._mkdir.running = true
+  }
+
+  property Process _mkdir: Process {
+    command: ["mkdir", "-p", root.dir]
+    onExited: root._file.setText(root._pending)
+  }
+
+  property FileView _file: FileView {
+    path: root.path
+    watchChanges: true
+    printErrors: false
+    atomicWrites: true
+    onFileChanged: reload()
+    onLoaded: root._load(text())
+    onLoadFailed: root._load("")
+  }
+}

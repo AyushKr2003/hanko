@@ -1,0 +1,152 @@
+#!/bin/bash
+# hanko · install Hanko into Omarchy and change its style from a terminal.
+#
+#   hanko install            copy this checkout into the plugins folder and use it
+#   hanko dev                symlink this checkout instead (edits reload live)
+#   hanko uninstall          go back to the bar you had before, remove Hanko
+#   hanko style get          print the resolved style
+#   hanko style doc          print style.json as Hanko reads it
+#   hanko style set K V      change one setting (e.g. clock mono)
+#   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet
+#   hanko style reset        back to the preset, edits dropped
+#   hanko style shuffle      a random combination
+#   hanko doctor             check the installation
+#
+# Style commands talk to the running shell over IPC (omarchy-shell hanko ...),
+# so a change shows on the bar at once and is saved to ~/.config/hanko/style.json.
+
+set -euo pipefail
+
+ID="hanko.bar"
+SRC="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+PLUGINS="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/plugins"
+DEST="$PLUGINS/$ID"
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/hanko"
+PREVIOUS="$STATE/previous-bar"
+
+say() { printf '%s\n' "$*"; }
+fail() { printf 'hanko: %s\n' "$*" >&2; exit 1; }
+need() { command -v "$1" >/dev/null 2>&1 || fail "$1 is required but not installed"; }
+
+shell_up() { omarchy-shell -q shell ping >/dev/null 2>&1; }
+
+ipc() {
+  need omarchy-shell
+  shell_up || fail "the Omarchy shell is not running"
+  omarchy-shell hanko "$@"
+}
+
+active_bar() {
+  omarchy-shell -q shell listShellConfig 2>/dev/null | jq -r '.bar.id // "omarchy.bar"' 2>/dev/null || echo "omarchy.bar"
+}
+
+remember_previous() {
+  mkdir -p "$STATE"
+  local current
+  current="$(active_bar)"
+  # Never remember Hanko itself, or uninstall would put Hanko back.
+  if [[ $current != "$ID" && ! -f $PREVIOUS ]]; then
+    printf '%s\n' "$current" > "$PREVIOUS"
+  fi
+}
+
+activate() {
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  omarchy bar use "$ID"
+}
+
+cmd_install() {
+  need omarchy
+  need rsync
+  omarchy plugin validate "$SRC" || fail "manifest did not validate"
+  remember_previous
+  if [[ -L $DEST ]]; then rm "$DEST"; fi
+  mkdir -p "$DEST"
+  # The plugin needs its QML, scripts and fonts; the design docs and test
+  # harness stay in the checkout.
+  rsync -a --delete \
+    --exclude .git --exclude docs --exclude tests --exclude '*.png' \
+    "$SRC/" "$DEST/"
+  activate
+  say "Hanko is installed at $DEST and is now your bar."
+}
+
+cmd_dev() {
+  need omarchy
+  omarchy plugin validate "$SRC" || fail "manifest did not validate"
+  remember_previous
+  if [[ -e $DEST && ! -L $DEST ]]; then
+    fail "$DEST already exists and is not a symlink; run 'hanko uninstall' first"
+  fi
+  mkdir -p "$PLUGINS"
+  ln -sfn "$SRC" "$DEST"
+  activate
+  say "Hanko is linked from $SRC. Saving a file reloads the bar."
+}
+
+cmd_uninstall() {
+  need omarchy
+  local previous="omarchy.bar"
+  [[ -f $PREVIOUS ]] && previous="$(cat "$PREVIOUS")"
+  omarchy bar use "$previous" 2>/dev/null || omarchy bar use omarchy.bar
+  if [[ -L $DEST ]]; then
+    rm "$DEST"
+  elif [[ -d $DEST ]]; then
+    rm -rf "$DEST"
+  fi
+  rm -f "$PREVIOUS"
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
+}
+
+cmd_style() {
+  local sub="${1:-get}"
+  (( $# > 0 )) && shift || true
+  case "$sub" in
+    get)
+      need jq
+      ipc styleGet | jq -r 'to_entries[] | "\(.key)\t\(.value)"' | column -t -s $'\t'
+      ;;
+    doc) ipc styleDoc ;;
+    set)
+      (( $# == 2 )) || fail "usage: hanko style set <setting> <value>"
+      [[ $(ipc styleSet "$1" "$2") == ok ]] || fail "$1 does not take '$2' (see docs/COMPONENTS.md)"
+      ;;
+    preset)
+      (( $# == 1 )) || fail "usage: hanko style preset <name>"
+      [[ $(ipc stylePreset "$1") == ok ]] || fail "unknown preset '$1'"
+      ;;
+    reset) ipc styleReset >/dev/null ;;
+    shuffle) ipc styleShuffle >/dev/null ;;
+    *) fail "unknown style command '$sub'" ;;
+  esac
+}
+
+cmd_doctor() {
+  local ok=1
+  check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
+  say "Hanko doctor"
+  check "omarchy is installed" "command -v omarchy"
+  check "the Omarchy shell is running" "shell_up"
+  check "manifest validates" "omarchy plugin validate '$SRC'"
+  check "Hanko is in the plugins folder" "[[ -e '$DEST' ]]"
+  check "Hanko is the active bar" "[[ \$(active_bar) == '$ID' ]]"
+  check "Noto CJK fonts for the kanji" "fc-list | grep -qi 'Noto Sans CJK'"
+  check "jq is installed" "command -v jq"
+  if shell_up; then
+    local w
+    w="$(omarchy-shell hanko warnings 2>/dev/null || true)"
+    if [[ -n $w ]]; then say "  style.json warnings:"; printf '    %s\n' "$w"; fi
+  fi
+  (( ok )) || exit 1
+}
+
+case "${1:-}" in
+  install) cmd_install ;;
+  dev) cmd_dev ;;
+  uninstall) cmd_uninstall ;;
+  style) shift; cmd_style "$@" ;;
+  doctor) cmd_doctor ;;
+  -h|--help|"") sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+  *) fail "unknown command '$1' (try hanko --help)" ;;
+esac

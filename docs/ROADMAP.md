@@ -39,12 +39,12 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - A dev loop that works without an Omarchy machine. `qmllint` checks every QML file. An offscreen render harness (PySide6 plus small stubs for Quickshell and `qs.Commons`) draws the bar to PNG, so each phase is checked by eye against the gama1 sheets.
 - Node tests for the pure logic: style resolution and the ink ramp.
 
-### Phase 1 · A bar that loads ⬜
+### Phase 1 · A bar that loads ✅
 - `manifest.json` (`hanko.bar`, kind `bar`), `Bar.qml` and `qmldir`.
 - One layer-shell `PanelWindow` per screen. It reserves its space, follows `position`, and parks off screen when hidden (the same trick Omarchy uses).
 - The host contract: `barHidden` (flag file plus `omarchy.bar syncHidden`), `barSize`, `position` and `fontFamily`.
 - **Ink**: paper, four ink tiers at 12, 9, 6.2 and 4.6 : 1, seal red, and hairlines, all derived live from the theme.
-- **Typeset**: the 15 settings, the six presets and validation. The style is read from `~/.config/omarchy/hanko/style.json` with a live file watch; resolution order is preset, then edits, then per-monitor overrides.
+- **Typeset**: the 15 settings, the six presets and validation. The style is read from `~/.config/hanko/style.json` with a live file watch; resolution order is preset, then edits, then per-monitor overrides.
 - Fonts are bundled and loaded.
 - A first bar: the seal (`stamp`) and the clock (`stacked`), on paper, with a hairline edge.
 - The `hanko` CLI: `install`, `uninstall` (restores your previous bar), `dev` (symlinks the checkout), `style get|set|preset|reset`, and `doctor`.

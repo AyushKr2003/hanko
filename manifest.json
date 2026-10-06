@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "hanko.bar",
+  "name": "Hanko",
+  "version": "0.1.0",
+  "author": "AyushKr2003",
+  "description": "A printed bar in your theme's paper and ink. Every part of it is a setting: fifteen settings, six presets.",
+  "kinds": ["bar"],
+  "entryPoints": {
+    "bar": "Bar.qml"
+  }
+}

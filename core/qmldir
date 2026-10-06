@@ -1,0 +1,3 @@
+singleton Ink 1.0 Ink.qml
+singleton Type 1.0 Type.qml
+singleton Typeset 1.0 Typeset.qml

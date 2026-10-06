@@ -327,7 +327,7 @@ hanko style shuffle             # random combination
 Hanko stores its style alongside the rest of Omarchy's bar settings, so `omarchy bar use hanko.bar` keeps working and a theme switch does not touch it.
 
 ```jsonc
-// ~/.config/omarchy/plugins/hanko.bar/style.json
+// ~/.config/hanko/style.json (outside the plugin folder, so updates never touch it)
 {
   "preset": "Hanko",          // starting point
   "edits": {                  // only what differs from the preset
