@@ -5,12 +5,12 @@
 // Hanko draws some of them as part of its own design, draws its own
 // versions of a few more (the tray, the indicators, the keyboard layout and
 // the microphone, in its ink), and hosts everything else from the host's
-// widget registry: weather, Bluetooth, system updates, third-party widgets.
+// widget registry: weather, system updates, agents, third-party widgets.
 
 // Parts of the bar Hanko already is.
 var DRAWN = ["omarchy.menu", "omarchy.workspaces", "omarchy.active-window", "omarchy.clock",
              "omarchy.elsewhen", "omarchy.audio", "omarchy.network", "omarchy.power",
-             "omarchy.media", "omarchy.notifications", "omarchy.spacer", "omarchy.monitor"]
+             "omarchy.media", "omarchy.notifications", "omarchy.spacer", "omarchy.monitor", "omarchy.bluetooth"]
 // Widgets Hanko draws its own way.
 var OWN = { "omarchy.tray": "tray", "omarchy.indicators": "indicators",
             "omarchy.keyboard-layout": "keyboard", "omarchy.microphone": "mic" }

@@ -23,6 +23,8 @@ Item {
   property var network: null
   property var battery: null
   property var brightness: null
+  // core/Blue.js cell(), or null (no adapter, or bluetooth: off).
+  property var bluetooth: null
 
   // name: volume | network | battery | brightness; how: click | middle | right | up | down
   signal action(string name, string how)
@@ -39,6 +41,11 @@ Item {
       if (n) out.push({ key: "network", label: "NET", jp: "接続", glyph: "網", value: n.name, unit: "",
                         level: -1, bars: n.kind === "wifi" ? n.bars : -1, needsYou: n.needsYou })
     }
+    function bt() {
+      var b = root.bluetooth
+      if (b) out.push({ key: "bluetooth", label: "BT", jp: "藍", glyph: "藍", value: b.name, unit: "",
+                        level: b.level, bars: -1, needsYou: false })
+    }
     function vol() {
       var v = root.volume
       if (v) out.push({ key: "volume", label: "VOL", jp: "音", glyph: "音", value: String(v.percent), unit: "%",
@@ -54,8 +61,8 @@ Item {
       if (b) out.push({ key: "battery", label: "BAT", jp: b.charging ? "充" : "電", glyph: b.charging ? "充" : "電",
                         value: String(b.percent), unit: "%", level: b.level, bars: -1, needsYou: b.needsYou })
     }
-    if (mode === "cells") { net(); vol(); bri(); bat() }
-    else { vol(); net(); bri(); bat() }
+    if (mode === "cells") { net(); bt(); vol(); bri(); bat() }
+    else { vol(); net(); bt(); bri(); bat() }
     return out
   }
 

@@ -94,6 +94,7 @@ PanelWindow {
     network: Status.network
     battery: Status.battery
     brightness: Status.brightness
+    bluetooth: Blue.cell
     notifications: Status.notifications
     dnd: Status.doNotDisturb
     hosted: win.bar.hostedEntries

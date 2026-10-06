@@ -12,10 +12,11 @@ var SECTIONS = [
   { key: "time",    no: "01", jp: "時", label: "TIME",    width: 600 },
   { key: "sound",   no: "02", jp: "音", label: "SOUND",   width: 660 },
   { key: "network", no: "03", jp: "網", label: "NETWORK", width: 540 },
-  { key: "power",   no: "04", jp: "電", label: "POWER",   width: 420 },
-  { key: "display", no: "05", jp: "明", label: "DISPLAY", width: 520 },
-  { key: "spaces",  no: "06", jp: "窓", label: "SPACES",  width: 700 },
-  { key: "inbox",   no: "07", jp: "報", label: "INBOX",   width: 560 }
+  { key: "bluetooth", no: "04", jp: "藍", label: "BLUETOOTH", width: 500 },
+  { key: "power",   no: "05", jp: "電", label: "POWER",   width: 420 },
+  { key: "display", no: "06", jp: "明", label: "DISPLAY", width: 520 },
+  { key: "spaces",  no: "07", jp: "窓", label: "SPACES",  width: 700 },
+  { key: "inbox",   no: "08", jp: "報", label: "INBOX",   width: 560 }
 ]
 // A dithered ink-wash sliver between two sections.
 var INTERLUDE = 70
@@ -27,7 +28,7 @@ function indexOf(key) {
 
 // The section a bar cell unrolls to, or "".
 function forCell(cell) {
-  var map = { clock: "time", volume: "sound", network: "network", battery: "power",
+  var map = { clock: "time", volume: "sound", network: "network", bluetooth: "bluetooth", battery: "power",
               brightness: "display", workspaces: "spaces", seal: "spaces", notif: "inbox" }
   return map[cell] || ""
 }

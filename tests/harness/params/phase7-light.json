@@ -564,9 +564,61 @@
       "level": 0.7
      },
      "night": false
+    },
+    "bluetooth": {
+     "title": "WH-1000XM5",
+     "blurb": "Headphones \u00b7 80%",
+     "present": true,
+     "enabled": true,
+     "scanning": true,
+     "connected": [
+      {
+       "address": "AC:80:0A:11:22:33",
+       "name": "WH-1000XM5",
+       "detail": "Headphones \u00b7 80%",
+       "connected": true,
+       "paired": true,
+       "note": "Connected"
+      }
+     ],
+     "known": [
+      {
+       "address": "11:22:33:44:55:66",
+       "name": "MX Keys",
+       "detail": "Keyboard",
+       "connected": false,
+       "paired": true,
+       "note": "Paired"
+      },
+      {
+       "address": "22:33:44:55:66:77",
+       "name": "MX Master 3S",
+       "detail": "Mouse \u00b7 55%",
+       "connected": false,
+       "paired": true,
+       "note": "Paired"
+      }
+     ],
+     "found": [
+      {
+       "address": "DD:EE:FF:00:11:22",
+       "name": "Pixel 9",
+       "detail": "Phone",
+       "connected": false,
+       "paired": false,
+       "note": ""
+      }
+     ]
     }
    },
-   "height": 520
+   "height": 520,
+   "bluetooth": {
+    "name": "WH-1000XM5",
+    "enabled": true,
+    "connected": 1,
+    "level": 0.8,
+    "needsYou": false
+   }
   },
   {
    "label": "SCROLL \u00b7 SCROLL PRESET \u00b7 05 SPACES \u00b7 LIGHT",
@@ -574,7 +626,7 @@
     "preset": "Scroll"
    },
    "scroll": true,
-   "current": 5,
+   "current": 6,
    "feed": {
     "zones": [
      {
@@ -956,9 +1008,61 @@
       "level": 0.7
      },
      "night": false
+    },
+    "bluetooth": {
+     "title": "WH-1000XM5",
+     "blurb": "Headphones \u00b7 80%",
+     "present": true,
+     "enabled": true,
+     "scanning": true,
+     "connected": [
+      {
+       "address": "AC:80:0A:11:22:33",
+       "name": "WH-1000XM5",
+       "detail": "Headphones \u00b7 80%",
+       "connected": true,
+       "paired": true,
+       "note": "Connected"
+      }
+     ],
+     "known": [
+      {
+       "address": "11:22:33:44:55:66",
+       "name": "MX Keys",
+       "detail": "Keyboard",
+       "connected": false,
+       "paired": true,
+       "note": "Paired"
+      },
+      {
+       "address": "22:33:44:55:66:77",
+       "name": "MX Master 3S",
+       "detail": "Mouse \u00b7 55%",
+       "connected": false,
+       "paired": true,
+       "note": "Paired"
+      }
+     ],
+     "found": [
+      {
+       "address": "DD:EE:FF:00:11:22",
+       "name": "Pixel 9",
+       "detail": "Phone",
+       "connected": false,
+       "paired": false,
+       "note": ""
+      }
+     ]
     }
    },
-   "height": 540
+   "height": 540,
+   "bluetooth": {
+    "name": "WH-1000XM5",
+    "enabled": true,
+    "connected": 1,
+    "level": 0.8,
+    "needsYou": false
+   }
   }
  ]
 }

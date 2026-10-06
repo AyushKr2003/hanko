@@ -13,13 +13,17 @@ var SHEETS = [
     omarchy: ["omarchy.audio"] },
   { key: "network", no: "03", jp: "網", label: "NETWORK", width: 430, anchors: ["network"],
     omarchy: ["omarchy.network"] },
-  { key: "power",   no: "04", jp: "電", label: "POWER",   width: 420, anchors: ["battery"],
+  // Bluetooth hangs from its BT cell, or from the network reading when the
+  // style turns the cell off.
+  { key: "bluetooth", no: "04", jp: "藍", label: "BLUETOOTH", width: 430, anchors: ["bluetooth", "network", "volume"],
+    omarchy: ["omarchy.bluetooth"] },
+  { key: "power",   no: "05", jp: "電", label: "POWER",   width: 420, anchors: ["battery"],
     omarchy: ["omarchy.power"] },
   // The LUM cell's own panel; on a desktop with no LUM cell it hangs from
   // the battery or the volume reading instead.
-  { key: "display", no: "05", jp: "明", label: "DISPLAY", width: 430, anchors: ["brightness", "battery", "volume"],
+  { key: "display", no: "06", jp: "明", label: "DISPLAY", width: 430, anchors: ["brightness", "battery", "volume"],
     omarchy: ["omarchy.monitor"] },
-  { key: "inbox",   no: "07", jp: "報", label: "INBOX",   width: 460, anchors: ["notif"],
+  { key: "inbox",   no: "08", jp: "報", label: "INBOX",   width: 460, anchors: ["notif"],
     omarchy: [] }
 ]
 

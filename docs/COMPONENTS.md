@@ -6,14 +6,14 @@ gama1 merges the two earlier directions into one bar. beta1 (the printed running
 - **Scroll** is alpha1 as it shipped.
 - **Hanko** is the merge, and the default.
 
-Fifteen settings give **2,985,984** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
+Sixteen settings give **5,971,968** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
 ![The settings page](mockups/gama1/01-settings.png)
 
 ## Contents
 
 1. [The rules every option keeps](#1-the-rules-every-option-keeps)
-2. [The fifteen settings](#2-the-fifteen-settings)
+2. [The sixteen settings](#2-the-sixteen-settings)
 3. [How options interact](#3-how-options-interact)
 4. [Presets](#4-presets)
 5. [Counting the combinations](#5-counting-the-combinations)
@@ -38,7 +38,7 @@ These rules are what let any combination look designed rather than assembled.
 
 ---
 
-## 2. The fifteen settings
+## 2. The sixteen settings
 
 Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **B** = beta1, **A** = alpha1, **G** = new in gama1.
 
@@ -130,6 +130,15 @@ All six status × meters pairs are drawn on sheet 12.
 | `count` | `INBOX 03` with one red dot. | B |
 | **`stamps`** (default) | Each notification is a small stamped seal of its app's initial, slightly askew, newest on top. Hover fans them out. | A |
 
+#### Bluetooth `bluetooth` 藍
+
+| Option | What it does | From |
+|---|---|---|
+| **`on`** (default) | A `BT 藍` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. Click opens the Bluetooth panel; middle- or right-click turns Bluetooth on or off. Machines without an adapter never show it. | G |
+| `off` | No Bluetooth cell. The panel is still in the scroll and on Omarchy's hotkey. | G |
+
+Added after the gama1 sheets were drawn, in the same grammar as the other status cells.
+
 ### Edge
 
 #### Bottom edge `edge` 軸
@@ -191,7 +200,7 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 Sheets 20–25 show both on full desktops.
 
-The panels are Time 時, Sound 音, Network 網, Power 電, Display 明 and Inbox 報 (as sheets), and the scroll adds Spaces 窓 between Display and Inbox: seven sections. Display is the LUM cell's panel (and Omarchy's `omarchy.monitor`, `Super+Ctrl+D`): the chosen monitor's brightness on a ruler, every monitor with its mode and scale, and night light. It was added after the gama1 sheets were drawn, in the same grammar.
+The panels are Time 時, Sound 音, Network 網, Bluetooth 藍, Power 電, Display 明 and Inbox 報 (as sheets), and the scroll adds Spaces 窓 between Display and Inbox: eight sections. Display is the LUM cell's panel (and Omarchy's `omarchy.monitor`, `Super+Ctrl+D`): the chosen monitor's brightness on a ruler, every monitor with its mode and scale, and night light. It was added after the gama1 sheets were drawn, in the same grammar. So was Bluetooth (the BT cell's panel and Omarchy's `omarchy.bluetooth`): what is connected as the title, then connected, known and nearby devices (the adapter scans only while the panel is open); a click disconnects, connects or pairs through `omarchy-bluetooth-device`, and the foot turns it on or off through `omarchy-bluetooth-power`.
 
 ---
 
@@ -221,7 +230,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/gama1/03-presets.png)
 
-A preset sets all fifteen settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
+A preset sets all sixteen settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
 | Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet |
 |---|---|---|---|---|---|---|
@@ -234,6 +243,7 @@ A preset sets all fifteen settings at once. Change any setting afterwards and th
 | status | cells | glyphs | cells | numerals | cells | glyphs |
 | meters | ticks | off | ticks | off | ticks | ticks |
 | notif | count | stamps | stamps | count | count | stamps |
+| bluetooth | on | on | on | off | on | on |
 | edge | dayrule | rod | rodrule | hairline | dayrule | rodrule |
 | rules | on | off | on | off | on | off |
 | height | 36 | 40 | 40 | 32 | 44 | 36 |
@@ -265,6 +275,7 @@ A preset sets all fifteen settings at once. Change any setting afterwards and th
 | status | 3 |
 | meters | 2 |
 | notif | 2 |
+| bluetooth | 2 |
 | edge | 4 |
 | rules | 2 |
 | height | 4 |
@@ -272,9 +283,9 @@ A preset sets all fifteen settings at once. Change any setting afterwards and th
 | position | 2 |
 | panels | 2 |
 
-3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 2 × 4 × 3 × 2 × 2 = **2,985,984** bars.
+3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 2 × 4 × 2 × 4 × 3 × 2 × 2 = **5,971,968** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position and panels, is 746,496 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position and panels, is 1,492,992 combinations.
 
 ![Twelve random combinations](mockups/gama1/04-shuffle.png)
 
@@ -307,7 +318,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 3. **Six cards of segmented controls**, grouped the way the bar reads:
    - *Left · where you are*: Seal, Workspaces, Window title
    - *Centre · when*: Clock, Clock position, Now playing
-   - *Right · how things are*: Status, Meters, Notifications
+   - *Right · how things are*: Status, Meters, Notifications, Bluetooth
    - *Edge*: Bottom edge, Dividers
    - *Frame*: Height, Surface, Position
    - *Panels*: Panels open as, Seal glyph
@@ -348,7 +359,7 @@ Resolution order: preset → `edits` → `monitors[name]`. Unknown keys and inva
 In QML, the bar reads one resolved object:
 
 ```qml
-property var style: Typeset.current   // 15 settings
+property var style: Typeset.current   // 16 settings
 Seal   { mode: style.seal }
 Spaces { mode: style.spaces }
 Clock  { mode: style.clock; anchor: style.clockAt }

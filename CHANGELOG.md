@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Display 明: the LUM cell's panel, as a sheet and a scroll section (brightness per monitor, monitors, night light).
+- Bluetooth 藍: a BT cell, a sheet, a scroll section and a sixteenth setting (`bluetooth: on|off`, 5,971,968 combinations).
+
 ## gama1 · 2026-10-06
 
 - beta1 and alpha1 merged into one bar. Every part is now a setting: seal, workspaces, title, clock, clock position, now playing, status, meters, notifications, edge, dividers, height, surface, position and panels (2,985,984 combinations).

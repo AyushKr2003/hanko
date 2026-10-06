@@ -90,7 +90,7 @@ Item {
   // Weeks the Time sheet's ribbon is moved from today.
   property int timeShift: 0
   // The sheets that can open.
-  readonly property var sheetsReady: ["time", "sound", "network", "power", "display", "inbox"]
+  readonly property var sheetsReady: ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
 
   function sheetReady(key) { return !!key && sheetsReady.indexOf(key) >= 0 }
 
@@ -141,6 +141,9 @@ Item {
       }
     } else if (key === "power") {
       if (what === "profile") Power.setProfile(String(arg))
+    } else if (key === "bluetooth") {
+      if (what === "power") Blue.setPower(!!arg)
+      else if (what === "device") Blue.device(String(arg.address), String(arg.action))
     } else if (key === "display") {
       if (what === "brightness") Display.setBrightness(Number(arg))
       else if (what === "monitor") Display.pick(String(arg))
@@ -311,6 +314,7 @@ Item {
   Binding { target: Net; property: "wanted"; value: root.sheet === "network" || root.scrollOpen }
   Binding { target: Power; property: "wanted"; value: root.sheet === "power" || root.scrollOpen }
   Binding { target: Display; property: "wanted"; value: root.sheet === "display" || root.scrollOpen }
+  Binding { target: Blue; property: "wanted"; value: root.sheet === "bluetooth" || root.scrollOpen }
 
   // BarWindows by screen name, for the host's per-screen questions.
   property var windows: ({})

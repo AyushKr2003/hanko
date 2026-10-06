@@ -24,6 +24,7 @@ Item {
   property var network: null
   property var battery: null
   property var brightness: null
+  property var bluetooth: null
   property var notifications: []
   property bool dnd: false
   // Hosted widgets: [{ id, key, settings, component, pluginId }] (Bar.qml
@@ -250,6 +251,7 @@ Item {
       network: root.network
       battery: root.battery
       brightness: root.brightness
+      bluetooth: root.style.bluetooth === "off" ? null : root.bluetooth
       onAction: function(name, how) { root.statusAction(name, how) }
     }
 

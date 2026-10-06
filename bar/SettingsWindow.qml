@@ -63,6 +63,7 @@ FloatingWindow {
         timeFormat: win.bar.timeFormat,
         volume: Status.volume,
         network: Status.network,
+        bluetooth: Blue.cell,
         battery: Status.battery,
         brightness: Status.brightness,
         notifications: Status.notifications,

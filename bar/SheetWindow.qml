@@ -135,6 +135,7 @@ PanelWindow {
       timeShift: win.bar.timeShift,
       sound: Sound.reading,
       network: Net.reading,
+      bluetooth: Blue.reading,
       power: Power.reading,
       display: Display.reading,
       letters: Status.notifications,

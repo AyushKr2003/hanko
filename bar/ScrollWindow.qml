@@ -124,7 +124,7 @@ PanelWindow {
       else if (k === Qt.Key_H || k === Qt.Key_Left) win.bar.stepScroll(-1)
       else if (k === Qt.Key_L || k === Qt.Key_Right || k === Qt.Key_Tab) win.bar.stepScroll(1)
       else if (k === Qt.Key_Backtab) win.bar.stepScroll(-1)
-      else if (k >= Qt.Key_1 && k <= Qt.Key_7) win.bar.scrollTo(k - Qt.Key_1)
+      else if (k >= Qt.Key_1 && k <= Qt.Key_8) win.bar.scrollTo(k - Qt.Key_1)
       else return
       event.accepted = true
     }
@@ -149,6 +149,7 @@ PanelWindow {
         timeShift: win.bar.timeShift,
         sound: Sound.reading,
         network: Net.reading,
+      bluetooth: Blue.reading,
         power: Power.reading,
       display: Display.reading,
         letters: Status.notifications,

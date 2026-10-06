@@ -134,6 +134,7 @@
   "muted": false,
   "needsYou": false
  },
+ "bluetooth": { "name": "WH-1000XM5", "enabled": true, "connected": 1, "level": 0.8, "needsYou": false },
  "network": {
   "kind": "wifi",
   "name": "Kumo",

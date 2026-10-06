@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 
-// 05 // DISPLAY: the chosen monitor's brightness in large serif with a
+// 06 // DISPLAY: the chosen monitor's brightness in large serif with a
 // fader beside the monitors (the chosen one on a plate), and night light
 // as a fader-bank switch.
 ScrollSection {

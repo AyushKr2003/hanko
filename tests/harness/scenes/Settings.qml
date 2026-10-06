@@ -39,6 +39,7 @@ Rectangle {
       media: sheet.p.media || null,
       volume: sheet.p.volume || null,
       network: sheet.p.network || null,
+      bluetooth: sheet.p.bluetooth || null,
       battery: sheet.p.battery || null,
       brightness: sheet.p.brightness || null,
       notifications: sheet.p.notifications || [],

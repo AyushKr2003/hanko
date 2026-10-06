@@ -1,6 +1,6 @@
 .pragma library
 
-// The fifteen typesetting settings, the presets, and how a style document
+// The sixteen typesetting settings, the presets, and how a style document
 // resolves into the one flat object the bar reads. Pure JavaScript with no
 // QML or Quickshell dependency, so tests/unit.mjs can run it under Node.
 // docs/COMPONENTS.md is the spec for every option below.
@@ -15,6 +15,8 @@ var OPTIONS = {
   status:   ["cells", "glyphs", "numerals"],
   meters:   ["ticks", "off"],
   notif:    ["count", "stamps"],
+  // A BT 藍 cell for Bluetooth (only where there is an adapter).
+  bluetooth: ["on", "off"],
   edge:     ["hairline", "dayrule", "rod", "rodrule"],
   rules:    ["on", "off"],
   height:   [32, 36, 40, 44],
@@ -26,12 +28,12 @@ var OPTIONS = {
 var KEYS = Object.keys(OPTIONS)
 
 var PRESETS = {
-  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets" },
-  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll" },
-  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll" },
-  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets" },
-  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll" }
+  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "on", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets" },
+  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "on", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll" },
+  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "on", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll" },
+  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets" },
+  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "on", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "on", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll" }
 }
 
 var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]

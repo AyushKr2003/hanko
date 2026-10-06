@@ -33,6 +33,7 @@ const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell"
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
+const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -40,9 +41,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("fifteen settings, 2,985,984 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 15)
-  assert.equal(S.combinations(), 2985984)
+test("sixteen settings, 5,971,968 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 16)
+  assert.equal(S.combinations(), 5971968)
 })
 
 test("every preset sets every setting to a valid option", () => {
@@ -299,7 +300,9 @@ test("sheets answer to bar cells and to Omarchy's panel ids", () => {
   assert.equal(Sh.forCell("media"), "")
   assert.equal(Sh.forOmarchyId("omarchy.audio"), "sound")
   assert.equal(Sh.forOmarchyId("omarchy.elsewhen"), "time")
-  assert.equal(Sh.forOmarchyId("omarchy.bluetooth"), "")
+  assert.equal(Sh.forOmarchyId("omarchy.bluetooth"), "bluetooth")
+  assert.equal(Sh.forOmarchyId("omarchy.weather"), "")
+  assert.equal(Sh.forCell("bluetooth"), "bluetooth")
   assert.equal(Sh.forOmarchyId("omarchy.monitor"), "display")
 })
 
@@ -479,12 +482,13 @@ test("inbox: bodies, one copy per notification, and how long ago", () => {
   assert.equal(St.age(0, 50 * 3600000), "2d")
 })
 
-test("scroll: six sections on one paper, interludes between", () => {
+test("scroll: eight sections on one paper, interludes between", () => {
   const l = Sc.layout(1)
-  assert.deepEqual(l.xs, [0, 670, 1400, 2010, 2500, 3090, 3860])
-  assert.equal(l.width, 3860 + 560)
+  assert.deepEqual(l.xs, [0, 670, 1400, 2010, 2580, 3070, 3660, 4430])
+  assert.equal(l.width, 4430 + 560)
   assert.equal(Sc.layout(1.5).widths[0], 900)
-  assert.equal(Sc.indexOf("spaces"), 5)
+  assert.equal(Sc.indexOf("spaces"), 6)
+  assert.equal(Sc.forCell("bluetooth"), "bluetooth")
   assert.equal(Sc.forCell("brightness"), "display")
   assert.equal(Sc.forCell("media"), "")
 })
@@ -492,14 +496,14 @@ test("scroll: six sections on one paper, interludes between", () => {
 test("scroll: centring a section, and landing a pan on the nearest", () => {
   const view = 1300
   assert.equal(Sc.centred(1, view), 650 - (670 + 330))
-  for (let i = 0; i < 7; i++) assert.equal(Sc.nearest(Sc.centred(i, view), view), i)
+  for (let i = 0; i < 8; i++) assert.equal(Sc.nearest(Sc.centred(i, view), view), i)
   // A little push from Sound lands back on Sound; a fling carries on.
   const at = Sc.centred(1, view)
   assert.equal(Sc.landing(at - 100, 0, view), 1)
   assert.equal(Sc.landing(at - 100, -3000, view), 2)
   assert.equal(Sc.clampTrack(99999, view), Sc.centred(0, view))
-  assert.equal(Sc.clampTrack(-99999, view), Sc.centred(6, view))
-  assert.deepEqual(Sc.position(0), { x: 0, width: 1 / 7 })
+  assert.equal(Sc.clampTrack(-99999, view), Sc.centred(7, view))
+  assert.deepEqual(Sc.position(0), { x: 0, width: 1 / 8 })
 })
 
 test("scroll: interludes are two-tone dither, fading out at the ends", () => {
@@ -535,7 +539,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the fifteen settings once", () => {
+test("settings: six cards hold every one of the sixteen settings once", () => {
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
@@ -596,7 +600,7 @@ test("hosting: Omarchy's default layout, minus what Hanko draws itself", () => {
             { id: "omarchy.audio" }, { id: "omarchy.monitor" }, { id: "omarchy.power" }, { id: "daz.toggl" }, "daz.toggl"] } }
   const all = id => id !== "omarchy.agents"
   const h = H.hosted(cfg, all, () => false)
-  assert.deepEqual(h.map(x => x.id), ["omarchy.weather", "omarchy.system-update", "omarchy.bluetooth", "daz.toggl"])
+  assert.deepEqual(h.map(x => x.id), ["omarchy.weather", "omarchy.system-update", "daz.toggl"])
   assert.equal(h[0].settings.units, "C")
   const many = H.hosted(cfg, all, id => id === "daz.toggl")
   assert.deepEqual(many.slice(-2).map(x => x.key), ["daz.toggl", "daz.toggl#1"])
@@ -608,8 +612,8 @@ test("hosting: Omarchy's default layout, minus what Hanko draws itself", () => {
 })
 
 test("togglePanelAt counts hosted widgets in their place", () => {
-  const cells = ["network", "volume", "hosted:omarchy.bluetooth", "battery", "notif"]
-  assert.equal(Sh.panelAt(cells, 3), "omarchy.bluetooth")
+  const cells = ["network", "volume", "hosted:omarchy.weather", "battery", "notif"]
+  assert.equal(Sh.panelAt(cells, 3), "omarchy.weather")
   assert.equal(Sh.panelAt(cells, 4), "omarchy.power")
 })
 
@@ -670,6 +674,36 @@ test("display: brightness reading, the monitor it speaks for, the panel", () => 
   assert.deepEqual(s.monitors.map(x => x.current), [false, true, false])
   assert.equal(D.sheet(m, "", -1, false).brightness, null)
   assert.equal(D.sheet(m, "", 50, false).title, "Built-in")
+})
+
+test("bluetooth: devices into connected, known and found, nameless ones out", () => {
+  const devs = [
+    { address: "AC:80:0A:11:22:33", name: "WH-1000XM5", icon: "audio-headset", connected: true, paired: true, battery: 0.8 },
+    { address: "11:22:33:44:55:66", name: "MX Keys", icon: "input-keyboard", connected: false, paired: true, battery: -1 },
+    { address: "77:88:99:AA:BB:CC", name: "77:88:99:AA:BB:CC", icon: "", connected: false, paired: false, battery: -1 },
+    { address: "DD:EE:FF:00:11:22", name: "Pixel 9", icon: "phone", connected: false, paired: false, battery: -1, pairing: true }]
+  const l = B.lists(devs)
+  assert.deepEqual(l.connected.map(r => [r.name, r.detail, r.note]), [["WH-1000XM5", "Headphones · 80%", "Connected"]])
+  assert.deepEqual(l.known.map(r => r.name), ["MX Keys"])
+  assert.deepEqual(l.found.map(r => [r.name, r.note]), [["Pixel 9", "Pairing"]])
+  assert.equal(B.action(l.connected[0]), "disconnect")
+  assert.equal(B.action(l.known[0]), "connect")
+  assert.equal(B.action(l.found[0]), "pair")
+  assert.ok(!B.human("0000110b-0000-1000-8000-00805f9b34fb"))
+})
+
+test("bluetooth: the bar cell and the sheet", () => {
+  const devs = [{ address: "A", name: "WH-1000XM5", icon: "audio-headset", connected: true, paired: true, battery: 0.8 },
+                { address: "B", name: "MX Keys", connected: true, paired: true, battery: -1 }]
+  assert.equal(B.cell(false, true, devs), null)
+  assert.deepEqual(B.cell(true, true, devs), { name: "MX Keys +1", enabled: true, connected: 2, level: -1, needsYou: false })
+  assert.equal(B.cell(true, true, devs.slice(0, 1)).level, 0.8)
+  assert.equal(B.cell(true, false, devs).name, "Off")
+  assert.equal(B.cell(true, true, []).name, "On")
+  assert.deepEqual([B.sheet(true, true, false, devs).title, B.sheet(true, true, false, devs).blurb], ["MX Keys", "2 devices connected."])
+  assert.equal(B.sheet(false, false, false, []).title, "No adapter")
+  assert.equal(B.sheet(true, false, false, devs).blurb, "Turn it on to see your devices.")
+  assert.equal(B.sheet(true, true, true, []).blurb, "Looking for devices nearby…")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

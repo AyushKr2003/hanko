@@ -4,7 +4,7 @@ import "../../core"
 import "../../core/Scroll.js" as Scroll
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): one
-// long paper held between two rollers, its seven sections side by side with
+// long paper held between two rollers, its eight sections side by side with
 // dithered interludes between them; sections curl under the rollers at the
 // edges so the neighbours always show. An index plate names every section
 // (the one in the middle inverted), and a position bar runs along the foot.
@@ -23,8 +23,8 @@ Item {
   // 0..1: how far the paper has unrolled, and how far the ink has come in.
   property real reveal: 1
   property real ink: 1
-  // The sheets' feed (now, zones, timeShift, sound, network, power,
-  // display, letters, dnd) plus spaces.
+  // The sheets' feed (now, zones, timeShift, sound, network, bluetooth,
+  // power, display, letters, dnd) plus spaces.
   property var feed: ({})
 
   signal request(string section, string what, var arg)
@@ -121,27 +121,33 @@ Item {
             net: root.feed.network || null
             onRequest: function(what, arg) { root.request("network", what, arg) }
           }
-          PowerSection {
+          BluetoothSection {
             x: root.layout.xs[3]; width: root.layout.widths[3]; height: track.height
             info: root.sections[3]
+            blue: root.feed.bluetooth || null
+            onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
+          }
+          PowerSection {
+            x: root.layout.xs[4]; width: root.layout.widths[4]; height: track.height
+            info: root.sections[4]
             power: root.feed.power || null
             onRequest: function(what, arg) { root.request("power", what, arg) }
           }
           DisplaySection {
-            x: root.layout.xs[4]; width: root.layout.widths[4]; height: track.height
-            info: root.sections[4]
+            x: root.layout.xs[5]; width: root.layout.widths[5]; height: track.height
+            info: root.sections[5]
             display: root.feed.display || null
             onRequest: function(what, arg) { root.request("display", what, arg) }
           }
           SpacesSection {
-            x: root.layout.xs[5]; width: root.layout.widths[5]; height: track.height
-            info: root.sections[5]
+            x: root.layout.xs[6]; width: root.layout.widths[6]; height: track.height
+            info: root.sections[6]
             spaces: root.feed.spaces || []
             onRequest: function(what, arg) { root.request("spaces", what, arg) }
           }
           InboxSection {
-            x: root.layout.xs[6]; width: root.layout.widths[6]; height: track.height
-            info: root.sections[6]
+            x: root.layout.xs[7]; width: root.layout.widths[7]; height: track.height
+            info: root.sections[7]
             letters: root.feed.letters || []
             dnd: !!root.feed.dnd
             now: root.feed.now || new Date()

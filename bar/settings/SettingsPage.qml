@@ -663,7 +663,7 @@ Rectangle {
             }
           }
           SmallButton {
-            label: "Shuffle · one of 2,985,984"
+            label: "Shuffle · one of " + S.combinations().toLocaleString(Qt.locale("en_US"), "f", 0)
             onClicked: root.shuffle()
           }
         }
@@ -754,6 +754,7 @@ Rectangle {
     timeFormat: root.barData.timeFormat || "HH:mm"
     volume: root.barData.volume || null
     network: root.barData.network || null
+    bluetooth: root.barData.bluetooth || null
     battery: root.barData.battery || null
     brightness: root.barData.brightness || null
     notifications: root.barData.notifications || []

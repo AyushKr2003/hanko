@@ -106,6 +106,7 @@ Rectangle {
             network: sheet.pick(deskColumn.modelData, "network")
             battery: sheet.pick(deskColumn.modelData, "battery")
             brightness: sheet.pick(deskColumn.modelData, "brightness")
+            bluetooth: sheet.pick(deskColumn.modelData, "bluetooth")
             notifications: sheet.pick(deskColumn.modelData, "notifications") || []
             dnd: !!sheet.pick(deskColumn.modelData, "dnd")
           }

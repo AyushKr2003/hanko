@@ -136,6 +136,9 @@ Singleton {
       if (how === "up") run(["omarchy-brightness-display", "+5%"])
       else if (how === "down") run(["omarchy-brightness-display", "5%-"])
       else toggle("omarchy.power")
+    } else if (name === "bluetooth") {
+      // The middle or right button switches Bluetooth on or off.
+      if (how === "middle" || how === "right") Blue.setPower(!Blue.powered)
     } else if (name === "network") {
       toggle("omarchy.network")
     } else if (name === "battery") {

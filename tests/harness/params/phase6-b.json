@@ -1,5 +1,5 @@
 {
- "title": "Phase 6 \u00b7 sheets: network, power, display, inbox",
+ "title": "Phase 6 \u00b7 sheets: network, bluetooth, power, display, inbox",
  "scene": "Sheets",
  "width": 1600,
  "theme": {
@@ -259,6 +259,95 @@
     "bars": 0,
     "off": true,
     "needsYou": true
+   }
+  },
+  {
+   "label": "BLUETOOTH \u00b7 HANKO \u00b7 FROM BT",
+   "doc": {
+    "preset": "Hanko"
+   },
+   "sheet": "bluetooth",
+   "feed": {
+    "bluetooth": {
+     "title": "WH-1000XM5",
+     "blurb": "Headphones \u00b7 80%",
+     "present": true,
+     "enabled": true,
+     "scanning": true,
+     "connected": [
+      {
+       "address": "AC:80:0A:11:22:33",
+       "name": "WH-1000XM5",
+       "detail": "Headphones \u00b7 80%",
+       "connected": true,
+       "paired": true,
+       "note": "Connected"
+      }
+     ],
+     "known": [
+      {
+       "address": "11:22:33:44:55:66",
+       "name": "MX Keys",
+       "detail": "Keyboard",
+       "connected": false,
+       "paired": true,
+       "note": "Paired"
+      },
+      {
+       "address": "22:33:44:55:66:77",
+       "name": "MX Master 3S",
+       "detail": "Mouse \u00b7 55%",
+       "connected": false,
+       "paired": true,
+       "note": "Paired"
+      }
+     ],
+     "found": [
+      {
+       "address": "DD:EE:FF:00:11:22",
+       "name": "Pixel 9",
+       "detail": "Phone",
+       "connected": false,
+       "paired": false,
+       "note": ""
+      }
+     ]
+    }
+   },
+   "height": 700,
+   "bluetooth": {
+    "name": "WH-1000XM5",
+    "enabled": true,
+    "connected": 1,
+    "level": 0.8,
+    "needsYou": false
+   }
+  },
+  {
+   "label": "BLUETOOTH \u00b7 OFF \u00b7 SHEET PRESET",
+   "doc": {
+    "preset": "Sheet"
+   },
+   "sheet": "bluetooth",
+   "feed": {
+    "bluetooth": {
+     "title": "Off",
+     "blurb": "Turn it on to see your devices.",
+     "present": true,
+     "enabled": false,
+     "scanning": false,
+     "connected": [],
+     "known": [],
+     "found": []
+    }
+   },
+   "height": 360,
+   "bluetooth": {
+    "name": "Off",
+    "enabled": false,
+    "connected": 0,
+    "level": -1,
+    "needsYou": false
    }
   },
   {

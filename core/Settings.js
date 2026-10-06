@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the fifteen settings into six cards, and the
+// Typesetting 組版 page groups the sixteen settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -36,7 +36,8 @@ var CARDS = [
   { title: "Right · how things are", rows: [
     { key: "status", name: "Status", detail: "Cells, kanji glyphs or numerals" },
     { key: "meters", name: "Meters", detail: "Ticks beside quantities" },
-    { key: "notif", name: "Notifications", detail: "" }] },
+    { key: "notif", name: "Notifications", detail: "" },
+    { key: "bluetooth", name: "Bluetooth", detail: "A BT 藍 cell for your devices" }] },
   { title: "Edge", rows: [
     { key: "edge", name: "Bottom edge", detail: "Hairline, day rule, rod, both" },
     { key: "rules", name: "Dividers", detail: "Hairlines between groups" }] },
@@ -63,7 +64,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// fifteen that resolves differently, the seal glyph, and each monitor whose
+// sixteen that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)
