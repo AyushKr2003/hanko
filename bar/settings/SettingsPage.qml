@@ -54,7 +54,7 @@ Rectangle {
   function scrollToEnd() { scroller.contentY = Math.max(0, scroller.contentHeight - scroller.height) }
 
   // `/` from the window: put the cursor in the search field.
-  function focusSearch() { search.forceActiveFocus() }
+  function focusSearch() { (compact ? pageSearch : railSearch).input.forceActiveFocus() }
   readonly property int changes: Settings.changes(saved, draft, S.resolve)
   readonly property var pageInfo: {
     for (var g = 0; g < Settings.RAIL.length; g++)
@@ -67,30 +67,49 @@ Rectangle {
   implicitWidth: Type.px(1600)
   implicitHeight: Type.px(900)
 
+  // The window can be any size (a tiled window ignores the minimum), so the
+  // page reflows: the rail narrows, then folds to its glyphs with the search
+  // moving onto the page; cards, presets and overrides drop columns.
+  readonly property bool compact: width < Type.px(760)
+  // Side margin of the page and the action bar.
+  readonly property int pad: compact ? Type.px(16) : Type.px(32)
+
   // ================================================================ rail
   Item {
     id: rail
-    width: Type.px(268)
+    width: root.compact ? Type.px(60) : root.width < Type.px(1100) ? Type.px(224) : Type.px(268)
     height: parent.height
 
     Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: Ink.line }
 
-    Column {
-      x: Type.px(20)
+    // The rail's own scroll, so a short window never runs the pages under
+    // the Advanced switch.
+    Flickable {
+      id: railScroller
+      x: root.compact ? Type.px(8) : Type.px(20)
       y: Type.px(22)
       width: parent.width - 2 * x
+      height: railFoot.y - y - Type.px(4)
+      contentHeight: railColumn.height + Type.px(8)
+      interactive: contentHeight > height
+      clip: true
+      boundsBehavior: Flickable.StopAtBounds
+
+    Column {
+      id: railColumn
+      width: railScroller.width
 
       // The masthead: a seal and HANKO //SETTINGS_
       Rectangle {
         width: parent.width
-        height: mast.height + 2 * Type.px(14)
+        height: mast.height + 2 * Type.px(root.compact ? 6 : 14)
         radius: 3
         color: "transparent"
-        border.width: 1
+        border.width: root.compact ? 0 : 1
         border.color: Ink.lineStrong
         Row {
           id: mast
-          x: Type.px(14)
+          x: root.compact ? (parent.width - width) / 2 : Type.px(14)
           anchors.verticalCenter: parent.verticalCenter
           spacing: Type.px(12)
           Rectangle {
@@ -107,6 +126,7 @@ Rectangle {
             }
           }
           Column {
+            visible: !root.compact
             anchors.verticalCenter: parent.verticalCenter
             spacing: Type.px(3)
             Text { text: "HANKO"; color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(12); font.weight: Font.Medium; font.letterSpacing: Type.px(2.6) }
@@ -115,47 +135,10 @@ Rectangle {
         }
       }
 
-      Item { width: 1; height: Type.px(16) }
+      Item { width: 1; height: Type.px(16); visible: !root.compact }
 
       // Search: filters the rows of the cards and the pages of the rail.
-      Rectangle {
-        width: parent.width
-        height: Type.px(36)
-        radius: 3
-        color: "transparent"
-        border.width: 1
-        border.color: search.activeFocus ? Ink.lineStrong : Ink.line
-        TextInput {
-          id: search
-          x: Type.px(12)
-          anchors.verticalCenter: parent.verticalCenter
-          width: parent.width - Type.px(40)
-          text: root.query
-          color: Ink.ink
-          selectionColor: Ink.bone
-          selectedTextColor: Ink.boneInk
-          font.family: Type.text
-          font.pixelSize: Type.px(13)
-          clip: true
-          onTextEdited: root.queryEdited(text)
-          Keys.onEscapePressed: { root.queryEdited(""); focus = false }
-          Text {
-            visible: !search.text
-            text: "Search settings…"
-            color: Ink.inkFaint
-            font: search.font
-          }
-        }
-        Text {
-          anchors.right: parent.right
-          anchors.rightMargin: Type.px(12)
-          anchors.verticalCenter: parent.verticalCenter
-          text: "/"
-          color: Ink.inkFaint
-          font.family: Type.mono
-          font.pixelSize: Type.px(10)
-        }
-      }
+      SearchField { id: railSearch; visible: !root.compact; width: parent.width }
 
       Item { width: 1; height: Type.px(2) }
 
@@ -174,7 +157,8 @@ Rectangle {
             Text {
               id: groupName
               y: Type.px(16)
-              text: group.modelData.group
+              // Folded, a group keeps only its number.
+              text: root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
               color: group.modelData.group === root.pageInfo.group ? Ink.inkDim : Ink.inkFaint
               font.family: Type.mono
               font.pixelSize: Type.px(9.5)
@@ -200,6 +184,7 @@ Rectangle {
               radius: 3
               color: on ? Ink.bone : itemHover.containsMouse ? Ink.lineSoft : "transparent"
               Row {
+                visible: !root.compact
                 x: Type.px(14)
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Type.px(10)
@@ -220,14 +205,14 @@ Rectangle {
                   font.pixelSize: Type.px(14.5)
                 }
               }
+              // Folded, the glyph alone names the page, centred.
               Text {
-                anchors.right: parent.right
-                anchors.rightMargin: Type.px(14)
+                x: root.compact ? (parent.width - width) / 2 : parent.width - width - Type.px(14)
                 anchors.verticalCenter: parent.verticalCenter
-                text: item.modelData.jp
-                color: item.on ? Ink.boneInk : Ink.inkFaint
+                text: root.compact ? item.modelData.jp.charAt(0) : item.modelData.jp
+                color: item.on ? Ink.boneInk : root.compact ? Ink.inkDim : Ink.inkFaint
                 font.family: Type.jp
-                font.pixelSize: Type.px(12)
+                font.pixelSize: Type.px(root.compact ? 15 : 12)
               }
               MouseArea {
                 id: itemHover
@@ -241,16 +226,19 @@ Rectangle {
         }
       }
     }
+    }
 
     // Advanced: the seal glyph, per-monitor overrides and the raw document.
     Item {
-      x: Type.px(20)
+      id: railFoot
+      x: root.compact ? Type.px(8) : Type.px(20)
       width: parent.width - 2 * x
       height: Type.px(50)
       anchors.bottom: parent.bottom
       anchors.bottomMargin: Type.px(8)
       Rectangle { width: parent.width; height: 1; color: Ink.line }
       Text {
+        visible: !root.compact
         anchors.verticalCenter: parent.verticalCenter
         text: "ADVANCED"
         color: Ink.ink
@@ -259,7 +247,7 @@ Rectangle {
         font.letterSpacing: Type.px(1.6)
       }
       Rectangle {
-        anchors.right: parent.right
+        x: root.compact ? (parent.width - width) / 2 : parent.width - width
         anchors.verticalCenter: parent.verticalCenter
         width: Type.px(34)
         height: Type.px(18)
@@ -303,10 +291,14 @@ Rectangle {
 
       Column {
         id: pageColumn
-        x: Type.px(32)
-        y: Type.px(26)
+        x: root.pad
+        y: Type.px(root.compact ? 16 : 26)
         width: scroller.width - 2 * x
         spacing: 0
+
+        // Folded rail: the search sits at the top of the page instead.
+        SearchField { id: pageSearch; visible: root.compact; width: parent.width }
+        Item { width: 1; height: Type.px(14); visible: root.compact }
 
         // Eyebrow: 印 BAR ───── hanko.bar · omarchy
         Item {
@@ -319,6 +311,8 @@ Rectangle {
             Text { anchors.verticalCenter: parent.verticalCenter; text: "印"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(13) }
             Text {
               anchors.verticalCenter: parent.verticalCenter
+              width: Math.min(implicitWidth, pageColumn.width - Type.px(24))
+              elide: Text.ElideRight
               text: root.pageInfo.group.replace(/^\d+ /, "") + (root.page === "typesetting" ? " · " + Settings.presetLine(root.draft) : "")
               color: Ink.inkMuted
               font.family: Type.mono
@@ -329,6 +323,8 @@ Rectangle {
           }
           Text {
             id: where
+            // Gives way when the eyebrow needs the room.
+            visible: eyebrow.width + implicitWidth + Type.px(40) <= parent.width
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: "hanko.bar · omarchy"
@@ -340,7 +336,7 @@ Rectangle {
           Rectangle {
             x: eyebrow.width + Type.px(10)
             anchors.verticalCenter: parent.verticalCenter
-            width: where.x - x - Type.px(10)
+            width: Math.max(0, (where.visible ? where.x - Type.px(10) : parent.width) - x)
             height: 1
             color: Ink.lineSoft
           }
@@ -351,7 +347,7 @@ Rectangle {
           text: root.pageInfo.page.label
           color: Ink.ink
           font.family: Type.display
-          font.pixelSize: Type.px(44)
+          font.pixelSize: Type.px(root.compact ? 34 : 44)
           font.weight: Font.Normal
           font.variableAxes: { "opsz": 144, "wght": 400 }
           font.letterSpacing: -0.8
@@ -418,18 +414,20 @@ Rectangle {
 
           Item { width: 1; height: Type.px(14) }
 
-          // The six presets; the one in use inverted, `*` when edited.
-          Row {
+          // The six presets; the one in use inverted, `*` when edited. One
+          // row of six, or two of three, or three of two on a narrow page.
+          Grid {
             id: presetRow
             width: parent.width
             spacing: Type.px(8)
+            columns: width >= Type.px(900) ? 6 : width >= Type.px(440) ? 3 : 2
             Repeater {
               model: S.PRESET_NAMES
               Rectangle {
                 id: preset
                 required property string modelData
                 readonly property bool on: modelData === root.draft.preset
-                width: (presetRow.width - 5 * presetRow.spacing) / 6
+                width: (presetRow.width - (presetRow.columns - 1) * presetRow.spacing) / presetRow.columns
                 height: presetText.height + 2 * Type.px(10)
                 radius: 3
                 color: on ? Ink.bone : presetHover.containsMouse ? Ink.lineSoft : "transparent"
@@ -438,9 +436,12 @@ Rectangle {
                 Column {
                   id: presetText
                   x: Type.px(12)
+                  width: parent.width - 2 * x
                   anchors.verticalCenter: parent.verticalCenter
                   spacing: Type.px(4)
                   Text {
+                    width: parent.width
+                    elide: Text.ElideRight
                     text: preset.modelData.toUpperCase() + (preset.on && root.style.edited ? " *" : "")
                     color: preset.on ? Ink.boneInk : Ink.ink
                     font.family: Type.mono
@@ -449,6 +450,8 @@ Rectangle {
                     font.letterSpacing: Type.px(1.8)
                   }
                   Text {
+                    width: parent.width
+                    elide: Text.ElideRight
                     text: Settings.PRESET_BLURBS[preset.modelData]
                     color: preset.on ? Ink.boneInk : Ink.inkMuted
                     opacity: preset.on ? 0.7 : 1
@@ -469,14 +472,14 @@ Rectangle {
 
           Item { width: 1; height: Type.px(14) }
 
-          // Six cards, two rows of three, each row as tall as its tallest.
+          // Six cards, two rows of three, each row as tall as its tallest;
+          // two or one to a row when a card would be too narrow to read.
           Grid {
             id: cards
             width: parent.width
-            columns: 3
+            columns: Math.max(1, Math.min(3, Math.floor((width + spacing) / (Type.px(400) + spacing))))
             spacing: Type.px(12)
-            readonly property real cardWidth: (width - 2 * spacing) / 3
-            property var heights: [0, 0]
+            readonly property real cardWidth: (width - (columns - 1) * spacing) / columns
 
             Repeater {
               id: cardRepeater
@@ -486,7 +489,7 @@ Rectangle {
                 required property var modelData
                 required property int index
                 width: cards.cardWidth
-                height: Math.max(implicitHeight, cards.rowHeight(Math.floor(index / 3)))
+                height: Math.max(implicitHeight, cards.rowHeight(Math.floor(index / cards.columns)))
                 card: modelData
                 style: root.style
                 options: S.OPTIONS
@@ -498,7 +501,7 @@ Rectangle {
             function rowHeight(r) {
               void cardRepeater.count
               var h = 0
-              for (var i = r * 3; i < r * 3 + 3; i++) {
+              for (var i = r * columns; i < (r + 1) * columns; i++) {
                 var c = cardRepeater.itemAt(i) as SettingsCard
                 if (c && c.visible) h = Math.max(h, c.implicitHeight)
               }
@@ -564,6 +567,8 @@ Rectangle {
                   }
                   Text {
                     anchors.verticalCenter: parent.verticalCenter
+                    width: Math.min(implicitWidth, advancedColumn.width - Type.px(160 + 44 + 28))
+                    wrapMode: Text.Wrap
                     text: "One character, used when the seal is a stamp."
                     color: Ink.inkMuted
                     font.family: Type.text
@@ -618,9 +623,10 @@ Rectangle {
                     width: parent.width
                     // Down each column, in the order the cards read.
                     flow: Grid.TopToBottom
-                    rows: Math.ceil(S.KEYS.length / 2)
+                    readonly property int across: width >= Type.px(860) ? 2 : 1
+                    rows: Math.ceil(S.KEYS.length / across)
                     columnSpacing: Type.px(28)
-                    readonly property real cellWidth: (width - columnSpacing) / 2
+                    readonly property real cellWidth: (width - (across - 1) * columnSpacing) / across
 
                     Repeater {
                       model: S.KEYS
@@ -649,12 +655,15 @@ Rectangle {
                         Text {
                           anchors.verticalCenter: parent.verticalCenter
                           x: Type.px(10)
+                          width: Math.max(0, parent.width - x - overrideSeg.width - Type.px(8))
+                          elide: Text.ElideRight
                           text: Settings.nameOf(override.modelData)
                           color: override.own ? Ink.ink : Ink.inkMuted
                           font.family: Type.text
                           font.pixelSize: Type.px(12)
                         }
                         Segmented {
+                          id: overrideSeg
                           anchors.right: parent.right
                           anchors.verticalCenter: parent.verticalCenter
                           options: Settings.optionsFor(override.modelData, S.OPTIONS)
@@ -727,7 +736,8 @@ Rectangle {
                   required property int index
                   readonly property int ms: Motion[modelData[2]]
                   width: timings.width
-                  height: Type.px(36)
+                  // A narrow page wraps the line instead of cutting it short.
+                  height: Math.max(Type.px(36), timingLine.height + Type.px(16))
                   Rectangle {
                     visible: timing.index > 0
                     width: parent.width; height: 1; color: Ink.lineSoft
@@ -741,10 +751,11 @@ Rectangle {
                     font.pixelSize: Type.px(13.5)
                   }
                   Text {
+                    id: timingLine
                     anchors.verticalCenter: parent.verticalCenter
                     x: Type.px(120)
-                    width: parent.width - x - Type.px(110)
-                    elide: Text.ElideRight
+                    width: parent.width - x - Type.px(root.compact ? 70 : 110)
+                    wrapMode: Text.Wrap
                     text: timing.modelData[1]
                     color: Ink.inkMuted
                     font.family: Type.text
@@ -835,12 +846,15 @@ Rectangle {
       height: Type.px(56)
       Rectangle { width: parent.width; height: 1; color: Ink.line }
       Row {
-        x: Type.px(32)
+        x: root.pad
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(12)
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(7); height: width; color: root.changes ? Ink.ink : Ink.inkFaint }
         Text {
           anchors.verticalCenter: parent.verticalCenter
+          // Never under the buttons.
+          width: Math.max(0, Math.min(implicitWidth, buttons.x - root.pad - Type.px(7 + 12 + 16)))
+          elide: Text.ElideRight
           text: Settings.status(root.changes).toUpperCase()
           color: Ink.inkDim
           font.family: Type.mono
@@ -849,11 +863,12 @@ Rectangle {
         }
       }
       Row {
+        id: buttons
         anchors.right: parent.right
-        anchors.rightMargin: Type.px(32)
+        anchors.rightMargin: root.pad
         anchors.verticalCenter: parent.verticalCenter
-        spacing: Type.px(12)
-        SmallButton { label: "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
+        spacing: Type.px(root.compact ? 8 : 12)
+        SmallButton { label: root.compact ? "Reset" : "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
         SmallButton { label: "Revert"; faint: root.changes === 0; onClicked: root.revert() }
         SmallButton { label: "Save"; plate: true; faint: root.changes === 0; onClicked: root.save() }
       }
@@ -900,21 +915,75 @@ Rectangle {
     }
   }
 
-  // A bar on the page, drawn from the live data with a given style.
-  component PreviewBar: BarSurface {
-    height: implicitHeight
-    now: root.barData.now || new Date()
-    spaces: root.barData.spaces || []
-    activeWindow: root.barData.activeWindow || null
-    home: root.barData.home || ""
-    media: root.barData.media || null
-    timeFormat: root.barData.timeFormat || "HH:mm"
-    volume: root.barData.volume || null
-    network: root.barData.network || null
-    bluetooth: root.barData.bluetooth || null
-    battery: root.barData.battery || null
-    brightness: root.barData.brightness || null
-    notifications: root.barData.notifications || []
-    dnd: !!root.barData.dnd
+  // The search field, in the rail or (folded) at the top of the page.
+  component SearchField: Rectangle {
+    id: field
+    property alias input: search
+    height: Type.px(36)
+    radius: 3
+    color: "transparent"
+    border.width: 1
+    border.color: search.activeFocus ? Ink.lineStrong : Ink.line
+    TextInput {
+      id: search
+      x: Type.px(12)
+      anchors.verticalCenter: parent.verticalCenter
+      width: parent.width - Type.px(40)
+      text: root.query
+      color: Ink.ink
+      selectionColor: Ink.bone
+      selectedTextColor: Ink.boneInk
+      font.family: Type.text
+      font.pixelSize: Type.px(13)
+      clip: true
+      onTextEdited: root.queryEdited(text)
+      Keys.onEscapePressed: { root.queryEdited(""); focus = false }
+      Text {
+        visible: !search.text
+        text: "Search settings…"
+        color: Ink.inkFaint
+        font: search.font
+      }
+    }
+    Text {
+      anchors.right: parent.right
+      anchors.rightMargin: Type.px(12)
+      anchors.verticalCenter: parent.verticalCenter
+      text: "/"
+      color: Ink.inkFaint
+      font.family: Type.mono
+      font.pixelSize: Type.px(10)
+    }
+  }
+
+  // A bar on the page, drawn from the live data with a given style. It is
+  // laid out at least a desktop's width and scaled down to fit, so a narrow
+  // page shows the bar as it looks on a screen instead of a crushed one.
+  component PreviewBar: Item {
+    id: previewItem
+    property var style: ({})
+    readonly property real design: Math.max(width, Type.px(1240))
+    height: Math.round(surface.implicitHeight * width / design)
+    BarSurface {
+      id: surface
+      width: previewItem.design
+      height: implicitHeight
+      scale: previewItem.width / previewItem.design
+      transformOrigin: Item.TopLeft
+      style: previewItem.style
+      now: root.barData.now || new Date()
+      spaces: root.barData.spaces || []
+      activeWindow: root.barData.activeWindow || null
+      home: root.barData.home || ""
+      media: root.barData.media || null
+      timeFormat: root.barData.timeFormat || "HH:mm"
+      volume: root.barData.volume || null
+      network: root.barData.network || null
+      bluetooth: root.barData.bluetooth || null
+      battery: root.barData.battery || null
+      brightness: root.barData.brightness || null
+      notifications: root.barData.notifications || []
+      dnd: !!root.barData.dnd
+    }
   }
 }

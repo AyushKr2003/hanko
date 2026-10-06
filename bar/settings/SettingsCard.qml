@@ -59,8 +59,13 @@ Rectangle {
         id: row
         required property var modelData
         required property int index
+        // The control goes under its name when beside it the name would be
+        // too narrow to read.
+        readonly property bool stacked: seg.width + Type.px(120) > width
         width: column.width
-        height: Math.max(Type.px(44), texts.height + Type.px(12), seg.height + Type.px(12))
+        height: stacked
+          ? texts.height + seg.height + Type.px(6) + 2 * Type.px(9)
+          : Math.max(Type.px(44), texts.height + Type.px(12), seg.height + Type.px(12))
 
         Rectangle {
           visible: row.index < root.rows.length - 1
@@ -71,8 +76,8 @@ Rectangle {
         }
         Column {
           id: texts
-          anchors.verticalCenter: parent.verticalCenter
-          width: parent.width - seg.width - Type.px(10)
+          y: row.stacked ? Type.px(9) : (parent.height - height) / 2
+          width: row.stacked ? parent.width : parent.width - seg.width - Type.px(10)
           Text {
             width: parent.width
             elide: Text.ElideRight
@@ -93,8 +98,8 @@ Rectangle {
         }
         Segmented {
           id: seg
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
+          x: row.stacked ? 0 : parent.width - width
+          y: row.stacked ? texts.y + texts.height + Type.px(6) : (parent.height - height) / 2
           options: Settings.optionsFor(row.modelData.key, root.options)
           selected: Settings.selected(row.modelData.key, root.style, root.style.sealGlyph)
           onPicked: function(value) { root.picked(row.modelData.key, value) }

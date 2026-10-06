@@ -25,7 +25,9 @@ FloatingWindow {
   color: Ink.paper
   implicitWidth: Type.px(1600)
   implicitHeight: Type.px(900)
-  minimumSize: Qt.size(Type.px(1200), Type.px(680))
+  // The page reflows down to a phone's width; tiled, Hyprland gives the
+  // window whatever room it has anyway.
+  minimumSize: Qt.size(Type.px(420), Type.px(360))
 
   // Closed by the window manager (Super+W, the close button): like Cancel.
   onVisibleChanged: if (!visible && bar.settingsOpen) bar.closeSettings()
