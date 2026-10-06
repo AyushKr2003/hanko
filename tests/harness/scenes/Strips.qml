@@ -15,6 +15,12 @@ Rectangle {
   height: column.implicitHeight + 72
   color: Ink.paper
 
+  // A strip's own value wins, then the sheet's, then nothing.
+  function pick(strip, key) {
+    if (strip[key] !== undefined) return strip[key]
+    return p[key] !== undefined ? p[key] : null
+  }
+
   Component.onCompleted: {
     Color.foreground = p.theme.foreground
     Color.background = p.theme.background
@@ -71,6 +77,12 @@ Rectangle {
             home: "/home/ayush"
             media: modelData.media !== undefined ? modelData.media : (sheet.p.media || null)
             timeFormat: modelData.timeFormat || "HH:mm"
+            volume: sheet.pick(modelData, "volume")
+            network: sheet.pick(modelData, "network")
+            battery: sheet.pick(modelData, "battery")
+            brightness: sheet.pick(modelData, "brightness")
+            notifications: sheet.pick(modelData, "notifications") || []
+            dnd: !!sheet.pick(modelData, "dnd")
           }
         }
       }

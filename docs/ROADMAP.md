@@ -58,7 +58,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Clock: `stacked` / `inline` / `mono`, at `center` or `right`.
 - Now playing: `cell` / `underline` / `none`. The underline in `underline` mode is the progress bar. Click plays or pauses, middle-click skips, and scroll moves between tracks.
 
-### Phase 4 · Right zone: how things are ⬜
+### Phase 4 · Right zone: how things are ✅
 - Status: `cells` / `glyphs` / `numerals` for network, volume and battery, plus brightness on laptops. Scroll on volume or brightness to change it.
 - Meters: `ticks` / `off`.
 - Notifications: `count` / `stamps`, with the do-not-disturb state.

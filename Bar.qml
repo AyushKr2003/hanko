@@ -64,6 +64,12 @@ Item {
     value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.media") : null
   }
 
+  Binding {
+    target: Status
+    property: "notificationsProxy"
+    value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.notifications") : null
+  }
+
   SystemClock {
     id: clock
     precision: SystemClock.Minutes

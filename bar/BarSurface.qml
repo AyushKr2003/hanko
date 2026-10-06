@@ -18,6 +18,13 @@ Item {
   // { title, artist, progress, playing } or null.
   property var media: null
   property string timeFormat: "HH:mm"
+  // services/Status: core/Status.js shapes, or null when absent.
+  property var volume: null
+  property var network: null
+  property var battery: null
+  property var brightness: null
+  property var notifications: []
+  property bool dnd: false
 
   readonly property int workspace: {
     for (var i = 0; i < spaces.length; i++) if (spaces[i].active) return spaces[i].id
@@ -29,6 +36,8 @@ Item {
   signal workspaceStepped(int delta)
   signal mediaAction(string name)
   signal clockClicked()
+  signal statusAction(string name, string how)
+  signal inboxAction(string how)
 
   readonly property int barHeight: Type.px(style.height || 40)
   readonly property bool atBottom: style.position === "bottom"
@@ -128,8 +137,9 @@ Item {
     onClicked: root.clockClicked()
   }
 
-  // Right zone: how things are. Media, then (phase 4) status and
-  // notifications, then the clock when it sits on the right.
+  // Right zone: how things are. Media, status, notifications, then the
+  // clock when it sits on the right; a divider goes before each part that
+  // has something showing before it.
   Row {
     id: right
     anchors.right: parent.right
@@ -147,7 +157,35 @@ Item {
       onAction: function(name) { root.mediaAction(name) }
     }
 
-    Divider { ruled: root.ruled; visible: media.visible && rightClock.visible }
+    Divider { ruled: root.ruled; visible: status.visible && media.visible }
+
+    StatusRow {
+      id: status
+      anchors.verticalCenter: parent.verticalCenter
+      mode: root.style.status || "cells"
+      meters: root.style.meters || "ticks"
+      ruled: root.ruled
+      barHeight: root.barHeight
+      volume: root.volume
+      network: root.network
+      battery: root.battery
+      brightness: root.brightness
+      onAction: function(name, how) { root.statusAction(name, how) }
+    }
+
+    Divider { ruled: root.ruled; visible: media.visible || status.visible }
+
+    Inbox {
+      id: inbox
+      anchors.verticalCenter: parent.verticalCenter
+      mode: root.style.notif || "stamps"
+      notifications: root.notifications
+      dnd: root.dnd
+      barHeight: root.barHeight
+      onAction: function(how) { root.inboxAction(how) }
+    }
+
+    Divider { ruled: root.ruled; visible: rightClock.visible }
 
     Clock {
       id: rightClock

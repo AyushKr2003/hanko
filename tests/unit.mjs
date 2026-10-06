@@ -18,6 +18,8 @@ const S = load("core/Style.js", ["OPTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
+const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
+  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY"])
 
 let passed = 0
 function test(name, fn) {
@@ -184,6 +186,57 @@ test("window geometry becomes fractions of the usable area", () => {
   assert.equal(l[1].h, 0.5)
   assert.deepEqual(W.layoutOf([{ at: [0, 0], size: [1, 1] }], null), [])
   assert.deepEqual(W.usableArea({ x: 0, y: 0, width: 1080, height: 1920, scale: 1, transform: 1, reserved: [0, 0, 0, 0] }).width, 1920)
+})
+
+test("ticks light at least one for any level and never overflow", () => {
+  assert.equal(St.ticks(0, 10), 0)
+  assert.equal(St.ticks(0.03, 10), 1)
+  assert.equal(St.ticks(0.62, 10), 6)
+  assert.equal(St.ticks(1.4, 10), 10)
+  assert.equal(St.ticks(0.91, 4), 4)
+  assert.equal(St.ticks("x", 5), 0)
+})
+
+test("network status lines (omarchy-network-status)", () => {
+  const w = St.network("wifi\tKumo\t68\t5180\n")
+  assert.deepEqual([w.kind, w.name, w.bars, w.needsYou], ["wifi", "Kumo", 3, false])
+  assert.equal(St.network("wifi\tKumo\t90\t").bars, 4)
+  assert.equal(St.network("ethernet\tenp3s0\t\t").name, "Wired")
+  const d = St.network("disconnected\t\t\t")
+  assert.deepEqual([d.kind, d.off, d.needsYou], ["disconnected", true, true])
+})
+
+test("the red rule: muted, low and draining, offline", () => {
+  assert.equal(St.volume(0.62, false).needsYou, false)
+  assert.equal(St.volume(0.62, true).needsYou, true)
+  assert.equal(St.volume(1.2, false).percent, 120)
+  assert.equal(St.volume(1.2, false).level, 1)
+  assert.equal(St.battery(91, false, true).needsYou, false)
+  assert.equal(St.battery(St.LOW_BATTERY, false, true).needsYou, true)
+  assert.equal(St.battery(8, true, true).needsYou, false)
+  assert.equal(St.battery(50, false, false), null)
+})
+
+test("brightnessctl -m lines", () => {
+  assert.equal(St.brightness("intel_backlight,backlight,9600,50%,19200").percent, 50)
+  assert.equal(St.brightness(""), null)
+})
+
+test("notification files parse newest first with stamps", () => {
+  const raw = [
+    JSON.stringify({ app: "Firefox", summary: "a", timestamp: 100, urgency: 1 }),
+    "not json",
+    JSON.stringify({ app: "signal", summary: "b", timestamp: 300, urgency: 2 }),
+    JSON.stringify({ app: "Ghostty", summary: "c", timestamp: 200 }),
+  ].join("\n")
+  const n = St.notifications(raw)
+  assert.deepEqual(n.map(x => x.glyph), ["信", "G", "火"])
+  assert.equal(n[0].urgent, true)
+  for (const x of n) assert.ok(x.tilt >= -6 && x.tilt <= 6)
+  assert.equal(St.tilt("same"), St.tilt("same"))
+  assert.equal(St.stampGlyph(""), "・")
+  assert.equal(St.count2(3), "03")
+  assert.equal(St.count2(140), "99")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

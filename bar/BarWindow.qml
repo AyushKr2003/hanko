@@ -49,6 +49,12 @@ PanelWindow {
     home: Hypr.home
     media: Media.now
     timeFormat: win.bar.timeFormat
+    volume: Status.volume
+    network: Status.network
+    battery: Status.battery
+    brightness: Status.brightness
+    notifications: Status.notifications
+    dnd: Status.doNotDisturb
 
     onSealClicked: function(button) {
       if (button === Qt.RightButton) Hypr.openTerminal()
@@ -57,5 +63,7 @@ PanelWindow {
     onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
     onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
     onMediaAction: function(name) { Media.act(name) }
+    onStatusAction: function(name, how) { Status.act(name, how) }
+    onInboxAction: function(how) { Status.act("notif", how) }
   }
 }
