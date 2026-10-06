@@ -1,4 +1,4 @@
-// Hanko alpha1 mockup kit.
+// Hanko Scroll mockup kit.
 const THEMES = {
   hanko:        { name: 'Hanko', mode: 'dark', background: '#0a0a09', foreground: '#ddd5c7', red: '#d8452f' },
   'tokyo-night':{ name: 'Tokyo Night', mode: 'dark', background: '#1a1b26', foreground: '#c0caf5', red: '#f7768e' },
@@ -154,7 +154,7 @@ const SECTIONS = {
     <div style="display:flex;gap:14px;margin-top:22px">${[['壱', L.two, ['Firefox', 'Obsidian']], ['弐', L.one, ['Spotify']], ['参', L.three, ['nvim', 'zsh', 'btop'], 1], ['肆', L.four, ['Slack', 'Mail', 'Zoom', 'Files']], ['伍', [], []]].map(([k, ly, names, on]) => `<div style="flex:1"><div style="position:relative;height:96px;border:1px solid ${on ? 'var(--ink)' : 'var(--line)'};border-radius:3px">${ly.map((r, i) => `<div style="position:absolute;left:${r[0] * 100}%;top:${r[1] * 100}%;width:calc(${r[2] * 100}% - 6px);height:calc(${r[3] * 100}% - 6px);margin:3px;border:1px solid var(--line);border-radius:2px;background:${on && i === 0 ? 'var(--bone)' : 'var(--lineSoft)'};color:${on && i === 0 ? 'var(--onBone)' : 'var(--inkDim)'};font-size:10.5px;padding:5px 6px">${names[i]}</div>`).join('')}</div><div class="cap" style="margin-top:8px"><span style="font-family:var(--jps);font-size:13px;color:${on ? 'var(--seal)' : 'var(--inkMuted)'};letter-spacing:0;margin-right:6px">${k}</span>${ly.length ? ly.length + ' WIN' : 'EMPTY'}</div></div>`).join('')}</div></div>`,
   inbox: (w) => `<div class="sec" style="width:${w}px"><div class="wm">報</div>
     <div class="no"><span class="jp">報</span>06 // INBOX</div><h3>Three letters</h3><div class="cap">Stamped by the app that sent them</div>
-    <div class="lst">${[['S', 'Slack', 'Mika: the build is green, ship it'], ['G', 'GitHub', 'omacom/omarchy · review requested'], ['火', 'Firefox', 'Download finished · hanko-alpha1.zip']].map(([s, a, m]) => `<div class="li" style="height:52px"><span class="st" style="margin:0;transform:rotate(-3deg)">${s}</span><div><div>${a}</div><div class="d">${m}</div></div><span class="m">2m</span></div>`).join('')}</div></div>`,
+    <div class="lst">${[['S', 'Slack', 'Mika: the build is green, ship it'], ['G', 'GitHub', 'omacom/omarchy · review requested'], ['火', 'Firefox', 'Download finished · hanko-scroll.zip']].map(([s, a, m]) => `<div class="li" style="height:52px"><span class="st" style="margin:0;transform:rotate(-3deg)">${s}</span><div><div>${a}</div><div class="d">${m}</div></div><span class="m">2m</span></div>`).join('')}</div></div>`,
 };
 function emakiHTML(order, widths, active) {
   const idx = [['時', 'TIME'], ['音', 'SOUND'], ['網', 'NETWORK'], ['電', 'POWER'], ['窓', 'SPACES'], ['報', 'INBOX']];

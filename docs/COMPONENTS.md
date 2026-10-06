@@ -1,14 +1,14 @@
-# Hanko gama1: every component, every combination
+# Hanko: every component, every combination
 
-gama1 merges the two earlier directions into one bar. beta1 (the printed running head) and alpha1 (the calm bar that unrolls into a handscroll) are no longer rival designs. Each of their parts is now an option on one setting, chosen on Hanko's own settings page.
+Typeset merges the two earlier directions into one bar. Sheet (the printed running head) and Scroll (the calm bar that unrolls into a handscroll) are no longer rival designs. Each of their parts is now an option on one setting, chosen on Hanko's own settings page.
 
-- **Sheet** is beta1 as it shipped.
-- **Scroll** is alpha1 as it shipped.
+- **Sheet** is the Sheet design as drawn.
+- **Scroll** is the Scroll design as drawn.
 - **Hanko** is the merge, and the default.
 
 Fifteen settings give **2,985,984** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
-![The settings page](mockups/gama1/01-settings.png)
+![The settings page](mockups/typeset/01-settings.png)
 
 ## Contents
 
@@ -40,19 +40,19 @@ These rules are what let any combination look designed rather than assembled.
 
 ## 2. The fifteen settings
 
-Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **B** = beta1, **A** = alpha1, **G** = new in gama1.
+Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset.
 
 ### Left: where you are
 
-![Seal and workspaces](mockups/gama1/10-seal-workspaces.png)
+![Seal and workspaces](mockups/typeset/10-seal-workspaces.png)
 
 #### Seal `seal` 印
 
 | Option | What it does | From |
 |---|---|---|
-| `stamp` | A fixed glyph (印 by default; any character). Click for the Omarchy menu, right-click for a terminal. | B |
-| **`workspace`** (default) | The seal shows the active workspace as a kanji numeral (壱 弐 参 …). Scroll on it to walk workspaces. | A |
-| `none` | No seal. The bar opens with the workspaces. | G |
+| `stamp` | A fixed glyph (印 by default; any character). Click for the Omarchy menu, right-click for a terminal. | Sheet |
+| **`workspace`** (default) | The seal shows the active workspace as a kanji numeral (壱 弐 参 …). Scroll on it to walk workspaces. | Scroll |
+| `none` | No seal. The bar opens with the workspaces. | New |
 
 The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (印 力 侍 A …). It is not counted in the combinations below.
 
@@ -60,20 +60,20 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (印 力 
 
 | Option | What it does | From |
 |---|---|---|
-| `folio` | Page numbers `01 02 // 03 04`. The live page inverts with a `//` lead; dots under a number count its windows; a red dot marks urgent. | B |
-| **`layout`** (default) | Each workspace drawn as its real tiling in hairlines. The live one is outlined and its focused window filled. Hover opens it to show window names. | A |
-| `kanji` | Kanji numerals 壱 弐 参 with window dots; the live one inverts. | G |
-| `dots` | The quietest: one dot per workspace, the live one a short bar, urgent a red dot, empty an open ring. | G |
+| `folio` | Page numbers `01 02 // 03 04`. The live page inverts with a `//` lead; dots under a number count its windows; a red dot marks urgent. | Sheet |
+| **`layout`** (default) | Each workspace drawn as its real tiling in hairlines. The live one is outlined and its focused window filled. Hover opens it to show window names. | Scroll |
+| `kanji` | Kanji numerals 壱 弐 参 with window dots; the live one inverts. | New |
+| `dots` | The quietest: one dot per workspace, the live one a short bar, urgent a red dot, empty an open ring. | New |
 
 #### Window title `title` 窓
 
-![Title and clock](mockups/gama1/11-title-clock.png)
+![Title and clock](mockups/typeset/11-title-clock.png)
 
 | Option | What it does | From |
 |---|---|---|
-| `cell` | The app as a tracked mono label (`ALACRITTY 窓`) over the title. | B |
-| **`byline`** (default) | The app in serif italic like an author's byline; title in grotesk; path parts recede. | A |
-| `none` | No title. | G |
+| `cell` | The app as a tracked mono label (`ALACRITTY 窓`) over the title. | Sheet |
+| **`byline`** (default) | The app in serif italic like an author's byline; title in grotesk; path parts recede. | Scroll |
+| `none` | No title. | New |
 
 ### Centre: when
 
@@ -81,86 +81,86 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (印 力 
 
 | Option | What it does | From |
 |---|---|---|
-| **`stacked`** (default) | Serif time, with the day and date stacked in small mono beside it. | B |
-| `inline` | Serif time with a red colon and a small-caps date on the same line. | A |
-| `mono` | All mono, for an instrument look. | G |
+| **`stacked`** (default) | Serif time, with the day and date stacked in small mono beside it. | Sheet |
+| `inline` | Serif time with a red colon and a small-caps date on the same line. | Scroll |
+| `mono` | All mono, for an instrument look. | New |
 
 #### Clock position `clockAt` 中
 
 | Option | What it does | From |
 |---|---|---|
-| **`center`** (default) | Anchored to the exact screen centre. | B, A |
-| `right` | Joins the end of the right cluster, after a divider; the centre stays empty. | G |
+| **`center`** (default) | Anchored to the exact screen centre. | Sheet, Scroll |
+| `right` | Joins the end of the right cluster, after a divider; the centre stays empty. | New |
 
 #### Now playing `media` 再生
 
 | Option | What it does | From |
 |---|---|---|
-| `cell` | `NOW 再生` label over artist and song. | B |
-| **`underline`** (default) | Song in serif italic; its underline is the progress bar. | A |
-| `none` | Hidden. | G |
+| `cell` | `NOW 再生` label over artist and song. | Sheet |
+| **`underline`** (default) | Song in serif italic; its underline is the progress bar. | Scroll |
+| `none` | Hidden. | New |
 
 ### Right: how things are
 
 #### Status `status` 音
 
-![Status and meters](mockups/gama1/12-status-meters.png)
+![Status and meters](mockups/typeset/12-status-meters.png)
 
 | Option | What it does | From |
 |---|---|---|
-| **`cells`** (default) | `NET 接続 / VOL 音 / BAT 電` label-over-value cells ruled off by hairlines. | B |
-| `glyphs` | A boxed kanji is the icon and the number is the state. Solid red when it needs you; dashed when off. | A |
-| `numerals` | Mono labels and numbers on one line (`VOL 62 · NET Kumo · BAT 91%`). | G |
+| **`cells`** (default) | `NET 接続 / VOL 音 / BAT 電` label-over-value cells ruled off by hairlines. | Sheet |
+| `glyphs` | A boxed kanji is the icon and the number is the state. Solid red when it needs you; dashed when off. | Scroll |
+| `numerals` | Mono labels and numbers on one line (`VOL 62 · NET Kumo · BAT 91%`). | New |
 
 #### Meters `meters` 目盛
 
 | Option | What it does | From |
 |---|---|---|
-| **`ticks`** (default) | Volume, battery and brightness get a ten-tick ruler beside the number; Wi-Fi gets four signal bars. | B |
-| `off` | Numbers only. | A |
+| **`ticks`** (default) | Volume, battery and brightness get a ten-tick ruler beside the number; Wi-Fi gets four signal bars. | Sheet |
+| `off` | Numbers only. | Scroll |
 
 All six status × meters pairs are drawn on sheet 12.
 
 #### Notifications `notif` 報
 
-![Media and notifications](mockups/gama1/13-media-notifications.png)
+![Media and notifications](mockups/typeset/13-media-notifications.png)
 
 | Option | What it does | From |
 |---|---|---|
-| `count` | `INBOX 03` with one red dot. | B |
-| **`stamps`** (default) | Each notification is a small stamped seal of its app's initial, slightly askew, newest on top. Hover fans them out. | A |
+| `count` | `INBOX 03` with one red dot. | Sheet |
+| **`stamps`** (default) | Each notification is a small stamped seal of its app's initial, slightly askew, newest on top. Hover fans them out. | Scroll |
 
 ### Edge
 
 #### Bottom edge `edge` 軸
 
-![Edge and dividers](mockups/gama1/14-edge-dividers.png)
+![Edge and dividers](mockups/typeset/14-edge-dividers.png)
 
 | Option | What it does | From |
 |---|---|---|
-| `hairline` | A single hairline. | B |
-| `dayrule` | A 24-hour ruler: hour ticks, longer every six hours, the spent part of the day brighter, a red now-notch. | B |
-| `rod` | The scroll's roller with end caps and a centre grip. Hover raises the grip; drag down to unroll. | A |
-| **`rodrule`** (default) | The roller carries the day: rod, ticks, spent part and now-notch together. | G |
+| `hairline` | A single hairline. | Sheet |
+| `dayrule` | A 24-hour ruler: hour ticks, longer every six hours, the spent part of the day brighter, a red now-notch. | Sheet |
+| `rod` | The scroll's roller with end caps and a centre grip. Hover raises the grip; drag down to unroll. | Scroll |
+| **`rodrule`** (default) | The roller carries the day: rod, ticks, spent part and now-notch together. | New |
 
 #### Dividers `rules` 罫
 
 | Option | What it does | From |
 |---|---|---|
-| **`on`** (default) | Hairline dividers between groups. | B |
-| `off` | Groups separated by space alone. | A |
+| **`on`** (default) | Hairline dividers between groups. | Sheet |
+| `off` | Groups separated by space alone. | Scroll |
 
 ### Frame
 
-![Height, surface, position](mockups/gama1/15-height-surface-position.png)
+![Height, surface, position](mockups/typeset/15-height-surface-position.png)
 
 #### Height `height` 高
 
 | Option | What it does |
 |---|---|
 | `32` | Compact. Two-line cells collapse to one line (see §3). |
-| `36` | Regular (beta1's height). |
-| **`40`** (default) | Roomy (alpha1's height). |
+| `36` | Regular (Sheet's height). |
+| **`40`** (default) | Roomy (Scroll's height). |
 | `44` | Tall, for large or high-DPI screens. |
 
 #### Surface `surface` 面
@@ -186,8 +186,8 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 | Option | What it does | From |
 |---|---|---|
-| `sheets` | Clicking a cell inverts it and a flush sheet drops from it, joined to the bar: a mini settings page with eyebrow, serif title, `//` groups and an action strip. | B |
-| **`scroll`** (default) | Every panel lives on one handscroll that unrolls from the bar, between two rollers, with an index plate and dithered interludes. Pan with `H` `L`. | A |
+| `sheets` | Clicking a cell inverts it and a flush sheet drops from it, joined to the bar: a mini settings page with eyebrow, serif title, `//` groups and an action strip. | Sheet |
+| **`scroll`** (default) | Every panel lives on one handscroll that unrolls from the bar, between two rollers, with an index plate and dithered interludes. Pan with `H` `L`. | Scroll |
 
 Sheets 20–25 show both on full desktops.
 
@@ -217,7 +217,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ## 4. Presets
 
-![Six presets](mockups/gama1/03-presets.png)
+![Six presets](mockups/typeset/03-presets.png)
 
 A preset sets all fifteen settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
@@ -239,14 +239,14 @@ A preset sets all fifteen settings at once. Change any setting afterwards and th
 | position | top | top | top | top | top | top |
 | panels | sheets | scroll | scroll | sheets | sheets | scroll |
 
-- **Sheet**: beta1 exactly. A spec table across the top of the page.
-- **Scroll**: alpha1 exactly. Calm type and a handscroll underneath.
-- **Hanko**: the merge. alpha1's left end and panels, beta1's cells and meters, and the roller that carries the day.
+- **Sheet**: the Sheet design, exactly. A spec table across the top of the page.
+- **Scroll**: the Scroll design, exactly. Calm type and a handscroll underneath.
+- **Hanko**: the merge. Scroll's left end and panels, Sheet's cells and meters, and the roller that carries the day.
 - **Quiet**: the least on screen. Dots, an inline clock, numerals, a hairline, on glass.
 - **Instrument**: the most on screen. Kanji pages, a mono clock on the right, every meter, 44 px.
 - **Islet**: a floating inset strip with kanji status and stamps.
 
-![Presets on four themes](mockups/gama1/05-presets-x-themes.png)
+![Presets on four themes](mockups/typeset/05-presets-x-themes.png)
 
 ---
 
@@ -274,7 +274,7 @@ A preset sets all fifteen settings at once. Change any setting afterwards and th
 
 That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position and panels, is 746,496 combinations.
 
-![Twelve random combinations](mockups/gama1/04-shuffle.png)
+![Twelve random combinations](mockups/typeset/04-shuffle.png)
 
 Sheet 04 draws twelve of them at random with a fixed seed. None is a preset. The settings page will have a **Shuffle** button that does the same, for discovering combinations you would not have picked.
 
@@ -282,8 +282,8 @@ Sheet 04 draws twelve of them at random with a fixed seed. None is a preset. The
 
 ## 6. The settings page
 
-![Settings, dark](mockups/gama1/01-settings.png)
-![Settings, light](mockups/gama1/02-settings-light.png)
+![Settings, dark](mockups/typeset/01-settings.png)
+![Settings, light](mockups/typeset/02-settings-light.png)
 
 Hanko's settings open as their own window in the Ryoku Hub grammar: a numbered rail on the left, a page on the right, an action bar at the foot.
 
@@ -359,7 +359,7 @@ Panels { mode: style.panels }
 
 ## 8. Sheets
 
-All images are in `docs/mockups/gama1/`, rendered from the HTML in `docs/mockups/gama1/source/`.
+All images are in `docs/mockups/typeset/`, rendered from the HTML in `docs/mockups/typeset/source/`.
 
 | File | Shows |
 |---|---|
@@ -386,7 +386,7 @@ All images are in `docs/mockups/gama1/`, rendered from the HTML in `docs/mockups
 To render any combination yourself (Node with Playwright):
 
 ```sh
-cd docs/mockups/gama1/source
+cd docs/mockups/typeset/source
 node shootq.mjs "file://$PWD/cat.html?page=status&theme=gruvbox" out.png
 node shootq.mjs "file://$PWD/desk.html?preset=Quiet&o={\"spaces\":\"kanji\"}&panel=sheet-time" out.png
 ```

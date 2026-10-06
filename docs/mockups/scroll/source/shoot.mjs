@@ -1,5 +1,5 @@
 // Render a mockup: node shoot.mjs "file:///abs/path/page.html?query" out.png [width] [height]
-// a05-motion.html expects frames in out/fr/ rendered from emaki.html first (see docs/DESIGN.md).
+// 05-motion.html expects frames in out/fr/ rendered from emaki.html first (see docs/DESIGN.md).
 import { chromium } from 'playwright';
 const [, , url, out, w = '1600', h = '900'] = process.argv;
 const b = await chromium.launch();

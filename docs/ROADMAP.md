@@ -1,6 +1,6 @@
-# Hanko roadmap: from gama1 design to a working Omarchy bar
+# Hanko roadmap: from Typeset design to a working Omarchy bar
 
-gama1 is the design: one bar where every part is a setting ([COMPONENTS.md](COMPONENTS.md)). This roadmap turns it into a real `bar`-kind plugin for Omarchy. Each phase ends in something that runs, and each one lands as its own commit (or a few) on the `dev` branch, which merges into `main` when a phase is ready to try.
+Typeset is the design: one bar where every part is a setting ([COMPONENTS.md](COMPONENTS.md)). This roadmap turns it into a real `bar`-kind plugin for Omarchy. Each phase ends in something that runs, and each one lands as its own commit (or a few) on the `dev` branch, which merges into `main` when a phase is ready to try.
 
 Status key: ✅ done · 🔨 in progress · ⬜ not started
 
@@ -36,7 +36,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 
 ### Phase 0 · Roadmap and scaffolding ✅
 - This roadmap.
-- A dev loop that works without an Omarchy machine. `qmllint` checks every QML file. An offscreen render harness (PySide6 plus small stubs for Quickshell and `qs.Commons`) draws the bar to PNG, so each phase is checked by eye against the gama1 sheets.
+- A dev loop that works without an Omarchy machine. `qmllint` checks every QML file. An offscreen render harness (PySide6 plus small stubs for Quickshell and `qs.Commons`) draws the bar to PNG, so each phase is checked by eye against the Typeset mockups.
 - Node tests for the pure logic: style resolution and the ink ramp.
 
 ### Phase 1 · A bar that loads ✅
@@ -88,7 +88,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Tray support.
 
 ### Phase 10 · Motion and release ⬜
-- The motion spec from alpha1: paper-like timings, stamp press, and the reduced-motion cut.
+- The motion spec from Scroll: paper-like timings, stamp press, and the reduced-motion cut.
 - A per-monitor override UI, a README install guide, the `v0.1.0` manifest version, and a listing on omarchyplugins.com.
 
 ## Dev loop

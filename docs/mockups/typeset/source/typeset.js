@@ -1,4 +1,4 @@
-// gama1: one bar, every part a setting. Requires alpha.js first.
+// Typeset: one bar, every part a setting. Requires scroll.js first.
 function ticks(n, on, low) { let s = `<span class="ticks${low ? ' low' : ''}">`; for (let i = 0; i < n; i++) s += `<i class="${i < on ? '' : 'off'}"></i>`; return s + '</span>'; }
 function sig(n) { let s = '<span class="sig">'; [4, 6, 8, 10].forEach((h, i) => s += `<i class="${i < n ? '' : 'off'}" style="height:${h}px"></i>`); return s + '</span>'; }
 

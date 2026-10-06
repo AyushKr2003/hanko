@@ -1,5 +1,5 @@
-@import url('alpha.css');
-@import url('beta-parts.css');
+@import url('scroll.css');
+@import url('sheet-parts.css');
 
 /* ===== the unified bar ===== */
 .hb { position: relative; display: flex; align-items: stretch; background: var(--paper); color: var(--ink); font-family: var(--ui); padding: 0 10px 0 6px; }

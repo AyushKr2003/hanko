@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="gama.css"><script src="alpha.js"></script><script src="gama.js"></script>
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="typeset.css"><script src="scroll.js"></script><script src="typeset.js"></script>
 <style>body{width:1600px;background:#0a0a09}.plate{padding:56px 64px 26px}
 .eb{font-family:var(--mono);font-size:10px;letter-spacing:2.2px;color:var(--inkMuted);display:flex;gap:10px;align-items:center}.eb .jp{font-family:var(--jp);color:var(--seal);font-size:13px;letter-spacing:0}.eb .fill{flex:1;height:1px;background:var(--lineSoft)}
 h1{font-family:var(--display);font-variation-settings:'opsz' 144;font-weight:400;font-size:60px;letter-spacing:-1.2px;margin:16px 0 10px}.lead{font-size:15px;color:var(--inkMuted);max-width:860px;line-height:1.5}
@@ -35,19 +35,19 @@ const PAGES={
  time:{t:'Title and clock',e:'時 · TITLE, CLOCK',l:'What you are looking at, and when. Three title styles, three clocks, two clock positions.',axes:['title','clock','clockAt']},
  status:{t:'Status and meters',e:'音 · STATUS',l:'Network, sound and battery. Every status style works with or without tick meters, so this sheet shows all six pairs.',axes:['statusxmeters']},
  signals:{t:'Media and notifications',e:'報 · SIGNALS',l:'What is playing and what is waiting.',axes:['media','notif']},
- edge:{t:'Edge and dividers',e:'軸 · EDGE',l:'beta1 measured the day along the bar’s foot; alpha1 hung a scroll roller there. Hanko lets you pick either, or the roller that carries the day.',axes:['edge','rules']},
- presets:{t:'Six presets',e:'組 · PRESETS',l:'A preset is a starting point: pick one, then change any single setting. Sheet is beta1, Scroll is alpha1, Hanko is the merge.',axes:['presets']},
+ edge:{t:'Edge and dividers',e:'軸 · EDGE',l:'Sheet measured the day along the bar’s foot; Scroll hung a scroll roller there. Hanko lets you pick either, or the roller that carries the day.',axes:['edge','rules']},
+ presets:{t:'Six presets',e:'組 · PRESETS',l:'A preset is a starting point: pick one, then change any single setting. Sheet is the printed bar, Scroll is the handscroll, Hanko is the two together.',axes:['presets']},
  shuffle:{t:'Shuffle',e:'乱 · TWELVE RANDOM COMBINATIONS',l:'Twelve combinations drawn at random from the 2,985,984 the settings allow. None of them is a preset; every one still reads as Hanko.',axes:['shuffle']},
  themes:{t:'Presets across themes',e:'色 · THEMES',l:'The ink comes from colors.toml, so every preset reprints on every Omarchy theme. Three presets on four themes.',axes:['themes']},
  frame:{t:'Height, surface, position',e:'面 · FRAME',l:'How much room the bar takes and how it sits on the desk.',axes:['height','surface','position']},
 };
 const P=PAGES[PAGE];
-document.getElementById('head').innerHTML=`<div class="eb"><span class="jp">組</span>HANKO GAMA1 · COMPONENTS · ${P.e}<span class="fill"></span></div><h1>${P.t}</h1><div class="lead">${P.l}</div>`;
+document.getElementById('head').innerHTML=`<div class="eb"><span class="jp">組</span>HANKO TYPESET · COMPONENTS · ${P.e}<span class="fill"></span></div><h1>${P.t}</h1><div class="lead">${P.l}</div>`;
 const body=document.getElementById('body');let n=0;
 function strip(label,desc,opts,isDef,btm,th){th=th||TH;const id='s'+(n++);body.insertAdjacentHTML('beforeend',`<div class="strip"><div class="meta"><span class="o ${isDef?'def':''}">${label}</span><span class="d">${desc}</span></div><div class="frame hk ${btm?'btm':''}" id="${id}" style="height:${btm?96:84}px"><canvas width="1472" height="828"></canvas><div class="bh"></div></div></div>`);
  const f=document.getElementById(id);applyTheme(f,th);paintMarble(f.querySelector('canvas'),th,{cell:2,x:.74,y:btm?-.05:(opts.surface==='glass'?.04:.32),r:.26,sunDX:-1.05,sunDY:.5,sunR:.25});mountHB(f.querySelector('.bh'),opts);}
 for(const ax of P.axes){
- if(ax==='presets'){const PD={Sheet:'beta1 as it shipped: folio pages, cells, the day rule, sheets that drop from a cell.',Scroll:'alpha1 as it shipped: layout glyphs, byline, kanji status, stamps, the rod and the handscroll.',Hanko:'The merge and the default: alpha1’s left end, beta1’s cells and meters, the roller that carries the day.',Quiet:'Almost nothing: dots, one inline clock, numerals, a hairline, glass. 32 px.',Instrument:'A spec sheet: kanji pages, mono clock on the right, every meter, 44 px.',Islet:'An inset floating strip with glyph status and stamps.'};
+ if(ax==='presets'){const PD={Sheet:'The printed bar: folio pages, cells, the day rule, sheets that drop from a cell.',Scroll:'The handscroll: layout glyphs, byline, kanji status, stamps, the rod and the handscroll.',Hanko:'The merge and the default: Scroll’s left end, Sheet’s cells and meters, the roller that carries the day.',Quiet:'Almost nothing: dots, one inline clock, numerals, a hairline, glass. 32 px.',Instrument:'A spec sheet: kanji pages, mono clock on the right, every meter, 44 px.',Islet:'An inset floating strip with glyph status and stamps.'};
   for(const [k,v] of Object.entries(PRESETS)){body.insertAdjacentHTML('beforeend',`<div class="grp"><span class="t">${k}</span><span class="k">${Object.entries(v).map(([a,b])=>a+' '+b).join(' · ').toUpperCase()}</span></div>`);strip(k,PD[k],v,k==='Hanko',false);}continue;}
  if(ax==='shuffle'){let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
   for(let i=0;i<12;i++){const o={};for(const [a,vs] of Object.entries(OPTS)){if(a==='position'||a==='panels')continue;o[a]=vs[Math.floor(rnd()*vs.length)];}

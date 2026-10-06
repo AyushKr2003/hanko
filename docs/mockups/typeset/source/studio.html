@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="gama.css"><script src="alpha.js"></script><script src="gama.js"></script>
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="typeset.css"><script src="scroll.js"></script><script src="typeset.js"></script>
 <style>
 body{width:1600px;height:900px;overflow:hidden;background:#000}
 .win{position:absolute;inset:0;background:var(--paper);display:flex}
@@ -54,7 +54,7 @@ const q=new URLSearchParams(location.search);const TH=q.get('theme')||'hanko';
 applyTheme(document.getElementById('w'),TH);
 const cur=Object.assign({},PRESETS.Hanko,{clock:'inline',status:'glyphs',meters:'ticks',position:'top'});
 const pv=document.getElementById('pv');paintMarble(pv.querySelector('canvas'),TH,{cell:2,x:.74,y:.05,r:.2,sunDX:-1.05,sunDY:.4,sunR:.25});mountHB(pv.querySelector('.bh'),cur);
-const PD={Sheet:'beta1, as drawn',Scroll:'alpha1, as drawn',Hanko:'the merge',Quiet:'least on screen',Instrument:'most on screen',Islet:'floating, inset'};
+const PD={Sheet:'the printed bar',Scroll:'the handscroll',Hanko:'the two together',Quiet:'least on screen',Instrument:'most on screen',Islet:'floating, inset'};
 document.getElementById('ps').innerHTML=Object.keys(PRESETS).map(k=>`<div class="pc ${k==='Hanko'?'on':''}"><b>${k.toUpperCase()}${k==='Hanko'?' *':''}</b><small>${PD[k]}</small></div>`).join('');
 const seg=(ax,vals)=>`<div class="seg">${(vals||OPTS[ax]).map(v=>`<span class="${String(cur[ax])===String(v)?'on':''}">${v}</span>`).join('')}</div>`;
 const card=(t,sum,rows)=>`<div class="card"><div class="h"><span class="sl">//</span>${t}<span class="sum">${sum}</span></div>${rows.map(([n,d,c])=>`<div class="r"><div class="n">${n}<small>${d}</small></div>${c}</div>`).join('')}</div>`;
