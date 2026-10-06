@@ -21,10 +21,13 @@ Rectangle {
   border.color: Ink.lineStrong
   clip: true
 
-  readonly property Item chosen: {
-    for (var i = 0; i < options.length && i < segs.count; i++)
-      if (String(options[i]) === selected) return segs.itemAt(i)
-    return null
+  // The lit segment, reported by the segments themselves as they are built
+  // and as the choice changes (a binding over itemAt() is not told when
+  // the Repeater builds its items, so it could stay empty).
+  property Item chosen: null
+  function note(item: Item, on: bool) {
+    if (on) chosen = item
+    else if (chosen === item) chosen = null
   }
 
   Rectangle {
@@ -44,13 +47,15 @@ Rectangle {
     y: 1
     height: parent.height - 2
     Repeater {
-      id: segs
       model: root.options
       Rectangle {
         id: seg
         required property var modelData
         required property int index
         readonly property bool on: String(modelData) === root.selected
+        onOnChanged: root.note(seg, seg.on)
+        Component.onCompleted: root.note(seg, seg.on)
+        Component.onDestruction: if (root.chosen === seg) root.chosen = null
         width: label.implicitWidth + 2 * Type.px(8)
         height: row.height
         color: !on && hover.containsMouse ? Ink.lineSoft : "transparent"

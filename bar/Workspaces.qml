@@ -23,10 +23,11 @@ Item {
   readonly property bool compact: barHeight <= Type.px(32)
   // The live workspace's cell; folio and kanji invert it with one plate
   // that slides from page to page (Motion.slide), like Ryoku's rail.
-  readonly property Item liveCell: {
-    for (var i = 0; i < spaces.length && i < cells.count; i++)
-      if (spaces[i].active) return cells.itemAt(i)
-    return null
+  // Reported by the cells themselves (see Segmented.qml for why).
+  property Item liveCell: null
+  function note(item: Item, on: bool) {
+    if (on) liveCell = item
+    else if (liveCell === item) liveCell = null
   }
   readonly property bool plated: mode === "folio" || mode === "kanji"
 
@@ -53,13 +54,15 @@ Item {
     spacing: root.mode === "folio" ? Type.px(2) : root.mode === "kanji" ? Type.px(3) : Type.px(7)
 
     Repeater {
-      id: cells
       model: root.spaces
 
       Item {
         id: cell
         required property var modelData
         readonly property bool on: modelData.active
+        onOnChanged: root.note(cell, cell.on)
+        Component.onCompleted: root.note(cell, cell.on)
+        Component.onDestruction: if (root.liveCell === cell) root.liveCell = null
         readonly property bool occupied: modelData.count > 0
 
         implicitWidth: loader.implicitWidth

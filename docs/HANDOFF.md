@@ -533,6 +533,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 - Inline `component X: …` declarations can't see the delegate scope; pass what they need as properties.
 - Ids inside a file share one scope: don't reuse a short id like `n` that a component property also uses.
 - Stubs must be `QtObject`/`Item` with the exact property names the real module has; an enum-typed thing (e.g. `ExclusionMode`) must be a QML `enum`, not properties.
+- Never find a Repeater's item with a binding over `itemAt(i)`: nothing tells the binding when the Repeater builds its items (`count` can change first), so it can stay null for good and the sliding plate vanished in places. Let the delegates report themselves (`onOnChanged` / `Component.onCompleted` / `onDestruction`), as `Segmented` and `Workspaces` do.
 
 ## 14. Reference material
 
