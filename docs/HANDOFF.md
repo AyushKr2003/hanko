@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-06, after Phase 5 (on `claude/hanko-plugin-zzm827`, one commit ahead of `dev`).
+Last updated: 2026-10-06, after Phase 6 (on `claude/hanko-plugin-zzm827`, four commits ahead of `dev`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -60,7 +60,7 @@ Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at
 | `gama1-plugin` | Roadmap + Phase 0 + Phase 1 of the plugin. | Merged into `main` (fast-forward), no longer used. |
 | `main` | = `gama1-plugin` at `101a6b6` (Phase 1). | Only updated when the user asks. |
 | **`dev`** | **All current work.** Phases 2–5 on top of main. | **Active branch.** |
-| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phase 5. | Fast-forward `dev` to it when the user agrees. |
+| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phases 5 and 6. | Fast-forward `dev` to it when the user agrees. |
 
 `git log --oneline dev`:
 
@@ -263,6 +263,10 @@ bar/
   NowPlaying.qml         underline (progress underline) | cell | none
   StatusRow.qml          cells | glyphs | numerals × ticks | off; Wi-Fi bars; red rule
   Inbox.qml              count | stamps (tilted seals, fan on hover), DND state
+  SheetWindow.qml        the layer a sheet is printed on (see Phase 6 in §9)
+  sheets/                SheetView, SheetCard, SheetHead, GroupHead, SheetRow, Ruler,
+                         SheetButton, ActionBar; TimeSheet, SoundSheet, NetworkSheet,
+                         PowerSheet, InboxSheet (all pure)
   Edge.qml               hairline | dayrule | rod | rodrule, mirrored at the bottom,
                          inset-aware; rod grip lifts on hover, drag emits pulled()
 core/
@@ -281,6 +285,10 @@ core/
                          {app, head, dir, leaf}, findPath, tildify
   Spaces.js              numeral (壱 弐 参…), folio, layoutOf(windows, area),
                          usableArea(monitor), list(workspaces, activeId, min=5)
+  Sheets.js              SHEETS (key, kanji, width, anchor cells, Omarchy ids), forCell,
+                         forOmarchyId, step (Tab), panelAt, place (x + tear)
+  Time.js                heading, ribbon, isoWeek, Elsewhen zones + date probe rows
+  Sound.js / Net.js / Power.js   plain rows for those sheets
   Edge.js                dayFraction, hourTicks, at (pixel snap), span (rod/inset
                          padding), pulled(dy, atBottom), PULL_THRESHOLD 24
   Status.js              ticks, bars, network, volume, battery (LOW_BATTERY 15),
@@ -293,14 +301,16 @@ services/
   Media.qml (singleton)  proxy | MPRIS, `now` = {title, artist, progress, playing}, act()
   Status.qml (singleton) volume, battery, network, brightness, notifications,
                          doNotDisturb; act(name, how) for click/middle/right/up/down
-  qmldir                 singletons Hypr, Media, Status
+  Zones/Sound/Net/Power.qml (singletons) data for the sheets, gathered only while
+                         their sheet is open (`wanted`, bound in Bar.qml)
+  qmldir                 singletons Hypr, Media, Status, Zones, Sound, Net, Power
 scripts/hanko            CLI: install | dev | uninstall | style get|doc|set|preset|reset|
                          shuffle | doctor (style commands go over IPC `omarchy-shell hanko …`;
                          uninstall restores the bar saved in ~/.local/state/hanko/previous-bar)
 assets/fonts/            Fraunces.ttf, Fraunces-Italic.ttf, SpaceGrotesk.ttf + OFL texts
 tests/
   run                    unit tests → manifest check → qmllint → renders (--quick skips renders)
-  unit.mjs               Node tests for core/*.js (27 tests)
+  unit.mjs               Node tests for core/*.js (43 tests)
   harness/render.py      PySide6 offscreen renderer (QT_SCALE_FACTOR=2)
   harness/scenes/Strips.qml  a sheet of labelled BarSurface strips from a params JSON
   harness/params/*.json  one per phase (phase1, phase2, phase2-light, phase3, phase4, phase5, phase5-light); a strip may set `now` (its own time) and `backdrop: true` (stripes behind the bar, for glass)
@@ -382,9 +392,9 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - `core/Status.js`, `services/Status.qml`, `bar/StatusRow.qml`, `bar/Inbox.qml`.
 - Status cells/glyphs/numerals × ticks/off, Wi-Fi bars, brightness on laptops, charging shows 充 instead of 電, the red rule (muted, battery ≤ 15 % and draining, offline).
 - Notifications count (`INBOX 03` + red dot; `QUIET 静` + hollow ring under DND) and stamps (up to 3, tilt −6…6° from a hash, newest on top, fan out on hover, urgent ones solid; grey under DND). Click = `showHistory`, right/middle = toggle DND.
-- Status clicks call `omarchy-shell shell toggle omarchy.audio|omarchy.network|omarchy.power` as a stand-in until Phase 6; **these don't work yet under Hanko** (§12, issue 1).
+- Status clicks called `omarchy-shell shell toggle omarchy.audio|…` as a stand-in; Phase 6 replaced that with Hanko's own sheets.
 
-### Phase 5 · Edge and frame ✅
+### Phase 5 · Edge and frame ✅ (`7834503`)
 - `core/Edge.js` (+5 unit tests) and `bar/Edge.qml`, replacing the plain hairline. All four edges from the kit's CSS (`alpha.css` `.rod`, `beta-parts.css` `.dayrule`, `gama.css` `.rodrule`): day rule = base `line`, spent part `lineStrong`, ticks 3 px (6/12/18 h 5 px, `lineStrong`), red now-notch 2×7 px with a 3 px head; rod = 2 px `lineStrong`, 6 px `inkMuted` caps, 34×4 paper grip; rodrule adds the spent part in `inkMuted`, ticks above the rod and an 8 px notch. Nothing changes the bar's height (the kit draws edges inside the bar), so `barSize` is unchanged. The rod sits 2 px up so its caps fit inside the window.
 - At `position: bottom` the edge is mirrored as a whole onto the top side.
 - Rod interaction: an 8 px band along the edge; hover lifts the grip 2 px, pressing inks the rod, a drag of 24 px (scaled) away from the bar emits `pulled()` → `BarSurface.edgePulled` → `Bar.edgePulled(screenName)`, which has no receiver until Phase 7.
@@ -393,26 +403,18 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Blur: Omarchy requests no blur for its own bar (no layer rule in `default/hypr/apps/omarchy-shell.lua`), so Hanko doesn't either; README documents a `hl.layer_rule` for namespace `hanko-bar`.
 - Harness: `phase5.json` (every edge × top/bottom, day rule at 00:30/06:00/21:44, rodrule + clock right, rules off, four heights, three surfaces over a backdrop, inset bottom and inset hairline, four presets) and `phase5-light.json`.
 
-## 10. Instructions for the remaining phases (6–10)
+### Phase 6 · Sheets ✅ (`f847cf5` time, `e17e2ff` sound, then network/power/inbox)
+- **Host contract** in `Bar.qml`: `summonBarWidget(id)` (opens, never toggles), `hideBarWidget`, `isBarWidgetOpen`, `panelWidgetIdAt("right", N)` (counts distinct Omarchy panels among `BarSurface.rightCells`). Mapping in `core/Sheets.js`: `omarchy.clock`/`omarchy.elsewhen` → time, `omarchy.audio` → sound, `omarchy.network` → network, `omarchy.power` → power. State: `Bar.sheet`, `sheetScreen`, `timeShift`; `openSheet/closeSheet/toggleSheet/cycleSheet/sheetRequest`. IPC `hanko sheet <name>` / `hanko sheetClose`.
+- **Clicks**: `BarWindow.cellClicked` sends a left click on the clock, a status cell or the inbox to `toggleSheet`; other buttons and the wheel keep their Phase 3–4 actions. `panels: scroll` opens sheets until Phase 7.
+- **`bar/SheetWindow.qml`** (one per screen, inside `BarWindow`): Omarchy's `KeyboardPanel` pattern. Full-screen layer `hanko-sheet` on `WlrLayer.Overlay`, input mask minus the bar strip, Exclusive keyboard for 75 ms then OnDemand, a closer `MouseArea` behind the sheet, clear twins on other screens. Keeps the last sheet mapped 220 ms so it can un-print.
+- **`bar/sheets/`** (pure): `SheetView` (Loader per key, 180 ms reveal, Esc/Tab), `SheetCard` (paper, three hairlines, bone tear, crop marks, clip reveal), `SheetHead`, `GroupHead` (summary or clickable `actions`), `SheetRow` (lead, bone selection, note, `trailing` slot), `Ruler` (41 ticks, one needle; dashed when muted), `SheetButton` (plain/ghost/plate/on), `ActionBar` (note gives way to buttons); contents `TimeSheet`, `SoundSheet`, `NetworkSheet`, `PowerSheet`, `InboxSheet`, each its own component for Phase 7 to reuse.
+- **Data**: `core/Time.js` + `services/Zones.qml` (Elsewhen zones from `barConfig`, offsets by a `date` probe, as Elsewhen does); `core/Sound.js` + `services/Sound.qml` (plain node copies only; actions re-find nodes by id+name; availability via `omarchy-audio-sink-availability`); `core/Net.js` + `services/Net.qml` (nmcli terse output every 5 s while open; connect = `connection up` / `device wifi connect` / `nmtui-connect` in a terminal when a password is needed); `core/Power.js` + `services/Power.qml` (`omarchy-battery-status --shell`, `omarchy-powerprofiles-list/set`, `omarchy-brightness-display N%`); Inbox reads `Status.notifications` (now with `body`, deduped live/history) and `Status.age`.
+- Omarchy no longer ships wiremix, so the Sound foot is Mute mic + Next output instead of the mockup's Settings/Mixer. No shadow under sheets (rule 5), though the kit drew one.
+- Harness: `tests/harness/scenes/Sheets.qml` (a bar with a sheet placed by `Sheets.place`), params `phase6.json` (time, sound) and `phase6-b.json` (network, power, inbox); a params file picks its scene with `"scene"`. Unit tests: 43.
+
+## 10. Instructions for the remaining phases (7–10)
 
 Each phase: read the matching gama1 sheets and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
-
-### Phase 6 · Sheets (`panels: sheets`)
-
-Target sheets: `21-desk-sheet-sound.png`, `22-desk-instrument-time.png`, beta1's `03-sound-sheet.png` and `04-time-sheet-kanagawa.png`. HTML: `desk.html` panels `sheet-sound`, `sheet-time`.
-
-1. **Host contract first (this also fixes §12 issue 1):** implement in `Bar.qml` `summonBarWidget(id)`, `hideBarWidget(id)`, `isBarWidgetOpen(id)` and `panelWidgetIdAt(section, index)`. Map Omarchy ids to Hanko sheets: `omarchy.audio` → Sound, `omarchy.clock` → Time, `omarchy.network` → Network, `omarchy.power` → Power. Notifications history → Inbox. Read `omacale/Bar.qml` (~line 263) and `omacale/modules/drawers/ScreenScope.qml` (~line 225: "opens, never toggles; the host asks isBarWidgetOpen first") for a working example. `panelWidgetIdAt("right", N)` should count Hanko's right-zone cells in order so `togglePanelAt right N` hotkeys keep meaning "the Nth thing on the right".
-2. **Then switch `Status.act`** from `toggle("omarchy.audio")` etc. to opening Hanko's own sheet (`panels: sheets`) or scroll section (`panels: scroll`, Phase 7). Until Phase 7, `scroll` mode may open the sheet as a fallback.
-3. **Sheet window:** a layer-shell surface (separate `PanelWindow` or `PopupWindow` anchored to the bar window) that drops **flush** from the clicked cell, joined to the bar (no gap, no bubble). The clicked cell inverts (bone plate) while its sheet is open. Reveal top-down in ~180 ms "as if printed". At `position: bottom` sheets rise. Click outside or `Esc` closes. Keyboard: arrow keys move inside, `Tab` cycles sheets. Needs keyboard focus while open (`WlrKeyboardFocus.OnDemand` on the sheet window only; the bar keeps `None`).
-4. **Sheet anatomy (beta1 grammar):** eyebrow (`02 // SOUND` style mono label with kanji), serif title, one-line blurb, `//` group heads, hairline rows, inverted selection, an action strip at the foot, crop marks on the free corners. Sliders are rulers with one needle, not progress pills.
-5. **Sheets and data:**
-   - **Sound 音:** master output (ruler slider on the resolved volume sink; muted master in red), output device list (`Pipewire.nodes` sinks; set default via `omarchy-audio-output-set-default` like Omarchy's audio panel), input, per-app mixer (Pipewire stream nodes). Read `omarchy/shell/plugins/panels/audio/Panel.qml` for every data detail (DSP sink resolution, availability via `omarchy-audio-sink-availability`).
-   - **Time 時:** calendar or day ribbon, the day rule large, **Elsewhen** time zones (read the user's Elsewhen settings; see `omarchy/shell/plugins/panels/elsewhen/` and `panels/clock/`).
-   - **Network 網:** current connection, Wi-Fi list (`nmcli`), see `panels/network/Panel.qml` and `Model.js`; actions to the existing Omarchy scripts (speedtest, wifiqr, password).
-   - **Power 電:** battery detail (`omarchy-battery-status --shell`), power profiles, brightness ruler; see `panels/power/Panel.qml`.
-   - **Inbox 報:** notifications as stamped letters from the same files Phase 4 reads; clear (`omarchy-shell notifications clear`), DND switch.
-6. Keep each sheet's contents in its own component so Phase 7 reuses them in scroll layout.
-7. The harness: add a scene that renders an open sheet under a bar (a `Sheets.qml` scene), with params per sheet.
 
 ### Phase 7 · The handscroll (`panels: scroll`)
 
@@ -467,13 +469,14 @@ Target sheets: `01-settings.png`, `02-settings-light.png`, `03-presets.png`, `04
 
 ## 12. Known issues and things to verify on a real machine
 
-1. **Status clicks don't open Omarchy's panels under Hanko.** `omarchy.audio`, `omarchy.network`, `omarchy.power`, `omarchy.clock` are kind `bar-widget`, so `shell toggle` routes to `shell.bar.summonBarWidget(id)`, which Hanko doesn't implement yet; the shell logs "summon: no live bar widget". Omarchy's own panel hotkeys are affected the same way. **Fix in Phase 6 step 1** (or earlier, as a small fix, if the user hits it).
+1. ~~Status clicks don't open Omarchy's panels under Hanko.~~ **Fixed in Phase 6:** Hanko implements `summonBarWidget`/`hideBarWidget`/`isBarWidgetOpen`/`panelWidgetIdAt` and answers with its own sheets. Omarchy bar-widget panels Hanko has no sheet for (bluetooth, monitor, weather, tailscale, dropbox, agents) still log "summon: no live bar widget" until Phase 9 hosts them.
 2. **Notification files are an internal Omarchy format**, not a plugin API. If Omarchy changes paths or fields, the inbox breaks silently (shows `00`). Verify on the user's machine; consider asking Omarchy for a proxy property later.
 3. **Roadmap said network via `Quickshell.Networking`**; Phase 4 used `omarchy-network-status` instead (it matches what Omarchy shows and needs no extra module). Polls every 3 s.
-4. **Not implemented yet from the spec:** `layout` workspaces "hover opens it to show window names"; glyph status "dashed when off" and "hover adds the Latin word"; `clockClicked` has no receiver (Phase 6 Time sheet).
+4. **Not implemented yet from the spec:** `layout` workspaces "hover opens it to show window names"; glyph status "dashed when off" and "hover adds the Latin word"; the rod's pull has no receiver yet (Phase 7).
 5. **Unverified on hardware:** layer-shell behaviour at each height, `ExclusionMode` when hidden, multi-monitor per-monitor overrides, the DSP sink resolution, brightness on laptops, FileView watching a directory (`Bar.qml` hiding), Omarchy's clock format detection, Fraunces variable axes rendering in the real Qt.
 6. `tests/run` does not set `HANKO_HARNESS_FONTS` itself; export it (§8) or kanji/mono may fall back to whatever the container has.
 7. **Phase 5 to verify on hardware:** the inset exclusive zone (Hyprland should add the 8 px margin to it; if windows touch the frame, set `exclusiveZone` explicitly), the blur rule's field names in Hyprland's Lua config (`blur`, `ignore_alpha`), `toggleTransparency` round-tripping through `mutateShellConfig` for a third-party bar, and the rod's 8 px drag band not swallowing clicks meant for cells above it.
+8. **Phase 6 to verify on hardware:** the sheet layer's input mask (clicks on the bar strip must reach the bar under it, so a second cell switches sheets in one click), the 75 ms Exclusive keyboard prime (Esc/Tab/arrows must work when a hotkey opens a sheet), the dismiss twins on other monitors, `Pipewire.preferredDefaultAudioSink` + `omarchy-audio-output-set-default` from the Sound sheet, nmcli parsing on a real scan (`FREQ` prints "5180 MHz"), `omarchy-powerprofiles-set` with the ac/battery key, `shell.summon("omarchy.speedtest"|"omarchy.wifiqr")` being allowed for a third-party bar (the host's `barPluginMayControl` says yes for panel kinds), and `omarchy-shell notifications dismissAll`.
 
 ## 13. QML pitfalls already hit
 

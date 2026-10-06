@@ -14,6 +14,8 @@ Column {
   property string label: ""
   property string title: ""
   property string blurb: ""
+  // Red only when the title is something that needs you (offline, low).
+  property color titleColor: Ink.ink
 
   width: parent ? parent.width : 0
   spacing: 0
@@ -59,7 +61,7 @@ Column {
 
   Text {
     text: root.title
-    color: Ink.ink
+    color: root.titleColor
     font.family: Type.display
     font.pixelSize: Type.px(38)
     font.weight: Font.Normal

@@ -12,6 +12,9 @@ Item {
   property string name: ""
   property string detail: ""
   property string note: ""
+  // Mono notes are set in capitals (LIVE, PAIRED); values with units
+  // (57Wh, 12m) keep their own case.
+  property bool upperNote: true
   property bool selected: false
   // Show the `//` lead column (selected rows fill it).
   property bool lead: false
@@ -96,7 +99,7 @@ Item {
     Text {
       visible: text !== ""
       anchors.verticalCenter: parent.verticalCenter
-      text: root.note.toUpperCase()
+      text: root.upperNote ? root.note.toUpperCase() : root.note
       color: root.selected ? Ink.boneInk : Ink.inkDim
       font.family: Type.mono
       font.pixelSize: Type.px(11)

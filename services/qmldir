@@ -3,3 +3,5 @@ singleton Media 1.0 Media.qml
 singleton Status 1.0 Status.qml
 singleton Zones 1.0 Zones.qml
 singleton Sound 1.0 Sound.qml
+singleton Net 1.0 Net.qml
+singleton Power 1.0 Power.qml

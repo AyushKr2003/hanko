@@ -38,7 +38,7 @@ function network(line) {
   if (kind === "wifi") {
     var signal = Number(f[2])
     return { kind: "wifi", name: f[1] || "Wi-Fi", signal: isFinite(signal) ? signal : 0,
-             bars: bars(signal), off: false, needsYou: false }
+             freq: Number(f[3]) || 0, bars: bars(signal), off: false, needsYou: false }
   }
   if (kind === "ethernet")
     return { kind: "ethernet", name: "Wired", signal: 100, bars: 4, off: false, needsYou: false }
@@ -94,6 +94,7 @@ function tilt(key) {
 // object per line. Newest first.
 function notifications(raw) {
   var out = []
+  var seen = {}
   var lines = String(raw || "").split("\n")
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim()
@@ -103,12 +104,26 @@ function notifications(raw) {
     if (!e || typeof e !== "object") continue
     var app = String(e.app || e.appName || "")
     var stamp = Number(e.timestamp || 0)
-    out.push({ app: app, summary: String(e.summary || ""), timestamp: stamp,
+    // A live toast and its history copy are one notification (Omarchy keys
+    // them by timestamp and original id).
+    var key = stamp + "-" + (e.originalId || e.id || "") + "-" + (e.summary || "")
+    if (seen[key]) continue
+    seen[key] = true
+    out.push({ app: app, summary: String(e.summary || ""), body: String(e.body || ""), timestamp: stamp,
                urgent: Number(e.urgency) === 2,
                glyph: stampGlyph(app), tilt: tilt(app + stamp + (e.summary || "")) })
   }
   out.sort(function(a, b) { return b.timestamp - a.timestamp })
   return out
+}
+
+// "now", "12m", "3h", "2d": how long ago a notification came in.
+function age(timestamp, now) {
+  var mins = Math.floor((Number(now) - Number(timestamp)) / 60000)
+  if (!(mins >= 1)) return "now"
+  if (mins < 60) return mins + "m"
+  if (mins < 24 * 60) return Math.floor(mins / 60) + "h"
+  return Math.floor(mins / 1440) + "d"
 }
 
 // "03": counts are always two digits, like a folio.

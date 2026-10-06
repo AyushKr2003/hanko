@@ -91,8 +91,8 @@ Item {
   property string sheetScreen: ""
   // Weeks the Time sheet's ribbon is moved from today.
   property int timeShift: 0
-  // The sheets built so far.
-  readonly property var sheetsReady: ["time", "sound"]
+  // The sheets that can open.
+  readonly property var sheetsReady: ["time", "sound", "network", "power", "inbox"]
 
   function sheetReady(key) { return !!key && sheetsReady.indexOf(key) >= 0 }
 
@@ -128,6 +128,24 @@ Item {
       else if (what === "stream") Sound.setStream(arg.id, arg.name, Number(arg.value))
       else if (what === "streamMute") Sound.toggleStream(arg.id, arg.name)
       else if (what === "inputMute") Sound.toggleInput()
+    } else if (key === "network") {
+      if (what === "connect") Net.connect(arg.ssid, arg.saved, arg.secure)
+      else if (what === "radio") Net.setRadio(!!arg)
+      else if (what === "rescan") Net.rescan()
+      // Omarchy's speed test and Wi-Fi share card are panels of their own.
+      else if (what === "speedtest" || what === "share") {
+        closeSheet()
+        if (shell && typeof shell.summon === "function")
+          shell.summon(what === "speedtest" ? "omarchy.speedtest" : "omarchy.wifiqr", "{}")
+      }
+    } else if (key === "power") {
+      if (what === "profile") Power.setProfile(String(arg))
+      else if (what === "brightness") Power.setBrightness(Number(arg))
+    } else if (key === "inbox") {
+      if (what === "dnd") Status.act("notif", "right")
+      else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
+      // `clear` forgets the history, `dismissAll` the toasts still on screen.
+      else if (what === "clear") Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
     }
   }
 
@@ -136,6 +154,8 @@ Item {
   Binding { target: Zones; property: "barConfig"; value: root.barConfig }
   Binding { target: Zones; property: "wanted"; value: root.sheet === "time" }
   Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" }
+  Binding { target: Net; property: "wanted"; value: root.sheet === "network" }
+  Binding { target: Power; property: "wanted"; value: root.sheet === "power" }
 
   // BarWindows by screen name, for the host's per-screen questions.
   property var windows: ({})

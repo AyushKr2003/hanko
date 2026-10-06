@@ -19,11 +19,13 @@ const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
-  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY"])
+  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age"])
 const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow"])
 const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs", "streams", "master", "inputNote", "sheet"])
+const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", "securityName", "connectHow", "sheet"])
+const Pw = load("core/Power.js", ["keyValues", "profiles", "stateLabel", "blurb", "details", "sheet"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -409,6 +411,62 @@ test("sound: mixer rows per app, the speaker tuning left out", () => {
   assert.equal(So.inputNote({ description: "Shure MV7", props: {}, muted: true }), "Input · muted")
   assert.equal(So.inputNote(null), "No input")
   assert.equal(So.sheet(null, null, [], [], null).master, null)
+})
+
+test("network: nmcli terse lines, escaped colons and all", () => {
+  assert.deepEqual(N.splitTerse("*:82:WPA2:5180:Cafe\\: Upstairs"), ["*", "82", "WPA2", "5180", "Cafe: Upstairs"])
+  const rows = N.parseWifi([" :40:WPA2:2437:Kumo", "*:82:WPA2:5180:Kumo", " :91:WPA1 WPA2:2412:Neighbour",
+    " :30::2462:Library", " :70:WPA2:5200:", ""].join("\n"))
+  assert.deepEqual(rows.map(r => [r.ssid, r.signal, r.inUse]), [["Kumo", 82, true], ["Neighbour", 91, false], ["Library", 30, false]])
+  assert.equal(rows[2].secure, false)
+  assert.deepEqual(N.parseSaved("Kumo:802-11-wireless\nWired connection 1:802-3-ethernet\n"), ["Kumo"])
+})
+
+test("network: bands, security and how a click connects", () => {
+  assert.equal(N.band(2437), "2.4 GHz")
+  assert.equal(N.band(5180), "5 GHz")
+  assert.equal(N.band(6115), "6 GHz")
+  assert.equal(N.securityName("WPA2 WPA3"), "WPA3")
+  assert.equal(N.securityName("--"), "")
+  assert.equal(N.connectHow({ saved: true, secure: true }), "up")
+  assert.equal(N.connectHow({ saved: false, secure: false }), "open")
+  assert.equal(N.connectHow({ saved: false, secure: true }), "ask")
+})
+
+test("network sheet: current connection and rows", () => {
+  const wifi = N.parseWifi("*:82:WPA2:5180:Kumo\n :91:WPA2:2412:Neighbour\n :30::2462:Library")
+  const s = N.sheet({ kind: "wifi", name: "Kumo", signal: 82 }, wifi, ["Kumo"], true)
+  assert.deepEqual(s.current, { kind: "wifi", label: "Kumo", detail: "Wi-Fi · WPA2 · 5 GHz · 82%" })
+  assert.deepEqual(s.networks.map(n => n.note), ["Connected", "", "Open"])
+  const off = N.sheet({ kind: "disconnected", name: "Offline" }, [], [], false)
+  assert.deepEqual([off.current.label, off.current.detail, off.radio, off.offline], ["Offline", "Wi-Fi is off", false, true])
+  assert.equal(N.sheet({ kind: "ethernet" }, [], [], true).current.detail, "Ethernet · cable")
+})
+
+test("power: battery status, profiles and the blurb", () => {
+  const kv = Pw.keyValues("percentage\t91%\nstate\tdischarging\nrate\t9.8W\nsize\t57Wh\ntime\t2h 41m\ncycles\t112\nthreshold\t80%\n")
+  assert.equal(Pw.blurb(kv), "2h 41m left · drawing 9.8W")
+  assert.equal(Pw.blurb({ percentage: "60%", state: "charging", time: "40m", rate: "30W" }), "40m to full · taking 30W")
+  assert.equal(Pw.blurb({}), "No battery: plugged in for good.")
+  assert.deepEqual(Pw.details(kv).map(r => r.name), ["State", "Capacity", "Cycles", "Charge limit"])
+  const p = Pw.profiles("performance\t0\nbalanced\t1\npower-saver\t0\n")
+  assert.deepEqual(p.map(x => [x.label, x.active]), [["Performance", false], ["Balanced", true], ["Power saver", false]])
+  assert.equal(Pw.stateLabel("holding"), "Holding charge")
+  const s = Pw.sheet(kv, p, { percent: 12, charging: false, needsYou: true }, null)
+  assert.deepEqual([s.percent, s.low, s.profiles.length], [12, true, 3])
+})
+
+test("inbox: bodies, one copy per notification, and how long ago", () => {
+  const raw = [
+    JSON.stringify({ app: "Signal", summary: "Mika", body: "See you at 8", timestamp: 1000, originalId: 4 }),
+    JSON.stringify({ app: "Signal", summary: "Mika", body: "See you at 8", timestamp: 1000, originalId: 4 })].join("\n")
+  const n = St.notifications(raw)
+  assert.equal(n.length, 1)
+  assert.equal(n[0].body, "See you at 8")
+  assert.equal(St.age(0, 30000), "now")
+  assert.equal(St.age(0, 12 * 60000), "12m")
+  assert.equal(St.age(0, 3 * 3600000), "3h")
+  assert.equal(St.age(0, 50 * 3600000), "2d")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

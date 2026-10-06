@@ -14,10 +14,12 @@ Item {
 
   Rectangle { width: parent.width; height: 1; color: Ink.line }
 
+  // The note gives way to the buttons.
   Row {
     anchors.left: parent.left
     anchors.leftMargin: Type.px(22)
     anchors.verticalCenter: parent.verticalCenter
+    width: Math.max(0, right.x - Type.px(22) - Type.px(12))
     spacing: Type.px(10)
     visible: root.note !== ""
 
@@ -30,6 +32,8 @@ Item {
     Text {
       id: noteText
       anchors.verticalCenter: parent.verticalCenter
+      width: Math.min(implicitWidth, parent.width - Type.px(16))
+      elide: Text.ElideRight
       text: root.note.toUpperCase()
       color: Ink.inkDim
       font.family: Type.mono
