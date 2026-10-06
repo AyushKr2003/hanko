@@ -15,7 +15,7 @@ function load(file, names) {
 
 const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting"])
-const Se = load("core/Settings.js", ["RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "selected", "changes",
+const Se = load("core/Settings.js", ["RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
@@ -552,6 +552,9 @@ test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["印", "力", "侍", "A", "…"])
   assert.deepEqual(Se.optionsFor("motion", S.OPTIONS), S.MOTIONS)
   assert.equal(Se.MOTION_ROWS.length, 8)
+  assert.equal(Se.nameOf("clockAt"), "Clock position")
+  assert.equal(Se.nameOf("bluetooth"), "Bluetooth")
+  assert.ok(S.KEYS.every((k) => Se.nameOf(k) !== k))
   const st = S.resolve({})
   assert.equal(Se.selected("height", st, "印"), "40")
   assert.equal(Se.selected("sealGlyph", st, "侍"), "侍")

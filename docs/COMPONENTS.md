@@ -309,7 +309,9 @@ Hanko's settings open as their own window in the Ryoku Hub grammar: a numbered r
 | `03 FEEL` | Motion 動 · Keys 鍵 |
 | `04 SHARE` | Presets 型 |
 
-There is a search field at the top and an **Advanced** switch at the foot (which shows `sealGlyph`, per-monitor overrides and raw JSON).
+There is a search field at the top and an **Advanced** switch at the foot (which shows `sealGlyph`, per-monitor overrides and raw JSON). Per-monitor overrides are set there too: pick a monitor, and every setting is listed with the value that monitor gets; a red tick marks one it sets for itself, and picking what the other screens get drops the override.
+
+**Motion 動** holds one switch outside the sixteen settings, `motion`: `paper` (default) moves like alpha1's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
 **Typesetting 組版**, the page drawn on sheets 01 and 02, holds every setting in this document:
 
@@ -348,6 +350,7 @@ Hanko stores its style alongside the rest of Omarchy's bar settings, so `omarchy
     "status": "glyphs"
   },
   "sealGlyph": "印",
+  "motion": "paper",          // or "still": every move cuts to its end frame
   "monitors": {               // optional per-monitor overrides
     "DP-2": { "height": 32, "spaces": "dots" }
   }

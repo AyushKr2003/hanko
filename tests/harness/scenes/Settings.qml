@@ -6,7 +6,7 @@ import "../../../bar/settings"
 
 // The settings window's page at its design size. render.py passes `params`:
 //   { theme, now, ...bar data as in Strips.qml...,
-//     settings: { saved, draft, page, query, advanced, monitors } }
+//     settings: { saved, draft, page, query, advanced, monitors, monitor, scrollEnd } }
 // saved and draft are style.json documents.
 Rectangle {
   id: sheet
@@ -22,6 +22,13 @@ Rectangle {
     Color.urgent = p.theme.red
   }
 
+  // settings.scrollEnd: show the foot of the page (Advanced), once laid out.
+  Timer {
+    interval: 100
+    running: !!sheet.s.scrollEnd
+    onTriggered: page.scrollToEnd()
+  }
+
   SettingsPage {
     id: page
     anchors.fill: parent
@@ -31,6 +38,7 @@ Rectangle {
     query: sheet.s.query || ""
     advanced: !!sheet.s.advanced
     monitors: sheet.s.monitors || []
+    overrideMonitor: sheet.s.monitor || ""
     barData: ({
       now: new Date(sheet.p.now || "2026-10-06T21:44:00"),
       spaces: sheet.p.spaces || [],

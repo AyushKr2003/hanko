@@ -83,7 +83,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 
 ### Phase 8 · Settings window and CLI parity ✅
 - The settings window (a normal floating window) in the Ryoku Hub grammar: rail, search, Advanced. Typesetting 組版 has the live preview, the preset gallery, six cards of segmented controls, and Reset to preset / Revert / Save. Edits show on the bar at once; only Save writes style.json, and closing unsaved puts the saved style back.
-- Advanced: any seal glyph, each monitor's overrides, the raw document. Presets 型: the six as bars, plus shuffle. The other rail pages say what they will hold.
+- Advanced: any seal glyph, each monitor's overrides, the raw document. Presets 型: the six as bars, plus shuffle. The other rail pages say what they will hold (Motion 動 became a real page in Phase 10).
 - Open it with `hanko settings` (IPC `hanko settings`), or `hanko menu add` for Setup › Hanko in the Omarchy menu. CLI parity: `hanko style set --monitor DP-2 height 32`.
 
 ### Phase 9 · Hosting other widgets ✅
@@ -91,9 +91,10 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Hanko's own marks for the rest: the indicators as kanji (録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light; only what's on, red only for "now"), the keyboard layout as a mono code, the microphone as 声 (red when muted), and the tray with every icon inked.
 - When the right zone fills up, what is playing gives way first, then the tray folds into 盆 with a count, then hosted widgets drop out whole; nothing ever runs into the clock.
 
-### Phase 10 · Motion and release ⬜
-- The motion spec from alpha1: paper-like timings, stamp press, and the reduced-motion cut.
-- A per-monitor override UI, a README install guide, the `v0.1.0` manifest version, and a listing on omarchyplugins.com.
+### Phase 10 · Motion ✅ and release ⬜
+- ✅ The motion spec from alpha1: the scroll unrolls and pans on paper-like curves, a sheet prints from its cell, the live page's plate slides to the next one, readings and the clock fade to new values, the now-notch creeps, and a new stamp is pressed down and settles (the only overshoot). A Motion 動 page with a paper/still switch (style.json `motion`, outside the sixteen settings); still, or Omarchy's animations off, cuts every move to its end frame.
+- ✅ A per-monitor override UI under Advanced: pick a monitor, set any setting for it alone, see which ones differ.
+- ⬜ Release, left to the user after testing on hardware: a README install guide, the manifest version, a CHANGELOG entry, a listing on omarchyplugins.com, and merging into `main`.
 
 ## Dev loop
 

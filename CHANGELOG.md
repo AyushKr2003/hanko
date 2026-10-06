@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Display 明: the LUM cell's panel, as a sheet and a scroll section (brightness per monitor, monitors, night light).
+- Motion 動: alpha1's motion across the bar (sliding plates, fading values, a creeping now-notch, the stamp press, sheets that print) and a paper/still switch on a new Motion page.
+- Per-monitor overrides can be set in the settings window under Advanced.
 - Bluetooth 藍: a BT cell, a sheet, a scroll section and a sixteenth setting (`bluetooth: on|off`, 5,971,968 combinations).
 
 ## gama1 · 2026-10-06

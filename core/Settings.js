@@ -68,6 +68,14 @@ var MOTION_ROWS = [
   ["Now-notch", "Creeps to the new minute instead of jumping", "creep"]
 ]
 
+// A setting's name as its card row gives it ("clockAt" -> "Clock position").
+function nameOf(key) {
+  for (var i = 0; i < CARDS.length; i++)
+    for (var j = 0; j < CARDS[i].rows.length; j++)
+      if (CARDS[i].rows[j].key === key) return CARDS[i].rows[j].name
+  return key
+}
+
 // The options a row's segmented control offers, as strings.
 function optionsFor(key, OPTIONS) {
   if (key === "sealGlyph") return GLYPHS.concat(["…"])

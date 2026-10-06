@@ -38,9 +38,20 @@ Rectangle {
   signal queryEdited(string text)
   signal advancedToggled(bool on)
   signal monitorCleared(string name)
+  signal monitorPicked(string monitor, string key, string value)
   signal shuffle()
 
   readonly property var style: S.resolve(draft)
+
+  // Advanced: the monitor whose overrides are shown (the first by default),
+  // how it resolves, and which settings it sets for itself.
+  property string overrideMonitor: ""
+  readonly property string monitorShown: monitors.indexOf(overrideMonitor) >= 0 ? overrideMonitor : (monitors[0] || "")
+  readonly property var monitorStyle: S.resolve(draft, monitorShown)
+  readonly property var monitorOwn: Object.keys(draft.monitors[monitorShown] || {})
+
+  // Scroll the page to its foot (the Advanced card), as the harness does.
+  function scrollToEnd() { scroller.contentY = Math.max(0, scroller.contentHeight - scroller.height) }
 
   // `/` from the window: put the cursor in the search field.
   function focusSearch() { search.forceActiveFocus() }
@@ -560,26 +571,35 @@ Rectangle {
                   }
                 }
 
-                // Per-monitor overrides (set them with `hanko style set --monitor`).
-                Repeater {
-                  model: root.monitors
+                // Per-monitor overrides: pick a monitor, then set any setting
+                // for it alone. Picking what the rest of your screens get drops
+                // the override (Style.withMonitorSetting), so a marked row is
+                // always one that differs.
+                Column {
+                  visible: root.monitors.length > 0
+                  width: parent.width
+                  spacing: Type.px(8)
+
                   Row {
-                    id: mon
-                    required property string modelData
-                    readonly property var own: root.draft.monitors[modelData] || ({})
                     spacing: Type.px(14)
                     Text {
                       anchors.verticalCenter: parent.verticalCenter
                       width: Type.px(160)
-                      text: "Monitor " + mon.modelData
+                      text: "Per monitor"
                       color: Ink.ink
                       font.family: Type.text
                       font.pixelSize: Type.px(13.5)
                     }
+                    Segmented {
+                      anchors.verticalCenter: parent.verticalCenter
+                      options: root.monitors
+                      selected: root.monitorShown
+                      onPicked: function(value) { root.overrideMonitor = value }
+                    }
                     Text {
                       anchors.verticalCenter: parent.verticalCenter
-                      text: Object.keys(mon.own).length
-                        ? Object.keys(mon.own).map(function(k) { return k + " " + mon.own[k] }).join(" · ")
+                      text: root.monitorOwn.length
+                        ? root.monitorOwn.length + (root.monitorOwn.length === 1 ? " override" : " overrides")
                         : "as the rest"
                       color: Ink.inkDim
                       font.family: Type.mono
@@ -587,9 +607,61 @@ Rectangle {
                       font.letterSpacing: 1
                     }
                     SmallButton {
-                      visible: Object.keys(mon.own).length > 0
+                      visible: root.monitorOwn.length > 0
                       label: "Clear"
-                      onClicked: root.monitorCleared(mon.modelData)
+                      onClicked: root.monitorCleared(root.monitorShown)
+                    }
+                  }
+
+                  Grid {
+                    id: perMonitor
+                    width: parent.width
+                    // Down each column, in the order the cards read.
+                    flow: Grid.TopToBottom
+                    rows: Math.ceil(S.KEYS.length / 2)
+                    columnSpacing: Type.px(28)
+                    readonly property real cellWidth: (width - columnSpacing) / 2
+
+                    Repeater {
+                      model: S.KEYS
+                      Item {
+                        id: override
+                        required property string modelData
+                        required property int index
+                        readonly property bool own: root.monitorOwn.indexOf(modelData) >= 0
+                        width: perMonitor.cellWidth
+                        height: Type.px(34)
+
+                        Rectangle {
+                          visible: override.index % perMonitor.rows > 0
+                          width: parent.width
+                          height: 1
+                          color: Ink.lineSoft
+                        }
+                        // A red tick marks a setting this monitor sets for itself.
+                        Rectangle {
+                          visible: override.own
+                          anchors.verticalCenter: parent.verticalCenter
+                          width: 2
+                          height: Type.px(14)
+                          color: Ink.seal
+                        }
+                        Text {
+                          anchors.verticalCenter: parent.verticalCenter
+                          x: Type.px(10)
+                          text: Settings.nameOf(override.modelData)
+                          color: override.own ? Ink.ink : Ink.inkMuted
+                          font.family: Type.text
+                          font.pixelSize: Type.px(12)
+                        }
+                        Segmented {
+                          anchors.right: parent.right
+                          anchors.verticalCenter: parent.verticalCenter
+                          options: Settings.optionsFor(override.modelData, S.OPTIONS)
+                          selected: String(root.monitorStyle[override.modelData])
+                          onPicked: function(value) { root.monitorPicked(root.monitorShown, override.modelData, value) }
+                        }
+                      }
                     }
                   }
                 }

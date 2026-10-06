@@ -83,6 +83,7 @@ FloatingWindow {
       onQueryEdited: function(text) { win.query = text; if (text !== "") win.page = "typesetting" }
       onAdvancedToggled: function(on) { win.advanced = on }
       onMonitorCleared: function(name) { Typeset.draftClearMonitor(name) }
+      onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value) }
       onShuffle: Typeset.draftShuffle()
     }
   }
