@@ -57,18 +57,38 @@ function lists(devices) {
   return out
 }
 
+// The kanji a device is marked with on the bar (bluetooth: marks), by kind:
+// ear, chime, key, mouse, talk, play, machine; anything else is a vessel.
+var KIND_MARKS = { Headphones: "耳", Speaker: "響", Keyboard: "鍵", Mouse: "鼠", Phone: "話",
+                   Controller: "遊", Computer: "機" }
+function mark(icon) { return KIND_MARKS[kind(icon)] || "器" }
+
+// A connected device's charge at or under this needs you (the red rule).
+var LOW = 0.15
+
 // The bar's BT 藍 cell, in core/Status.js's shape: the connected device's
 // name (and its battery as the meter), "On" or "Off". null with no adapter.
+// `devices` lists every connected device for the marks and count styles:
+// { name, kind, mark, level (0..1 or -1), low }, connected order by name.
 function cell(present, enabled, devices) {
   if (!present) return null
   var l = lists(devices)
-  var first = l.connected.length ? l.connected[0] : null
-  var dev = null
-  for (var i = 0; first && i < devices.length; i++) if (devices[i].address === first.address) dev = devices[i]
-  var level = dev && dev.battery >= 0 ? dev.battery : -1
+  var byAddress = {}
+  for (var i = 0; i < (devices || []).length; i++) byAddress[devices[i].address] = devices[i]
+  var connected = []
+  for (var j = 0; enabled && j < l.connected.length; j++) {
+    var d = byAddress[l.connected[j].address] || {}
+    var lvl = d.battery >= 0 ? d.battery : -1
+    connected.push({ name: l.connected[j].name, kind: kind(d.icon), mark: mark(d.icon), level: lvl,
+                     low: lvl >= 0 && lvl <= LOW })
+  }
+  var first = connected.length ? connected[0] : null
   var name = !enabled ? "Off" : first ? first.name : "On"
-  if (enabled && first && l.connected.length > 1) name += " +" + (l.connected.length - 1)
-  return { name: name, enabled: !!enabled, connected: l.connected.length, level: level, needsYou: false }
+  if (first && connected.length > 1) name += " +" + (connected.length - 1)
+  var low = connected.some(function(c) { return c.low })
+  return { name: name, enabled: !!enabled, connected: connected.length, level: first ? first.level : -1,
+           devices: connected, count: (connected.length < 10 ? "0" : "") + connected.length,
+           needsYou: low }
 }
 
 // How a click on a row acts: connect a known device, pair a new one,

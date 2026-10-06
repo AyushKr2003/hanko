@@ -259,6 +259,7 @@ Item {
       network: root.shown("network") ? root.network : null
       battery: root.shown("battery") ? root.battery : null
       brightness: root.shown("brightness") ? root.brightness : null
+      btStyle: root.style.bluetooth || "device"
       bluetooth: root.style.bluetooth === "off" || !root.shown("bluetooth") ? null : root.bluetooth
       onAction: function(name, how) { root.statusAction(name, how) }
     }

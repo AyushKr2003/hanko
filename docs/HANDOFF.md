@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-06, after Phase 10's motion and per-monitor parts (on `claude/hanko-plugin-zzm827`, thirteen commits ahead of `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-06, after the Bluetooth cell styles and the weather leaf (on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -119,7 +119,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | Right | `status` | **`cells`**, `glyphs`, `numerals` |
 | Right | `meters` | **`ticks`**, `off` |
 | Right | `notif` | `count`, **`stamps`** |
-| Right | `bluetooth` | **`on`**, `off` (added after gama1) |
+| Right | `bluetooth` | **`device`**, `marks`, `count`, `off` (added after gama1; `on` reads as `device`) |
 | Edge | `edge` | `hairline`, `dayrule`, `rod`, **`rodrule`** |
 | Edge | `rules` | **`on`**, `off` |
 | Frame | `height` | `32`, `36`, **`40`**, `44` |
@@ -140,7 +140,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | status | cells | glyphs | cells | numerals | cells | glyphs |
 | meters | ticks | off | ticks | off | ticks | ticks |
 | notif | count | stamps | stamps | count | count | stamps |
-| bluetooth | on | on | on | off | on | on |
+| bluetooth | device | marks | device | off | device | marks |
 | edge | dayrule | rod | rodrule | hairline | dayrule | rodrule |
 | rules | on | off | on | off | on | off |
 | height | 36 | 40 | 40 | 32 | 44 | 36 |
@@ -233,6 +233,7 @@ Properties `barHidden`, `barSize`, `position`, `fontFamily`; functions if presen
 | Omarchy menu | — | `omarchy-shell shell toggle omarchy.menu '{"menu":"root"}'` |
 | Terminal | — | `xdg-terminal-exec` |
 | 12/24 h | `barConfig.layout.*[]` entry with `id: "omarchy.clock"` and its `format` | — |
+| Weather (scroll leaf) | Same as Omarchy's weather panel: place from `~/.local/state/omarchy/settings/weather.json` `{name, latitude, longitude}` (FileView), else `curl https://wttr.in/?format=j1` `nearest_area`; forecast `curl` Open-Meteo (`Weather.url`); units from the `omarchy.weather` entry's `unit`, else country, else `Qt.locale().name`. Every `refreshMinutes` (default 15), only while the scroll is open; the last answer is kept on failure | — |
 | Theme | `qs.Commons` `Color.foreground`, `Color.background`, `Color.urgent` (= theme red); live on theme switch. `Style.font.family` (mono), `Style.font.body` (base size; Hanko scales by `body/12`) | — |
 
 Other Omarchy panels that exist (`shell/plugins/panels/`): audio, bluetooth, clock, disk-speedtest, dropbox, elsewhen, monitor, network, power, speedtest, tailscale, weather, wifiqr.
@@ -489,6 +490,19 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **IPC / CLI**: `omarchy-shell hanko hide|show <part>`, `scripts/hanko hide|show <part>`.
 - **The settings window reflows** (same session): see the SettingsWindow entry in §7. Unit tests: 66.
 
+### Bluetooth cell styles 藍 ✅ (asked for by the user after Visibility)
+- `bluetooth` is now `device | marks | count | off` (`Style.ALIASES` maps the old `on` to `device` in `coerce`). Presets: Scroll and Islet `marks`, Quiet `off`, the rest `device`. 11,943,936 combinations.
+- `core/Blue.js`: `KIND_MARKS` + `mark(icon)` (耳 響 鍵 鼠 話 遊 機, else 器), `LOW = 0.15`; `cell()` also returns `devices: [{name, kind, mark, level, low}]` (by name; empty when off), `count` ("02") and `needsYou` (any device low).
+- `bar/StatusRow.qml`: `btStyle`; the `BtValue` component draws `marks` (boxed in cells, the charge filling the box from the bottom; a low device sealed red; unboxed in glyphs with a 2 px charge rule; ≤ 4 then `+N`, none `—`) and `count` (FadeText count, ≤ 6 dots of 4 px, red when low). The meter is hidden for those styles. `BarSurface` passes `style.bluetooth`.
+- Params `bluetooth-styles.json` (18 strips: styles × status modes, low device, five devices, none, off, 32 px).
+
+### Weather leaf 天 ✅ (asked for by the user after Visibility)
+- Fills the bare paper left of Time on the scroll. Data like Omarchy's weather panel (see §6 data sources); the detailed design was chosen over omacale's (its own config) and a minimal line.
+- `core/Weather.js` (+ 5 tests): `location`, `area`, `url`, `imperial`, `condition` (WMO code → word + kanji), `compass`, `leaf(raw, place, imperial, now)` (the whole reading), `curve`, `range`, `leafWidth(viewW, timeW, interlude, scale)` (≤ 400, 0 under 240).
+- `services/Weather.qml` (singleton): `wanted` (Bar.qml: `scrollOpen`), `barConfig`, `reading`; curl processes for wttr.in and Open-Meteo; a 60 s timer, fetching when the answer is older than `refreshMinutes`.
+- `bar/scroll/WeatherLeaf.qml` (a ScrollSection: Canvas day graph, now-notch, hours, sun line, three day rows). `ScrollView` places it and an Interlude at `xs[0] - interlude - width` (track x is negative; the view clips). `ScrollWindow` feeds `weather` and `weatherShown`. Part `weather` in `Style.PARTS`; a row in the Widgets page's Centre card.
+- Params `weather.json` (1920 wide: rain by day °C, clear night °F, Islet with snow, offline, hidden, panned to Sound) and `weather-light.json`. Unit tests: 72.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching gama1 sheets and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -530,6 +544,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 11. **Phase 9 to verify on hardware:** a real hosted widget's panel (Bluetooth, monitor, weather) opening under Hanko's bar through `HostBar` (its KeyboardPanel reads `bar.barSize`, `bar.position`, `bar.clickTargets`), `pluginShellForBarEntry` returning a shell for those entries, the `hosted:` cells counting right in `togglePanelAt`, tray icons inked by `MultiEffect` colorization (symbolic and full-colour), `item.display()` menus placing under the cell, the voxtype and reminder commands on a machine that has them, and the right zone's giving-way order on a narrow laptop screen.
 12. **Bluetooth to verify on hardware:** `Quickshell.Bluetooth` property names on the user's Quickshell (`deviceName`, `batteryAvailable`, `battery`, `bonded`, `pairing`, adapter `discovering`), discovery starting and stopping with the panel, `omarchy-bluetooth-device` pairing a device that needs a PIN (Hanko has no PIN prompt; Omarchy's script may ask on its own), and the cell on a desktop without an adapter (it should not appear).
 13. **Phase 10 to verify on hardware:** that nothing slides in at login (Behaviours wait 1.5 s; raise `Motion._wake` if a slow start still shows it), FadeText not flickering while a volume wheel spins (each step restarts the fade), the stamp press on a real notification (and not on every inbox reload: the key is timestamp + app + summary), the notch creep after suspend (a big jump creeps for 1.2 s, by design), `Style.reduceMotion` being the right name in the user's `qs.Commons`, and the per-monitor grid at 1200 px wide.
+14. **Weather leaf to verify on hardware:** `curl` present and Open-Meteo and wttr.in reachable, `weather.json` at `~/.local/state/omarchy/settings/` on the user's Omarchy, the leaf's width on the user's screen (left out under about 1600 px of scroll), and the °F rule matching Omarchy's panel.
+15. **Bluetooth styles to verify on hardware:** the device `icon` names BlueZ reports (they pick the mark; unknown kinds get 器) and the marks' baseline beside the other cells in the user's fonts.
 
 ## 13. QML pitfalls already hit
 

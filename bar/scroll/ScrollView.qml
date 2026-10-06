@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 import "../../core/Scroll.js" as Scroll
+import "../../core/Weather.js" as Wx
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): one
 // long paper held between two rollers, its eight sections side by side with
@@ -24,7 +25,7 @@ Item {
   property real reveal: 1
   property real ink: 1
   // The sheets' feed (now, zones, timeShift, sound, network, bluetooth,
-  // power, display, letters, dnd) plus spaces.
+  // power, display, letters, dnd) plus spaces, weather and weatherShown.
   property var feed: ({})
 
   signal request(string section, string what, var arg)
@@ -38,6 +39,11 @@ Item {
 
   readonly property var sections: Scroll.SECTIONS
   readonly property var layout: Scroll.layout(Type.scale)
+  readonly property int interlude: Math.round(Scroll.INTERLUDE * Type.scale)
+  // The weather leaf's width: the bare paper left of Time while Time is in
+  // the middle (0 when the view is too narrow, or the leaf is hidden).
+  readonly property int leafWidth: root.feed.weatherShown === false ? 0
+    : Wx.leafWidth(view.width, layout.widths[0], interlude, Type.scale)
 
   implicitHeight: Type.px(460)
 
@@ -100,6 +106,24 @@ Item {
           x: Math.round(root.trackX)
           width: root.layout.width
           height: view.height
+
+          // Before Time, on paper that is otherwise bare: the weather leaf
+          // and an interlude between it and the day.
+          WeatherLeaf {
+            visible: root.leafWidth > 0
+            x: root.layout.xs[0] - root.interlude - width
+            width: root.leafWidth
+            height: track.height
+            weather: root.feed.weather || null
+          }
+          Interlude {
+            visible: root.leafWidth > 0
+            seed: 11
+            x: root.layout.xs[0] - width
+            y: Type.px(40)
+            width: root.interlude
+            height: track.height - Type.px(74)
+          }
 
           TimeSection {
             x: root.layout.xs[0]; width: root.layout.widths[0]; height: track.height

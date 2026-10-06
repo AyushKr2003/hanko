@@ -15,8 +15,10 @@ var OPTIONS = {
   status:   ["cells", "glyphs", "numerals"],
   meters:   ["ticks", "off"],
   notif:    ["count", "stamps"],
-  // A BT 藍 cell for Bluetooth (only where there is an adapter).
-  bluetooth: ["on", "off"],
+  // A BT 藍 cell for Bluetooth (only where there is an adapter):
+  // device = the connected device's name and battery, marks = one kanji
+  // mark per device with its charge under it, count = how many, as dots.
+  bluetooth: ["device", "marks", "count", "off"],
   edge:     ["hairline", "dayrule", "rod", "rodrule"],
   rules:    ["on", "off"],
   height:   [32, 36, 40, 44],
@@ -28,12 +30,12 @@ var OPTIONS = {
 var KEYS = Object.keys(OPTIONS)
 
 var PRESETS = {
-  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "on", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets" },
-  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "on", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll" },
-  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "on", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll" },
+  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets" },
+  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll" },
+  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll" },
   Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets" },
-  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "on", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "on", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll" }
+  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll" }
 }
 
 var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]
@@ -54,7 +56,7 @@ function normalizeMotion(m) {
 // page), beside the sixteen like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
 // clock, media, network, bluetooth, volume, brightness, battery, notif,
-// edge, keyboard, mic, tray; or indicator:<key>, tray:<item id> and
+// edge, keyboard, mic, tray, weather (the scroll's leaf); or indicator:<key>, tray:<item id> and
 // hosted:<widget id> for the marks, tray apps and hosted widgets.
 // As a setting it is `show:<part>`, shown or hidden, so the settings page
 // and `hanko style set show:mic hidden` go through withSetting().
@@ -62,7 +64,7 @@ var SHOW_OPTIONS = ["shown", "hidden"]
 // Parts a setting can also leave out: showing one again puts it back.
 var OFF = { seal: "none", title: "none", media: "none", bluetooth: "off" }
 var PARTS = ["seal", "spaces", "title", "clock", "media", "network", "bluetooth", "volume",
-             "brightness", "battery", "notif", "edge", "keyboard", "mic", "tray"]
+             "brightness", "battery", "notif", "edge", "keyboard", "mic", "tray", "weather"]
 
 // A part name the bar knows; tray app and widget ids can be anything.
 function isPart(part) {
@@ -91,9 +93,14 @@ function shows(style, part) {
 }
 
 // "40" from a hand-edited file or the CLI is the same as 40.
+// Values older Hankos wrote, and what they mean now.
+var ALIASES = { bluetooth: { on: "device" } }
+
 function coerce(key, value) {
   var options = OPTIONS[key]
   if (!options) return undefined
+  var alias = ALIASES[key] && ALIASES[key][String(value)]
+  if (alias !== undefined) value = alias
   for (var i = 0; i < options.length; i++)
     if (String(options[i]) === String(value)) return options[i]
   return undefined

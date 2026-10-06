@@ -76,7 +76,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Keyboard: `Esc`, arrow keys, and `Tab` between sheets. The host's panel hotkeys (`SUPER+CTRL+A/W/P`, `ALT+D/E`, `togglePanelAt right N`) open the matching sheet.
 
 ### Phase 7 · The handscroll ✅
-- `panels: scroll`: one paper between two rollers holding eight sections (Time, Sound, Network, Bluetooth, Power, Display, Spaces, Inbox) with dithered interludes; an index plate on top (below, for a bar at the bottom) and a position bar along the foot.
+- `panels: scroll`: one paper between two rollers holding eight sections (Time, Sound, Network, Bluetooth, Power, Display, Spaces, Inbox) with dithered interludes, and a weather leaf left of Time (added after the phase); an index plate on top (below, for a bar at the bottom) and a position bar along the foot.
 - Unrolls from a status, clock or inbox click (at that section), a pull on the rod, Omarchy's panel hotkeys, or `omarchy-shell hanko scroll`. Pans with a drag, the wheel, `H`/`L` or the arrows, lands centred on a section; `Esc` rolls it up.
 - Sections in ryoku.dev's grammar with alpha1's controls: the day ribbon, a fader bank, the networks, the power profiles, a map of every workspace's tiling (click a window to go there) and stamped letters.
 - Motion as alpha1 drew it (unroll 300 ms, ink 200 ms after 120 ms, pan snap 260 ms); Omarchy's reduced motion cuts to the end frames.

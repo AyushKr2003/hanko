@@ -34,7 +34,7 @@ const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell"
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
-const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet"])
+const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -42,9 +42,16 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("sixteen settings, 5,971,968 combinations (COMPONENTS.md §5)", () => {
+test("sixteen settings, 11,943,936 combinations (COMPONENTS.md §5)", () => {
   assert.equal(S.KEYS.length, 16)
-  assert.equal(S.combinations(), 5971968)
+  assert.equal(S.combinations(), 11943936)
+})
+
+test("bluetooth styles: device, marks, count, off; an older \"on\" reads as device", () => {
+  assert.deepEqual(S.OPTIONS.bluetooth, ["device", "marks", "count", "off"])
+  assert.equal(S.coerce("bluetooth", "on"), "device")
+  assert.equal(S.resolve({ edits: { bluetooth: "on" } }).bluetooth, "device")
+  assert.equal(S.resolve({ preset: "Scroll" }).bluetooth, "marks")
 })
 
 test("every preset sets every setting to a valid option", () => {
@@ -568,7 +575,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 5)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 6)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -700,9 +707,16 @@ test("bluetooth: devices into connected, known and found, nameless ones out", ()
 
 test("bluetooth: the bar cell and the sheet", () => {
   const devs = [{ address: "A", name: "WH-1000XM5", icon: "audio-headset", connected: true, paired: true, battery: 0.8 },
-                { address: "B", name: "MX Keys", connected: true, paired: true, battery: -1 }]
+                { address: "B", name: "MX Keys", icon: "input-keyboard", connected: true, paired: true, battery: -1 }]
   assert.equal(B.cell(false, true, devs), null)
-  assert.deepEqual(B.cell(true, true, devs), { name: "MX Keys +1", enabled: true, connected: 2, level: -1, needsYou: false })
+  const c = B.cell(true, true, devs)
+  assert.deepEqual([c.name, c.connected, c.level, c.count, c.needsYou], ["MX Keys +1", 2, -1, "02", false])
+  assert.deepEqual(c.devices.map(d => [d.mark, d.level]), [["鍵", -1], ["耳", 0.8]])
+  const low = B.cell(true, true, [{ ...devs[0], battery: 0.12 }])
+  assert.deepEqual([low.needsYou, low.devices[0].low], [true, true])
+  assert.equal(B.cell(true, false, devs).devices.length, 0)
+  assert.equal(B.mark("input-mouse"), "鼠")
+  assert.equal(B.mark(""), "器")
   assert.equal(B.cell(true, true, devs.slice(0, 1)).level, 0.8)
   assert.equal(B.cell(true, false, devs).name, "Off")
   assert.equal(B.cell(true, true, []).name, "On")
@@ -722,7 +736,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 5971968)
+  assert.equal(S.combinations(), 11943936)
 })
 
 test("hidden parts: shown or hidden per part, kept through presets, shuffles and resets", () => {
@@ -755,7 +769,7 @@ test("hidden parts: a part its setting leaves out reads hidden, and showing it s
   assert.equal(S.shows(q, "bluetooth"), false)
   const t = S.withSetting({ preset: "Quiet" }, "show:title", "shown")
   assert.equal(S.resolve(t).title, "cell")
-  assert.equal(S.withSetting({ preset: "Quiet" }, "show:bluetooth", "shown").edits.bluetooth, "on")
+  assert.equal(S.withSetting({ preset: "Quiet" }, "show:bluetooth", "shown").edits.bluetooth, "device")
   // The preset's own way comes back when it draws the part.
   const s = S.withSetting({ preset: "Sheet", edits: { seal: "none" } }, "show:seal", "shown")
   assert.equal(S.resolve(s).seal, "stamp")
@@ -789,6 +803,76 @@ test("the Widgets page lists every part, and the marks, tray apps and widgets yo
   assert.equal(Se.prettyId("omarchy.system-updates"), "System updates")
   // A hidden part counts as a change.
   assert.equal(Se.changes(S.normalize({}), S.withSetting({}, "show:mic", "hidden"), S.resolve), 1)
+})
+
+const Wx = load("core/Weather.js", ["location", "area", "url", "imperial", "condition", "compass", "leaf", "curve", "range", "leafWidth"])
+
+const METEO = {
+  current: { temperature_2m: 17.6, apparent_temperature: 15.9, relative_humidity_2m: 72, wind_speed_10m: 12.4,
+             wind_direction_10m: 40, weather_code: 61, is_day: 1 },
+  hourly: { time: Array.from({ length: 48 }, (_, i) => `2026-10-0${6 + Math.floor(i / 24)}T${String(i % 24).padStart(2, "0")}:00`),
+            temperature_2m: Array.from({ length: 48 }, (_, i) => 14 + 6 * Math.sin((i % 24 - 9) / 24 * Math.PI * 2)),
+            precipitation_probability: Array.from({ length: 48 }, (_, i) => (i % 24 > 15 ? 60 : 0)) },
+  daily: { time: ["2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09"], weather_code: [61, 0, 3, 71],
+           temperature_2m_max: [20, 22, 18, 9], temperature_2m_min: [8, 12, 11, 2],
+           sunrise: ["2026-10-06T05:47"], sunset: ["2026-10-06T17:21"] }
+}
+
+test("weather: the place file, the detected area and the request", () => {
+  assert.deepEqual(Wx.location('{"name":" Tokyo ","latitude":"35.68","longitude":139.69}'), { name: "Tokyo", latitude: 35.68, longitude: 139.69 })
+  assert.deepEqual(Wx.location("nope"), { name: "", latitude: null, longitude: null })
+  assert.equal(Wx.location('{"name":"Lisbon"}').latitude, null)
+  const a = Wx.area(JSON.stringify({ nearest_area: [{ areaName: [{ value: "Pune" }], country: [{ value: "India" }], latitude: "18.5", longitude: "73.8" }] }))
+  assert.deepEqual(a, { name: "Pune", country: "India", latitude: 18.5, longitude: 73.8 })
+  assert.equal(Wx.area("{}"), null)
+  assert.ok(Wx.url(35.68, 139.69).includes("latitude=35.68") && Wx.url(1, 2).includes("hourly=temperature_2m,precipitation_probability"))
+})
+
+test("weather: units the way Omarchy picks them", () => {
+  assert.equal(Wx.imperial("metric", "en_US", "United States"), false)
+  assert.equal(Wx.imperial("imperial", "de_DE", ""), true)
+  assert.equal(Wx.imperial("", "de_DE", "United States"), true)
+  assert.equal(Wx.imperial("", "en_US", "India"), false)
+  assert.equal(Wx.imperial("", "en_US.UTF-8", ""), true)
+})
+
+test("weather: codes to words and kanji, wind to a compass point", () => {
+  assert.deepEqual(Wx.condition(0, 1), { word: "clear", jp: "晴" })
+  assert.equal(Wx.condition(0, 0).jp, "月")
+  assert.equal(Wx.condition(63, 1).jp, "雨")
+  assert.equal(Wx.condition(73, 1).jp, "雪")
+  assert.equal(Wx.condition(95, 1).jp, "雷")
+  assert.equal(Wx.condition(48, 1).word, "fog")
+  assert.equal(Wx.compass(40), "NE")
+  assert.equal(Wx.compass(355), "N")
+})
+
+test("weather: Open-Meteo into the leaf", () => {
+  const l = Wx.leaf(METEO, "Tokyo", false, new Date(2026, 9, 6, 14, 30))
+  assert.deepEqual([l.temp, l.unit, l.feels, l.word, l.jp, l.wind, l.dir, l.humidity], [18, "°C", 16, "rain", "雨", "12 km/h", "NE", 72])
+  assert.equal(l.caption, "Tokyo · feels 16° · NE 12 km/h")
+  assert.equal(l.hours.length, 24)
+  assert.deepEqual([l.hours[13].past, l.hours[14].past], [true, false])
+  assert.deepEqual([l.lo, l.hi], [8, 20])
+  assert.equal(l.sunLine, "Sun 05:47 → 17:21 · 72% humid")
+  assert.deepEqual(l.days.map(d => [d.name, d.jp, d.lo, d.hi]), [["WED", "晴", 12, 22], ["THU", "曇", 11, 18], ["FRI", "雪", 2, 9]])
+  assert.deepEqual([l.weekLo, l.weekHi], [2, 22])
+  const f = Wx.leaf(METEO, "", true, new Date(2026, 9, 6, 9))
+  assert.deepEqual([f.temp, f.unit, f.wind], [64, "°F", "8 mph"])
+  assert.equal(Wx.leaf({}, "", false), null)
+  assert.equal(Wx.leaf("garbage", "", false), null)
+})
+
+test("weather: the day's curve, range bars and how wide the leaf can be", () => {
+  const l = Wx.leaf(METEO, "", false, new Date(2026, 9, 6, 12))
+  const c = Wx.curve(l.hours, l.lo, l.hi)
+  assert.equal(c.length, 24)
+  for (const p of c) assert.ok(p.x >= 0 && p.x <= 1 && p.y > 0 && p.y < 1)
+  assert.deepEqual(Wx.range(12, 22, 2, 22), { from: 0.5, to: 1 })
+  assert.equal(Wx.leafWidth(1700, 600, 70, 1), 400)
+  assert.equal(Wx.leafWidth(1604, 600, 70, 1), 392)
+  assert.equal(Wx.leafWidth(1250, 600, 70, 1), 0)
+  assert.equal(Wx.leafWidth(1500, 600, 70, 1), 340)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

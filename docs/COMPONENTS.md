@@ -134,10 +134,12 @@ All six status × meters pairs are drawn on sheet 12.
 
 | Option | What it does | From |
 |---|---|---|
-| **`on`** (default) | A `BT 藍` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. Click opens the Bluetooth panel; middle- or right-click turns Bluetooth on or off. Machines without an adapter never show it. | G |
+| **`device`** (default) | A `BT 藍` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. | G |
+| `marks` | One kanji mark per connected device, by its kind: 耳 headphones, 響 speaker, 鍵 keyboard, 鼠 mouse, 話 phone, 遊 controller, 機 computer, 器 anything else. In cells each mark is a small box its charge fills from the bottom; in glyphs the charge is a rule under the mark; four at most, then `+N`. | G |
+| `count` | How many devices are connected, as a two-digit count, and a dot for each (six at most). | G |
 | `off` | No Bluetooth cell. The panel is still in the scroll and on Omarchy's hotkey. | G |
 
-Added after the gama1 sheets were drawn, in the same grammar as the other status cells.
+In every style a click opens the Bluetooth panel and a middle- or right-click turns Bluetooth on or off; machines without an adapter never show the cell. A device at 15 % or less turns its mark, its dot or the count red (it needs you). The old `on` still reads as `device`. Added after the gama1 sheets were drawn, in the same grammar as the other status cells.
 
 ### Edge
 
@@ -202,6 +204,15 @@ Sheets 20–25 show both on full desktops.
 
 The panels are Time 時, Sound 音, Network 網, Bluetooth 藍, Power 電, Display 明 and Inbox 報 (as sheets), and the scroll adds Spaces 窓 between Display and Inbox: eight sections. Display is the LUM cell's panel (and Omarchy's `omarchy.monitor`, `Super+Ctrl+D`): the chosen monitor's brightness on a ruler, every monitor with its mode and scale, and night light. It was added after the gama1 sheets were drawn, in the same grammar. So was Bluetooth (the BT cell's panel and Omarchy's `omarchy.bluetooth`): what is connected as the title, then connected, known and nearby devices (the adapter scans only while the panel is open); a click disconnects, connects or pairs through `omarchy-bluetooth-device`, and the foot turns it on or off through `omarchy-bluetooth-power`.
 
+**The weather leaf 天.** With `panels: scroll`, Time sits in the middle of the paper when the scroll opens, which left bare paper to its left. A weather leaf (`00 // WEATHER`, not a section: the index plate and the number keys skip it) now fills it and slides away with Time:
+
+- the title is the temperature and the sky (`18°, rain`), the caption the place, how it feels and the wind;
+- today's temperature by the hour as one curve, the hours already spent fainter, daylight as a faint wash, rain chances as bars along the foot, the red now-notch where it meets the curve, the day's high and low;
+- sunrise, sunset and humidity, and the first hour with a 50 % chance of rain;
+- the next three days, each with its kanji (晴 月 曇 霧 雨 雪 雷) and its low to high on the span the four days share.
+
+It uses the same data as Omarchy's own weather panel, so it needs no setting: the place from `~/.local/state/omarchy/settings/weather.json` (or found from your IP address through wttr.in when that has no coordinates), the forecast from Open-Meteo, °C or °F from the `unit` on the `omarchy.weather` entry, else your country, else your locale. It refreshes every 15 minutes (the entry's `refreshMinutes`, 5 at least) and only while the scroll is open. The leaf is 400 px wide and is left out when the screen is too narrow to fit at least 240 px of it beside Time (about 1600 px of scroll). `hanko hide weather` (or the Widgets page, Centre card) takes it off.
+
 ---
 
 ## 3. How options interact
@@ -243,7 +254,7 @@ A preset sets all sixteen settings at once. Change any setting afterwards and th
 | status | cells | glyphs | cells | numerals | cells | glyphs |
 | meters | ticks | off | ticks | off | ticks | ticks |
 | notif | count | stamps | stamps | count | count | stamps |
-| bluetooth | on | on | on | off | on | on |
+| bluetooth | device | marks | device | off | device | marks |
 | edge | dayrule | rod | rodrule | hairline | dayrule | rodrule |
 | rules | on | off | on | off | on | off |
 | height | 36 | 40 | 40 | 32 | 44 | 36 |
@@ -275,7 +286,7 @@ A preset sets all sixteen settings at once. Change any setting afterwards and th
 | status | 3 |
 | meters | 2 |
 | notif | 2 |
-| bluetooth | 2 |
+| bluetooth | 4 |
 | edge | 4 |
 | rules | 2 |
 | height | 4 |
@@ -283,9 +294,9 @@ A preset sets all sixteen settings at once. Change any setting afterwards and th
 | position | 2 |
 | panels | 2 |
 
-3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 2 × 4 × 2 × 4 × 3 × 2 × 2 = **5,971,968** bars.
+3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 = **11,943,936** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position and panels, is 1,492,992 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position and panels, is 2,985,984 combinations.
 
 ![Twelve random combinations](mockups/gama1/04-shuffle.png)
 

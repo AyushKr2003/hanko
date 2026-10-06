@@ -95,7 +95,8 @@ function visibilityCards(ctx) {
       row("title", "Window title", "The focused window")] },
     { title: "Centre · when", rows: [
       row("clock", "Clock", "The time and date"),
-      row("media", "Now playing", "What is playing, while it plays")] },
+      row("media", "Now playing", "What is playing, while it plays"),
+      row("weather", "Weather leaf 天", "Left of Time on the scroll")] },
     { title: "Right · readings", rows: [
       row("network", "Network 網", "NET"),
       row("bluetooth", "Bluetooth 藍", "BT, where there is an adapter"),

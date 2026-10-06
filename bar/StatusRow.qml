@@ -26,6 +26,8 @@ Item {
   property var brightness: null
   // core/Blue.js cell(), or null (no adapter, or bluetooth: off).
   property var bluetooth: null
+  // How the BT cell reads (style `bluetooth`): device | marks | count.
+  property string btStyle: "device"
 
   // name: volume | network | battery | brightness; how: click | middle | right | up | down
   signal action(string name, string how)
@@ -44,8 +46,11 @@ Item {
     }
     function bt() {
       var b = root.bluetooth
-      if (b) out.push({ key: "bluetooth", label: "BT", jp: "藍", glyph: "藍", value: b.name, unit: "",
-                        level: b.level, bars: -1, needsYou: false })
+      if (!b) return
+      var drawn = root.btStyle === "device" || !b.enabled ? "" : root.btStyle
+      out.push({ key: "bluetooth", label: "BT", jp: "藍", glyph: "藍", value: b.name, unit: "",
+                 level: drawn ? -1 : b.level, bars: -1, needsYou: !!b.needsYou,
+                 bt: drawn, devices: b.devices || [], count: b.count || "00" })
     }
     function vol() {
       var v = root.volume
@@ -219,11 +224,13 @@ Item {
       }
       FadeText {
         anchors.verticalCenter: parent.verticalCenter
+        visible: !reading.r.bt
         text: reading.r.value
         color: reading.valueInk
         font.family: Type.text
         font.pixelSize: Type.px(13)
       }
+      BtValue { anchors.verticalCenter: parent.verticalCenter; r: reading.r; boxed: false }
       Ticks {
         anchors.verticalCenter: parent.verticalCenter
         visible: root.ticksOn && reading.quantity
@@ -246,8 +253,10 @@ Item {
         font.pixelSize: Type.px(8.5)
         font.letterSpacing: 1.6
       }
+      BtValue { anchors.verticalCenter: parent.verticalCenter; r: reading.r; mono: true }
       FadeText {
         id: num
+        visible: !reading.r.bt
         anchors.verticalCenter: parent.verticalCenter
         text: reading.r.value + (reading.r.key === "battery" ? "%" : "")
         color: reading.valueInk
@@ -270,8 +279,11 @@ Item {
     property var r: ({})
     property color ink: Ink.ink
     spacing: Type.px(5)
+    BtValue { anchors.verticalCenter: big.verticalCenter; r: value.r }
     FadeText {
       id: big
+      visible: !value.r.bt
+      width: visible ? implicitWidth : 0
       text: value.r.value
       color: value.ink
       font.family: Type.text
@@ -295,6 +307,126 @@ Item {
       anchors.bottom: big.baseline
       visible: root.ticksOn && value.r.bars >= 0
       lit: value.r.bars
+    }
+  }
+
+  // The BT cell's value when it isn't the device's name (bluetooth: marks
+  // or count). marks: one kanji mark per connected device (耳 headphones,
+  // 鍵 keyboard, 鼠 mouse, 響 speaker, 話 phone, 遊 controller, 機, 器),
+  // boxed in hairline like the glyph style's icons, with its charge drawn
+  // as ink filling the box (or, unboxed, a rule under the mark); a device
+  // that needs charging is sealed red.
+  // count: how many are connected, and a dot for each.
+  component BtValue: Row {
+    id: btv
+    property var r: ({})
+    property bool boxed: true
+    property bool mono: false
+    readonly property var devs: r.devices || []
+    readonly property int shownMarks: Math.min(devs.length, 4)
+    visible: !!r.bt
+    width: visible ? implicitWidth : 0
+    spacing: Type.px(r.bt === "count" ? 6 : 5)
+
+    // ---- marks
+    Repeater {
+      model: btv.r.bt === "marks" ? btv.shownMarks : 0
+      Item {
+        id: m
+        required property int index
+        readonly property var d: btv.devs[index]
+        // Only the mark counts toward the line's height; its charge hangs
+        // below it, so the BT cell keeps the same baseline as its neighbours.
+        width: Type.px(btv.boxed ? 15 : 13)
+        height: width
+        anchors.verticalCenter: parent.verticalCenter
+        Rectangle {
+          id: plate
+          width: parent.width
+          height: width
+          radius: 2
+          color: m.d.low ? Ink.seal : "transparent"
+          border.width: btv.boxed && !m.d.low ? 1 : 0
+          border.color: Ink.inkMuted
+          // Boxed, the charge fills the box from the foot like ink in a well.
+          Rectangle {
+            visible: btv.boxed && !m.d.low && m.d.level >= 0
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: 1
+            height: Math.round((parent.height - 2) * Math.max(0, m.d.level))
+            radius: 1
+            color: Ink.alpha(Ink.ink, 0.2)
+          }
+          Text {
+            anchors.centerIn: parent
+            anchors.verticalCenterOffset: -0.5
+            text: m.d.mark
+            color: m.d.low ? Ink.paper : btv.boxed ? Ink.inkDim : Ink.ink
+            font.family: Type.jp
+            font.pixelSize: Type.px(btv.boxed ? 9.5 : 11.5)
+          }
+        }
+        // Unboxed, the charge is a rule under the mark, inked to the level.
+        Rectangle {
+          visible: !btv.boxed && m.d.level >= 0
+          anchors.top: plate.bottom
+          anchors.topMargin: Type.px(2)
+          width: plate.width
+          height: 2
+          color: Ink.lineSoft
+          Rectangle {
+            width: Math.max(2, Math.round(parent.width * m.d.level))
+            height: parent.height
+            color: m.d.low ? Ink.seal : Ink.ink
+          }
+        }
+      }
+    }
+    Text {
+      visible: btv.r.bt === "marks" && btv.devs.length > btv.shownMarks
+      anchors.verticalCenter: parent.verticalCenter
+      text: "+" + (btv.devs.length - btv.shownMarks)
+      color: Ink.inkMuted
+      font.family: Type.mono
+      font.pixelSize: Type.px(9)
+    }
+    // Nothing connected: a single empty mark, dashed, so the cell keeps its place.
+    Text {
+      visible: btv.r.bt === "marks" && btv.devs.length === 0
+      anchors.verticalCenter: parent.verticalCenter
+      text: "—"
+      color: Ink.inkFaint
+      font.family: Type.text
+      font.pixelSize: Type.px(12.5)
+    }
+
+    // ---- count
+    FadeText {
+      visible: btv.r.bt === "count"
+      anchors.verticalCenter: parent.verticalCenter
+      text: btv.r.count || "00"
+      color: btv.r.needsYou ? Ink.seal : btv.devs.length ? Ink.ink : Ink.inkFaint
+      font.family: btv.mono ? Type.mono : Type.text
+      font.pixelSize: Type.px(btv.mono ? 11 : 12.5)
+      font.letterSpacing: 0.6
+    }
+    Row {
+      visible: btv.r.bt === "count" && btv.devs.length > 0
+      anchors.verticalCenter: parent.verticalCenter
+      spacing: Type.px(3)
+      Repeater {
+        model: btv.r.bt === "count" ? Math.min(btv.devs.length, 6) : 0
+        Rectangle {
+          required property int index
+          anchors.verticalCenter: parent.verticalCenter
+          width: Type.px(4)
+          height: width
+          radius: width / 2
+          color: btv.devs[index].low ? Ink.seal : Ink.ink
+        }
+      }
     }
   }
 

@@ -1,5 +1,5 @@
 {
- "title": "Bluetooth \u00b7 the BT \u85cd cell",
+ "title": "Bluetooth · the BT 藍 cell",
  "width": 1600,
  "theme": {
   "foreground": "#ddd5c7",
@@ -170,13 +170,13 @@
    "summary": "",
    "timestamp": 1,
    "urgent": false,
-   "glyph": "\u706b",
+   "glyph": "火",
    "tilt": -1.5
   }
  ],
  "strips": [
   {
-   "label": "BT CELL \u00b7 CELLS + TICKS (HANKO) \u00b7 HEADPHONES AT 80%",
+   "label": "BT CELL · CELLS + TICKS (HANKO) · HEADPHONES AT 80%",
    "doc": {
     "preset": "Hanko"
    },
@@ -185,11 +185,21 @@
     "enabled": true,
     "connected": 1,
     "level": 0.8,
+    "devices": [
+     {
+      "name": "WH-1000XM5",
+      "kind": "Headphones",
+      "mark": "耳",
+      "level": 0.8,
+      "low": false
+     }
+    ],
+    "count": "01",
     "needsYou": false
    }
   },
   {
-   "label": "BT \u00b7 CELLS, METERS OFF",
+   "label": "BT · CELLS, METERS OFF",
    "doc": {
     "preset": "Hanko",
     "edits": {
@@ -201,11 +211,21 @@
     "enabled": true,
     "connected": 1,
     "level": 0.8,
+    "devices": [
+     {
+      "name": "WH-1000XM5",
+      "kind": "Headphones",
+      "mark": "耳",
+      "level": 0.8,
+      "low": false
+     }
+    ],
+    "count": "01",
     "needsYou": false
    }
   },
   {
-   "label": "BT \u00b7 GLYPHS (ISLET)",
+   "label": "BT · GLYPHS (ISLET)",
    "doc": {
     "preset": "Islet"
    },
@@ -214,11 +234,21 @@
     "enabled": true,
     "connected": 1,
     "level": 0.8,
+    "devices": [
+     {
+      "name": "WH-1000XM5",
+      "kind": "Headphones",
+      "mark": "耳",
+      "level": 0.8,
+      "low": false
+     }
+    ],
+    "count": "01",
     "needsYou": false
    }
   },
   {
-   "label": "BT \u00b7 NUMERALS",
+   "label": "BT · NUMERALS",
    "doc": {
     "preset": "Hanko",
     "edits": {
@@ -230,11 +260,21 @@
     "enabled": true,
     "connected": 1,
     "level": 0.8,
+    "devices": [
+     {
+      "name": "WH-1000XM5",
+      "kind": "Headphones",
+      "mark": "耳",
+      "level": 0.8,
+      "low": false
+     }
+    ],
+    "count": "01",
     "needsYou": false
    }
   },
   {
-   "label": "BT \u00b7 OFF",
+   "label": "BT · OFF",
    "doc": {
     "preset": "Hanko"
    },
@@ -243,11 +283,13 @@
     "enabled": false,
     "connected": 0,
     "level": -1,
+    "devices": [],
+    "count": "00",
     "needsYou": false
    }
   },
   {
-   "label": "BT \u00b7 STYLE bluetooth: off (QUIET PRESET HAS IT OFF)",
+   "label": "BT · STYLE bluetooth: off (QUIET PRESET HAS IT OFF)",
    "doc": {
     "preset": "Quiet"
    },
@@ -256,11 +298,21 @@
     "enabled": true,
     "connected": 1,
     "level": 0.8,
+    "devices": [
+     {
+      "name": "WH-1000XM5",
+      "kind": "Headphones",
+      "mark": "耳",
+      "level": 0.8,
+      "low": false
+     }
+    ],
+    "count": "01",
     "needsYou": false
    }
   },
   {
-   "label": "BT \u00b7 32 PX",
+   "label": "BT · 32 PX",
    "doc": {
     "preset": "Hanko",
     "edits": {
@@ -272,6 +324,16 @@
     "enabled": true,
     "connected": 1,
     "level": 0.8,
+    "devices": [
+     {
+      "name": "WH-1000XM5",
+      "kind": "Headphones",
+      "mark": "耳",
+      "level": 0.8,
+      "low": false
+     }
+    ],
+    "count": "01",
     "needsYou": false
    }
   }

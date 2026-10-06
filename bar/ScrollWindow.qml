@@ -152,6 +152,8 @@ PanelWindow {
         power: Power.reading,
       display: Display.reading,
         letters: Status.notifications,
+        weather: Weather.reading,
+        weatherShown: (win.barWindow.style.hidden || []).indexOf("weather") < 0,
         dnd: Status.doNotDisturb,
         spaces: Hypr.spacesFor(win.screenName)
       })

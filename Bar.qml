@@ -318,6 +318,8 @@ Item {
   Binding { target: Net; property: "wanted"; value: root.sheet === "network" || root.scrollOpen }
   Binding { target: Power; property: "wanted"; value: root.sheet === "power" || root.scrollOpen }
   Binding { target: Display; property: "wanted"; value: root.sheet === "display" || root.scrollOpen }
+  Binding { target: Weather; property: "wanted"; value: root.scrollOpen }
+  Binding { target: Weather; property: "barConfig"; value: root.barConfig }
   Binding { target: Blue; property: "wanted"; value: root.sheet === "bluetooth" || root.scrollOpen }
 
   // BarWindows by screen name, for the host's per-screen questions.

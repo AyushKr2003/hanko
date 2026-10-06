@@ -9,6 +9,8 @@
 - The settings window reflows to any size, tiled or floating, down to 420 px wide.
 - Sheets drop under the cell they belong to (they all opened at the left edge).
 - Bluetooth 藍: a BT cell, a sheet, a scroll section and a sixteenth setting (`bluetooth: on|off`, 5,971,968 combinations).
+- Bluetooth cell styles: `device` (was `on`), `marks` (a kanji per device, its charge filling it) and `count` (a count and a dot per device); Scroll and Islet use marks (11,943,936 combinations).
+- Weather 天: a leaf left of Time on the scroll, with today's curve, rain, sun and the next three days, from the same place, units and forecast as Omarchy's weather panel; `hanko hide weather` removes it.
 
 ## gama1 · 2026-10-06
 
