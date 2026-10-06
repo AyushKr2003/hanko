@@ -8,7 +8,8 @@ import "../../core/Sheets.js" as Sheets
 // the harness feeds it fixtures. Each sheet's contents are their own
 // component so the handscroll (Phase 7) can lay them out again.
 //
-// feed: { now, zones, timeShift, ... } plain data for whichever sheet shows.
+// feed: { now, zones, timeShift, sound, ... } plain data for whichever
+// sheet shows.
 Item {
   id: root
 
@@ -56,7 +57,7 @@ Item {
     Loader {
       id: body
       width: card.width
-      sourceComponent: root.sheet === "time" ? timeSheet : null
+      sourceComponent: ({ time: timeSheet, sound: soundSheet })[root.sheet] || null
       onLoaded: if (root.open) root.focusContents()
     }
   }
@@ -68,6 +69,17 @@ Item {
       zones: root.feed.zones || []
       shift: root.feed.timeShift || 0
       onRequest: function(what, arg) { root.request("time", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: soundSheet
+    SoundSheet {
+      sound: root.feed.sound || null
+      onRequest: function(what, arg) { root.request("sound", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
       Keys.onTabPressed: root.cycle(1)
       Keys.onBacktabPressed: root.cycle(-1)

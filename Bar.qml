@@ -92,7 +92,7 @@ Item {
   // Weeks the Time sheet's ribbon is moved from today.
   property int timeShift: 0
   // The sheets built so far.
-  readonly property var sheetsReady: ["time"]
+  readonly property var sheetsReady: ["time", "sound"]
 
   function sheetReady(key) { return !!key && sheetsReady.indexOf(key) >= 0 }
 
@@ -120,12 +120,22 @@ Item {
   // Something a sheet asked for: pages, values, devices.
   function sheetRequest(key, what, arg) {
     if (key === "time" && what === "shift") timeShift = Number(arg) || 0
+    else if (key === "sound") {
+      if (what === "master") Sound.setMaster(Number(arg))
+      else if (what === "mute") Sound.toggleMute()
+      else if (what === "output") Sound.setOutput(arg.id, arg.name)
+      else if (what === "nextOutput") Sound.nextOutput()
+      else if (what === "stream") Sound.setStream(arg.id, arg.name, Number(arg.value))
+      else if (what === "streamMute") Sound.toggleStream(arg.id, arg.name)
+      else if (what === "inputMute") Sound.toggleInput()
+    }
   }
 
   onBarHiddenChanged: if (barHidden) closeSheet()
 
   Binding { target: Zones; property: "barConfig"; value: root.barConfig }
   Binding { target: Zones; property: "wanted"; value: root.sheet === "time" }
+  Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" }
 
   // BarWindows by screen name, for the host's per-screen questions.
   property var windows: ({})

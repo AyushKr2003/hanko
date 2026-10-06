@@ -177,6 +177,149 @@
  ],
  "desks": [
   {
+   "label": "SOUND \u00b7 SHEET PRESET \u00b7 FROM VOL",
+   "doc": {
+    "preset": "Sheet"
+   },
+   "sheet": "sound",
+   "feed": {
+    "sound": {
+     "master": {
+      "percent": 62,
+      "level": 0.62,
+      "muted": false
+     },
+     "outputs": [
+      {
+       "id": 41,
+       "name": "usb",
+       "label": "Studio Monitors",
+       "detail": "USB \u00b7 Focusrite 2i2 \u00b7 48 kHz",
+       "current": true,
+       "note": "Live"
+      },
+      {
+       "id": 52,
+       "name": "bt",
+       "label": "WH-1000XM5",
+       "detail": "Bluetooth \u00b7 LDAC",
+       "current": false,
+       "note": "Paired"
+      }
+     ],
+     "streams": [
+      {
+       "id": 7,
+       "name": "spotify",
+       "label": "Spotify",
+       "level": 0.8,
+       "percent": 80,
+       "muted": false
+      },
+      {
+       "id": 8,
+       "name": "firefox",
+       "label": "Firefox",
+       "level": 0.45,
+       "percent": 45,
+       "muted": false
+      }
+     ],
+     "input": "Input \u00b7 Shure MV7",
+     "inputMuted": false
+    }
+   },
+   "height": 660
+  },
+  {
+   "label": "SOUND \u00b7 MUTED MASTER, MUTED FIREFOX \u00b7 HANKO",
+   "doc": {
+    "preset": "Hanko"
+   },
+   "sheet": "sound",
+   "feed": {
+    "sound": {
+     "master": {
+      "percent": 62,
+      "level": 0.62,
+      "muted": true
+     },
+     "outputs": [
+      {
+       "id": 41,
+       "name": "usb",
+       "label": "Studio Monitors",
+       "detail": "USB \u00b7 Focusrite 2i2 \u00b7 48 kHz",
+       "current": true,
+       "note": "Live"
+      },
+      {
+       "id": 52,
+       "name": "bt",
+       "label": "WH-1000XM5",
+       "detail": "Bluetooth \u00b7 LDAC",
+       "current": false,
+       "note": "Paired"
+      }
+     ],
+     "streams": [
+      {
+       "id": 7,
+       "name": "spotify",
+       "label": "Spotify",
+       "level": 0.8,
+       "percent": 80,
+       "muted": false
+      },
+      {
+       "id": 8,
+       "name": "firefox",
+       "label": "Firefox",
+       "level": 0.45,
+       "percent": 45,
+       "muted": true
+      }
+     ],
+     "input": "Input \u00b7 muted",
+     "inputMuted": true
+    }
+   },
+   "height": 680
+  },
+  {
+   "label": "SOUND \u00b7 NOTHING PLAYING \u00b7 GLYPHS (ISLET) \u00b7 BOTTOM",
+   "doc": {
+    "preset": "Islet",
+    "edits": {
+     "position": "bottom"
+    }
+   },
+   "sheet": "sound",
+   "feed": {
+    "sound": {
+     "master": {
+      "percent": 62,
+      "level": 0.62,
+      "muted": false
+     },
+     "outputs": [
+      {
+       "id": 41,
+       "name": "usb",
+       "label": "Studio Monitors",
+       "detail": "USB \u00b7 Focusrite 2i2 \u00b7 48 kHz",
+       "current": true,
+       "note": "Live"
+      }
+     ],
+     "streams": [],
+     "input": "Input \u00b7 Shure MV7",
+     "inputMuted": false
+    }
+   },
+   "height": 600
+  },
+  {
    "label": "TIME \u00b7 HANKO PRESET \u00b7 FROM THE CENTRE CLOCK",
    "doc": {
     "preset": "Hanko"

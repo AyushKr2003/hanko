@@ -23,6 +23,7 @@ const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "batter
 const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow"])
+const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs", "streams", "master", "inputNote", "sheet"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -373,6 +374,41 @@ test("Elsewhen rows tick from a date probe", () => {
   assert.equal(Tm.relative(-150), "-2:30")
   assert.equal(Tm.relative(0), "±0")
   assert.equal(Tm.zoneRow({ label: "X", id: "X/Y" }, null, now, 0, true).ready, false)
+})
+
+test("sound: device names and what they are attached by", () => {
+  const usb = { id: 41, name: "alsa_output.usb-Focusrite_Scarlett_2i2", description: "Scarlett 2i2 USB Analog Stereo",
+    nickname: "Studio Monitors", props: { "device.bus": "usb", "device.product.name": "Focusrite 2i2", "audio.rate": 48000 } }
+  assert.equal(So.label(usb), "Studio Monitors")
+  assert.equal(So.detail(usb), "USB · Focusrite 2i2 · 48 kHz")
+  const bt = { id: 52, name: "bluez_output.AC_80", description: "WH-1000XM5", props: { "api.bluez5.codec": "ldac" } }
+  assert.equal(So.bus(bt), "Bluetooth")
+  assert.equal(So.detail(bt), "Bluetooth · LDAC")
+  assert.equal(So.label({ name: "x", description: "Built-in Audio Analog Stereo Output", props: {} }), "Analog Stereo")
+  assert.equal(So.label({ name: "", props: {} }), "Unknown")
+})
+
+test("sound: outputs list the live one first and hide unavailable sinks", () => {
+  const sinks = [
+    { id: 52, name: "bluez_output.AC_80", description: "WH-1000XM5", props: {} },
+    { id: 41, name: "usb_sink", description: "Studio Monitors", props: {} },
+    { id: 60, name: "hdmi_sink", description: "HDMI", props: {} }]
+  const rows = So.outputs(sinks, "usb_sink", { hdmi_sink: false })
+  assert.deepEqual(rows.map(r => [r.id, r.current, r.note]), [[41, true, "Live"], [52, false, "Paired"]])
+  assert.ok(!("node" in rows[0]))
+})
+
+test("sound: mixer rows per app, the speaker tuning left out", () => {
+  const rows = So.streams([
+    { id: 7, name: "spotify", props: { "application.name": "spotify" }, volume: 0.8, muted: false },
+    { id: 8, name: "Firefox", description: "Firefox", props: {}, volume: 0.45, muted: true },
+    { id: 9, name: "omarchy_speaker_tuning_out", props: {}, volume: 1 }])
+  assert.deepEqual(rows.map(r => [r.label, r.percent, r.muted]), [["Spotify", 80, false], ["Firefox", 45, true]])
+  assert.deepEqual(So.master(0.625, true), { percent: 63, level: 0.625, muted: true })
+  assert.equal(So.inputNote({ description: "Shure MV7", props: {}, muted: false }), "Input · Shure MV7")
+  assert.equal(So.inputNote({ description: "Shure MV7", props: {}, muted: true }), "Input · muted")
+  assert.equal(So.inputNote(null), "No input")
+  assert.equal(So.sheet(null, null, [], [], null).master, null)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

@@ -131,7 +131,8 @@ PanelWindow {
     feed: ({
       now: win.bar.now,
       zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
-      timeShift: win.bar.timeShift
+      timeShift: win.bar.timeShift,
+      sound: Sound.reading
     })
 
     onRequest: function(sheet, what, arg) { win.bar.sheetRequest(sheet, what, arg) }
