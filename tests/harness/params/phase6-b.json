@@ -1,5 +1,5 @@
 {
- "title": "Phase 6 \u00b7 sheets: network, power, inbox",
+ "title": "Phase 6 \u00b7 sheets: network, power, display, inbox",
  "scene": "Sheets",
  "width": 1600,
  "theme": {
@@ -380,6 +380,106 @@
     "charging": false,
     "needsYou": true
    }
+  },
+  {
+   "label": "DISPLAY \u00b7 HANKO \u00b7 FROM LUM (LAPTOP)",
+   "doc": {
+    "preset": "Hanko"
+   },
+   "sheet": "display",
+   "feed": {
+    "display": {
+     "title": "Built-in",
+     "blurb": "2880\u00d71800 \u00b7 120 Hz \u00b7 \u00d71.75",
+     "target": "eDP-1",
+     "monitors": [
+      {
+       "name": "eDP-1",
+       "label": "Built-in \u00b7 eDP-1",
+       "detail": "2880\u00d71800 \u00b7 120 Hz \u00b7 \u00d71.75",
+       "focused": true,
+       "enabled": true,
+       "internal": true,
+       "current": true
+      },
+      {
+       "name": "DP-2",
+       "label": "LG ULTRAGEAR \u00b7 DP-2",
+       "detail": "2560\u00d71440 \u00b7 144 Hz \u00b7 \u00d71.25",
+       "focused": false,
+       "enabled": true,
+       "internal": false,
+       "current": false
+      },
+      {
+       "name": "HDMI-A-1",
+       "label": "TV \u00b7 HDMI-A-1",
+       "detail": "Switched off in Hyprland",
+       "focused": false,
+       "enabled": false,
+       "internal": false,
+       "current": false
+      }
+     ],
+     "brightness": {
+      "percent": 70,
+      "level": 0.7
+     },
+     "night": false
+    }
+   },
+   "height": 620,
+   "brightness": {
+    "percent": 70,
+    "level": 0.7,
+    "needsYou": false
+   }
+  },
+  {
+   "label": "DISPLAY \u00b7 DESKTOP, NO LUM CELL \u00b7 DDC NOT REACHABLE \u00b7 NIGHT LIGHT ON",
+   "doc": {
+    "preset": "Sheet"
+   },
+   "sheet": "display",
+   "feed": {
+    "display": {
+     "title": "DP-2",
+     "blurb": "2560\u00d71440 \u00b7 144 Hz \u00b7 \u00d71.25",
+     "target": "eDP-1",
+     "monitors": [
+      {
+       "name": "eDP-1",
+       "label": "Built-in \u00b7 eDP-1",
+       "detail": "2880\u00d71800 \u00b7 120 Hz \u00b7 \u00d71.75",
+       "focused": true,
+       "enabled": true,
+       "internal": true,
+       "current": false
+      },
+      {
+       "name": "DP-2",
+       "label": "LG ULTRAGEAR \u00b7 DP-2",
+       "detail": "2560\u00d71440 \u00b7 144 Hz \u00b7 \u00d71.25",
+       "focused": false,
+       "enabled": true,
+       "internal": false,
+       "current": true
+      },
+      {
+       "name": "HDMI-A-1",
+       "label": "TV \u00b7 HDMI-A-1",
+       "detail": "Switched off in Hyprland",
+       "focused": false,
+       "enabled": false,
+       "internal": false,
+       "current": false
+      }
+     ],
+     "brightness": null,
+     "night": true
+    }
+   },
+   "height": 620
   },
   {
    "label": "INBOX \u00b7 INSTRUMENT \u00b7 FROM INBOX",

@@ -525,7 +525,46 @@
       "count": 0,
       "windows": []
      }
-    ]
+    ],
+    "display": {
+     "title": "Built-in",
+     "blurb": "2880\u00d71800 \u00b7 120 Hz \u00b7 \u00d71.75",
+     "target": "eDP-1",
+     "monitors": [
+      {
+       "name": "eDP-1",
+       "label": "Built-in \u00b7 eDP-1",
+       "detail": "2880\u00d71800 \u00b7 120 Hz \u00b7 \u00d71.75",
+       "focused": true,
+       "enabled": true,
+       "internal": true,
+       "current": true
+      },
+      {
+       "name": "DP-2",
+       "label": "LG ULTRAGEAR \u00b7 DP-2",
+       "detail": "2560\u00d71440 \u00b7 144 Hz \u00b7 \u00d71.25",
+       "focused": false,
+       "enabled": true,
+       "internal": false,
+       "current": false
+      },
+      {
+       "name": "HDMI-A-1",
+       "label": "TV \u00b7 HDMI-A-1",
+       "detail": "Switched off in Hyprland",
+       "focused": false,
+       "enabled": false,
+       "internal": false,
+       "current": false
+      }
+     ],
+     "brightness": {
+      "percent": 70,
+      "level": 0.7
+     },
+     "night": false
+    }
    },
    "height": 520
   },
@@ -535,7 +574,7 @@
     "preset": "Scroll"
    },
    "scroll": true,
-   "current": 4,
+   "current": 5,
    "feed": {
     "zones": [
      {
@@ -878,7 +917,46 @@
       "count": 0,
       "windows": []
      }
-    ]
+    ],
+    "display": {
+     "title": "Built-in",
+     "blurb": "2880\u00d71800 \u00b7 120 Hz \u00b7 \u00d71.75",
+     "target": "eDP-1",
+     "monitors": [
+      {
+       "name": "eDP-1",
+       "label": "Built-in \u00b7 eDP-1",
+       "detail": "2880\u00d71800 \u00b7 120 Hz \u00b7 \u00d71.75",
+       "focused": true,
+       "enabled": true,
+       "internal": true,
+       "current": true
+      },
+      {
+       "name": "DP-2",
+       "label": "LG ULTRAGEAR \u00b7 DP-2",
+       "detail": "2560\u00d71440 \u00b7 144 Hz \u00b7 \u00d71.25",
+       "focused": false,
+       "enabled": true,
+       "internal": false,
+       "current": false
+      },
+      {
+       "name": "HDMI-A-1",
+       "label": "TV \u00b7 HDMI-A-1",
+       "detail": "Switched off in Hyprland",
+       "focused": false,
+       "enabled": false,
+       "internal": false,
+       "current": false
+      }
+     ],
+     "brightness": {
+      "percent": 70,
+      "level": 0.7
+     },
+     "night": false
+    }
    },
    "height": 540
   }

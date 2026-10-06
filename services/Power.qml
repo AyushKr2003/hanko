@@ -27,9 +27,6 @@ Singleton {
     Status.run(["omarchy-powerprofiles-set", UPower.onBattery ? "battery" : "ac", name])
     again.restart()
   }
-  function setBrightness(v) {
-    Status.run(["omarchy-brightness-display", Math.max(1, Math.round(v * 100)) + "%"])
-  }
 
   property Timer _poll: Timer {
     interval: 5000

@@ -36,7 +36,8 @@ PanelWindow {
   function place() {
     if (!open) return
     var info = Sheets.byKey(shownSheet)
-    var a = surface.anchorFor(info ? info.anchors[0] : "") || surface.anchorFor(info ? info.anchors[1] || "" : "")
+    var a = null
+    for (var i = 0; info && !a && i < info.anchors.length; i++) a = surface.anchorFor(info.anchors[i])
     var gap = barWindow.gap
     var cellX = a ? a.x + gap : width - gap - 200
     placed = Sheets.place(shownSheet, cellX, a ? a.width : 100, view.width, width)
@@ -135,6 +136,7 @@ PanelWindow {
       sound: Sound.reading,
       network: Net.reading,
       power: Power.reading,
+      display: Display.reading,
       letters: Status.notifications,
       dnd: Status.doNotDisturb
     })

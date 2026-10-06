@@ -4,7 +4,7 @@ import "../../core"
 import "../../core/Scroll.js" as Scroll
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): one
-// long paper held between two rollers, its six sections side by side with
+// long paper held between two rollers, its seven sections side by side with
 // dithered interludes between them; sections curl under the rollers at the
 // edges so the neighbours always show. An index plate names every section
 // (the one in the middle inverted), and a position bar runs along the foot.
@@ -24,7 +24,7 @@ Item {
   property real reveal: 1
   property real ink: 1
   // The sheets' feed (now, zones, timeShift, sound, network, power,
-  // letters, dnd) plus spaces.
+  // display, letters, dnd) plus spaces.
   property var feed: ({})
 
   signal request(string section, string what, var arg)
@@ -127,15 +127,21 @@ Item {
             power: root.feed.power || null
             onRequest: function(what, arg) { root.request("power", what, arg) }
           }
-          SpacesSection {
+          DisplaySection {
             x: root.layout.xs[4]; width: root.layout.widths[4]; height: track.height
             info: root.sections[4]
+            display: root.feed.display || null
+            onRequest: function(what, arg) { root.request("display", what, arg) }
+          }
+          SpacesSection {
+            x: root.layout.xs[5]; width: root.layout.widths[5]; height: track.height
+            info: root.sections[5]
             spaces: root.feed.spaces || []
             onRequest: function(what, arg) { root.request("spaces", what, arg) }
           }
           InboxSection {
-            x: root.layout.xs[5]; width: root.layout.widths[5]; height: track.height
-            info: root.sections[5]
+            x: root.layout.xs[6]; width: root.layout.widths[6]; height: track.height
+            info: root.sections[6]
             letters: root.feed.letters || []
             dnd: !!root.feed.dnd
             now: root.feed.now || new Date()

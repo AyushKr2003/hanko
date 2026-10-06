@@ -90,7 +90,7 @@ Item {
   // Weeks the Time sheet's ribbon is moved from today.
   property int timeShift: 0
   // The sheets that can open.
-  readonly property var sheetsReady: ["time", "sound", "network", "power", "inbox"]
+  readonly property var sheetsReady: ["time", "sound", "network", "power", "display", "inbox"]
 
   function sheetReady(key) { return !!key && sheetsReady.indexOf(key) >= 0 }
 
@@ -141,7 +141,11 @@ Item {
       }
     } else if (key === "power") {
       if (what === "profile") Power.setProfile(String(arg))
-      else if (what === "brightness") Power.setBrightness(Number(arg))
+    } else if (key === "display") {
+      if (what === "brightness") Display.setBrightness(Number(arg))
+      else if (what === "monitor") Display.pick(String(arg))
+      else if (what === "night") Display.setNight(!!arg)
+      else if (what === "edit") { closeSheet(); closeScroll(); Display.editMonitors() }
     } else if (key === "spaces") {
       if (what === "window") Hypr.focusWindow(String(arg))
       else if (what === "workspace") Hypr.focusWorkspace(Number(arg))
@@ -306,6 +310,7 @@ Item {
   Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" || root.scrollOpen }
   Binding { target: Net; property: "wanted"; value: root.sheet === "network" || root.scrollOpen }
   Binding { target: Power; property: "wanted"; value: root.sheet === "power" || root.scrollOpen }
+  Binding { target: Display; property: "wanted"; value: root.sheet === "display" || root.scrollOpen }
 
   // BarWindows by screen name, for the host's per-screen questions.
   property var windows: ({})

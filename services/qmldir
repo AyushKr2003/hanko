@@ -6,3 +6,4 @@ singleton Sound 1.0 Sound.qml
 singleton Net 1.0 Net.qml
 singleton Power 1.0 Power.qml
 singleton Extras 1.0 Extras.qml
+singleton Display 1.0 Display.qml

@@ -191,6 +191,8 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 Sheets 20–25 show both on full desktops.
 
+The panels are Time 時, Sound 音, Network 網, Power 電, Display 明 and Inbox 報 (as sheets), and the scroll adds Spaces 窓 between Display and Inbox: seven sections. Display is the LUM cell's panel (and Omarchy's `omarchy.monitor`, `Super+Ctrl+D`): the chosen monitor's brightness on a ruler, every monitor with its mode and scale, and night light. It was added after the gama1 sheets were drawn, in the same grammar.
+
 ---
 
 ## 3. How options interact

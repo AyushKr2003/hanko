@@ -8,7 +8,7 @@ import "../../core/Sheets.js" as Sheets
 // the harness feeds it fixtures. Each sheet's contents are their own
 // component so the handscroll (Phase 7) can lay them out again.
 //
-// feed: { now, zones, timeShift, sound, network, power, letters, dnd }:
+// feed: { now, zones, timeShift, sound, network, power, display, letters, dnd }:
 // plain data for whichever sheet shows.
 Item {
   id: root
@@ -58,7 +58,7 @@ Item {
       id: body
       width: card.width
       sourceComponent: ({ time: timeSheet, sound: soundSheet, network: networkSheet, power: powerSheet,
-                         inbox: inboxSheet })[root.sheet] || null
+                         display: displaySheet, inbox: inboxSheet })[root.sheet] || null
       onLoaded: if (root.open) root.focusContents()
     }
   }
@@ -116,6 +116,17 @@ Item {
       dnd: !!root.feed.dnd
       now: root.feed.now || new Date()
       onRequest: function(what, arg) { root.request("inbox", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: displaySheet
+    DisplaySheet {
+      display: root.feed.display || null
+      onRequest: function(what, arg) { root.request("display", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
       Keys.onTabPressed: root.cycle(1)
       Keys.onBacktabPressed: root.cycle(-1)

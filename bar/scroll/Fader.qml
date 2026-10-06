@@ -13,6 +13,8 @@ Item {
   property real value: 0
   property bool master: false
   property bool muted: false
+  // Words in place of the number, for a fader that is a switch.
+  property string valueText: ""
 
   signal moved(real value)
 
@@ -29,7 +31,7 @@ Item {
 
     Text {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: root.muted ? "—" : String(Math.round(root.v * 100))
+      text: root.muted ? "—" : root.valueText || String(Math.round(root.v * 100))
       color: root.muted ? Ink.inkFaint : Ink.ink
       font.family: Type.display
       font.pixelSize: Type.px(22)

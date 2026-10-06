@@ -32,6 +32,7 @@ const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell"
   "clampTrack", "landing", "position", "sliver"])
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
+const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
@@ -293,18 +294,20 @@ test("a rod pull goes away from the bar's own edge", () => {
 test("sheets answer to bar cells and to Omarchy's panel ids", () => {
   assert.equal(Sh.forCell("clock"), "time")
   assert.equal(Sh.forCell("volume"), "sound")
-  assert.equal(Sh.forCell("brightness"), "power")
+  assert.equal(Sh.forCell("brightness"), "display")
   assert.equal(Sh.forCell("battery"), "power")
   assert.equal(Sh.forCell("media"), "")
   assert.equal(Sh.forOmarchyId("omarchy.audio"), "sound")
   assert.equal(Sh.forOmarchyId("omarchy.elsewhen"), "time")
   assert.equal(Sh.forOmarchyId("omarchy.bluetooth"), "")
+  assert.equal(Sh.forOmarchyId("omarchy.monitor"), "display")
 })
 
 test("Tab walks the sheets that can open, wrapping", () => {
   assert.equal(Sh.step("time", 1), "sound")
   assert.equal(Sh.step("inbox", 1), "time")
   assert.equal(Sh.step("time", -1), "inbox")
+  assert.equal(Sh.step("power", 1), "display")
   assert.equal(Sh.step("time", 1, ["time", "inbox"]), "inbox")
   assert.equal(Sh.step("nope", 1, ["sound"]), "sound")
 })
@@ -313,9 +316,10 @@ test("togglePanelAt right N counts distinct Omarchy panels on the right", () => 
   const cells = ["media", "network", "volume", "brightness", "battery", "notif", "clock"]
   assert.equal(Sh.panelAt(cells, 1), "omarchy.network")
   assert.equal(Sh.panelAt(cells, 2), "omarchy.audio")
-  assert.equal(Sh.panelAt(cells, 3), "omarchy.power")
-  assert.equal(Sh.panelAt(cells, 4), "omarchy.clock")
-  assert.equal(Sh.panelAt(cells, 5), "")
+  assert.equal(Sh.panelAt(cells, 3), "omarchy.monitor")
+  assert.equal(Sh.panelAt(cells, 4), "omarchy.power")
+  assert.equal(Sh.panelAt(cells, 5), "omarchy.clock")
+  assert.equal(Sh.panelAt(cells, 6), "")
   assert.equal(Sh.panelAt(cells, "0"), "")
 })
 
@@ -477,25 +481,25 @@ test("inbox: bodies, one copy per notification, and how long ago", () => {
 
 test("scroll: six sections on one paper, interludes between", () => {
   const l = Sc.layout(1)
-  assert.deepEqual(l.xs, [0, 670, 1400, 2010, 2500, 3270])
-  assert.equal(l.width, 3270 + 560)
+  assert.deepEqual(l.xs, [0, 670, 1400, 2010, 2500, 3090, 3860])
+  assert.equal(l.width, 3860 + 560)
   assert.equal(Sc.layout(1.5).widths[0], 900)
-  assert.equal(Sc.indexOf("spaces"), 4)
-  assert.equal(Sc.forCell("brightness"), "power")
+  assert.equal(Sc.indexOf("spaces"), 5)
+  assert.equal(Sc.forCell("brightness"), "display")
   assert.equal(Sc.forCell("media"), "")
 })
 
 test("scroll: centring a section, and landing a pan on the nearest", () => {
   const view = 1300
   assert.equal(Sc.centred(1, view), 650 - (670 + 330))
-  for (let i = 0; i < 6; i++) assert.equal(Sc.nearest(Sc.centred(i, view), view), i)
+  for (let i = 0; i < 7; i++) assert.equal(Sc.nearest(Sc.centred(i, view), view), i)
   // A little push from Sound lands back on Sound; a fling carries on.
   const at = Sc.centred(1, view)
   assert.equal(Sc.landing(at - 100, 0, view), 1)
   assert.equal(Sc.landing(at - 100, -3000, view), 2)
   assert.equal(Sc.clampTrack(99999, view), Sc.centred(0, view))
-  assert.equal(Sc.clampTrack(-99999, view), Sc.centred(5, view))
-  assert.deepEqual(Sc.position(3), { x: 0.5, width: 1 / 6 })
+  assert.equal(Sc.clampTrack(-99999, view), Sc.centred(6, view))
+  assert.deepEqual(Sc.position(0), { x: 0, width: 1 / 7 })
 })
 
 test("scroll: interludes are two-tone dither, fading out at the ends", () => {
@@ -592,7 +596,7 @@ test("hosting: Omarchy's default layout, minus what Hanko draws itself", () => {
             { id: "omarchy.audio" }, { id: "omarchy.monitor" }, { id: "omarchy.power" }, { id: "daz.toggl" }, "daz.toggl"] } }
   const all = id => id !== "omarchy.agents"
   const h = H.hosted(cfg, all, () => false)
-  assert.deepEqual(h.map(x => x.id), ["omarchy.weather", "omarchy.system-update", "omarchy.bluetooth", "omarchy.monitor", "daz.toggl"])
+  assert.deepEqual(h.map(x => x.id), ["omarchy.weather", "omarchy.system-update", "omarchy.bluetooth", "daz.toggl"])
   assert.equal(h[0].settings.units, "C")
   const many = H.hosted(cfg, all, id => id === "daz.toggl")
   assert.deepEqual(many.slice(-2).map(x => x.key), ["daz.toggl", "daz.toggl#1"])
@@ -634,6 +638,38 @@ test("tray rows: titles, symbolic icons, a letter to fall back on", () => {
   const t = X.tray([{ id: "nm-applet", title: "Network", icon: "image://icon/nm-signal-75-symbolic" },
                     { id: "steam", tooltipTitle: "Steam", icon: "" }, null])
   assert.deepEqual(t.map(x => [x.id, x.letter, x.symbolic]), [["nm-applet", "N", true], ["steam", "S", false]])
+})
+
+test("display: monitors from hyprctl, the focused one first", () => {
+  const json = JSON.stringify([
+    { name: "DP-2", model: "LG ULTRAGEAR", width: 2560, height: 1440, refreshRate: 143.97, scale: 1.25, focused: false },
+    { name: "eDP-1", description: "BOE 0x0BCA", width: 2880, height: 1800, refreshRate: 120, scale: 1.75, focused: true },
+    { name: "HDMI-A-1", model: "TV", disabled: true }])
+  const m = D.monitors(json)
+  assert.deepEqual(m.map(x => x.name), ["eDP-1", "DP-2", "HDMI-A-1"])
+  assert.equal(m[0].label, "Built-in · eDP-1")
+  assert.equal(m[0].detail, "2880×1800 · 120 Hz · ×1.75")
+  assert.equal(m[1].label, "LG ULTRAGEAR · DP-2")
+  assert.equal(m[1].detail, "2560×1440 · 144 Hz · ×1.25")
+  assert.equal(m[2].detail, "Switched off in Hyprland")
+  assert.deepEqual(D.monitors("nope"), [])
+})
+
+test("display: brightness reading, the monitor it speaks for, the panel", () => {
+  assert.equal(D.brightness("70"), 70)
+  assert.equal(D.brightness("70%\n"), 70)
+  assert.equal(D.brightness(""), -1)
+  const m = D.monitors([{ name: "eDP-1", focused: true, width: 1, height: 1 }, { name: "DP-2", width: 1, height: 1 },
+                        { name: "HDMI-A-1", disabled: true }])
+  assert.equal(D.target(m, ""), "eDP-1")
+  assert.equal(D.target(m, "DP-2"), "DP-2")
+  assert.equal(D.target(m, "HDMI-A-1"), "eDP-1")
+  assert.equal(D.target([], ""), "")
+  const s = D.sheet(m, "DP-2", 40, true)
+  assert.deepEqual([s.title, s.target, s.brightness.level, s.night], ["DP-2", "DP-2", 0.4, true])
+  assert.deepEqual(s.monitors.map(x => x.current), [false, true, false])
+  assert.equal(D.sheet(m, "", -1, false).brightness, null)
+  assert.equal(D.sheet(m, "", 50, false).title, "Built-in")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-06, after Phase 9 (on `claude/hanko-plugin-zzm827`, nine commits ahead of `dev`).
+Last updated: 2026-10-06, after Phase 9 and the Display panel (on `claude/hanko-plugin-zzm827`, ten commits ahead of `dev`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -60,7 +60,7 @@ Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at
 | `gama1-plugin` | Roadmap + Phase 0 + Phase 1 of the plugin. | Merged into `main` (fast-forward), no longer used. |
 | `main` | = `gama1-plugin` at `101a6b6` (Phase 1). | Only updated when the user asks. |
 | **`dev`** | **All current work.** Phases 2–5 on top of main. | **Active branch.** |
-| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phases 5–9. | Fast-forward `dev` to it when the user agrees. |
+| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phases 5–9 and the Display panel. | Fast-forward `dev` to it when the user agrees. |
 
 `git log --oneline dev`:
 
@@ -271,10 +271,10 @@ bar/
   HostBar.qml            the `bar` facade hosted widgets see
   Marks.qml              Hanko's own indicators, keyboard, mic and tray marks
   scroll/                ScrollView, ScrollSection, ListRow, Fader, SignalBars, Interlude;
-                         Time/Sound/Network/Power/Spaces/InboxSection (all pure)
+                         Time/Sound/Network/Power/Display/Spaces/InboxSection (all pure)
   sheets/                SheetView, SheetCard, SheetHead, GroupHead, SheetRow, Ruler,
                          SheetButton, ActionBar; TimeSheet, SoundSheet, NetworkSheet,
-                         PowerSheet, InboxSheet (all pure)
+                         PowerSheet, DisplaySheet, InboxSheet (all pure)
   Edge.qml               hairline | dayrule | rod | rodrule, mirrored at the bottom,
                          inset-aware; rod grip lifts on hover, drag emits pulled()
 core/
@@ -301,7 +301,7 @@ core/
   Scroll.js              SECTIONS, layout, centred, nearest, clampTrack, landing,
                          position, forCell, sliver (interlude dither)
   Time.js                heading, ribbon, isoWeek, Elsewhen zones + date probe rows
-  Sound.js / Net.js / Power.js   plain rows for those sheets
+  Sound.js / Net.js / Power.js / Display.js   plain rows for those sheets
   Edge.js                dayFraction, hourTicks, at (pixel snap), span (rod/inset
                          padding), pulled(dy, atBottom), PULL_THRESHOLD 24
   Status.js              ticks, bars, network, volume, battery (LOW_BATTERY 15),
@@ -315,7 +315,7 @@ services/
   Status.qml (singleton) volume, battery, network, brightness, notifications,
                          doNotDisturb; act(name, how) for click/middle/right/up/down
   Extras.qml (singleton) indicators, keyboard, mic and tray for Marks
-  Zones/Sound/Net/Power.qml (singletons) data for the sheets, gathered only while
+  Zones/Sound/Net/Power/Display.qml (singletons) data for the sheets, gathered only while
                          their sheet is open (`wanted`, bound in Bar.qml)
   qmldir                 singletons Hypr, Media, Status, Zones, Sound, Net, Power
 scripts/hanko            CLI: install | dev | uninstall | style get|doc|set|preset|reset|
@@ -324,7 +324,7 @@ scripts/hanko            CLI: install | dev | uninstall | style get|doc|set|pres
 assets/fonts/            Fraunces.ttf, Fraunces-Italic.ttf, SpaceGrotesk.ttf + OFL texts
 tests/
   run                    unit tests → manifest check → qmllint → renders (--quick skips renders)
-  unit.mjs               Node tests for core/*.js (58 tests)
+  unit.mjs               Node tests for core/*.js (60 tests)
   harness/render.py      PySide6 offscreen renderer (QT_SCALE_FACTOR=2)
   harness/scenes/Strips.qml  a sheet of labelled BarSurface strips from a params JSON
   harness/params/*.json  one per phase (phase1, phase2, phase2-light, phase3, phase4, phase5, phase5-light); a strip may set `now` (its own time) and `backdrop: true` (stripes behind the bar, for glass)
@@ -428,7 +428,7 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 
 ### Phase 7 · The handscroll ✅ (`5354f5e` paper, `34576c4` window and wiring)
 - **`core/Scroll.js`** (+ tests): `SECTIONS` (time, sound, network, power, spaces, inbox; widths 600/660/540/420/700/560 at 12 px base, `INTERLUDE` 70), `layout(scale)`, `centred(i, viewW)` (track x putting a section in the middle), `nearest`, `clampTrack`, `landing(x, velocity)` (carry 0.18 s of speed, then nearest), `position(i)` (foot bar), `forCell`, and `sliver(w, h, seed)` (the kit's fbm + Bayer dither, as 0/1).
-- **`bar/scroll/`** (pure): `ScrollView` (paper with hairlines, rollers with caps, 120 px curls, index plate, foot with keys and position bar, `reveal` and `ink` 0..1; a pan `MouseArea` behind the sections emits `dragged(dx)`, `released(velocity)`, `stepped(±1)`), `ScrollSection` (red kanji, `02 // SOUND`, 46 px serif title, mono caption, 230 px watermark), `ListRow` (index, name/detail, note, bone plate, `leading`/`trailing` components), `Fader`, `SignalBars`, `Interlude` (Canvas painting `sliver` in `Ink.ink`), and the six sections. Sections send the same requests as the sheets (`Bar.sheetRequest`), plus `spaces` (`window` address → `Hypr.focusWindow`, `workspace` id) and `sound`/`input` (mic level).
+- **`bar/scroll/`** (pure): `ScrollView` (paper with hairlines, rollers with caps, 120 px curls, index plate, foot with keys and position bar, `reveal` and `ink` 0..1; a pan `MouseArea` behind the sections emits `dragged(dx)`, `released(velocity)`, `stepped(±1)`), `ScrollSection` (red kanji, `02 // SOUND`, 46 px serif title, mono caption, 230 px watermark), `ListRow` (index, name/detail, note, bone plate, `leading`/`trailing` components), `Fader`, `SignalBars`, `Interlude` (Canvas painting `sliver` in `Ink.ink`), and the sections (seven since the Display panel). Sections send the same requests as the sheets (`Bar.sheetRequest`), plus `spaces` (`window` address → `Hypr.focusWindow`, `workspace` id) and `sound`/`input` (mic level).
 - **`bar/ScrollWindow.qml`**: SheetWindow's layer pattern (namespace `hanko-scroll`). Width = screen minus 6.9 % each side (min 16 px), height 460 px scaled. Motion: `reveal` 300 ms bezier(.2,.9,.25,1), `ink` 120 ms delay + 200 ms bezier(.4,0,.2,1), `trackX` 260 ms bezier(.16,1,.3,1) except while dragging; closing reverses in 220/100 ms and unmaps after 320 ms. `Style.reduceMotion` (Omarchy's animations-off flag, from `qs.Commons`) sets every duration to 0. Keys: `H`/`L`/arrows/Tab pan, `1`–`6` jump, `Esc` rolls up; the wheel steps once per 260 ms.
 - **State and routing** (`Bar.qml`): `scrollOpen`, `scrollScreen`, `scrollSection`; `openScroll/closeScroll/toggleScroll/scrollTo/stepScroll`; `openPanel/panelOpen/closePanel` pick sheet or scroll by the screen's `panels` style, so `summonBarWidget` and friends serve both. A sheet and the scroll never show together. `BarWindow.cellClicked` unrolls at the cell's section under `panels: scroll`; `rodPulled(x)` (Edge now reports where the pull started; `BarSurface.cellAt(x)`) unrolls the scroll, or under sheets drops the sheet of the cell under the pointer (Time otherwise). Every sheet service is `wanted` while the scroll is out. IPC `hanko scroll` (toggle, any `panels`) and `hanko scrollTo <section>`.
 - **No `Super+Space`**: Omarchy binds it (and every `Super+…+Space`) already, and has no plugin hook for binds; README documents `o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")`.
@@ -443,6 +443,12 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **`bar/SettingsWindow.qml`**: a Quickshell `FloatingWindow` (as Omarchy's dev gallery), 1600×900 scaled, min 1200×680; `/` searches, `Ctrl+S` saves, `Esc` clears the search then closes; the window manager closing it counts as Cancel. `Bar.settingsOpen`, `openSettings()`, `closeSettings()` (reverts the draft). IPC `hanko settings` and `hanko styleSetFor <monitor> <key> <value>`.
 - **CLI** (`scripts/hanko`): `settings`, `scroll`, `style set --monitor NAME K V`, `menu add|remove`. Omarchy has no plugin hook for menu entries, but merges `~/.config/omarchy/extensions/omarchy-menu.jsonc`; `menu add` (explicit, never automatic) puts one marked line (`// hanko.bar`) right after the opening brace and keeps a `.bak`; `menu remove` deletes exactly that line.
 - Harness: `tests/harness/scenes/Settings.qml`, params `phase8` (Hanko + 2 edits), `phase8-light`, `phase8-advanced` (Islet, 侍, DP-2 override), `phase8-presets`. `tests/run` lints `bar/settings` too. Unit tests: 53.
+
+### Display panel 明 ✅ (asked for by the user after Phase 9)
+- The LUM cell's own panel, as a sheet and as scroll section 05 (the scroll now has seven: Time, Sound, Network, Power, Display, Spaces, Inbox; `1`–`7` jump). It also answers `omarchy.monitor` (Omarchy's Display panel, `Super+Ctrl+D`), so `omarchy.monitor` moved from hosted to `Hosted.DRAWN`. Brightness left the Power sheet.
+- `core/Display.js` (+ tests): `monitors(hyprctl monitors all -j)` (focused first; "Built-in · eDP-1" for `^(eDP|LVDS|DSI)-`, model + name otherwise; "2560×1440 · 144 Hz · ×1.25"), `brightness(text)`, `target(list, picked)` (picked if on, else focused, else first on), `sheet(...)`. `services/Display.qml`: `hyprctl monitors all -j` and `omarchy-brightness-display --monitor NAME` every 5 s while open (and on monitor events); `setBrightness` sends `omarchy-brightness-display --no-osd --monitor NAME N%` at most every 120 ms; night light through `Extras.nightProxy`; "Monitors ›" opens `~/.config/hypr/monitors.lua` with `omarchy-launch-editor`.
+- `bar/sheets/DisplaySheet.qml` (big number + ruler + Night button, monitors with the chosen one inverted, a click chooses which monitor the ruler drives; Up/Down, N) and `bar/scroll/DisplaySection.qml` (Light and Night faders beside the monitors). `Sheets.SHEETS.display` anchors to `brightness`, then `battery`, then `volume` (desktops have no LUM cell); SheetWindow tries every anchor in turn. `Fader.valueText` for a switch.
+- To verify on hardware: DDC brightness on an external monitor (it can be slow or unavailable: the ruler then shows "—"), the internal panel's backlight, picking another monitor, and night light through the proxy.
 
 ### Phase 9 · Hosting other widgets ✅
 - **The user chose** (asked at the start of the phase): Hanko draws its own keyboard-layout and microphone marks rather than hosting Omarchy's.

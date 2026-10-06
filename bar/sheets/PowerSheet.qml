@@ -3,21 +3,19 @@ import QtQuick
 import "../../core"
 
 // Power 電: the battery's charge as the title (red when low and draining),
-// how long it lasts and what it draws, its detail, the power profiles with
-// the active one inverted, and the screen's brightness on laptops.
-// Up/Down step the brightness.
+// how long it lasts and what it draws, its detail, and the power profiles
+// with the active one inverted. Brightness has its own panel (Display 明).
 Item {
   id: root
 
   // core/Power.js sheet() shape, or null before the first reading.
   property var power: null
 
-  // what: profile (name) | brightness (0..1)
+  // what: profile (name)
   signal request(string what, var arg)
 
   readonly property var details: power ? power.details : []
   readonly property var profiles: power ? power.profiles : []
-  readonly property var light: power ? power.brightness : null
 
   width: parent ? parent.width : 0
   implicitHeight: column.y + column.implicitHeight
@@ -78,30 +76,5 @@ Item {
         onClicked: root.request("profile", profile.modelData.name)
       }
     }
-
-    GroupHead {
-      visible: !!root.light
-      title: "Brightness"
-      summary: "Scroll on bar · ±5"
-    }
-
-    SheetRow {
-      id: lightRow
-      visible: !!root.light
-      name: "Screen"
-      nameWidth: Type.px(90)
-      note: root.light ? String(root.light.percent) : ""
-      last: true
-
-      Ruler {
-        width: lightRow.width - Type.px(90) - Type.px(12) - Type.px(20) - Type.px(10) - Type.px(46)
-        height: Type.px(22)
-        value: root.light ? root.light.level : 0
-        onMoved: function(v) { root.request("brightness", v) }
-      }
-    }
   }
-
-  Keys.onUpPressed: if (root.light) root.request("brightness", Math.min(1, root.light.level + 0.05))
-  Keys.onDownPressed: if (root.light) root.request("brightness", Math.max(0.01, root.light.level - 0.05))
 }

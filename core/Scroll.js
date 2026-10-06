@@ -13,8 +13,9 @@ var SECTIONS = [
   { key: "sound",   no: "02", jp: "音", label: "SOUND",   width: 660 },
   { key: "network", no: "03", jp: "網", label: "NETWORK", width: 540 },
   { key: "power",   no: "04", jp: "電", label: "POWER",   width: 420 },
-  { key: "spaces",  no: "05", jp: "窓", label: "SPACES",  width: 700 },
-  { key: "inbox",   no: "06", jp: "報", label: "INBOX",   width: 560 }
+  { key: "display", no: "05", jp: "明", label: "DISPLAY", width: 520 },
+  { key: "spaces",  no: "06", jp: "窓", label: "SPACES",  width: 700 },
+  { key: "inbox",   no: "07", jp: "報", label: "INBOX",   width: 560 }
 ]
 // A dithered ink-wash sliver between two sections.
 var INTERLUDE = 70
@@ -27,7 +28,7 @@ function indexOf(key) {
 // The section a bar cell unrolls to, or "".
 function forCell(cell) {
   var map = { clock: "time", volume: "sound", network: "network", battery: "power",
-              brightness: "power", workspaces: "spaces", seal: "spaces", notif: "inbox" }
+              brightness: "display", workspaces: "spaces", seal: "spaces", notif: "inbox" }
   return map[cell] || ""
 }
 
@@ -78,7 +79,8 @@ function landing(trackX, velocity, viewW, scale) {
   return nearest(clampTrack(carried, viewW, scale), viewW, scale)
 }
 
-// The position bar at the foot: one sixth of its width, at the section.
+// The position bar at the foot: one section's share of its width, at the
+// section.
 function position(index) {
   var n = SECTIONS.length
   return { x: Math.max(0, Math.min(n - 1, index)) / n, width: 1 / n }
