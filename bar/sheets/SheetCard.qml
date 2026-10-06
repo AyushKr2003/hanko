@@ -75,7 +75,7 @@ Item {
       width: 9
       height: 9
       opacity: root.reveal >= 1 ? 1 : 0
-      Behavior on opacity { NumberAnimation { duration: 120 } }
+      Behavior on opacity { enabled: !Motion.still; NumberAnimation { duration: 120 } }
       Rectangle { x: 4; width: 1; height: 9; color: Ink.lineStrong }
       Rectangle { y: 4; width: 9; height: 1; color: Ink.lineStrong }
     }

@@ -92,6 +92,7 @@ Item {
         y: day.height - 7
         stem: 7
         head: true
+        creeps: true
       }
     }
 
@@ -152,6 +153,7 @@ Item {
         x: E.at(root.dayFraction, rod.width, 2)
         y: -6
         stem: 8
+        creeps: true
       }
 
       // The grip: a small paper plate on the rod's centre that lifts when
@@ -165,7 +167,7 @@ Item {
         color: Ink.paper
         border.width: 1
         border.color: drag.pressed ? Ink.ink : Ink.lineStrong
-        Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Motion.still; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
       }
     }
   }
@@ -175,7 +177,13 @@ Item {
     id: notch
     property int stem: 7
     property bool head: false
+    // Each minute the notch creeps to the new hour mark instead of jumping.
+    property bool creeps: false
     width: 2
+    Behavior on x {
+      enabled: notch.creeps && Motion.live
+      NumberAnimation { duration: Motion.creep; easing.type: Easing.InOutSine }
+    }
     height: stem
 
     Rectangle {

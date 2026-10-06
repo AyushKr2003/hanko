@@ -70,7 +70,7 @@ ScrollSection {
           required property int index
           position: out.index
           name: modelData.label
-          note: modelData.current ? "Live" : modelData.bus
+          note: modelData.current ? "Live" : (modelData.bus || "")
           on: modelData.current
           ruled: out.index > 0 && !root.outputs[out.index - 1].current
           interactive: !modelData.current

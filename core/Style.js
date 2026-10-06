@@ -40,6 +40,16 @@ var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]
 var DEFAULT_PRESET = "Hanko"
 var DEFAULT_SEAL_GLYPH = "印"
 
+// Motion 動 sits outside the sixteen settings (no preset sets it and it is
+// not counted): paper moves like paper, still cuts every transition to its
+// end frame. Omarchy's own reduced motion makes Hanko still as well.
+var MOTIONS = ["paper", "still"]
+var DEFAULT_MOTION = "paper"
+
+function normalizeMotion(m) {
+  return MOTIONS.indexOf(String(m)) >= 0 ? String(m) : DEFAULT_MOTION
+}
+
 // "40" from a hand-edited file or the CLI is the same as 40.
 function coerce(key, value) {
   var options = OPTIONS[key]
@@ -89,7 +99,7 @@ function normalizeGlyph(glyph) {
 }
 
 // A style document as stored in style.json:
-//   { preset, edits: {...}, sealGlyph, monitors: { "<name>": {...} } }
+//   { preset, edits: {...}, sealGlyph, motion, monitors: { "<name>": {...} } }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
@@ -105,6 +115,7 @@ function normalize(doc, warnings) {
     preset: preset,
     edits: cleanEdits(doc.edits, warnings),
     sealGlyph: normalizeGlyph(doc.sealGlyph),
+    motion: normalizeMotion(doc.motion),
     monitors: monitors
   }
 }
@@ -117,15 +128,23 @@ function resolve(doc, monitor) {
   var m = monitor && d.monitors[monitor]
   if (m) for (var j in m) style[j] = m[j]
   style.sealGlyph = d.sealGlyph
+  style.motion = d.motion
   style.preset = d.preset
   style.edited = Object.keys(d.edits).length > 0
   return style
 }
 
 // Setting a value equal to the preset's drops the edit instead of storing it,
-// so `edits` always lists exactly what differs.
+// so `edits` always lists exactly what differs. The seal glyph and motion
+// are kept beside the edits, the same for every preset.
 function withSetting(doc, key, value) {
   var d = normalize(doc)
+  if (key === "sealGlyph") { d.sealGlyph = normalizeGlyph(value); return d }
+  if (key === "motion") {
+    if (MOTIONS.indexOf(String(value)) < 0) return null
+    d.motion = String(value)
+    return d
+  }
   var v = coerce(key, value)
   if (v === undefined) return null
   if (PRESETS[d.preset][key] === v) delete d.edits[key]

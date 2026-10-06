@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import qs.Commons
 import "../core"
 import "../core/Scroll.js" as Scroll
 import "../services"
@@ -17,7 +16,8 @@ import "scroll"
 // Motion (alpha1, "Paper moves like paper"): the paper unrolls in 300 ms,
 // the ink fades in over 200 ms after 120 ms, a pan carries on with its
 // speed and lands centred on a section in 260 ms. Omarchy's reduced motion
-// (animations off) cuts every one to its end frame.
+// (animations off) or motion: still cuts every one to its end frame
+// (core/Motion.qml).
 PanelWindow {
   id: win
 
@@ -28,7 +28,6 @@ PanelWindow {
   readonly property bool open: bar.scrollOpen && bar.scrollScreen === screenName
   readonly property bool atBottom: bar.position === "bottom"
   readonly property int strip: barWindow.barHeight + barWindow.gap
-  readonly property bool still: Style.reduceMotion === true
   property bool primed: false
 
   // Panning state: while dragging, the track follows the pointer directly;
@@ -38,7 +37,7 @@ PanelWindow {
   property real trackX: 0
   property double lastStep: 0
 
-  function ms(v) { return still ? 0 : v }
+  function ms(v) { return Motion.ms(v) }
   function centre() { trackX = Scroll.centred(bar.scrollSection, view.viewWidth, Type.scale) }
 
   screen: barWindow.screen
@@ -159,18 +158,18 @@ PanelWindow {
 
       Behavior on reveal {
         NumberAnimation {
-          duration: win.open ? win.ms(300) : win.ms(220)
+          duration: win.open ? win.ms(Motion.unroll) : win.ms(Motion.rollUp)
           easing.type: Easing.BezierSpline
-          easing.bezierCurve: [0.2, 0.9, 0.25, 1, 1, 1]
+          easing.bezierCurve: Motion.unrollCurve
         }
       }
       Behavior on ink {
         SequentialAnimation {
-          PauseAnimation { duration: win.open ? win.ms(120) : 0 }
+          PauseAnimation { duration: win.open ? win.ms(Motion.inkDelay) : 0 }
           NumberAnimation {
-            duration: win.open ? win.ms(200) : win.ms(100)
+            duration: win.open ? win.ms(Motion.ink) : win.ms(Motion.ink / 2)
             easing.type: Easing.BezierSpline
-            easing.bezierCurve: [0.4, 0, 0.2, 1, 1, 1]
+            easing.bezierCurve: Motion.inkCurve
           }
         }
       }
@@ -208,9 +207,9 @@ PanelWindow {
   Behavior on trackX {
     enabled: !win.dragging && win.open
     NumberAnimation {
-      duration: win.ms(260)
+      duration: win.ms(Motion.pan)
       easing.type: Easing.BezierSpline
-      easing.bezierCurve: [0.16, 1, 0.3, 1, 1, 1]
+      easing.bezierCurve: Motion.panCurve
     }
   }
 

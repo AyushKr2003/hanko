@@ -10,7 +10,8 @@ import "../core/Status.js" as StatusJs
 // meters: ticks puts a ruler beside each quantity (ten in cells, four with
 // glyphs, five with numerals) and Wi-Fi bars in cells; off is numbers only.
 // The red rule: a reading turns red only when it needs you (muted, low
-// battery, offline). Scroll on volume or brightness to change it.
+// battery, offline). Scroll on volume or brightness to change it. Values
+// fade through to the next one (FadeText).
 Item {
   id: root
 
@@ -216,7 +217,7 @@ Item {
           font.pixelSize: Type.px(10.5)
         }
       }
-      Text {
+      FadeText {
         anchors.verticalCenter: parent.verticalCenter
         text: reading.r.value
         color: reading.valueInk
@@ -245,7 +246,7 @@ Item {
         font.pixelSize: Type.px(8.5)
         font.letterSpacing: 1.6
       }
-      Text {
+      FadeText {
         id: num
         anchors.verticalCenter: parent.verticalCenter
         text: reading.r.value + (reading.r.key === "battery" ? "%" : "")
@@ -269,7 +270,7 @@ Item {
     property var r: ({})
     property color ink: Ink.ink
     spacing: Type.px(5)
-    Text {
+    FadeText {
       id: big
       text: value.r.value
       color: value.ink

@@ -3,7 +3,8 @@ import QtQuick
 import "../../core"
 
 // A segmented control: the options side by side in one hairline frame, the
-// chosen one a bone plate. Mono labels, the way Ryoku's settings set them.
+// chosen one a bone plate that slides to a new choice (Motion.slide). Mono
+// labels, the way Ryoku's settings set them.
 Rectangle {
   id: root
 
@@ -20,12 +21,30 @@ Rectangle {
   border.color: Ink.lineStrong
   clip: true
 
+  readonly property Item chosen: {
+    for (var i = 0; i < options.length && i < segs.count; i++)
+      if (String(options[i]) === selected) return segs.itemAt(i)
+    return null
+  }
+
+  Rectangle {
+    visible: root.chosen !== null
+    x: row.x + (root.chosen ? root.chosen.x : 0)
+    y: row.y
+    width: root.chosen ? root.chosen.width : 0
+    height: row.height
+    color: Ink.bone
+    Behavior on x { enabled: Motion.live; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
+    Behavior on width { enabled: Motion.live; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
+  }
+
   Row {
     id: row
     x: 1
     y: 1
     height: parent.height - 2
     Repeater {
+      id: segs
       model: root.options
       Rectangle {
         id: seg
@@ -34,7 +53,7 @@ Rectangle {
         readonly property bool on: String(modelData) === root.selected
         width: label.implicitWidth + 2 * Type.px(8)
         height: row.height
-        color: on ? Ink.bone : hover.containsMouse ? Ink.lineSoft : "transparent"
+        color: !on && hover.containsMouse ? Ink.lineSoft : "transparent"
         Rectangle { visible: seg.index > 0; width: 1; height: parent.height; color: Ink.line }
         Text {
           id: label

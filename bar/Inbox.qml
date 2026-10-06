@@ -9,7 +9,8 @@ import "../core/Status.js" as StatusJs
 //           slightly askew, newest on top; hover fans them out
 // Do not disturb keeps the count but drops the red: the label reads QUIET 静
 // and the stamps are inked, not sealed. Click replays the recent ones;
-// right-click toggles do not disturb.
+// right-click toggles do not disturb. A new stamp is pressed down
+// oversized and tilted, then settles (Motion.stamp, the only overshoot).
 Item {
   id: root
 
@@ -26,6 +27,21 @@ Item {
   readonly property string countText: StatusJs.count2(count)
   readonly property var shown: notifications.slice(0, 3)
   readonly property bool fanned: hover.hovered
+
+  // Notifications already on the bar: only one that arrives after the
+  // first reading is pressed down (Motion.stamp). Updated after the
+  // stamps are built, so a new one still finds itself missing here.
+  property var known: ({})
+  property bool primed: false
+  function keyOf(n) { return n.timestamp + "|" + n.app + "|" + n.summary }
+  onNotificationsChanged: Qt.callLater(remember)
+  Component.onCompleted: Qt.callLater(remember)
+  function remember() {
+    var k = {}
+    for (var i = 0; i < notifications.length; i++) k[keyOf(notifications[i])] = true
+    known = k
+    primed = true
+  }
 
   implicitWidth: mode === "count" ? (compact ? countLine.implicitWidth : countCell.implicitWidth) : stampRow.implicitWidth
   implicitHeight: barHeight
@@ -126,7 +142,7 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
       visible: root.count > 0
       spacing: root.fanned ? Type.px(4) : -Type.px(4)
-      Behavior on spacing { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+      Behavior on spacing { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
 
       Repeater {
         model: root.shown
@@ -154,17 +170,39 @@ Item {
   component Stamp: Rectangle {
     id: stamp
     property var n: ({})
+    // 0 = held above the bar, oversized and tilted; 1 = pressed and settled.
+    property real press: 1
     readonly property color sealInk: root.dnd ? Ink.inkMuted : Ink.seal
     readonly property bool solid: !!n.urgent && !root.dnd
     width: Type.px(18)
     height: width
     radius: 2
     rotation: root.fanned ? 0 : n.tilt || 0
-    Behavior on rotation { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+    Behavior on rotation { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
     antialiasing: true
     color: solid ? sealInk : Ink.paper
     border.width: 1.5
     border.color: sealInk
+    transform: [
+      Scale {
+        origin.x: stamp.width / 2; origin.y: stamp.height / 2
+        xScale: 1 + 0.45 * (1 - stamp.press); yScale: xScale
+      },
+      Rotation { origin.x: stamp.width / 2; origin.y: stamp.height / 2; angle: -12 * (1 - stamp.press) }
+    ]
+    opacity: Math.min(1, 0.4 + stamp.press)
+
+    NumberAnimation {
+      id: pressing
+      target: stamp
+      property: "press"
+      from: 0
+      to: 1
+      duration: Motion.stamp
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Motion.stampCurve
+    }
+    Component.onCompleted: if (root.primed && Motion.live && !root.known[root.keyOf(n)]) pressing.start()
 
     Text {
       anchors.centerIn: parent

@@ -54,7 +54,7 @@ Item {
     Row {
       spacing: Type.px(10)
 
-      Text {
+      FadeText {
         anchors.verticalCenter: parent.verticalCenter
         textFormat: Text.StyledText
         text: root.timeMarkup(Ink.inkMuted)
@@ -107,7 +107,7 @@ Item {
     Row {
       spacing: Type.px(10)
 
-      Text {
+      FadeText {
         id: inlineTime
         textFormat: Text.StyledText
         text: root.timeMarkup(Ink.seal)
@@ -139,7 +139,7 @@ Item {
     Row {
       spacing: Type.px(10)
 
-      Text {
+      FadeText {
         id: monoTime
         text: root.time
         color: Ink.ink

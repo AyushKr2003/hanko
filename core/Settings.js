@@ -50,9 +50,28 @@ var CARDS = [
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
+// The Motion 動 page: one switch outside the sixteen (style.json `motion`),
+// and the timings it governs (core/Motion.qml holds the numbers).
+var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
+  { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
+var MOTION_OPTIONS = ["paper", "still"]
+
+// [name, what moves, Motion.qml property for its time]
+var MOTION_ROWS = [
+  ["Unroll", "The rod drops and the scroll's paper follows it", "unroll"],
+  ["Ink", "Section ink arrives after the paper has moved", "ink"],
+  ["Pan", "A pan carries on and lands centred on a section", "pan"],
+  ["Print", "A sheet prints top-down from the cell you clicked", "sheetPrint"],
+  ["Plates", "The live page's plate slides to the next one", "slide"],
+  ["Values", "A changed reading fades through to the new one", "fade"],
+  ["Stamp", "A new notification is pressed down, then settles: the only overshoot", "stamp"],
+  ["Now-notch", "Creeps to the new minute instead of jumping", "creep"]
+]
+
 // The options a row's segmented control offers, as strings.
 function optionsFor(key, OPTIONS) {
   if (key === "sealGlyph") return GLYPHS.concat(["…"])
+  if (key === "motion") return MOTION_OPTIONS.slice()
   return (OPTIONS[key] || []).map(String)
 }
 

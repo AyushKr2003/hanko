@@ -13,9 +13,9 @@ function load(file, names) {
   return new Function(`${src}\nreturn { ${names.join(", ")} }`)()
 }
 
-const S = load("core/Style.js", ["OPTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
+const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting"])
-const Se = load("core/Settings.js", ["RAIL", "CARDS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "selected", "changes",
+const Se = load("core/Settings.js", ["RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
@@ -550,6 +550,8 @@ test("settings: six cards hold every one of the sixteen settings once", () => {
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.deepEqual(Se.optionsFor("height", S.OPTIONS), ["32", "36", "40", "44"])
   assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["印", "力", "侍", "A", "…"])
+  assert.deepEqual(Se.optionsFor("motion", S.OPTIONS), S.MOTIONS)
+  assert.equal(Se.MOTION_ROWS.length, 8)
   const st = S.resolve({})
   assert.equal(Se.selected("height", st, "印"), "40")
   assert.equal(Se.selected("sealGlyph", st, "侍"), "侍")
@@ -704,6 +706,19 @@ test("bluetooth: the bar cell and the sheet", () => {
   assert.equal(B.sheet(false, false, false, []).title, "No adapter")
   assert.equal(B.sheet(true, false, false, devs).blurb, "Turn it on to see your devices.")
   assert.equal(B.sheet(true, true, true, []).blurb, "Looking for devices nearby…")
+})
+
+test("motion sits outside the settings: paper or still, kept through presets and resets", () => {
+  assert.equal(S.resolve({}).motion, "paper")
+  assert.equal(S.resolve({ motion: "wobbly" }).motion, "paper")
+  const d = S.withSetting({ preset: "Quiet" }, "motion", "still")
+  assert.equal(d.motion, "still")
+  assert.deepEqual(d.edits, {})
+  assert.equal(S.withSetting({}, "motion", "fast"), null)
+  assert.equal(S.withPreset(d, "Sheet").motion, "still")
+  assert.equal(S.shuffled(d, () => 0.5).motion, "still")
+  assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
+  assert.equal(S.combinations(), 5971968)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

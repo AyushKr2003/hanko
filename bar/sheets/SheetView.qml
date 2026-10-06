@@ -19,7 +19,7 @@ Item {
   property int tearX: 0
   property int tearWidth: 0
   property var feed: ({})
-  // Printed (1) or not (0); animates over 180 ms when `open` changes.
+  // Printed (1) or not (0); prints over Motion.sheetPrint (180 ms) when `open` changes.
   property bool open: true
   property bool animate: true
 
@@ -51,8 +51,8 @@ Item {
     tearWidth: root.tearWidth
     reveal: root.open ? 1 : 0
     Behavior on reveal {
-      enabled: root.animate
-      NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+      enabled: root.animate && !Motion.still
+      NumberAnimation { duration: Motion.sheetPrint; easing.type: Easing.OutCubic }
     }
 
     Loader {

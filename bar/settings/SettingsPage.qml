@@ -263,7 +263,7 @@ Rectangle {
           height: width
           radius: width / 2
           color: root.advanced ? Ink.ink : Ink.inkFaint
-          Behavior on x { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+          Behavior on x { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
         }
         MouseArea {
           anchors.fill: parent
@@ -608,6 +608,91 @@ Rectangle {
           }
         }
 
+        // ------------------------------------------------ Motion
+        Column {
+          visible: root.page === "motion"
+          width: parent.width
+          topPadding: Type.px(22)
+          spacing: Type.px(18)
+
+          SettingsCard {
+            width: parent.width
+            card: Settings.MOTION_CARD
+            style: root.style
+            options: ({})
+            onPicked: function(key, value) { root.settingPicked(key, value) }
+          }
+
+          Text {
+            visible: Motion.system
+            width: parent.width
+            wrapMode: Text.Wrap
+            text: "Omarchy's animations are off, so Hanko is still whatever this says."
+            color: Ink.seal
+            font.family: Type.text
+            font.pixelSize: Type.px(12)
+          }
+
+          // The timings, as alpha1's motion sheet gives them.
+          Rectangle {
+            width: parent.width
+            height: timings.implicitHeight + Type.px(16)
+            radius: 3
+            color: "transparent"
+            border.width: 1
+            border.color: Ink.line
+
+            Column {
+              id: timings
+              x: Type.px(14)
+              y: Type.px(8)
+              width: parent.width - 2 * x
+              Repeater {
+                model: Settings.MOTION_ROWS
+                Item {
+                  id: timing
+                  required property var modelData
+                  required property int index
+                  readonly property int ms: Motion[modelData[2]]
+                  width: timings.width
+                  height: Type.px(36)
+                  Rectangle {
+                    visible: timing.index > 0
+                    width: parent.width; height: 1; color: Ink.lineSoft
+                  }
+                  Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Type.px(120)
+                    text: timing.modelData[0]
+                    color: Ink.ink
+                    font.family: Type.text
+                    font.pixelSize: Type.px(13.5)
+                  }
+                  Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: Type.px(120)
+                    width: parent.width - x - Type.px(110)
+                    elide: Text.ElideRight
+                    text: timing.modelData[1]
+                    color: Ink.inkMuted
+                    font.family: Type.text
+                    font.pixelSize: Type.px(11.5)
+                  }
+                  Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    text: root.style.motion === "still" || Motion.system ? "cut" : timing.ms >= 1000 ? (timing.ms / 1000) + " s" : timing.ms + " ms"
+                    color: root.style.motion === "still" || Motion.system ? Ink.inkFaint : Ink.inkDim
+                    font.family: Type.mono
+                    font.pixelSize: Type.px(10)
+                    font.letterSpacing: 1
+                  }
+                }
+              }
+            }
+          }
+        }
+
         // ------------------------------------------------ Presets
         Column {
           visible: root.page === "presets"
@@ -706,10 +791,10 @@ Rectangle {
   // Honest words for the rail pages that are still to come.
   readonly property var placeholders: ({
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
-    widgets: "Third-party bar widgets and the tray, drawn in Hanko's ink. Coming with Phase 9.",
+    widgets: "Every widget in your Omarchy bar layout that Hanko doesn't draw itself is hosted in the right zone, in Hanko's ink; the tray folds to 盆 when room runs short. Add or remove them in Omarchy's bar layout.",
     sheets: "Sheets drop flush from the cell you click. Choose them under Panels on Typesetting; their own settings come later.",
     scroll: "The handscroll unrolls from the rod. Choose it under Panels on Typesetting; bind a key with omarchy-shell hanko scroll.",
-    motion: "Hanko follows Omarchy's animation switch: with animations off, every move cuts to its end. A switch of its own comes with Phase 10.",
+    motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
     keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+S saves. Rebinding comes later."
   })
 

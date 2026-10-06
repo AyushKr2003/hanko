@@ -256,7 +256,7 @@ Item {
               height: entryRow.height + 2 * Type.px(4)
               radius: 2
               color: on ? Ink.bone : "transparent"
-              Behavior on color { ColorAnimation { duration: 160 } }
+              Behavior on color { enabled: !Motion.still; ColorAnimation { duration: Motion.slide } }
               Row {
                 id: entryRow
                 anchors.centerIn: parent
