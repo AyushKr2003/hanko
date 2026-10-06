@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="alpha.css"><script src="alpha.js"></script>
+<style>body{width:1600px;background:#0a0a09}.plate{padding:56px 64px 30px}
+.eb{font-family:var(--mono);font-size:10px;letter-spacing:2.2px;color:var(--inkMuted);display:flex;gap:10px;align-items:center}.eb .jp{font-family:var(--jp);color:var(--seal);font-size:13px;letter-spacing:0}.eb .fill{flex:1;height:1px;background:var(--lineSoft)}
+h1{font-family:var(--display);font-variation-settings:'opsz' 144;font-weight:400;font-size:64px;letter-spacing:-1.2px;margin:16px 0 10px}.lead{font-size:15px;color:var(--inkMuted);max-width:820px;line-height:1.5}
+.strip{margin:0 64px 26px}.meta{display:flex;align-items:baseline;gap:14px;padding-bottom:8px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:2px;color:#7e7a71;text-transform:uppercase}
+.meta .nm{font-family:'Fraunces';font-size:22px;letter-spacing:0;text-transform:none;color:#ddd5c7}
+.frame{height:120px;overflow:hidden;position:relative;border-radius:3px}.frame canvas{position:absolute;left:0;top:0;width:1472px;height:828px}.frame .bh{position:relative;z-index:2}
+</style></head><body><div class="hk" id="root"><div class="plate">
+<div class="eb"><span class="jp">染</span>HANKO ALPHA1 · THEMES<span class="fill"></span><span>SHEET 06 / 06</span></div>
+<h1>Your theme, printed</h1>
+<div class="lead">Paper is the Omarchy theme's background, ink its foreground stepped down to four fixed contrasts, and the seal its red. The wallpaper plate follows the same three inks, so a theme switch reprints the whole desk.</div></div>
+<div id="st"></div></div>
+<script>
+applyTheme(document.getElementById('root'),'hanko');
+const keys=['hanko','tokyo-night','kanagawa','gruvbox','flexoki-light','rose-pine'];
+const states=[{},{time:'09:12',date:'Mon 5 Oct',media:null,stamps:[]},{time:'13:30',app:'Firefox',title:'Omarchy Manual · <b>The top bar</b>',st:[{k:'音',v:'62'},{k:'網',v:'Kumo',cls:'hover',lbl:'Net'},{k:'電',v:'91'}]},
+{time:'18:05',st:[{k:'音',v:'off',cls:'off'},{k:'網',v:'Kumo'},{k:'電',v:'12',cls:'warn'}],media:null},{time:'07:40',app:'Obsidian',title:'Notes · <b>hanko /</b> design.md',stamps:['S']},{time:'23:58',active:1,ws:[{win:L.wide,on:true,f:1},{win:L.one},{}],app:'Spotify',title:'Green · <b>Hiroshi Yoshimura</b>',fan:true}];
+const host=document.getElementById('st');
+keys.forEach((k,i)=>{const t=THEMES[k];host.insertAdjacentHTML('beforeend',`<div class="strip"><div class="meta"><span class="nm">${t.name}</span><span>${t.mode} · paper ${t.background.toUpperCase()} · ink ${t.foreground.toUpperCase()} · seal ${t.red.toUpperCase()}</span></div><div class="frame hk" id="f${i}"><canvas width="1472" height="828" id="c${i}"></canvas><div class="bh" id="b${i}"></div></div></div>`);
+ applyTheme(document.getElementById('f'+i),k);paintMarble(document.getElementById('c'+i),k,{cell:2,x:.74,y:.3,r:.26,sunDX:-1.05,sunDY:.5,sunR:.25});
+ mountBar(document.getElementById('b'+i),Object.assign({glass:true},states[i]));});
+document.fonts.ready.then(()=>document.body.dataset.ready=1)
+</script></body></html>

@@ -1,0 +1,53 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="alpha.css"><script src="alpha.js"></script>
+<style>
+body{width:1600px;background:#0a0a09}.plate{background:var(--paper);padding:56px 64px 64px}
+.eb{font-family:var(--mono);font-size:10px;letter-spacing:2.2px;color:var(--inkMuted);display:flex;gap:10px;align-items:center}
+.eb .jp{font-family:var(--jp);color:var(--seal);font-size:13px;letter-spacing:0}.eb .fill{flex:1;height:1px;background:var(--lineSoft)}
+h1{font-family:var(--display);font-variation-settings:'opsz' 144;font-weight:400;font-size:64px;letter-spacing:-1.2px;margin:16px 0 10px}
+.lead{font-size:15px;color:var(--inkMuted);max-width:780px;line-height:1.5}
+.hero{margin:44px 0 10px;border:1px solid var(--lineSoft)}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;margin-top:40px}
+.card{border-top:1px solid var(--line);padding-top:16px}
+.card .hd{display:flex;align-items:baseline;gap:10px}.card .n{font-family:var(--mono);font-size:10px;color:var(--seal);letter-spacing:2px}
+.card .t{font-family:var(--display);font-size:24px}.card .t .jp{font-family:var(--jp);font-size:13px;color:var(--inkFaint);margin-left:6px}
+.card .d{font-size:12.5px;color:var(--inkMuted);line-height:1.5;margin:6px 0 14px;min-height:56px}
+.frames{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fr{border:1px solid var(--lineSoft);border-radius:3px;height:96px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.fr .tag{position:absolute;left:8px;top:7px;font-family:var(--mono);font-size:8px;letter-spacing:1.8px;color:var(--inkFaint)}
+.fr .z{zoom:1.6;display:flex;align-items:center;gap:8px}
+.tip{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;font-family:var(--mono);font-size:8px;letter-spacing:1.4px;color:var(--inkDim);white-space:nowrap}
+.cur{position:absolute;width:0;height:0;border-left:6px solid var(--ink);border-top:4px solid transparent;border-bottom:4px solid transparent;transform:rotate(-120deg)}
+</style></head><body>
+<div class="plate hk" id="p">
+  <div class="eb"><span class="jp">判</span>HANKO ALPHA1 · THE BAR<span class="fill"></span><span>SHEET 02 / 06</span></div>
+  <h1>Quiet until touched</h1>
+  <div class="lead">At rest the bar is a single line of type: where you are, what time it is, what's playing, three glyphs and a few stamps. Every piece answers the pointer with more detail, and the rod along its foot unrolls everything else.</div>
+  <div class="hero" id="hb"></div>
+  <div class="grid" id="g"></div>
+</div>
+<script>
+applyTheme(document.getElementById('p'),'hanko');mountBar(document.getElementById('hb'),{});
+const sp=(hover)=>`<span class="seal" style="margin-right:6px">参</span><div class="spaces" style="margin:0">${DEF.ws.map((w,i)=>glyph(Object.assign({},w,hover&&i===2?{big:false}:{}))).join('')}</div>`;
+const C=[
+ ['01','Seal','印','The seal is the workspace you are on, in its kanji numeral. Click for the Omarchy menu; scroll on it to walk workspaces.',
+  `<div class="z"><span class="seal" style="margin:0">参</span></div>`,`<div class="z"><span class="seal" style="margin:0;transform:scale(.92) rotate(-3deg)">肆</span></div><span class="tip">SCROLL ↓ · STAMPS 肆</span>`],
+ ['02','Layout glyphs','窓','Each workspace is drawn as its real tiling. The live one is outlined, the focused window filled. Hover and it opens into names.',
+  `<div class="z">${DEF.ws.map(glyph).join('')}</div>`,
+  `<div class="z" style="zoom:1.25"><span class="lg on big"><i class="f" style="left:0;top:0;width:calc(50% - 2px);height:calc(100% - 2px);margin:1px;font:7px var(--ui);color:var(--onBone);padding:2px">nvim</i><i style="left:50%;top:0;width:calc(50% - 2px);height:calc(50% - 2px);margin:1px;font:7px var(--ui);color:var(--inkDim);padding:2px">zsh</i><i style="left:50%;top:50%;width:calc(50% - 2px);height:calc(50% - 2px);margin:1px;font:7px var(--ui);color:var(--inkDim);padding:2px">btop</i></span></div><span class="tip">HOVER · 参 OPENS INTO NAMES</span>`],
+ ['03','Byline','題','The app in serif italic, its title in grotesk, the path receding. Middle click copies the title.',
+  `<div class="z" style="zoom:1.15"><div class="byline"><span class="app">Alacritty</span><span class="tt">nvim · <b>~/code/</b>Bar.qml</span></div></div>`,
+  `<div class="z" style="zoom:1.15"><div class="byline"><span class="app">Alacritty</span><span class="tt" style="color:var(--ink)">copied</span></div></div><span class="tip">MIDDLE CLICK · COPIED, FADES IN 900MS</span>`],
+ ['04','Glyph status','音','Kanji are the icons; the number is the state. Hover adds the Latin word, scroll changes the value, and a glyph inverts to red only when it needs you.',
+  `<div class="z"><span class="g"><span class="k">音</span>62</span><span class="g"><span class="k">電</span>91</span></div>`,
+  `<div class="z" style="zoom:1.2"><span class="g hover"><span class="k">音</span><span class="lbl">Vol</span>67</span><span class="g warn"><span class="k">電</span>12</span><span class="g off"><span class="k">藍</span>off</span></div><span class="tip">HOVER · WARN · OFF</span>`],
+ ['05','Stamps','報','Notifications land as stamped seals, the newest on top and slightly askew. Hover fans them; click unrolls the Inbox.',
+  `<div class="z"><div class="stamps"><span class="st" style="transform:rotate(-6deg)">S</span><span class="st" style="transform:rotate(4deg)">G</span><span class="st" style="transform:rotate(-2deg)">火</span><span class="n">03</span></div></div>`,
+  `<div class="z"><div class="stamps fan"><span class="st" style="transform:rotate(-6deg)">S</span><span class="st" style="transform:rotate(4deg)">G</span><span class="st" style="transform:rotate(-2deg)">火</span><span class="n">03</span></div></div><span class="tip">“MIKA: THE BUILD IS GREEN”</span>`],
+ ['06','The rod','軸','The bar’s foot is a scroll’s roller. Hover lifts the grip; pull it down, or press Super+Space, and the handscroll unrolls.',
+  `<div style="position:relative;width:80%;height:30px"><div class="rod" style="left:0;right:0;bottom:10px"><span class="grip"></span></div></div>`,
+  `<div style="position:relative;width:80%;height:30px"><div class="rod live" style="left:0;right:0;bottom:16px"><span class="grip" style="width:56px;background:var(--ink)"></span><span class="pull">PULL ↓ TO UNROLL</span></div></div>`],
+];
+document.getElementById('g').innerHTML=C.map(c=>`<div class="card"><div class="hd"><span class="n">${c[0]}</span><span class="t">${c[1]}<span class="jp">${c[2]}</span></span></div><div class="d">${c[3]}</div>
+<div class="frames"><div class="fr"><span class="tag">REST</span>${c[4]}</div><div class="fr"><span class="tag">TOUCHED</span>${c[5]}</div></div></div>`).join('');
+document.fonts.ready.then(()=>document.body.dataset.ready=1)
+</script></body></html>
