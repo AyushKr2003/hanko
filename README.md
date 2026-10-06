@@ -104,3 +104,8 @@ hl.layer_rule({ match = { namespace = "hanko-bar" }, blur = true, ignore_alpha =
 
 - Design language inspired by [Ryoku](https://github.com/Ryoku-dev/ryoku)'s settings app and [ryoku.dev](https://ryoku.dev). No Ryoku code is used.
 - Bundled fonts: Fraunces and Space Grotesk, under the SIL Open Font License (`assets/fonts/`).
+
+## License
+
+- Hanko is [MIT](LICENSE).
+- The bundled fonts keep their own SIL Open Font License (`assets/fonts/*-OFL.txt`).
