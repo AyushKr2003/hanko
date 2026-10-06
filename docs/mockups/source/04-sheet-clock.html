@@ -1,0 +1,90 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="hanko.css"><script src="hanko.js"></script>
+<style>
+  body { width: 1600px; height: 900px; overflow: hidden; }
+  #screen { position: relative; width: 1600px; height: 900px; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 1600px; height: 900px; }
+  #barhost { position: absolute; top: 0; left: 0; right: 0; z-index: 5; }
+  .cal { display: grid; grid-template-columns: 30px repeat(7, 1fr); font-family: var(--mono); font-size: 12px; text-align: center; row-gap: 2px; margin-top: 10px; }
+  .cal .h { font-size: 9px; letter-spacing: 1.6px; color: var(--inkFaint); padding: 6px 0; }
+  .cal .wk { font-size: 9px; color: var(--inkFaint); align-self: center; text-align: left; letter-spacing: 1px; }
+  .cal .d { padding: 7px 0; color: var(--inkDim); border-radius: 2px; position: relative; }
+  .cal .d.o { color: var(--inkFaint); opacity: .6; }
+  .cal .d.we { color: var(--inkMuted); }
+  .cal .d.t { background: var(--bone); color: var(--onBone); font-weight: 600; }
+  .cal .d.t::after { content: ''; position: absolute; left: 50%; bottom: 3px; width: 3px; height: 3px; background: var(--seal); transform: translateX(-50%); }
+  .bigrule { position: relative; height: 46px; margin: 14px 0 4px; }
+  .bigrule .tk { position: absolute; bottom: 14px; width: 1px; height: 6px; background: var(--line); }
+  .bigrule .tk.m { height: 12px; background: var(--lineStrong); }
+  .bigrule .tk.q { height: 4px; }
+  .bigrule .sp { position: absolute; left: 0; bottom: 14px; height: 2px; background: var(--ink); }
+  .bigrule .lb { position: absolute; bottom: 0; font-family: var(--mono); font-size: 8.5px; color: var(--inkFaint); transform: translateX(-50%); letter-spacing: 1px; }
+  .bigrule .nw { position: absolute; bottom: 14px; width: 2px; height: 26px; background: var(--seal); }
+  .bigrule .nwl { position: absolute; top: -4px; font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; color: var(--seal); transform: translateX(-50%); }
+  .bigrule .blk { position: absolute; bottom: 21px; height: 5px; border: 1px solid var(--lineStrong); }
+</style></head><body>
+<div id="screen" class="hk">
+  <canvas id="wp" width="1600" height="900"></canvas>
+  <div id="barhost"></div>
+  <div class="sheet" id="sheet" style="z-index:6;top:36px;width:520px">
+    <div class="tear"></div>
+    <div style="padding:22px 26px 6px">
+      <div class="eyebrow"><span class="dash"></span><span class="jp">時</span> TIME · WEEK 41<span class="fill"></span></div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between">
+        <h2 style="margin-bottom:6px">Tuesday</h2>
+        <div style="font-family:var(--display);font-style:italic;font-size:17px;color:var(--inkMuted);margin-bottom:10px">the sixth of October</div>
+      </div>
+      <div class="blurb">Day 279 of 365 · 2h 16m left in the day</div>
+
+      <div class="group">
+        <div class="ghead"><span class="sl">//</span>THE DAY<span class="sum">91% SPENT</span></div>
+        <div class="bigrule" id="br"></div>
+      </div>
+
+      <div class="group">
+        <div class="ghead"><span class="sl">//</span>OCTOBER 2026<span class="sum">‹ &nbsp; TODAY &nbsp; ›</span></div>
+        <div class="cal" id="cal"></div>
+      </div>
+
+      <div class="group" style="margin-bottom:16px">
+        <div class="ghead"><span class="sl">//</span>ELSEWHEN<span class="sum">3 ZONES</span></div>
+        <div class="row"><div><div class="nm">Tokyo</div><div class="ds">Wed 07 · JST</div></div><div class="rt"><span style="font-family:var(--display);font-size:20px;color:var(--ink);letter-spacing:0">06:44</span><span>+9 · +1D</span></div></div>
+        <div class="row"><div><div class="nm">Lisbon</div><div class="ds">Tue 06 · WEST</div></div><div class="rt"><span style="font-family:var(--display);font-size:20px;color:var(--ink);letter-spacing:0">22:44</span><span>+1</span></div></div>
+        <div class="row" style="border-bottom:none"><div><div class="nm">San Francisco</div><div class="ds">Tue 06 · PDT</div></div><div class="rt"><span style="font-family:var(--display);font-size:20px;color:var(--ink);letter-spacing:0">14:44</span><span>−7</span></div></div>
+      </div>
+    </div>
+    <div class="actionbar"><span class="sq"></span>RIGHT CLICK · CYCLE FORMAT<span class="sp"></span><span class="btn ghost">Zones</span><span class="btn plate">Timer</span></div>
+    <span class="crop" style="left:-5px;bottom:-5px"></span><span class="crop" style="right:-5px;bottom:-5px"></span>
+  </div>
+</div>
+<script>
+  const s = document.getElementById('screen'); applyTheme(s, 'kanagawa');
+  paintWallpaper(document.getElementById('wp'), 'kanagawa', { cell: 2, sunX: .22, sunY: .48, sunR: .2, sun: '#c0a36e' });
+  const bar = mountBar(document.getElementById('barhost'), Object.assign({}, DEFAULT_STATE, {
+    open: 'clock', app: 'Desktop', title: '<span class="dim">workspace</span> 03 <span class="dim">· empty</span>', media: null, notif: 1,
+  }));
+  const cc = bar.querySelector('[data-id="clock"]').getBoundingClientRect();
+  const sh = document.getElementById('sheet'); const L = cc.left + cc.width / 2 - 260; sh.style.left = L + 'px';
+  sh.querySelector('.tear').style.cssText += `left:${cc.left - L}px;right:${L + 520 - cc.right}px;`;
+
+  // big rule
+  const br = document.getElementById('br'); let h = ''; const f = (21 * 60 + 44) / 1440;
+  for (let i = 0; i <= 96; i++) { const x = i / 96 * 100; h += `<div class="tk ${i % 24 === 0 ? 'm' : (i % 4 === 0 ? '' : 'q')}" style="left:${x}%"></div>`; }
+  for (let i = 0; i <= 24; i += 6) h += `<div class="lb" style="left:${Math.min(Math.max(i / 24 * 100, 1.5), 98.5)}%">${String(i).padStart(2, '0')}:00</div>`;
+  h += `<div class="sp" style="width:${f * 100}%"></div>`;
+  h += `<div class="nw" style="left:${f * 100}%"></div><div class="nwl" style="left:${f * 100 - 3}%">NOW 21:44</div>`;
+  br.innerHTML = h;
+
+  // calendar: Oct 2026 starts Thursday; Monday-first
+  const cal = document.getElementById('cal'); let c = '<div></div>' + ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'].map(d => `<div class="h">${d}</div>`).join('');
+  let day = -2; // Mon 28 Sep
+  for (let w = 40; w <= 44; w++) {
+    c += `<div class="wk">W${w}</div>`;
+    for (let k = 0; k < 7; k++, day++) {
+      const out = day < 1 || day > 31; const n = day < 1 ? 30 + day : (day > 31 ? day - 31 : day);
+      c += `<div class="d ${out ? 'o' : ''} ${k >= 5 ? 'we' : ''} ${day === 6 ? 't' : ''}">${String(n).padStart(2, '0')}</div>`;
+    }
+  }
+  cal.innerHTML = c;
+  document.fonts.ready.then(() => document.body.dataset.ready = 1);
+</script></body></html>

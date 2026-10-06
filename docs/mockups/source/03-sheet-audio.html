@@ -1,0 +1,105 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="hanko.css"><script src="hanko.js"></script>
+<style>
+  body { width: 1600px; height: 900px; overflow: hidden; }
+  #screen { position: relative; width: 1600px; height: 900px; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 1600px; height: 900px; }
+  #barhost { position: absolute; top: 0; left: 0; right: 0; z-index: 5; }
+  .win { position: absolute; top: 46px; bottom: 10px; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); font-size: 12px; line-height: 1.65; color: var(--inkDim); padding: 14px 0; overflow: hidden; }
+  .win.focus { border-color: var(--lineStrong); }
+  .win pre { font: inherit; white-space: pre; }
+  .ln { color: var(--inkFaint); display: inline-block; width: 44px; text-align: right; padding-right: 14px; }
+  .k { color: var(--ink); } .s { color: var(--seal); } .c { color: var(--inkFaint); font-style: italic; } .n { color: var(--inkMuted); }
+  .status { position: absolute; left: 0; right: 0; bottom: 0; height: 24px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 14px; padding: 0 14px; font-size: 10px; letter-spacing: 1.4px; color: var(--inkMuted); }
+  .status .md { background: var(--bone); color: var(--onBone); padding: 1px 8px; font-weight: 600; }
+  .scrim { position: absolute; inset: 36px 0 0 0; background: rgba(0,0,0,.18); z-index: 4; }
+</style></head><body>
+<div id="screen" class="hk">
+  <canvas id="wp" width="1600" height="900"></canvas>
+  <div class="win focus" style="left:10px;width:885px"><pre id="code"></pre>
+    <div class="status"><span class="md">NORMAL</span><span>Bar.qml</span><span style="margin-left:auto">qml · utf-8 · 42:18</span></div></div>
+  <div class="win" style="left:905px;right:10px;padding:14px 16px"><pre id="log"></pre></div>
+  <div class="scrim"></div>
+  <div id="barhost"></div>
+  <div class="sheet" id="sheet" style="z-index:6;top:36px;width:430px">
+    <div class="tear"></div>
+    <div style="padding:22px 24px 4px">
+      <div class="eyebrow"><span class="dash"></span><span class="jp">音</span> SOUND · PIPEWIRE<span class="fill"></span></div>
+      <h2>Sound</h2>
+      <div class="blurb">Where it plays, how loud, and who is talking.</div>
+
+      <div class="group">
+        <div class="ghead"><span class="sl">//</span>MASTER<span class="sum">SCROLL ON BAR · ±5</span></div>
+        <div style="display:flex;align-items:center;gap:16px;padding:12px 2px 6px">
+          <div style="font-family:var(--display);font-variation-settings:'opsz' 72;font-size:40px;line-height:1;width:66px">62</div>
+          <div class="rslider" id="master"></div>
+          <div class="btn">Mute</div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="ghead"><span class="sl">//</span>OUTPUT<span class="sum">3 DEVICES</span></div>
+        <div class="row sel"><span class="lead">//</span><div><div class="nm">Studio Monitors</div><div class="ds">USB · Focusrite 2i2 · 48 kHz</div></div><div class="rt">LIVE</div></div>
+        <div class="row"><span class="lead"></span><div><div class="nm">WH-1000XM5</div><div class="ds">Bluetooth · LDAC · battery 70%</div></div><div class="rt">PAIRED</div></div>
+        <div class="row"><span class="lead"></span><div><div class="nm">Built-in Speakers</div><div class="ds">Analog · Realtek ALC287</div></div><div class="rt"></div></div>
+      </div>
+
+      <div class="group" style="margin-bottom:18px">
+        <div class="ghead"><span class="sl">//</span>MIXER<span class="sum">2 STREAMS</span></div>
+        <div class="row" style="padding:0 2px"><div style="width:96px"><div class="nm" style="font-size:13.5px">Spotify</div></div><div class="rslider" id="m1" style="height:22px"></div><div class="rt" style="width:30px;justify-content:flex-end">80</div></div>
+        <div class="row" style="padding:0 2px;border-bottom:none"><div style="width:96px"><div class="nm" style="font-size:13.5px">Firefox</div></div><div class="rslider" id="m2" style="height:22px"></div><div class="rt" style="width:30px;justify-content:flex-end">45</div></div>
+      </div>
+    </div>
+    <div class="actionbar"><span class="sq"></span>INPUT · <span style="color:var(--ink)">SHURE MV7</span><span class="sp"></span><span class="btn ghost">Settings</span><span class="btn plate">Mixer ›</span></div>
+    <span class="crop" style="left:-5px;bottom:-5px"></span><span class="crop" style="right:-5px;bottom:-5px"></span>
+  </div>
+</div>
+<script>
+  const s = document.getElementById('screen'); applyTheme(s, 'hanko');
+  paintWallpaper(document.getElementById('wp'), 'hanko', { cell: 2 });
+  const bar = mountBar(document.getElementById('barhost'), Object.assign({}, DEFAULT_STATE, { open: 'vol', notif: 0 }));
+  const vc = bar.querySelector('[data-id="vol"]').getBoundingClientRect();
+  const sh = document.getElementById('sheet'); sh.style.left = (vc.right - 430) + 'px';
+  sh.querySelector('.tear').style.cssText += `left:${430 - vc.width}px;`;
+  function slider(id, v, knobInk) {
+    const el = document.getElementById(id); let h = '<div class="tks">';
+    for (let i = 0; i <= 40; i++) h += `<i class="${i % 10 === 0 ? 'm' : ''} ${i / 40 <= v ? 'f' : ''}"></i>`;
+    el.innerHTML = h + `</div><div class="knob ${knobInk ? 'ink' : ''}" style="left:${v * 100}%"></div>`;
+  }
+  slider('master', .62); slider('m1', .8, true); slider('m2', .45, true);
+
+  const code = `import QtQuick
+import Quickshell
+import qs.Commons
+
+<c>// Hanko: the running head. One hairline, one seal.</c>
+Item {
+  id: root
+  <k>property</k> var barConfig: ({})
+  <k>property</k> var barWidgetRegistry: null
+  <k>readonly property</k> real dayFraction: Clock.minutes / 1440
+
+  Ink { id: ink; theme: Color }        <c>// paper + four ink tiers</c>
+
+  RunningHead {
+    anchors.fill: parent
+    Seal    { glyph: <s>"印"</s>; onClicked: root.toggleMenu() }
+    Folio   { workspaces: Hyprland.workspaces }
+    Rule    {}
+    Cell    { label: <s>"Alacritty"</s>; gloss: <s>"窓"</s>; value: title }
+    Clock   { anchor: <s>"center"</s> }
+    Cell    { label: <s>"Vol"</s>; gloss: <s>"音"</s>; meter: Audio.level }
+  }
+  DayRule { fraction: root.dayFraction; notch: ink.seal }
+}`;
+  document.getElementById('code').innerHTML = code.split('\n').map((l, i) => `<span class="ln">${i + 1}</span>` + l.replace(/<c>/g, '<span class="c">').replace(/<\/c>/g, '</span>').replace(/<k>/g, '<span class="k">').replace(/<\/k>/g, '</span>').replace(/<s>/g, '<span class="s">').replace(/<\/s>/g, '</span>')).join('\n');
+  document.getElementById('log').innerHTML = `<span class="n">21:41:07</span>  shell   rescan plugins
+<span class="n">21:41:07</span>  hanko   manifest ok · kind bar
+<span class="n">21:41:08</span>  hanko   ink ramp  12.1 · 9.0 · 6.3 · 4.6
+<span class="n">21:41:08</span>  hanko   seal      #D8452F
+<span class="n">21:41:08</span>  hanko   widgets   8 native · 2 hosted
+<span class="n">21:43:52</span>  audio   sink → Studio Monitors
+<span class="n">21:44:10</span>  hanko   sheet open · vol
+<span class="k">▍</span>`;
+  document.fonts.ready.then(() => document.body.dataset.ready = 1);
+</script></body></html>

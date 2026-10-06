@@ -1,0 +1,121 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="hanko.css"><script src="hanko.js"></script>
+<style>
+  body { width: 1600px; }
+  .plate { position: relative; background: var(--paper); padding: 56px 64px 60px; min-height: 0; }
+  .head h1 { font-family: var(--display); font-variation-settings: 'opsz' 144; font-weight: 400; font-size: 64px; letter-spacing: -1px; margin: 16px 0 10px; }
+  .head p { font-size: 15px; color: var(--inkMuted); max-width: 720px; line-height: 1.5; }
+  .stage { position: relative; margin-top: 54px; border: 1px solid var(--lineSoft); }
+  .stage .bh { position: relative; }
+  svg.leaders { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+  .legend { display: grid; grid-template-columns: repeat(8, 1fr); margin-top: 130px; border-top: 1px solid var(--line); }
+  .legend .it { padding: 16px 18px 18px 0; border-bottom: 1px solid var(--lineSoft); margin-right: 16px; }
+  .legend .n { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--seal); }
+  .legend .t { font-size: 16px; margin: 6px 0 4px; display: flex; gap: 8px; align-items: baseline; }
+  .legend .t .jp { font-family: var(--jp); font-size: 12px; color: var(--inkFaint); }
+  .legend .d { font-size: 12.5px; color: var(--inkMuted); line-height: 1.45; }
+  .row2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 40px; margin-top: 44px; }
+  .box { border: 1px solid var(--line); padding: 20px 22px; position: relative; }
+  .box .eyebrow { margin-bottom: 16px; }
+  .states { display: grid; grid-template-columns: 90px 1fr; row-gap: 14px; align-items: center; }
+  .states .k { font-family: var(--mono); font-size: 9px; letter-spacing: 1.8px; color: var(--inkFaint); text-transform: uppercase; }
+  .minibar { height: 36px; display: flex; align-items: stretch; border-bottom: 1px solid var(--line); background: var(--paper); }
+  .spec { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .spec .f1 { font-family: var(--display); font-variation-settings: 'opsz' 96; font-size: 46px; line-height: 1; }
+  .spec .f2 { font-family: var(--ui); font-size: 30px; line-height: 1.1; }
+  .spec .f3 { font-family: var(--mono); font-size: 20px; letter-spacing: 3px; line-height: 1.3; }
+  .spec .cap { font-family: var(--mono); font-size: 9px; letter-spacing: 1.6px; color: var(--inkFaint); margin-top: 8px; text-transform: uppercase; line-height: 1.6; }
+  .sw8 { display: flex; margin-top: 22px; border: 1px solid var(--line); }
+  .sw8 div { flex: 1; height: 64px; padding: 8px; font-family: var(--mono); font-size: 8.5px; letter-spacing: 1px; display: flex; flex-direction: column; justify-content: flex-end; }
+  .corner { position: absolute; font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--inkFaint); }
+</style></head><body>
+<div class="plate hk" id="plate">
+  <div class="corner" style="top:24px;right:64px">SHEET 02 / 05 · HANKO 0.1 DRAFT</div>
+  <div class="head">
+    <div class="eyebrow"><span class="dash"></span><span class="jp">印</span> HANKO · BAR ANATOMY<span class="fill"></span></div>
+    <h1>The running head</h1>
+    <p>The screen is the page; the bar is its printed header. One hairline, one seal, labels over values, and a day measured along its foot. Nothing floats, nothing glows.</p>
+  </div>
+  <div class="stage" id="stage"><div class="bh" id="barhost"></div></div>
+  <div class="legend" id="legend"></div>
+
+  <div class="row2">
+    <div class="box">
+      <div class="eyebrow"><span class="jp">状</span> STATES<span class="fill"></span></div>
+      <div class="states" id="states"></div>
+    </div>
+    <div class="box">
+      <div class="eyebrow"><span class="jp">活字</span> TYPE &amp; INK<span class="fill"></span></div>
+      <div class="spec">
+        <div><div class="f1">21:44</div><div class="cap">Fraunces · opsz 40<br>the clock, sheet titles</div></div>
+        <div><div class="f2">Water Copy</div><div class="cap">Space Grotesk<br>language: titles, values</div></div>
+        <div><div class="f3">VOL 62</div><div class="cap">Your Omarchy mono<br>labels, keys, data</div></div>
+      </div>
+      <div class="sw8" id="sw"></div>
+    </div>
+  </div>
+</div>
+<script>
+  const P = document.getElementById('plate'); const V = applyTheme(P, 'hanko');
+  const bar = mountBar(document.getElementById('barhost'), Object.assign({}, DEFAULT_STATE, { hover: 'vol' }), { labels: false });
+  const items = [
+    ['seal', 'Seal', '印', 'A stamped hanko in the theme\'s red. Opens the Omarchy menu; right click opens a terminal.'],
+    ['ws', 'Folio', '頁', 'Workspaces as page numbers. Live one inverts to a bone plate with a // lead; dots count windows.'],
+    ['title', 'Running head', '窓', 'Window class over title, like a chapter line. Path parts recede to muted ink.'],
+    ['clock', 'Clock', '時', 'The only serif on the bar. Day and date sit beside it as a tracked mono caption.'],
+    ['media', 'Cells', '欄', 'Every status is a label over a value, ruled off by hairlines like a spec table.'],
+    ['vol', 'Tick meter', '目盛', 'Quantities are rulers, not pills: ten ticks, the filled ones in full ink.'],
+    ['rule', 'Day rule', '日', 'The bar\'s foot is a 24-hour ruler. The red notch is now; the brighter line is the day spent.'],
+    ['notif', 'Inbox', '便', 'Notification count in mono. The single red dot is the only alert colour on the bar.'],
+  ];
+  const lg = document.getElementById('legend');
+  items.forEach((it, i) => lg.insertAdjacentHTML('beforeend', `<div class="it"><div class="n">${String(i + 1).padStart(2, '0')}</div><div class="t">${it[1]} <span class="jp">${it[2]}</span></div><div class="d">${it[3]}</div></div>`));
+
+  // states
+  const st = document.getElementById('states');
+  const wsRow = `<div class="folio" style="padding:0"><span class="ws">05</span><span class="ws occ">02<span class="dots"><i></i><i></i></span></span><span class="ws on"><span class="lead">//</span>03</span><span class="ws occ">04<span class="dots"><i></i></span><span class="urg"></span></span></div>`;
+  st.innerHTML = `
+    <div class="k">Folio</div><div class="minibar">${wsRow}<span style="align-self:center;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--inkFaint);margin-left:14px">EMPTY · OCCUPIED · LIVE · URGENT</span></div>
+    <div class="k">Cell</div><div class="minibar">
+      <div class="cell"><div class="lab">Vol <span class="jp">音</span></div><div class="val">62<span class="unit">%</span>${ticks(10, 6)}</div></div><div class="rule"></div>
+      <div class="cell hover"><div class="lab">Vol <span class="jp">音</span></div><div class="val">62<span class="unit">%</span>${ticks(10, 6)}</div></div><div class="rule"></div>
+      <div class="cell open"><div class="lab">Vol <span class="jp">音</span></div><div class="val">62<span class="unit">%</span>${ticks(10, 6)}</div></div>
+      <span style="align-self:center;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--inkFaint);margin-left:14px">REST · HOVER · SHEET OPEN</span></div>
+    <div class="k">Warn</div><div class="minibar">
+      <div class="cell"><div class="lab">Bat <span class="jp">電</span></div><div class="val">12<span class="unit">%</span>${ticks(10, 1, true)}</div></div><div class="rule"></div>
+      <div class="cell"><div class="lab">Vol <span class="jp">音</span></div><div class="val"><span class="dim">MUTED</span>${ticks(10, 0)}</div></div><div class="rule"></div>
+      <div class="cell"><div class="lab" style="color:var(--alert)">● Rec <span class="jp">録画</span></div><div class="val">04:12<span class="unit">MIN</span></div></div></div>`;
+
+  const sw = document.getElementById('sw');
+  [['paper', V.paper, V.ink], ['ink', V.ink, V.paper], ['dim', V.inkDim, V.paper], ['muted', V.inkMuted, V.paper], ['faint', V.inkFaint, V.paper], ['line', V.line, V.ink], ['seal', V.seal, V.paper]].forEach(([n, bg, fg]) =>
+    sw.insertAdjacentHTML('beforeend', `<div style="background:${bg};color:${fg}">${n.toUpperCase()}<br>${bg.startsWith('#') ? bg.toUpperCase() : '24%'}</div>`));
+
+  // leaders
+  document.fonts.ready.then(() => {
+    const stage = document.getElementById('stage'); const sr = stage.getBoundingClientRect();
+    const lr = lg.getBoundingClientRect();
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg'); svg.classList.add('leaders');
+    svg.setAttribute('width', sr.width); svg.setAttribute('height', lr.top - sr.top + 10);
+    stage.appendChild(svg);
+    const its = lg.querySelectorAll('.it');
+    items.forEach((it, i) => {
+      let el = bar.querySelector(`[data-id="${it[0]}"]`); let r = el.getBoundingClientRect();
+      let x = r.left + r.width / 2 - sr.left, y = r.bottom - sr.top;
+      if (it[0] === 'rule') { x = sr.width * 0.905; y = 36; }
+      const tr = its[i].getBoundingClientRect();
+      const tx = tr.left - sr.left + 1, ty = tr.top - sr.top;
+      const lane = 50 + (i % 4) * 14 + (i >= 4 ? 0 : 0);
+      const midY = y + 22 + (x > tx ? (7 - i) : i) * 9;
+      const p = document.createElementNS(svgNS, 'path');
+      p.setAttribute('d', `M${x} ${y + 2} V${midY} H${tx} V${ty}`);
+      p.setAttribute('stroke', V.lineStrong); p.setAttribute('fill', 'none'); p.setAttribute('stroke-width', '1');
+      svg.appendChild(p);
+      const c = document.createElementNS(svgNS, 'circle'); c.setAttribute('cx', x); c.setAttribute('cy', y + 2); c.setAttribute('r', 2.2); c.setAttribute('fill', V.seal); svg.appendChild(c);
+      const t = document.createElementNS(svgNS, 'text'); t.setAttribute('x', tx + 5); t.setAttribute('y', midY - 4);
+      t.setAttribute('fill', V.inkFaint); t.setAttribute('font-family', 'JetBrains Mono'); t.setAttribute('font-size', '8.5'); t.setAttribute('letter-spacing', '1.5');
+      t.textContent = String(i + 1).padStart(2, '0'); svg.appendChild(t);
+    });
+    document.body.dataset.ready = 1;
+  });
+</script></body></html>
