@@ -24,8 +24,9 @@ Item {
   // of its own (the frame already is one).
   property bool inset: false
 
-  // Dragged away from the bar far enough to unroll the scroll.
-  signal pulled()
+  // Dragged away from the bar far enough to unroll the scroll; x is where
+  // along the bar the pull started.
+  signal pulled(real x)
 
   readonly property bool isRod: mode === "rod" || mode === "rodrule"
   readonly property bool isDay: mode === "dayrule" || mode === "rodrule"
@@ -216,14 +217,15 @@ Item {
     preventStealing: true
 
     property real startY: 0
+    property real startX: 0
     property bool fired: false
 
-    onPressed: function(mouse) { startY = mouse.y; fired = false }
+    onPressed: function(mouse) { startY = mouse.y; startX = mouse.x; fired = false }
     onPositionChanged: function(mouse) {
       if (!pressed || fired) return
       if (E.pulled(mouse.y - startY, root.atBottom, Type.px(E.PULL_THRESHOLD))) {
         fired = true
-        root.pulled()
+        root.pulled(startX)
       }
     }
   }

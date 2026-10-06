@@ -30,6 +30,11 @@ Item {
   signal request(string section, string what, var arg)
   // A name on the index plate was clicked.
   signal picked(int index)
+  // The paper is being dragged sideways (dx since the press), let go at
+  // `velocity` px/s, or wheeled a step (+1 on, -1 back).
+  signal dragged(real dx)
+  signal released(real velocity)
+  signal stepped(int delta)
 
   readonly property var sections: Scroll.SECTIONS
   readonly property var layout: Scroll.layout(Type.scale)
@@ -64,6 +69,31 @@ Item {
         height: parent.height
         clip: true
         opacity: root.ink
+
+        // Behind the sections: a drag anywhere on bare paper pans it, and
+        // the wheel steps a section at a time. Controls on top keep theirs.
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+          preventStealing: true
+          property real startX: 0
+          property real lastX: 0
+          property real lastT: 0
+          property real speed: 0
+          onPressed: function(mouse) { startX = lastX = mouse.x; lastT = Date.now(); speed = 0 }
+          onPositionChanged: function(mouse) {
+            var t = Date.now()
+            if (t > lastT) speed = 0.6 * speed + 0.4 * (mouse.x - lastX) * 1000 / (t - lastT)
+            lastX = mouse.x
+            lastT = t
+            root.dragged(mouse.x - startX)
+          }
+          onReleased: root.released(Date.now() - lastT > 80 ? 0 : speed)
+          onWheel: function(wheel) {
+            var d = Math.abs(wheel.angleDelta.x) > Math.abs(wheel.angleDelta.y) ? -wheel.angleDelta.x : -wheel.angleDelta.y
+            if (d !== 0) root.stepped(d > 0 ? 1 : -1)
+          }
+        }
 
         Item {
           id: track

@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../core"
 import "../core/Sheets.js" as Sheets
+import "../core/Scroll.js" as Scroll
 import "../services"
 
 // One layer-shell bar per screen. It reserves its own height and, when the
@@ -58,12 +59,25 @@ PanelWindow {
   Component.onCompleted: bar.registerWindow(screenName, win)
   Component.onDestruction: bar.unregisterWindow(screenName, win)
 
-  // A click on a cell with a sheet opens (or closes) that sheet; anything
-  // else goes to the service as before.
+  // panels: scroll unrolls the handscroll; panels: sheets drops sheets.
+  readonly property bool scrolls: shown.panels === "scroll"
+
+  // A click on a cell with a panel opens (or closes) it at that cell's
+  // sheet or section; anything else goes to the service as before.
   function cellClicked(cell, how, fallback) {
-    var key = Sheets.forCell(cell)
-    if (how === "click" && bar.sheetReady(key)) bar.toggleSheet(key, screenName)
+    if (how !== "click") { fallback(); return }
+    if (scrolls && Scroll.forCell(cell)) bar.toggleScroll(Scroll.forCell(cell), screenName)
+    else if (bar.sheetReady(Sheets.forCell(cell))) bar.toggleSheet(Sheets.forCell(cell), screenName)
     else fallback()
+  }
+
+  // A pull on the rod: the scroll unrolls (at the section under the
+  // pointer, else where it was); with sheets, the sheet of the cell under
+  // the pointer drops, or Time.
+  function rodPulled(x) {
+    var cell = surface.cellAt(x)
+    if (scrolls) bar.openScroll(Scroll.forCell(cell) || "", screenName)
+    else bar.openSheet(Sheets.forCell(cell) || "time", screenName)
   }
 
   BarSurface {
@@ -93,8 +107,13 @@ PanelWindow {
     onStatusAction: function(name, how) { win.cellClicked(name, how, function() { Status.act(name, how) }) }
     onInboxAction: function(how) { win.cellClicked("notif", how, function() { Status.act("notif", how) }) }
     onClockClicked: win.cellClicked("clock", "click", function() {})
-    // The rod unrolls the scroll; Phase 7 gives it somewhere to go.
-    onEdgePulled: win.bar.edgePulled(win.screen ? win.screen.name : "")
+    // The rod unrolls the scroll, or drops the sheet under the pull.
+    onEdgePulled: function(x) { win.rodPulled(x) }
+  }
+
+  ScrollWindow {
+    bar: win.bar
+    barWindow: win
   }
 
   SheetWindow {

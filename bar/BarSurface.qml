@@ -38,8 +38,8 @@ Item {
   signal clockClicked()
   signal statusAction(string name, string how)
   signal inboxAction(string how)
-  // The rod was pulled away from the bar (edge: rod | rodrule).
-  signal edgePulled()
+  // The rod was pulled away from the bar (edge: rod | rodrule), at x.
+  signal edgePulled(real x)
 
   // The right zone's cells in order, for `togglePanelAt right N`.
   readonly property var rightCells: {
@@ -60,6 +60,16 @@ Item {
     if (!item || !item.visible) return null
     var p = item.mapToItem(root, 0, 0)
     return { x: Math.round(p.x), width: Math.round(item.width) }
+  }
+
+  // The cell (clock, a status reading, notif) under x, or "".
+  function cellAt(x) {
+    var cells = rightCells.concat(clockRight ? [] : ["clock"])
+    for (var i = 0; i < cells.length; i++) {
+      var a = anchorFor(cells[i])
+      if (a && x >= a.x && x < a.x + a.width) return cells[i]
+    }
+    return ""
   }
 
   readonly property int barHeight: Type.px(style.height || 40)
@@ -241,6 +251,6 @@ Item {
     now: root.now
     atBottom: root.atBottom
     inset: root.inset
-    onPulled: root.edgePulled()
+    onPulled: function(x) { root.edgePulled(x) }
   }
 }

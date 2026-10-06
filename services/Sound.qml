@@ -83,6 +83,9 @@ Singleton {
     var n = find(id, name)
     if (n && n.audio) n.audio.muted = !n.audio.muted
   }
+  function setInput(v) {
+    if (root.source && root.source.audio) root.source.audio.volume = Math.max(0, Math.min(1, v))
+  }
   function toggleInput() { Quickshell.execDetached(["omarchy-audio-input-mute"]) }
 
   // Availability changes when things are plugged in; check while open.

@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import "core"
 import "core/Sheets.js" as Sheets
+import "core/Scroll.js" as Scroll
 import "bar"
 import "services"
 
@@ -46,10 +47,6 @@ Item {
   // solid surface turns to glass; glass and inset stay as they are.
   property bool transparent: false
   onBarConfigChanged: transparent = !!(barConfig && barConfig.transparent === true)
-
-  // The rod was pulled on a screen (edge: rod | rodrule). Phase 7 unrolls
-  // the scroll from here.
-  signal edgePulled(string screenName)
 
   // Called by the host. Like Omarchy's own bar it writes bar.transparent to
   // shell.json through the host, so the choice survives a restart and the
@@ -104,6 +101,7 @@ Item {
 
   function openSheet(key, screenName) {
     if (!sheetReady(key) || barHidden) return false
+    closeScroll()
     if (key !== sheet) timeShift = 0
     sheetScreen = screenName || focusedScreen()
     sheet = key
@@ -128,6 +126,7 @@ Item {
       else if (what === "stream") Sound.setStream(arg.id, arg.name, Number(arg.value))
       else if (what === "streamMute") Sound.toggleStream(arg.id, arg.name)
       else if (what === "inputMute") Sound.toggleInput()
+      else if (what === "input") Sound.setInput(Number(arg))
     } else if (key === "network") {
       if (what === "connect") Net.connect(arg.ssid, arg.saved, arg.secure)
       else if (what === "radio") Net.setRadio(!!arg)
@@ -141,6 +140,10 @@ Item {
     } else if (key === "power") {
       if (what === "profile") Power.setProfile(String(arg))
       else if (what === "brightness") Power.setBrightness(Number(arg))
+    } else if (key === "spaces") {
+      if (what === "window") Hypr.focusWindow(String(arg))
+      else if (what === "workspace") Hypr.focusWorkspace(Number(arg))
+      closeScroll()
     } else if (key === "inbox") {
       if (what === "dnd") Status.act("notif", "right")
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
@@ -149,13 +152,63 @@ Item {
     }
   }
 
-  onBarHiddenChanged: if (barHidden) closeSheet()
+  // ------------------------------------------------------------- scroll
+  //
+  // The handscroll (panels: scroll): open on one screen at a time, panned
+  // to one section. It stays where you left it between unrolls.
+  property bool scrollOpen: false
+  property string scrollScreen: ""
+  property int scrollSection: 0
+
+  function panelsFor(screenName) {
+    return Typeset.styleFor(screenName || focusedScreen()).panels
+  }
+  // Unroll at a section key ("" keeps the last one).
+  function openScroll(key, screenName) {
+    if (barHidden) return false
+    closeSheet()
+    var i = Scroll.indexOf(key)
+    if (i >= 0) scrollSection = i
+    scrollScreen = screenName || focusedScreen()
+    scrollOpen = true
+    return true
+  }
+  function closeScroll() { scrollOpen = false }
+  // Open at a section, pan to it if open elsewhere, roll up if it's showing.
+  function toggleScroll(key, screenName) {
+    var i = Scroll.indexOf(key)
+    if (scrollOpen && scrollScreen === screenName && (i < 0 || i === scrollSection)) closeScroll()
+    else openScroll(key, screenName)
+  }
+  function scrollTo(index) {
+    scrollSection = Math.max(0, Math.min(Scroll.SECTIONS.length - 1, index))
+  }
+  function stepScroll(delta) { scrollTo(scrollSection + delta) }
+  readonly property string scrollKey: Scroll.SECTIONS[scrollSection].key
+
+  // A panel for one of Omarchy's ids, as this screen's style wants it.
+  function openPanel(key, screenName) {
+    if (!key) return false
+    if (panelsFor(screenName) === "scroll") return openScroll(key, screenName)
+    return openSheet(key, screenName)
+  }
+  function panelOpen(key) {
+    return key !== "" && (sheet === key || (scrollOpen && scrollKey === key))
+  }
+  function closePanel(key) {
+    if (sheet === key) closeSheet()
+    if (scrollOpen && scrollKey === key) closeScroll()
+  }
+
+  onBarHiddenChanged: if (barHidden) { closeSheet(); closeScroll() }
 
   Binding { target: Zones; property: "barConfig"; value: root.barConfig }
-  Binding { target: Zones; property: "wanted"; value: root.sheet === "time" }
-  Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" }
-  Binding { target: Net; property: "wanted"; value: root.sheet === "network" }
-  Binding { target: Power; property: "wanted"; value: root.sheet === "power" }
+  // Data for a sheet is gathered while it is open; the scroll shows every
+  // section at once, so all of it while the scroll is out.
+  Binding { target: Zones; property: "wanted"; value: root.sheet === "time" || root.scrollOpen }
+  Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" || root.scrollOpen }
+  Binding { target: Net; property: "wanted"; value: root.sheet === "network" || root.scrollOpen }
+  Binding { target: Power; property: "wanted"; value: root.sheet === "power" || root.scrollOpen }
 
   // BarWindows by screen name, for the host's per-screen questions.
   property var windows: ({})
@@ -176,21 +229,20 @@ Item {
   // Omarchy's audio, clock, network and power panels are kind bar-widget,
   // so with Hanko as the bar `omarchy-shell shell toggle omarchy.audio`
   // (and SUPER+CTRL+A, W, P, ALT+D, ALT+E) land here. Hanko answers with
-  // its own sheets. The host asks isBarWidgetOpen first: summon opens,
-  // never toggles.
+  // its own sheets, or the scroll at that section under panels: scroll.
+  // The host asks isBarWidgetOpen first: summon opens, never toggles.
   function summonBarWidget(id) {
     var key = Sheets.forOmarchyId(id)
-    return sheetReady(key) && openSheet(key, focusedScreen())
+    return sheetReady(key) && openPanel(key, focusedScreen())
   }
   function hideBarWidget(id) {
     var key = Sheets.forOmarchyId(id)
     if (!sheetReady(key)) return false
-    if (sheet === key) closeSheet()
+    closePanel(key)
     return true
   }
   function isBarWidgetOpen(id) {
-    var key = Sheets.forOmarchyId(id)
-    return key !== "" && sheet === key
+    return panelOpen(Sheets.forOmarchyId(id))
   }
   // `togglePanelAt right N` (SUPER+CTRL+1..9): the Nth Omarchy panel among
   // Hanko's right-zone cells, on the focused screen.
@@ -277,5 +329,14 @@ Item {
       return root.openSheet(name, root.focusedScreen()) ? "open" : "unknown"
     }
     function sheetClose(): string { root.closeSheet(); return "ok" }
+    // Unroll or roll up the handscroll on the focused screen, whatever
+    // `panels` says (bind it to a key: see the README).
+    function scroll(): string {
+      if (root.scrollOpen) { root.closeScroll(); return "closed" }
+      return root.openScroll("", root.focusedScreen()) ? "open" : "hidden"
+    }
+    function scrollTo(name: string): string {
+      return Scroll.indexOf(name) >= 0 && root.openScroll(name, root.focusedScreen()) ? "open" : "unknown"
+    }
   }
 }
