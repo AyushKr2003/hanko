@@ -41,6 +41,9 @@ Rectangle {
   signal shuffle()
 
   readonly property var style: S.resolve(draft)
+
+  // `/` from the window: put the cursor in the search field.
+  function focusSearch() { search.forceActiveFocus() }
   readonly property int changes: Settings.changes(saved, draft, S.resolve)
   readonly property var pageInfo: {
     for (var g = 0; g < Settings.RAIL.length; g++)

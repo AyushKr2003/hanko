@@ -2,7 +2,7 @@
 
 判子 · a configurable bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-**Status: early plugin (phase 7 of 10).** gama1 merges the beta1 and alpha1 directions into one bar where every part is a setting: 15 settings, 6 presets, 2,985,984 combinations. The plugin (`hanko.bar`, a full-bar Omarchy plugin) is being built phase by phase; see the [roadmap](docs/ROADMAP.md). Right now it draws the seal, your workspaces, the window title, the clock (stacked, inline or mono, following your 12- or 24-hour setting), what is playing, your sound, network, battery and brightness, and your notifications on your theme's paper, edged with a hairline, a day rule, a scroll rod or the rod carrying the day, solid, glass or floating inset. Clicking the clock, a status cell or the inbox drops a sheet from it (Time, Sound, Network, Power, Inbox), and Omarchy's own panel hotkeys open the same sheets; with `panels: scroll` the same clicks unroll a handscroll of all six instead. It reads every setting from `~/.config/hanko/style.json`.
+**Status: early plugin (phase 8 of 10).** gama1 merges the beta1 and alpha1 directions into one bar where every part is a setting: 15 settings, 6 presets, 2,985,984 combinations. The plugin (`hanko.bar`, a full-bar Omarchy plugin) is being built phase by phase; see the [roadmap](docs/ROADMAP.md). Right now it draws the seal, your workspaces, the window title, the clock (stacked, inline or mono, following your 12- or 24-hour setting), what is playing, your sound, network, battery and brightness, and your notifications on your theme's paper, edged with a hairline, a day rule, a scroll rod or the rod carrying the day, solid, glass or floating inset. Clicking the clock, a status cell or the inbox drops a sheet from it (Time, Sound, Network, Power, Inbox), and Omarchy's own panel hotkeys open the same sheets; with `panels: scroll` the same clicks unroll a handscroll of all six instead. Every setting can be changed in Hanko's settings window (`scripts/hanko settings`), which shows each change on the bar at once and writes `~/.config/hanko/style.json` when you Save.
 
 ## Try it
 
@@ -10,7 +10,10 @@
 git clone -b dev https://github.com/AyushKr2003/hanko.git
 cd hanko
 scripts/hanko install      # or `scripts/hanko dev` to symlink the checkout
+scripts/hanko settings     # the settings window
 scripts/hanko style preset Sheet
+scripts/hanko style set --monitor DP-2 height 32
+scripts/hanko menu add     # Setup › Hanko in the Omarchy menu
 scripts/hanko uninstall    # puts your previous bar back
 ```
 

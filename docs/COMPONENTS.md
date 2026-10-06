@@ -309,7 +309,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
    - *Edge*: Bottom edge, Dividers
    - *Frame*: Height, Surface, Position
    - *Panels*: Panels open as, Seal glyph
-4. **Action bar**: Reset to preset · Revert · Save. Changes preview live but only apply to the real bar on Save.
+4. **Action bar**: Reset to preset · Revert · Save. Every change prints live on your bar at once (as the sheet says); only Save writes `style.json`, and Revert, or closing the window unsaved, puts the saved style back.
 
 The same settings can be changed from a terminal:
 

@@ -4,12 +4,17 @@
 #   hanko install            copy this checkout into the plugins folder and use it
 #   hanko dev                symlink this checkout instead (edits reload live)
 #   hanko uninstall          go back to the bar you had before, remove Hanko
+#   hanko settings           open (or close) the settings window
 #   hanko style get          print the resolved style
 #   hanko style doc          print style.json as Hanko reads it
 #   hanko style set K V      change one setting (e.g. clock mono)
+#   hanko style set --monitor NAME K V
+#                            change it on one monitor only (e.g. DP-2 height 32)
 #   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
+#   hanko scroll             unroll (or roll up) the handscroll
+#   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
 #   hanko doctor             check the installation
 #
 # Style commands talk to the running shell over IPC (omarchy-shell hanko ...),
@@ -109,8 +114,13 @@ cmd_style() {
       ;;
     doc) ipc styleDoc ;;
     set)
-      (( $# == 2 )) || fail "usage: hanko style set <setting> <value>"
-      [[ $(ipc styleSet "$1" "$2") == ok ]] || fail "$1 does not take '$2' (see docs/COMPONENTS.md)"
+      if [[ ${1:-} == --monitor ]]; then
+        (( $# == 4 )) || fail "usage: hanko style set --monitor <name> <setting> <value>"
+        [[ $(ipc styleSetFor "$2" "$3" "$4") == ok ]] || fail "$3 does not take '$4' (see docs/COMPONENTS.md)"
+      else
+        (( $# == 2 )) || fail "usage: hanko style set [--monitor <name>] <setting> <value>"
+        [[ $(ipc styleSet "$1" "$2") == ok ]] || fail "$1 does not take '$2' (see docs/COMPONENTS.md)"
+      fi
       ;;
     preset)
       (( $# == 1 )) || fail "usage: hanko style preset <name>"
@@ -119,6 +129,34 @@ cmd_style() {
     reset) ipc styleReset >/dev/null ;;
     shuffle) ipc styleShuffle >/dev/null ;;
     *) fail "unknown style command '$sub'" ;;
+  esac
+}
+
+# Omarchy reads menu additions from ~/.config/omarchy/extensions/omarchy-menu.jsonc
+# (a JSONC object of entries). Hanko's entry is one line carrying a marker,
+# put right after the opening brace so it never depends on the entry before
+# it having a trailing comma; remove deletes exactly that line.
+MENU_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/extensions/omarchy-menu.jsonc"
+MENU_LINE='  "setup.hanko": {"icon":"印","label":"Hanko","action":"omarchy-shell hanko settings"}, // hanko.bar'
+
+cmd_menu() {
+  case "${1:-}" in
+    add)
+      mkdir -p "$(dirname "$MENU_FILE")"
+      [[ -s $MENU_FILE ]] || printf '{\n}\n' > "$MENU_FILE"
+      if grep -q '// hanko.bar$' "$MENU_FILE"; then say "Hanko is already in the menu."; return; fi
+      grep -q '^[[:space:]]*{' "$MENU_FILE" || fail "$MENU_FILE has no opening brace; add the entry by hand"
+      cp "$MENU_FILE" "$MENU_FILE.bak"
+      awk -v line="$MENU_LINE" '!done && /^[[:space:]]*\{/ { print; print line; done = 1; next } { print }' "$MENU_FILE.bak" > "$MENU_FILE"
+      say "Added Setup › Hanko to the Omarchy menu ($MENU_FILE; the old file is at .bak)."
+      ;;
+    remove)
+      [[ -f $MENU_FILE ]] && grep -q '// hanko.bar$' "$MENU_FILE" || { say "Hanko is not in the menu."; return; }
+      cp "$MENU_FILE" "$MENU_FILE.bak"
+      grep -v '// hanko.bar$' "$MENU_FILE.bak" > "$MENU_FILE"
+      say "Removed Hanko from the Omarchy menu."
+      ;;
+    *) fail "usage: hanko menu add|remove" ;;
   esac
 }
 
@@ -146,7 +184,10 @@ case "${1:-}" in
   dev) cmd_dev ;;
   uninstall) cmd_uninstall ;;
   style) shift; cmd_style "$@" ;;
+  settings) ipc settings >/dev/null ;;
+  scroll) ipc scroll >/dev/null ;;
+  menu) shift; cmd_menu "$@" ;;
   doctor) cmd_doctor ;;
-  -h|--help|"") sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+  -h|--help|"") sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;
 esac

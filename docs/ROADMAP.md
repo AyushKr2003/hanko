@@ -81,9 +81,10 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Sections in ryoku.dev's grammar with alpha1's controls: the day ribbon, a fader bank, the networks, the power profiles, a map of every workspace's tiling (click a window to go there) and stamped letters.
 - Motion as alpha1 drew it (unroll 300 ms, ink 200 ms after 120 ms, pan snap 260 ms); Omarchy's reduced motion cuts to the end frames.
 
-### Phase 8 · Settings window and CLI parity ⬜
-- The Typesetting 組版 page as a real window: rail, live preview, preset gallery, segmented controls, and Reset / Revert / Save.
-- `hanko style shuffle`; IPC `hanko settings`, `hanko style ...`; an Omarchy menu entry under Setup.
+### Phase 8 · Settings window and CLI parity ✅
+- The settings window (a normal floating window) in the Ryoku Hub grammar: rail, search, Advanced. Typesetting 組版 has the live preview, the preset gallery, six cards of segmented controls, and Reset to preset / Revert / Save. Edits show on the bar at once; only Save writes style.json, and closing unsaved puts the saved style back.
+- Advanced: any seal glyph, each monitor's overrides, the raw document. Presets 型: the six as bars, plus shuffle. The other rail pages say what they will hold.
+- Open it with `hanko settings` (IPC `hanko settings`), or `hanko menu add` for Setup › Hanko in the Omarchy menu. CLI parity: `hanko style set --monitor DP-2 height 32`.
 
 ### Phase 9 · Hosting other widgets ⬜
 - Third-party bar widgets from `bar.layout` render in Hanko's right zone, with Hanko's spacing and ink.

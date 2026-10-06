@@ -66,6 +66,12 @@ QtObject {
   function draftReset() {
     draft = S.normalize({ preset: live.preset, sealGlyph: live.sealGlyph, monitors: live.monitors })
   }
+  function draftClearMonitor(name) {
+    var next = S.normalize(live)
+    delete next.monitors[name]
+    draft = next
+  }
+  function draftShuffle() { draft = S.shuffled(live, Math.random) }
   function save() {
     if (!draft) return
     var next = draft

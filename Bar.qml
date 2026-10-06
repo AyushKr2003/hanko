@@ -152,6 +152,19 @@ Item {
     }
   }
 
+  // ------------------------------------------------------------- settings
+  //
+  // The settings window edits Typeset's draft; closing it unsaved drops
+  // the draft, so the bar goes back to what style.json holds.
+  property bool settingsOpen: false
+  function openSettings() { settingsOpen = true }
+  function closeSettings() {
+    Typeset.revert()
+    settingsOpen = false
+  }
+
+  SettingsWindow { bar: root }
+
   // ------------------------------------------------------------- scroll
   //
   // The handscroll (panels: scroll): open on one screen at a time, panned
@@ -331,6 +344,15 @@ Item {
     function sheetClose(): string { root.closeSheet(); return "ok" }
     // Unroll or roll up the handscroll on the focused screen, whatever
     // `panels` says (bind it to a key: see the README).
+    function settings(): string {
+      if (root.settingsOpen) { root.closeSettings(); return "closed" }
+      root.openSettings()
+      return "open"
+    }
+    // One setting for one monitor (style.json `monitors`).
+    function styleSetFor(monitor: string, key: string, value: string): string {
+      return Typeset.setFor(monitor, key, value) ? "ok" : "invalid"
+    }
     function scroll(): string {
       if (root.scrollOpen) { root.closeScroll(); return "closed" }
       return root.openScroll("", root.focusedScreen()) ? "open" : "hidden"

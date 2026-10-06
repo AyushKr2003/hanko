@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-06, after Phase 7 (on `claude/hanko-plugin-zzm827`, six commits ahead of `dev`).
+Last updated: 2026-10-06, after Phase 8 (on `claude/hanko-plugin-zzm827`, eight commits ahead of `dev`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -60,7 +60,7 @@ Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at
 | `gama1-plugin` | Roadmap + Phase 0 + Phase 1 of the plugin. | Merged into `main` (fast-forward), no longer used. |
 | `main` | = `gama1-plugin` at `101a6b6` (Phase 1). | Only updated when the user asks. |
 | **`dev`** | **All current work.** Phases 2–5 on top of main. | **Active branch.** |
-| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phases 5, 6 and 7. | Fast-forward `dev` to it when the user agrees. |
+| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phases 5–8. | Fast-forward `dev` to it when the user agrees. |
 
 `git log --oneline dev`:
 
@@ -265,6 +265,8 @@ bar/
   Inbox.qml              count | stamps (tilted seals, fan on hover), DND state
   SheetWindow.qml        the layer a sheet is printed on (see Phase 6 in §9)
   ScrollWindow.qml       the layer the handscroll unrolls on (see Phase 7 in §9)
+  SettingsWindow.qml     the settings window (see Phase 8 in §9)
+  settings/              SettingsPage, SettingsCard, Segmented, Plate (all pure)
   scroll/                ScrollView, ScrollSection, ListRow, Fader, SignalBars, Interlude;
                          Time/Sound/Network/Power/Spaces/InboxSection (all pure)
   sheets/                SheetView, SheetCard, SheetHead, GroupHead, SheetRow, Ruler,
@@ -290,6 +292,7 @@ core/
                          usableArea(monitor), list(workspaces, activeId, min=5)
   Sheets.js              SHEETS (key, kanji, width, anchor cells, Omarchy ids), forCell,
                          forOmarchyId, step (Tab), panelAt, place (x + tear)
+  Settings.js            RAIL, CARDS, PRESET_BLURBS, GLYPHS, changes, status, search
   Scroll.js              SECTIONS, layout, centred, nearest, clampTrack, landing,
                          position, forCell, sliver (interlude dither)
   Time.js                heading, ribbon, isoWeek, Elsewhen zones + date probe rows
@@ -315,7 +318,7 @@ scripts/hanko            CLI: install | dev | uninstall | style get|doc|set|pres
 assets/fonts/            Fraunces.ttf, Fraunces-Italic.ttf, SpaceGrotesk.ttf + OFL texts
 tests/
   run                    unit tests → manifest check → qmllint → renders (--quick skips renders)
-  unit.mjs               Node tests for core/*.js (48 tests)
+  unit.mjs               Node tests for core/*.js (53 tests)
   harness/render.py      PySide6 offscreen renderer (QT_SCALE_FACTOR=2)
   harness/scenes/Strips.qml  a sheet of labelled BarSurface strips from a params JSON
   harness/params/*.json  one per phase (phase1, phase2, phase2-light, phase3, phase4, phase5, phase5-light); a strip may set `now` (its own time) and `backdrop: true` (stripes behind the bar, for glass)
@@ -417,7 +420,7 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Omarchy no longer ships wiremix, so the Sound foot is Mute mic + Next output instead of the mockup's Settings/Mixer. No shadow under sheets (rule 5), though the kit drew one.
 - Harness: `tests/harness/scenes/Sheets.qml` (a bar with a sheet placed by `Sheets.place`), params `phase6.json` (time, sound) and `phase6-b.json` (network, power, inbox); a params file picks its scene with `"scene"`. Unit tests: 43.
 
-### Phase 7 · The handscroll ✅ (`5354f5e` paper, then window and wiring)
+### Phase 7 · The handscroll ✅ (`5354f5e` paper, `34576c4` window and wiring)
 - **`core/Scroll.js`** (+ tests): `SECTIONS` (time, sound, network, power, spaces, inbox; widths 600/660/540/420/700/560 at 12 px base, `INTERLUDE` 70), `layout(scale)`, `centred(i, viewW)` (track x putting a section in the middle), `nearest`, `clampTrack`, `landing(x, velocity)` (carry 0.18 s of speed, then nearest), `position(i)` (foot bar), `forCell`, and `sliver(w, h, seed)` (the kit's fbm + Bayer dither, as 0/1).
 - **`bar/scroll/`** (pure): `ScrollView` (paper with hairlines, rollers with caps, 120 px curls, index plate, foot with keys and position bar, `reveal` and `ink` 0..1; a pan `MouseArea` behind the sections emits `dragged(dx)`, `released(velocity)`, `stepped(±1)`), `ScrollSection` (red kanji, `02 // SOUND`, 46 px serif title, mono caption, 230 px watermark), `ListRow` (index, name/detail, note, bone plate, `leading`/`trailing` components), `Fader`, `SignalBars`, `Interlude` (Canvas painting `sliver` in `Ink.ink`), and the six sections. Sections send the same requests as the sheets (`Bar.sheetRequest`), plus `spaces` (`window` address → `Hypr.focusWindow`, `workspace` id) and `sound`/`input` (mic level).
 - **`bar/ScrollWindow.qml`**: SheetWindow's layer pattern (namespace `hanko-scroll`). Width = screen minus 6.9 % each side (min 16 px), height 460 px scaled. Motion: `reveal` 300 ms bezier(.2,.9,.25,1), `ink` 120 ms delay + 200 ms bezier(.4,0,.2,1), `trackX` 260 ms bezier(.16,1,.3,1) except while dragging; closing reverses in 220/100 ms and unmaps after 320 ms. `Style.reduceMotion` (Omarchy's animations-off flag, from `qs.Commons`) sets every duration to 0. Keys: `H`/`L`/arrows/Tab pan, `1`–`6` jump, `Esc` rolls up; the wheel steps once per 260 ms.
@@ -427,20 +430,17 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Harness: `phase7.json` and `phase7-light.json` (the `Sheets` scene takes `scroll: true`, `current`, `reveal`, `ink`). `tests/run` now lints `bar/sheets` and `bar/scroll` too. Unit tests: 48.
 - Not done from the alpha1 motion sheet: the rod "lifting into a roller" as the paper drops (the paper simply unrolls under the bar) and the stamp press (Phase 10).
 
-## 10. Instructions for the remaining phases (8–10)
+### Phase 8 · Settings window and CLI parity ✅ (`56cd19f` page, then window and CLI)
+- **Draft** in `core/Typeset.qml`: `draft` (null or a document), `live = draft || doc`; `current`, `styleFor` and `ownsPosition` read `live`, so the real bar shows every edit at once. `draftSet(key, value)` (also `sealGlyph`), `draftPreset`, `draftMonitor`, `draftClearMonitor`, `draftReset` (edits dropped, glyph and monitors kept), `draftShuffle`, `save()` (commits the draft through the usual debounced write), `revert()`. `setFor(monitor, key, value)` saves a per-monitor value at once (CLI). A CLI `style set` while a draft is open changes `doc` but the bar keeps showing the draft until Save/Revert.
+- **`core/Settings.js`** (+ tests): `RAIL` (four groups, eight pages), `CARDS` (six cards, every one of the 15 settings once, plus the seal glyph), `PRESET_BLURBS`, `GLYPHS` (印 力 侍 A, then "…" for your own), `optionsFor`, `selected`, `changes(saved, draft, resolve)` (settings that resolve differently + glyph + each differing monitor), `status(n)`, `presetLine(doc)`, `matches(row, query)` and `pageMatches` for search. `core/Style.js` gained `withMonitorSetting(doc, monitor, key, value)` (drops an override equal to what the monitor would get anyway).
+- **`bar/settings/`** (pure): `SettingsPage` (rail with masthead, search, groups, Advanced switch; page with eyebrow `印 BAR · PRESET · HANKO + EDITS`, 44 px title, preview over `Plate`, preset cards, a 3×2 `Grid` of `SettingsCard`s with each row of cards as tall as its tallest, an Advanced card with a glyph field, monitors and raw JSON; Presets page with six `BarSurface` strips and Shuffle; honest text for Colour, Widgets, Sheets, Scroll, Motion, Keys; action bar), `SettingsCard`, `Segmented`, `Plate` (dithered orb). Signals: `settingPicked`, `presetPicked`, `resetToPreset`, `revert`, `save`, `pagePicked`, `queryEdited`, `advancedToggled`, `monitorCleared`, `shuffle`. Note: `set` can't be a QML signal name.
+- **`bar/SettingsWindow.qml`**: a Quickshell `FloatingWindow` (as Omarchy's dev gallery), 1600×900 scaled, min 1200×680; `/` searches, `Ctrl+S` saves, `Esc` clears the search then closes; the window manager closing it counts as Cancel. `Bar.settingsOpen`, `openSettings()`, `closeSettings()` (reverts the draft). IPC `hanko settings` and `hanko styleSetFor <monitor> <key> <value>`.
+- **CLI** (`scripts/hanko`): `settings`, `scroll`, `style set --monitor NAME K V`, `menu add|remove`. Omarchy has no plugin hook for menu entries, but merges `~/.config/omarchy/extensions/omarchy-menu.jsonc`; `menu add` (explicit, never automatic) puts one marked line (`// hanko.bar`) right after the opening brace and keeps a `.bak`; `menu remove` deletes exactly that line.
+- Harness: `tests/harness/scenes/Settings.qml`, params `phase8` (Hanko + 2 edits), `phase8-light`, `phase8-advanced` (Islet, 侍, DP-2 override), `phase8-presets`. `tests/run` lints `bar/settings` too. Unit tests: 53.
+
+## 10. Instructions for the remaining phases (9–10)
 
 Each phase: read the matching gama1 sheets and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
-
-### Phase 8 · Settings window and CLI parity
-
-Target sheets: `01-settings.png`, `02-settings-light.png`, `03-presets.png`, `04-shuffle.png`. HTML: `studio.html`. Spec: COMPONENTS.md §6.
-
-1. A real window (a floating Hyprland window via a Quickshell `FloatingWindow`, or a layer surface with keyboard focus) in the **Ryoku Hub grammar**: numbered rail on the left (`01 BAR`: Typesetting 組版 · Colour 色 · Widgets 部品; `02 PANELS`: Sheets 紙 · Scroll 巻; `03 FEEL`: Motion 動 · Keys 鍵; `04 SHARE`: Presets 型), search field at the top, **Advanced** switch at the foot (shows `sealGlyph`, per-monitor overrides, raw JSON).
-2. **Typesetting 組版** page: live preview (a `BarSurface` with the draft style over a sample plate), preset gallery (six cards, current inverted, `*` when edited), six cards of segmented controls grouped Left / Centre / Right / Edge / Frame / Panels (+ Seal glyph), action bar **Reset to preset · Revert · Save**. Changes preview live but only apply on Save (keep a draft doc separate from `Typeset.doc`).
-3. Header shows `PRESET · HANKO + EDITS` when edited.
-4. Open it with IPC `hanko settings`, `scripts/hanko settings`, and an Omarchy menu entry under Setup (find how menus are extended in `omarchy/default/omarchy/` / the menu plugin; only add an entry if there is a supported plugin hook).
-5. CLI parity: `hanko style shuffle` exists already; add anything the page can do that the CLI can't (per-monitor set: `hanko style set --monitor DP-2 height 32`).
-6. Other rail pages can start as honest placeholders, but Typesetting must be complete.
 
 ### Phase 9 · Hosting other widgets
 
@@ -481,6 +481,7 @@ Target sheets: `01-settings.png`, `02-settings-light.png`, `03-presets.png`, `04
 7. **Phase 5 to verify on hardware:** the inset exclusive zone (Hyprland should add the 8 px margin to it; if windows touch the frame, set `exclusiveZone` explicitly), the blur rule's field names in Hyprland's Lua config (`blur`, `ignore_alpha`), `toggleTransparency` round-tripping through `mutateShellConfig` for a third-party bar, and the rod's 8 px drag band not swallowing clicks meant for cells above it.
 8. **Phase 6 to verify on hardware:** the sheet layer's input mask (clicks on the bar strip must reach the bar under it, so a second cell switches sheets in one click), the 75 ms Exclusive keyboard prime (Esc/Tab/arrows must work when a hotkey opens a sheet), the dismiss twins on other monitors, `Pipewire.preferredDefaultAudioSink` + `omarchy-audio-output-set-default` from the Sound sheet, nmcli parsing on a real scan (`FREQ` prints "5180 MHz"), `omarchy-powerprofiles-set` with the ac/battery key, `shell.summon("omarchy.speedtest"|"omarchy.wifiqr")` being allowed for a third-party bar (the host's `barPluginMayControl` says yes for panel kinds), and `omarchy-shell notifications dismissAll`.
 9. **Phase 7 to verify on hardware:** the pan `MouseArea` sitting under the sections (a drag that starts on a fader or the ribbon must move that control, not the paper), wheel stepping on a touchpad (one section per 260 ms), `Behavior` on the window's `trackX` (a `PanelWindow` property, not an Item's), the Interlude Canvas cost at each theme switch, `hl.dsp.focus({ window = "address:0x…" })` from the Spaces map, and `Style.reduceMotion` existing in the user's Omarchy (`qs.Commons`).
+10. **Phase 8 to verify on hardware:** the `FloatingWindow` tiling or floating sensibly (add an Omarchy window rule for title "Hanko settings" if it should float), keyboard focus landing in the window so `/`, `Ctrl+S` and `Esc` work, the window manager's close running `closeSettings` (revert), Omarchy's menu parser accepting the `// hanko.bar` line comment and the 印 icon in the menu font, and Canvas cost of `Plate` at 1600 px.
 
 ## 13. QML pitfalls already hit
 
