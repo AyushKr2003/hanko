@@ -1,0 +1,63 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="gama.css"><script src="alpha.js"></script><script src="gama.js"></script>
+<style>body{width:1600px;height:900px;overflow:hidden}#s{position:relative;width:1600px;height:900px;overflow:hidden}canvas.wp{position:absolute;inset:0;width:1600px;height:900px}
+#b{position:absolute;left:0;right:0;z-index:7}.scrim{position:absolute;inset:0;z-index:2}
+.win{position:absolute;background:var(--paper);border:1px solid var(--line);border-radius:6px;z-index:1;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--inkDim);padding:14px 16px;white-space:pre;overflow:hidden}
+.win .k{color:var(--ink)}.win .s{color:var(--seal)}.win .c{color:var(--inkFaint)}
+.label{position:absolute;z-index:8;right:22px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--inkFaint);text-align:right;line-height:1.8}
+</style></head><body>
+<div id="s" class="hk"><canvas class="wp" id="wp" width="1600" height="900"></canvas><div class="scrim" id="sc"></div><div id="b"></div><div id="panel"></div><div class="label" id="lb"></div></div>
+<script>
+const q=new URLSearchParams(location.search);const TH=q.get('theme')||'hanko';const PR=q.get('preset')||'Hanko';
+const o=Object.assign({},PRESETS[PR],JSON.parse(q.get('o')||'{}'));const POS=o.position||'top';
+const S=document.getElementById('s');const V=applyTheme(S,TH);paintMarble(document.getElementById('wp'),TH,{cell:2});
+const b=document.getElementById('b');b.style[POS==='bottom'?'bottom':'top']=0;const bar=mountHB(b,o,JSON.parse(q.get('s')||'{}'));
+const bh=bar.getBoundingClientRect();const BH=bh.height+(o.surface==='inset'?8:0);
+// windows
+if(q.get('wins')){const top=POS==='top'?BH+8:8,bot=POS==='bottom'?BH+8:8;S.insertAdjacentHTML('beforeend',`<div class="win" style="left:8px;top:${top}px;bottom:${bot}px;width:780px"><span class="c">-- hanko/Bar.qml</span>
+<span class="k">import</span> QtQuick
+<span class="k">import</span> qs.Commons
+
+Item {
+  id: root
+  <span class="k">property</span> var style: Typeset.current   <span class="c">// 15 settings</span>
+  Seal     { mode: style.seal }
+  Spaces   { mode: style.spaces }
+  Title    { mode: style.title }
+  Clock    { mode: style.clock; anchor: style.clockAt }
+  Status   { mode: style.status; meters: style.meters }
+  Inbox    { mode: style.notif }
+  Edge     { mode: style.edge }           <span class="c">// rod · dayrule · both</span>
+  Panels   { mode: style.panels }         <span class="c">// sheets | scroll</span>
+}</div><div class="win" style="left:796px;right:8px;top:${top}px;bottom:${bot}px;color:var(--inkMuted)"><span class="s">❯</span> <span class="k">omarchy bar set hanko.bar style '{"preset":"${PR}"}'</span>
+ok
+<span class="s">❯</span> <span class="k">hanko style get</span>
+${Object.entries(o).filter(([k])=>k in OPTS).map(([k,v])=>`${k.padEnd(9)} ${v}`).join('\n')}</div>`);}
+// panel
+const P=q.get('panel');const sc=document.getElementById('sc');
+if(P){sc.style.background=THEMES[TH].mode==='dark'?'rgba(0,0,0,.35)':'rgba(0,0,0,.08)';}
+const panel=document.getElementById('panel');
+function slider(el,v,ink){let h='<div class="tks">';for(let i=0;i<=40;i++)h+=`<i class="${i%10===0?'m':''} ${i/40<=v?'f':''}"></i>`;el.innerHTML=h+`</div><div class="knob ${ink?'ink':''}" style="left:${v*100}%"></div>`;}
+if(P&&P.startsWith('scroll')){const F=+(P.split('-')[1]||1);const all=['time','sound','net','power','spaces','inbox'],W={time:600,sound:660,net:540,power:420,spaces:700,inbox:560};
+ const e=document.createElement('div');e.className='emaki';const H=460;e.style.cssText=`z-index:6;left:110px;width:1380px;height:${H}px;`+(POS==='top'?`top:${BH}px`:`bottom:${BH}px;border-radius:4px 4px 0 0`);panel.appendChild(e);
+ e.innerHTML=emakiHTML(all,all.map(k=>W[k]),F);e.querySelectorAll('.inter canvas').forEach(c=>{c.height=386;paintSliver(c,TH,+c.dataset.seed+1)});
+ const view=e.querySelector('.view'),tr=e.querySelector('.track'),s1=tr.querySelectorAll('.sec')[F];const place=()=>tr.style.left=(view.clientWidth/2-(s1.offsetLeft+s1.offsetWidth/2))+'px';place();document.fonts.ready.then(place);}
+if(P==='sheet-sound'||P==='sheet-time'){
+ const cells=[...bar.querySelectorAll('.zr .cell')];const anchor=P==='sheet-sound'?(cells.find(c=>/Vol|音/.test(c.textContent))||[...bar.querySelectorAll('.zr .g')].find(c=>/音/.test(c.textContent))||bar.querySelector('.zr .g, .zr .nus')||bar.querySelector('.zr')):(bar.querySelector('.clock, .clk, .mclk')||bar.querySelector('.zc'));
+ const ar=anchor.getBoundingClientRect();const W=P==='sheet-sound'?430:500;
+ let left=P==='sheet-sound'?Math.min(1600-W-8,ar.right-W+40):Math.max(8,Math.min(1600-W-8,ar.left+ar.width/2-W/2));
+ const sh=document.createElement('div');sh.className='sheet';sh.style.cssText=`z-index:6;width:${W}px;left:${left}px;`+(POS==='top'?`top:${BH}px`:`bottom:${BH}px;border-top:1px solid var(--line);border-bottom:none`);
+ sh.innerHTML=P==='sheet-sound'?`<div class="tear" style="left:${ar.left-left-8}px;right:${left+W-ar.right-8}px"></div><div style="padding:22px 24px 4px"><div class="eyebrow"><span class="dash"></span><span class="jp">音</span> SOUND · PIPEWIRE<span class="fill"></span></div><h2>Sound</h2><div class="blurb">Where it plays, how loud, and who is talking.</div>
+ <div class="group"><div class="ghead"><span class="sl">//</span>MASTER<span class="sum">SCROLL ON BAR · ±5</span></div><div style="display:flex;align-items:center;gap:16px;padding:12px 2px 6px"><div style="font-family:var(--display);font-size:40px;line-height:1;width:66px">62</div><div class="rslider" id="m0"></div><div class="btn">Mute</div></div></div>
+ <div class="group"><div class="ghead"><span class="sl">//</span>OUTPUT<span class="sum">3 DEVICES</span></div><div class="row sel"><span class="lead">//</span><div><div class="nm">Studio Monitors</div><div class="ds">USB · Focusrite 2i2 · 48 kHz</div></div><div class="rt">LIVE</div></div><div class="row"><span class="lead"></span><div><div class="nm">WH-1000XM5</div><div class="ds">Bluetooth · LDAC</div></div><div class="rt">PAIRED</div></div></div>
+ <div class="group" style="margin-bottom:16px"><div class="ghead"><span class="sl">//</span>MIXER<span class="sum">2 STREAMS</span></div><div class="row" style="padding:0 2px"><div style="width:90px" class="nm">Spotify</div><div class="rslider" id="m1" style="height:22px"></div><div class="rt">80</div></div><div class="row" style="padding:0 2px;border-bottom:none"><div style="width:90px" class="nm">Firefox</div><div class="rslider" id="m2" style="height:22px"></div><div class="rt">45</div></div></div></div>
+ <div class="actionbar"><span class="sq"></span>INPUT · SHURE MV7<span class="sp"></span><span class="btn ghost">Settings</span><span class="btn plate">Mixer ›</span></div>`
+ :`<div class="tear" style="left:${ar.left-left-6}px;right:${left+W-ar.right-6}px"></div><div style="padding:22px 26px 18px"><div class="eyebrow"><span class="dash"></span><span class="jp">時</span> TIME · WEEK 41<span class="fill"></span></div><h2>Tuesday</h2><div class="blurb">Day 279 of 365 · 2h 16m left in the day</div>
+ <div class="group"><div class="ghead"><span class="sl">//</span>OCTOBER 2026<span class="sum">‹ TODAY ›</span></div><div class="ribbon">${(()=>{let h='';const dn=['M','T','W','T','F','S','S'];for(let d=1;d<=14;d++){const k=(d+2)%7;h+=`<div class="dd ${k>=5?'we':''} ${d<6?'past':''} ${d===6?'t':''} ${k===0?'wk':''}"><small>${dn[k]}</small>${String(d).padStart(2,'0')}</div>`}return h})()}</div></div>
+ <div class="group"><div class="ghead"><span class="sl">//</span>ELSEWHEN<span class="sum">3 ZONES</span></div><div class="row"><div><div class="nm">Tokyo</div><div class="ds">Wed 07 · JST</div></div><div class="rt"><span style="font-family:var(--display);font-size:20px;color:var(--ink)">06:44</span>+9</div></div><div class="row" style="border-bottom:none"><div><div class="nm">Lisbon</div><div class="ds">Tue 06 · WEST</div></div><div class="rt"><span style="font-family:var(--display);font-size:20px;color:var(--ink)">22:44</span>+1</div></div></div></div>`;
+ sh.insertAdjacentHTML('beforeend','<span class="crop" style="left:-5px;bottom:-5px"></span><span class="crop" style="right:-5px;bottom:-5px"></span>');
+ panel.appendChild(sh);['m0','m1','m2'].forEach((id,i)=>{const el=document.getElementById(id);if(el)slider(el,[.62,.8,.45][i],i>0)});
+ if(POS==='bottom'){sh.querySelector('.tear').style.top='auto';sh.querySelector('.tear').style.bottom='0';}}
+document.getElementById('lb').style[POS==='top'?'bottom':'top']=(POS==='top'?18:BH+18)+'px';
+document.getElementById('lb').innerHTML=`PRESET · ${PR.toUpperCase()}${q.get('o')?' + EDITS':''}<br>THEME · ${THEMES[TH].name.toUpperCase()}${P?' · PANELS · '+(o.panels||'').toUpperCase():''}`;
+document.fonts.ready.then(()=>document.body.dataset.ready=1)
+</script></body></html>

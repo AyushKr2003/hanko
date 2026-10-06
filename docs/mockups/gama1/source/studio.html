@@ -1,0 +1,69 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="gama.css"><script src="alpha.js"></script><script src="gama.js"></script>
+<style>
+body{width:1600px;height:900px;overflow:hidden;background:#000}
+.win{position:absolute;inset:0;background:var(--paper);display:flex}
+.rail{width:268px;border-right:1px solid var(--line);padding:22px 20px;display:flex;flex-direction:column;flex:none}
+.mast{border:1px solid var(--lineStrong);border-radius:3px;padding:14px;display:flex;gap:12px;align-items:center}
+.mast .s{width:34px;height:34px;background:var(--seal);border-radius:3px;display:grid;place-items:center;font-family:var(--jps);color:var(--paper);font-size:19px;filter:url(#rough)}
+.mast b{font-family:var(--mono);font-size:12px;letter-spacing:2.6px;font-weight:500;display:block}.mast small{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;color:var(--inkMuted)}
+.search{margin:16px 0 18px;border:1px solid var(--line);border-radius:3px;padding:9px 12px;font-size:13px;color:var(--inkFaint);display:flex;justify-content:space-between}
+.gh{font-family:var(--mono);font-size:9.5px;letter-spacing:2px;color:var(--inkFaint);margin:16px 0 6px;display:flex;gap:8px;align-items:center}.gh::after{content:'';flex:1;height:1px;background:var(--lineSoft)}
+.gh.here{color:var(--inkDim)}
+.ni{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-radius:3px;font-size:14.5px;color:var(--inkDim)}
+.ni .jp{font-family:var(--jp);font-size:12px;color:var(--inkFaint)}
+.ni.on{background:var(--bone);color:var(--onBone)}.ni.on .jp{color:var(--onBone)}.ni.on::before{content:'//';font-family:var(--mono);font-size:12px;margin-right:-60px;opacity:.6}
+.rail .foot{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:11px;letter-spacing:1.6px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.page{flex:1;padding:26px 32px 0;overflow:hidden}
+.eb{font-family:var(--mono);font-size:10px;letter-spacing:2.2px;color:var(--inkMuted);display:flex;gap:10px;align-items:center}.eb .jp{font-family:var(--jp);color:var(--seal);font-size:13px;letter-spacing:0}.eb .fill{flex:1;height:1px;background:var(--lineSoft)}
+h1{font-family:var(--display);font-variation-settings:'opsz' 144;font-weight:400;font-size:44px;letter-spacing:-.8px;margin:10px 0 6px}.blurb{font-size:13.5px;color:var(--inkMuted)}
+.prev{margin-top:16px;border:1px solid var(--line);border-radius:3px;position:relative;height:108px;overflow:hidden}
+.prev canvas{position:absolute;left:0;top:0;width:1268px;height:713px}.prev .bh{position:relative;z-index:2}
+.prev .tag{position:absolute;right:10px;bottom:8px;z-index:3;font-family:var(--mono);font-size:8.5px;letter-spacing:1.8px;color:var(--inkFaint)}
+.presets{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px}
+.pc{border:1px solid var(--line);border-radius:3px;padding:10px 12px}.pc b{font-family:var(--mono);font-size:11px;letter-spacing:1.8px;font-weight:500;display:block}.pc small{font-size:11px;color:var(--inkMuted)}
+.pc.on{background:var(--bone);color:var(--onBone)}.pc.on small{color:var(--onBone);opacity:.7}
+.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
+.card{border:1px solid var(--line);border-radius:3px;padding:12px 14px 4px}
+.card .h{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--inkDim);padding-bottom:8px;border-bottom:1px solid var(--line);display:flex;gap:8px}.card .h .sl{color:var(--inkFaint)}.card .h .sum{margin-left:auto;color:var(--inkFaint);font-size:9px}
+.r{display:flex;align-items:center;justify-content:space-between;min-height:44px;border-bottom:1px solid var(--lineSoft);gap:10px}.r:last-child{border-bottom:none}
+.r .n{font-size:13.5px}.r .n small{display:block;font-size:11px;color:var(--inkMuted);margin-top:1px}
+.seg{display:flex;border:1px solid var(--lineStrong);border-radius:3px;overflow:hidden;flex:none}.seg span{font-family:var(--mono);font-size:9.5px;letter-spacing:1px;padding:5px 8px;color:var(--inkDim);border-left:1px solid var(--line)}.seg span:first-child{border-left:none}
+.seg span.on{background:var(--bone);color:var(--onBone)}
+.ab{border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:12px 32px;font-family:var(--mono);font-size:10px;letter-spacing:1.8px;color:var(--inkDim)}
+.ab .sq{width:7px;height:7px;background:var(--ink)}.ab .sp{flex:1}
+.b{font-family:var(--mono);font-size:10px;letter-spacing:1.8px;padding:8px 14px;border:1px solid var(--lineStrong);border-radius:3px}.b.f{color:var(--inkFaint);border-color:var(--line)}.b.p{background:var(--bone);color:var(--onBone)}
+</style></head><body><div class="win hk" id="w">
+<div class="rail"><div class="mast"><span class="s">印</span><div><b>HANKO</b><small>//SETTINGS_</small></div></div>
+<div class="search"><span>Search settings…</span><span style="font-family:var(--mono);font-size:10px">/</span></div>
+<div class="gh here">01 BAR</div><div class="ni on"><span>Typesetting</span><span class="jp">組版</span></div><div class="ni"><span>Colour</span><span class="jp">色</span></div><div class="ni"><span>Widgets</span><span class="jp">部品</span></div>
+<div class="gh">02 PANELS</div><div class="ni"><span>Sheets</span><span class="jp">紙</span></div><div class="ni"><span>Scroll</span><span class="jp">巻</span></div>
+<div class="gh">03 FEEL</div><div class="ni"><span>Motion</span><span class="jp">動</span></div><div class="ni"><span>Keys</span><span class="jp">鍵</span></div>
+<div class="gh">04 SHARE</div><div class="ni"><span>Presets</span><span class="jp">型</span></div>
+<div class="foot"><span>ADVANCED</span><span style="width:34px;height:18px;border:1px solid var(--lineStrong);border-radius:9px;position:relative"><i style="position:absolute;left:3px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--inkFaint)"></i></span></div></div>
+<div class="main"><div class="page">
+<div class="eb"><span class="jp">印</span>BAR<span class="fill"></span><span>hanko.bar · omarchy</span></div>
+<h1>Typesetting</h1><div class="blurb">Choose how each part of the bar is set. Every change prints live on your desktop; Save keeps it.</div>
+<div class="prev" id="pv"><canvas width="1268" height="713"></canvas><div class="bh"></div><span class="tag">LIVE PREVIEW · YOUR WALLPAPER</span></div>
+<div class="presets" id="ps"></div>
+<div class="cards" id="cards"></div>
+</div>
+<div class="ab"><span class="sq"></span>EDITED · LIVE ON YOUR BAR · 2 CHANGES<span class="sp"></span><span class="b">RESET TO PRESET</span><span class="b">REVERT</span><span class="b p">SAVE</span></div></div></div>
+<script>
+const q=new URLSearchParams(location.search);const TH=q.get('theme')||'hanko';
+applyTheme(document.getElementById('w'),TH);
+const cur=Object.assign({},PRESETS.Hanko,{clock:'inline',status:'glyphs',meters:'ticks',position:'top'});
+const pv=document.getElementById('pv');paintMarble(pv.querySelector('canvas'),TH,{cell:2,x:.74,y:.05,r:.2,sunDX:-1.05,sunDY:.4,sunR:.25});mountHB(pv.querySelector('.bh'),cur);
+const PD={Sheet:'beta1, as drawn',Scroll:'alpha1, as drawn',Hanko:'the merge',Quiet:'least on screen',Instrument:'most on screen',Islet:'floating, inset'};
+document.getElementById('ps').innerHTML=Object.keys(PRESETS).map(k=>`<div class="pc ${k==='Hanko'?'on':''}"><b>${k.toUpperCase()}${k==='Hanko'?' *':''}</b><small>${PD[k]}</small></div>`).join('');
+const seg=(ax,vals)=>`<div class="seg">${(vals||OPTS[ax]).map(v=>`<span class="${String(cur[ax])===String(v)?'on':''}">${v}</span>`).join('')}</div>`;
+const card=(t,sum,rows)=>`<div class="card"><div class="h"><span class="sl">//</span>${t}<span class="sum">${sum}</span></div>${rows.map(([n,d,c])=>`<div class="r"><div class="n">${n}<small>${d}</small></div>${c}</div>`).join('')}</div>`;
+document.getElementById('cards').innerHTML=
+ card('LEFT · WHERE YOU ARE','3 ROWS',[['Seal','Fixed glyph or your workspace',seg('seal')],['Workspaces','How spaces are drawn',seg('spaces')],['Window title','Cell, byline or hidden',seg('title')]])+
+ card('CENTRE · WHEN','3 ROWS',[['Clock','Typeface of the time',seg('clock')],['Clock position','',seg('clockAt')],['Now playing','',seg('media')]])+
+ card('RIGHT · HOW THINGS ARE','3 ROWS',[['Status','Cells, kanji glyphs or numerals',seg('status')],['Meters','Ticks beside quantities',seg('meters')],['Notifications','',seg('notif')]])+
+ card('EDGE','2 ROWS',[['Bottom edge','Hairline, day rule, rod, both',seg('edge',['hairline','dayrule','rod','rodrule'])],['Dividers','Hairlines between groups',seg('rules')]])+
+ card('FRAME','3 ROWS',[['Height','px at font size 12',seg('height')],['Surface','',seg('surface')],['Position','',seg('position',['top','bottom'])]])+
+ card('PANELS','2 ROWS',[['Panels open as','Flush sheets or one scroll',seg('panels')],['Seal glyph','Used when seal is fixed',`<div class="seg"><span class="on">印</span><span>力</span><span>侍</span><span>A</span><span>…</span></div>`]]);
+document.fonts.ready.then(()=>document.body.dataset.ready=1)
+</script></body></html>

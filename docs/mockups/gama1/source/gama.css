@@ -1,0 +1,79 @@
+@import url('alpha.css');
+@import url('beta-parts.css');
+
+/* ===== the unified bar ===== */
+.hb { position: relative; display: flex; align-items: stretch; background: var(--paper); color: var(--ink); font-family: var(--ui); padding: 0 10px 0 6px; }
+.hb.glass { background: color-mix(in srgb, var(--paper) 74%, transparent); backdrop-filter: blur(20px) saturate(1.1); }
+.hb.inset { margin: 8px 8px 0; border: 1px solid var(--line); border-radius: 7px; }
+.hb.inset.bottom { margin: 0 8px 8px; }
+.hb .z { display: flex; align-items: center; min-width: 0; }
+.hb .zl { flex: 1 1 0; }
+.hb .zr { flex: 1 1 0; justify-content: flex-end; }
+.hb .zc { flex: 0 0 auto; }
+.hb .gap { width: 14px; flex: none; }
+.hb .rule { align-self: stretch; }
+.hb .seal { margin-right: 0; }
+.hb.h32 .seal { width: 22px; height: 22px; font-size: 13px; }
+.hb.h44 .seal { width: 28px; height: 28px; font-size: 16px; }
+
+/* edges */
+.hb.e-hairline::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line); }
+.hb.bottom.e-hairline::after { top: 0; bottom: auto; }
+.hb .rod { left: 10px; right: 10px; }
+.hb.bottom .rod { bottom: auto; top: 0; }
+.hb.bottom .dayrule { bottom: auto; top: 0; transform: scaleY(-1); }
+.hb.inset .rod { left: 14px; right: 14px; bottom: -1px; }
+.rodrule .rtk { position: absolute; top: -3px; width: 1px; height: 3px; background: var(--lineStrong); }
+.rodrule .rtk.m { top: -5px; height: 5px; }
+.rodrule .rnow { position: absolute; top: -6px; width: 2px; height: 8px; background: var(--seal); transform: translateX(-1px); }
+.rod .done { position: absolute; left: 0; top: 0; bottom: 0; background: var(--inkMuted); border-radius: 2px; }
+
+/* compact: cells go single-line */
+.hb.h32 .cell { flex-direction: row; align-items: center; gap: 7px; padding-bottom: 0; }
+.hb.h32 .cell .lab .jp { display: none; }
+.hb.h32 .folio .ws { height: 20px; }
+.hb.h32 .clock .t { font-size: 18px; }
+.hb.h32 .clk { font-size: 19px; }
+.hb.h44 .clock .t { font-size: 24px; }
+.hb.h44 .clk { font-size: 26px; }
+.hb.h44 .cell .val { font-size: 13.5px; }
+
+/* kanji workspaces */
+.kws { display: flex; align-items: center; gap: 3px; }
+.kws span { position: relative; width: 24px; height: 24px; display: grid; place-items: center; font-family: var(--jps); font-size: 13.5px; color: var(--inkFaint); border-radius: 3px; }
+.kws span.occ { color: var(--inkDim); }
+.kws span.on { background: var(--bone); color: var(--onBone); }
+.kws span .u { position: absolute; right: 2px; top: 2px; width: 4px; height: 4px; border-radius: 50%; background: var(--alert); }
+.kws span .wc { position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; }
+.kws span .wc i { width: 2px; height: 2px; background: currentColor; opacity: .6; display: block; }
+
+/* dot workspaces */
+.dws { display: flex; align-items: center; gap: 7px; }
+.dws i { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--inkFaint); display: block; position: relative; }
+.dws i.occ { background: var(--inkDim); border-color: var(--inkDim); }
+.dws i.on { width: 18px; border-radius: 3px; background: var(--ink); border-color: var(--ink); }
+.dws i.u::after { content: ''; position: absolute; right: -4px; top: -4px; width: 4px; height: 4px; border-radius: 50%; background: var(--alert); }
+
+/* numerals status */
+.nus { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 11px; color: var(--ink); letter-spacing: .4px; }
+.nus b { font-weight: 400; color: var(--inkFaint); font-size: 9px; letter-spacing: 1.6px; margin-right: 5px; }
+.nus .w { color: var(--alert); } .nus .w b { color: var(--alert); }
+.nus .sep { color: var(--inkFaint); }
+
+/* mono clock */
+.mclk { font-family: var(--mono); font-size: 12.5px; letter-spacing: 1px; color: var(--ink); display: flex; gap: 10px; align-items: baseline; }
+.mclk small { font-size: 9px; letter-spacing: 1.8px; color: var(--inkMuted); }
+
+/* glyph status with ticks */
+.g .ticks { margin-left: 2px; }
+.g .ticks i { height: 8px; }
+
+.cnt { font-family: var(--mono); font-size: 12px; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+.cnt small { font-size: 8.5px; letter-spacing: 1.6px; color: var(--inkMuted); }
+.cnt .d { width: 5px; height: 5px; border-radius: 50%; background: var(--alert); }
+
+/* tags for catalogue sheets */
+.optlab { font-family: var(--mono); font-size: 9px; letter-spacing: 1.8px; color: var(--inkFaint); text-transform: uppercase; }
+.nus span { display: inline-flex; align-items: center; gap: 4px; }
+.nus .ticks { height: 8px; } .nus .ticks i { height: 8px; }
+.hb .dt,.hb .clk{white-space:nowrap}
