@@ -76,8 +76,66 @@ function nameOf(key) {
   return key
 }
 
+// The Widgets 部品 page: every part the bar can show, as cards of
+// `show:<part>` rows (Style.js withShown). Hanko's own parts are always
+// listed; the marks, tray apps and hosted widgets as your Omarchy bar
+// layout and machine have them. ctx:
+//   { own: { indicators, keyboard, mic, tray },   (core/Hosted.js own())
+//     indicators: [{ key, glyph, title }],        (core/Extras.js INDICATORS)
+//     tray: [{ id, title }],                      (the tray as it is now)
+//     hosted: [{ id, name, description, firstParty }] }
+function visibilityCards(ctx) {
+  var c = ctx || {}
+  var own = c.own || {}
+  function row(part, name, detail) { return { key: "show:" + part, name: name, detail: detail || "" } }
+  var cards = [
+    { title: "Left · where you are", rows: [
+      row("seal", "Seal", "The stamp at the far left"),
+      row("spaces", "Workspaces", "Your spaces"),
+      row("title", "Window title", "The focused window")] },
+    { title: "Centre · when", rows: [
+      row("clock", "Clock", "The time and date"),
+      row("media", "Now playing", "What is playing, while it plays")] },
+    { title: "Right · readings", rows: [
+      row("network", "Network 網", "NET"),
+      row("bluetooth", "Bluetooth 藍", "BT, where there is an adapter"),
+      row("volume", "Volume 音", "VOL"),
+      row("brightness", "Brightness 明", "LUM, where the screen has a backlight"),
+      row("battery", "Battery 電", "BAT, where there is one"),
+      row("notif", "Notifications 報", "The inbox")] }
+  ]
+  var marks = []
+  if (own.indicators) {
+    var inds = c.indicators || []
+    for (var i = 0; i < inds.length; i++)
+      marks.push(row("indicator:" + inds[i].key, inds[i].title + " " + inds[i].glyph, "Indicator, only while it is on"))
+  }
+  if (own.keyboard) marks.push(row("keyboard", "Keyboard layout", "Only with more than one layout"))
+  if (own.mic) marks.push(row("mic", "Microphone", "Its mute mark"))
+  if (own.tray) marks.push(row("tray", "Tray 盆", "Every tray app at once"))
+  if (marks.length) cards.push({ title: "Marks · Hanko's own", rows: marks })
+  var tray = own.tray ? (c.tray || []) : []
+  if (tray.length) cards.push({ title: "Tray apps", rows: tray.map(function(t) {
+    return row("tray:" + t.id, t.title || t.id, "In the tray now")
+  }) })
+  var hosted = c.hosted || []
+  if (hosted.length) cards.push({ title: "Widgets · from your Omarchy bar", rows: hosted.map(function(h) {
+    return row("hosted:" + h.id, h.name || prettyId(h.id),
+               (h.firstParty ? "Omarchy" : "Third-party") + (h.description ? " · " + h.description : ""))
+  }) })
+  cards.push({ title: "Edge", rows: [row("edge", "Bottom edge", "The rule, rod or day rule along the bar")] })
+  return cards
+}
+
+// "omarchy.system-updates" -> "System updates".
+function prettyId(id) {
+  var s = String(id || "").replace(/^.*\./, "").replace(/[-_]+/g, " ")
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 // The options a row's segmented control offers, as strings.
 function optionsFor(key, OPTIONS) {
+  if (String(key).indexOf("show:") === 0) return ["shown", "hidden"]
   if (key === "sealGlyph") return GLYPHS.concat(["…"])
   if (key === "motion") return MOTION_OPTIONS.slice()
   return (OPTIONS[key] || []).map(String)

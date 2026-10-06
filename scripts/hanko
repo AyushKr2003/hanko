@@ -13,6 +13,9 @@
 #   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
+#   hanko hide PART          take one part off the bar (e.g. tray, volume,
+#                            indicator:night, tray:nm-applet, hosted:omarchy.weather)
+#   hanko show PART          put it back
 #   hanko scroll             unroll (or roll up) the handscroll
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
 #   hanko doctor             check the installation
@@ -185,9 +188,12 @@ case "${1:-}" in
   uninstall) cmd_uninstall ;;
   style) shift; cmd_style "$@" ;;
   settings) ipc settings >/dev/null ;;
+  hide|show)
+    (( $# == 2 )) || fail "usage: hanko $1 <part> (see the Widgets page in hanko settings)"
+    [[ $(ipc "$1" "$2") == ok ]] || fail "'$2' is not a part Hanko knows" ;;
   scroll) ipc scroll >/dev/null ;;
   menu) shift; cmd_menu "$@" ;;
   doctor) cmd_doctor ;;
-  -h|--help|"") sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+  -h|--help|"") sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;
 esac

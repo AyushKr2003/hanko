@@ -14,9 +14,10 @@ function load(file, names) {
 }
 
 const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
-  "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting"])
+  "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
+  "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
-  "status", "presetLine", "matches", "pageMatches"])
+  "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -722,6 +723,72 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
   assert.equal(S.combinations(), 5971968)
+})
+
+test("hidden parts: shown or hidden per part, kept through presets, shuffles and resets", () => {
+  assert.deepEqual(S.resolve({}).hidden, [])
+  assert.deepEqual(S.normalize({ hidden: ["tray", " tray ", "", null, "mic"] }).hidden, ["mic", "tray"])
+  const w = []
+  assert.deepEqual(S.normalize({ hidden: ["volume", "nonsense"] }, w).hidden, ["volume"])
+  assert.deepEqual(w, ["ignored unknown part nonsense in hidden"])
+  assert.deepEqual(S.normalize({ hidden: "tray" }).hidden, [])
+  const d = S.withSetting({}, "show:hosted:omarchy.weather", "hidden")
+  assert.deepEqual(d.hidden, ["hosted:omarchy.weather"])
+  assert.deepEqual(d.edits, {})
+  assert.equal(S.shows(S.resolve(d), "hosted:omarchy.weather"), false)
+  assert.equal(S.shows(S.resolve(d), "volume"), true)
+  assert.deepEqual(S.withSetting(d, "show:hosted:omarchy.weather", "shown").hidden, [])
+  assert.equal(S.withSetting({}, "show:tray", "maybe"), null)
+  assert.equal(S.withSetting({}, "show:", "hidden"), null)
+  assert.equal(S.withSetting({}, "show:nonsense", "hidden"), null)
+  assert.equal(S.withSetting({}, "show:tray:", "hidden"), null)
+  assert.deepEqual(S.withSetting({}, "show:tray:nm-applet", "hidden").hidden, ["tray:nm-applet"])
+  assert.deepEqual(S.withPreset(d, "Sheet").hidden, d.hidden)
+  assert.deepEqual(S.shuffled(d, () => 0.5).hidden, d.hidden)
+  assert.equal(S.shows({}, "seal"), true)
+})
+
+test("hidden parts: a part its setting leaves out reads hidden, and showing it sets it back", () => {
+  // Quiet has no window title and no Bluetooth cell.
+  const q = S.resolve({ preset: "Quiet" })
+  assert.equal(S.shows(q, "title"), false)
+  assert.equal(S.shows(q, "bluetooth"), false)
+  const t = S.withSetting({ preset: "Quiet" }, "show:title", "shown")
+  assert.equal(S.resolve(t).title, "cell")
+  assert.equal(S.withSetting({ preset: "Quiet" }, "show:bluetooth", "shown").edits.bluetooth, "on")
+  // The preset's own way comes back when it draws the part.
+  const s = S.withSetting({ preset: "Sheet", edits: { seal: "none" } }, "show:seal", "shown")
+  assert.equal(S.resolve(s).seal, "stamp")
+  assert.deepEqual(s.edits, {})
+  // Picking a way to draw a hidden part shows it again.
+  const h = S.withSetting({}, "show:seal", "hidden")
+  assert.deepEqual(S.withSetting(h, "seal", "stamp").hidden, [])
+  assert.deepEqual(S.withSetting(h, "seal", "none").hidden, ["seal"])
+})
+
+test("the Widgets page lists every part, and the marks, tray apps and widgets you have", () => {
+  const keys = cards => cards.flatMap(c => c.rows.map(r => r.key))
+  const base = keys(Se.visibilityCards({}))
+  for (const p of ["seal", "spaces", "title", "clock", "media", "network", "bluetooth", "volume", "brightness", "battery", "notif", "edge"])
+    assert.ok(base.includes("show:" + p), p)
+  assert.ok(!base.includes("show:tray"))
+  const all = Se.visibilityCards({
+    own: { indicators: true, keyboard: true, mic: false, tray: true },
+    indicators: X.INDICATORS,
+    tray: [{ id: "nm-applet", title: "Network" }],
+    hosted: [{ id: "omarchy.weather", name: "Weather", firstParty: true }, { id: "me.pomodoro", firstParty: false }]
+  })
+  const k = keys(all)
+  assert.ok(k.includes("show:indicator:night") && k.includes("show:keyboard") && k.includes("show:tray"))
+  assert.ok(!k.includes("show:mic"))
+  assert.ok(k.includes("show:tray:nm-applet") && k.includes("show:hosted:me.pomodoro"))
+  const third = all.flatMap(c => c.rows).find(r => r.key === "show:hosted:me.pomodoro")
+  assert.equal(third.name, "Pomodoro")
+  assert.match(third.detail, /^Third-party/)
+  assert.deepEqual(Se.optionsFor("show:tray", S.OPTIONS), S.SHOW_OPTIONS)
+  assert.equal(Se.prettyId("omarchy.system-updates"), "System updates")
+  // A hidden part counts as a change.
+  assert.equal(Se.changes(S.normalize({}), S.withSetting({}, "show:mic", "hidden"), S.resolve), 1)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

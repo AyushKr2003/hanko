@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import "../core"
 import "../services"
+import "../core/Extras.js" as X
 import "settings"
 
 // Hanko's settings as an ordinary window (a Quickshell FloatingWindow, like
@@ -56,6 +57,13 @@ FloatingWindow {
       query: win.query
       advanced: win.advanced
       monitors: Quickshell.screens.map(function(s) { return s.name })
+      // What the Widgets page lists besides Hanko's own parts.
+      visibility: ({
+        own: win.bar.own,
+        indicators: X.INDICATORS,
+        tray: Extras.tray,
+        hosted: win.bar.hostedEntries
+      })
       barData: ({
         now: win.bar.now,
         spaces: Hypr.spacesFor(win.bar.focusedScreen()),
@@ -82,11 +90,13 @@ FloatingWindow {
       onRevert: Typeset.revert()
       onSave: Typeset.save()
       onPagePicked: function(key) { win.page = key }
-      onQueryEdited: function(text) { win.query = text; if (text !== "") win.page = "typesetting" }
+      // A search shows Typesetting, unless you are searching the Widgets page.
+      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets") win.page = "typesetting" }
       onAdvancedToggled: function(on) { win.advanced = on }
       onMonitorCleared: function(name) { Typeset.draftClearMonitor(name) }
       onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value) }
       onShuffle: Typeset.draftShuffle()
+      onShowAll: Typeset.draftShowAll()
     }
   }
 }

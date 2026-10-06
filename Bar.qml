@@ -175,8 +175,12 @@ Item {
       function(id) { return !!(widgets[id] && widgets[id].metadata && widgets[id].metadata.allowMultiple) })
     return list.map(function(e) {
       var w = widgets[e.id]
+      var m = w.metadata || {}
       return { id: e.id, key: e.key, settings: e.settings, component: w.component,
-               pluginId: w.metadata && w.metadata.pluginId ? w.metadata.pluginId : e.id }
+               pluginId: m.pluginId || e.id,
+               // For the Widgets page: what to call it and whose it is.
+               name: String(m.displayName || ""), description: String(m.description || ""),
+               firstParty: m.firstParty === true || e.id.indexOf("omarchy.") === 0 }
     })
   }
   readonly property var own: Hosted.own(barConfig)
@@ -451,6 +455,10 @@ Item {
       root.openSettings()
       return "open"
     }
+    // Hide or show one part of the bar (the Widgets page's parts:
+    // seal, volume, tray, indicator:night, hosted:omarchy.weather, ...).
+    function hide(part: string): string { return Typeset.set("show:" + part, "hidden") ? "ok" : "invalid" }
+    function show(part: string): string { return Typeset.set("show:" + part, "shown") ? "ok" : "invalid" }
     // One setting for one monitor (style.json `monitors`).
     function styleSetFor(monitor: string, key: string, value: string): string {
       return Typeset.setFor(monitor, key, value) ? "ok" : "invalid"

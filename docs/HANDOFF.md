@@ -166,7 +166,8 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 `~/.config/hanko/style.json` (XDG_CONFIG_HOME aware), outside the plugin folder so updates never touch it:
 
 ```jsonc
-{ "preset": "Hanko", "edits": { "clock": "inline" }, "sealGlyph": "印",
+{ "preset": "Hanko", "edits": { "clock": "inline" }, "sealGlyph": "印", "motion": "paper",
+  "hidden": ["tray", "hosted:omarchy.weather"],
   "monitors": { "DP-2": { "height": 32, "spaces": "dots" } } }
 ```
 
@@ -479,6 +480,14 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **Settings**: the Motion 動 page (the switch as a `SettingsCard` with `MOTION_CARD`, then the timings table read from `Motion`; "cut" when still; a red line when Omarchy's animations are off). Advanced's per-monitor block: a Segmented of monitor names (`overrideMonitor`, first by default), the override count and Clear, then every setting in two columns (down each column) with its value *for that monitor* (`S.resolve(draft, monitor)`); a red tick marks an override; picking the general value drops it. `monitorPicked(monitor, key, value)` → `Typeset.draftMonitor`. `scrollToEnd()` for the harness.
 - Harness: `phase10.json` (Motion page), `phase10-still.json` (light, still), `phase10-monitors.json` (Advanced, DP-2 with three overrides; `settings.scrollEnd`). Unit tests: 63.
 - **Left for the user** (they asked to do the release themselves after testing): the README install guide with screenshots, the manifest version, the CHANGELOG release entry, the omarchyplugins.com listing, and merging into `main`.
+
+### Visibility 部品 ✅ (asked for by the user after Phase 10)
+- **Anything on the bar can be hidden.** `style.json` `hidden`: a sorted list of part names, beside `sealGlyph` and `motion` (no preset sets it; presets, shuffles, resets and Reset to preset keep it; `Settings.changes` counts it as one change). Parts: `seal spaces title clock media network bluetooth volume brightness battery notif edge keyboard mic tray`, plus `indicator:<key>`, `tray:<item id>`, `hosted:<widget id>`.
+- **`core/Style.js`**: `SHOW_OPTIONS`, `OFF` (parts a setting can leave out: seal/title/media none, bluetooth off), `PARTS`, `isPart(p)` (a fixed name or `indicator:|tray:|hosted:<id>`; anything else is refused, and dropped from the file with a warning), `normalizeHidden`, `shows(style, part)` (not hidden and not left out), `withShown(doc, part, shown|hidden)`; `withSetting(doc, "show:<part>", v)` routes there, so the settings cards, the search, the draft and `hanko style set show:mic hidden` need nothing new. Showing a part its setting leaves out sets it back (the preset's way, else the first that draws); picking a drawing way for a hidden OFF part un-hides it.
+- **The bar** (`BarSurface.shown(part)`): seal/spaces/title/media get mode `none`; StatusRow gets null readings; `shownIndicators`, `shownTray` (whole tray, then per app), `shownHosted`; Inbox, both clocks and the Edge (`Edge.shown`) hide; `fixedRight`, `zoneStart`, the title's `maxWidth`, `rightCells` and `cellAt` follow what is actually shown. A sheet whose cell is hidden falls back to the right side.
+- **Settings**: the Widgets 部品 page (was a placeholder): Show all + a count, then `Settings.visibilityCards(ctx)` as SettingsCards (`show:` rows, `shown | hidden`; SettingsCard reads them with `S.shows`). `ctx` comes from SettingsWindow: `Bar.own`, `Extras.INDICATORS`, `Extras.tray`, `Bar.hostedEntries` (now with `name` = displayName, `description`, `firstParty`). A search stays on the Widgets page when you are on it. `Typeset.draftShowAll()`.
+- **IPC / CLI**: `omarchy-shell hanko hide|show <part>`, `scripts/hanko hide|show <part>`.
+- **The settings window reflows** (same session): see the SettingsWindow entry in §7. Unit tests: 66.
 
 ## 10. Instructions for the remaining phase (10)
 

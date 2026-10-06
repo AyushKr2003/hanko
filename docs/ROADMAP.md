@@ -94,6 +94,8 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 ### Phase 10 · Motion ✅ and release ⬜
 - ✅ The motion spec from alpha1: the scroll unrolls and pans on paper-like curves, a sheet prints from its cell, the live page's plate slides to the next one, readings and the clock fade to new values, the now-notch creeps, and a new stamp is pressed down and settles (the only overshoot). A Motion 動 page with a paper/still switch (style.json `motion`, outside the sixteen settings); still, or Omarchy's animations off, cuts every move to its end frame.
 - ✅ A per-monitor override UI under Advanced: pick a monitor, set any setting for it alone, see which ones differ.
+- ✅ Visibility (asked for after Phase 10): every part of the bar, each mark and tray app, and every hosted Omarchy or third-party widget can be shown or hidden on the Widgets 部品 page or with `hanko hide|show <part>` (style.json `hidden`).
+- ✅ The settings window reflows to any window size.
 - ⬜ Release, left to the user after testing on hardware: a README install guide, the manifest version, a CHANGELOG entry, a listing on omarchyplugins.com, and merging into `main`.
 
 ## Dev loop

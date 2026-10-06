@@ -28,6 +28,9 @@ Rectangle {
   // media, volume, network, battery, brightness, notifications, dnd,
   // timeFormat }.
   property var barData: ({})
+  // What the Widgets page lists besides Hanko's own parts
+  // (Settings.visibilityCards ctx: own, indicators, tray, hosted).
+  property var visibility: ({})
 
   signal settingPicked(string key, string value)
   signal presetPicked(string name)
@@ -40,6 +43,7 @@ Rectangle {
   signal monitorCleared(string name)
   signal monitorPicked(string monitor, string key, string value)
   signal shuffle()
+  signal showAll()
 
   readonly property var style: S.resolve(draft)
 
@@ -689,6 +693,79 @@ Rectangle {
           }
         }
 
+        // ------------------------------------------------ Widgets
+        // Every part the bar can show, each shown or hidden: Hanko's own,
+        // its marks, the tray's apps and the widgets it hosts.
+        Column {
+          visible: root.page === "widgets"
+          width: parent.width
+          topPadding: Type.px(22)
+          spacing: Type.px(14)
+
+          Row {
+            spacing: Type.px(12)
+            SmallButton {
+              label: "Show all"
+              faint: root.style.hidden.length === 0
+              onClicked: root.showAll()
+            }
+            Text {
+              anchors.verticalCenter: parent.verticalCenter
+              text: root.style.hidden.length
+                ? (root.style.hidden.length + (root.style.hidden.length === 1 ? " PART HIDDEN" : " PARTS HIDDEN"))
+                : "EVERYTHING SHOWN"
+              color: Ink.inkDim
+              font.family: Type.mono
+              font.pixelSize: Type.px(10)
+              font.letterSpacing: Type.px(1.8)
+            }
+          }
+
+          Grid {
+            id: partCards
+            width: parent.width
+            columns: Math.max(1, Math.min(3, Math.floor((width + spacing) / (Type.px(400) + spacing))))
+            spacing: Type.px(12)
+            readonly property real cardWidth: (width - (columns - 1) * spacing) / columns
+            readonly property var cardList: Settings.visibilityCards(root.visibility)
+
+            Repeater {
+              id: partRepeater
+              model: partCards.cardList
+              SettingsCard {
+                required property var modelData
+                required property int index
+                width: partCards.cardWidth
+                height: Math.max(implicitHeight, partCards.rowHeight(Math.floor(index / partCards.columns)))
+                card: modelData
+                style: root.style
+                options: S.OPTIONS
+                query: root.query
+                onPicked: function(key, value) { root.settingPicked(key, value) }
+              }
+            }
+
+            function rowHeight(r) {
+              void partRepeater.count
+              var h = 0
+              for (var i = r * columns; i < (r + 1) * columns; i++) {
+                var c = partRepeater.itemAt(i) as SettingsCard
+                if (c && c.visible) h = Math.max(h, c.implicitHeight)
+              }
+              return h
+            }
+          }
+
+          Text {
+            width: parent.width
+            wrapMode: Text.Wrap
+            text: "Hiding a part takes it off this bar only; the widget stays in Omarchy's bar layout. Add or remove widgets there."
+            color: Ink.inkFaint
+            font.family: Type.text
+            font.pixelSize: Type.px(11.5)
+          }
+        }
+
         // ------------------------------------------------ Motion
         Column {
           visible: root.page === "motion"
@@ -878,7 +955,7 @@ Rectangle {
   // Honest words for the rail pages that are still to come.
   readonly property var placeholders: ({
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
-    widgets: "Every widget in your Omarchy bar layout that Hanko doesn't draw itself is hosted in the right zone, in Hanko's ink; the tray folds to 盆 when room runs short. Add or remove them in Omarchy's bar layout.",
+    widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
     sheets: "Sheets drop flush from the cell you click. Choose them under Panels on Typesetting; their own settings come later.",
     scroll: "The handscroll unrolls from the rod. Choose it under Panels on Typesetting; bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",

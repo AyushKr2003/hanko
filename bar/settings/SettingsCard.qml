@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 import "../../core/Settings.js" as Settings
+import "../../core/Style.js" as S
 
 // One card of the Typesetting page: `// LEFT · WHERE YOU ARE`, then a row per
 // setting with its name, a line on what it does, and a segmented control.
@@ -101,7 +102,9 @@ Rectangle {
           x: row.stacked ? 0 : parent.width - width
           y: row.stacked ? texts.y + texts.height + Type.px(6) : (parent.height - height) / 2
           options: Settings.optionsFor(row.modelData.key, root.options)
-          selected: Settings.selected(row.modelData.key, root.style, root.style.sealGlyph)
+          selected: row.modelData.key.indexOf("show:") === 0
+            ? (S.shows(root.style, row.modelData.key.slice(5)) ? "shown" : "hidden")
+            : Settings.selected(row.modelData.key, root.style, root.style.sealGlyph)
           onPicked: function(value) { root.picked(row.modelData.key, value) }
         }
       }

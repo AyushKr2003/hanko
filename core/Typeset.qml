@@ -25,7 +25,7 @@ QtObject {
   readonly property var presets: S.PRESETS
   readonly property var presetNames: S.PRESET_NAMES
 
-  // The normalized document: { preset, edits, sealGlyph, motion, monitors }.
+  // The normalized document: { preset, edits, sealGlyph, motion, hidden, monitors }.
   property var doc: S.normalize({})
   property var warnings: []
   // Edits in the settings window print live on the bar but only reach
@@ -61,10 +61,10 @@ QtObject {
     draft = next
     return true
   }
-  // Back to the preset the draft is on, edits dropped (monitors and the
-  // seal glyph and motion kept, as reset() does).
+  // Back to the preset the draft is on, edits dropped (monitors, the seal
+  // glyph, motion and hidden parts kept, as reset() does).
   function draftReset() {
-    draft = S.normalize({ preset: live.preset, sealGlyph: live.sealGlyph, motion: live.motion, monitors: live.monitors })
+    draft = S.normalize({ preset: live.preset, sealGlyph: live.sealGlyph, motion: live.motion, hidden: live.hidden, monitors: live.monitors })
   }
   function draftClearMonitor(name) {
     var next = S.normalize(live)
@@ -72,6 +72,12 @@ QtObject {
     draft = next
   }
   function draftShuffle() { draft = S.shuffled(live, Math.random) }
+  // Every hidden part back on the bar.
+  function draftShowAll() {
+    var next = S.normalize(live)
+    next.hidden = []
+    draft = next
+  }
   function save() {
     if (!draft) return
     var next = draft
@@ -103,7 +109,7 @@ QtObject {
   }
 
   function reset() {
-    _commit(S.normalize({ sealGlyph: doc.sealGlyph, motion: doc.motion, monitors: doc.monitors }))
+    _commit(S.normalize({ sealGlyph: doc.sealGlyph, motion: doc.motion, hidden: doc.hidden, monitors: doc.monitors }))
   }
 
   function setSealGlyph(glyph) {

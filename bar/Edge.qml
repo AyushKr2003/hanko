@@ -38,7 +38,9 @@ Item {
   readonly property int rodY: height - 4
 
   implicitHeight: 12
-  visible: !(inset && mode === "hairline")
+  // false when hidden on the Widgets page.
+  property bool shown: true
+  visible: shown && !(inset && mode === "hairline")
 
   // Mirrored as a whole at the bottom, so every mark keeps its distance
   // from the edge it belongs to.

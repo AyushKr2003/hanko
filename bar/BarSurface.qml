@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import "../core"
+import "../core/Style.js" as S
 
 // Everything drawn inside the bar window, for one screen. Pure QtQuick: it
 // takes the resolved style and plain data, so tests/harness can render it
@@ -37,6 +38,13 @@ Item {
   property var mic: null
   property var tray: []
 
+  // Parts you hid on the Widgets page (style.hidden, core/Style.js).
+  function shown(part) { return !style.hidden || style.hidden.indexOf(part) < 0 }
+  // Hanko's own marks and the hosted widgets, less the hidden ones.
+  readonly property var shownIndicators: indicators.filter(function(i) { return root.shown("indicator:" + i.key) })
+  readonly property var shownTray: shown("tray") ? tray.filter(function(t) { return root.shown("tray:" + t.id) }) : []
+  readonly property var shownHosted: hosted.filter(function(h) { return root.shown("hosted:" + h.id) })
+
   readonly property int workspace: {
     for (var i = 0; i < spaces.length; i++) if (spaces[i].active) return spaces[i].id
     return 1
@@ -61,9 +69,9 @@ Item {
     var out = []
     var items = status.visible ? status.items : []
     for (var i = 0; i < items.length; i++) out.push(items[i].key)
-    for (var h = 0; h < hosted.length; h++) out.push("hosted:" + hosted[h].id)
-    out.push("notif")
-    if (clockRight) out.push("clock")
+    for (var h = 0; h < shownHosted.length; h++) out.push("hosted:" + shownHosted[h].id)
+    if (inbox.visible) out.push("notif")
+    if (rightClock.visible) out.push("clock")
     return out
   }
 
@@ -80,7 +88,7 @@ Item {
 
   // The cell (clock, a status reading, notif) under x, or "".
   function cellAt(x) {
-    var cells = rightCells.concat(clockRight ? [] : ["clock"])
+    var cells = rightCells.concat(centreClock.visible ? ["clock"] : [])
     for (var i = 0; i < cells.length; i++) {
       var a = anchorFor(cells[i])
       if (a && x >= a.x && x < a.x + a.width) return cells[i]
@@ -121,7 +129,7 @@ Item {
     Seal {
       id: seal
       anchors.verticalCenter: parent.verticalCenter
-      mode: root.style.seal || "stamp"
+      mode: root.shown("seal") ? root.style.seal || "stamp" : "none"
       glyph: root.style.sealGlyph || "印"
       workspace: root.workspace
       size: root.barHeight <= Type.px(32) ? Type.px(22) : Type.px(26)
@@ -140,7 +148,7 @@ Item {
     Workspaces {
       id: spacesView
       anchors.verticalCenter: parent.verticalCenter
-      mode: root.style.spaces || "layout"
+      mode: root.shown("spaces") ? root.style.spaces || "layout" : "none"
       spaces: root.spaces
       barHeight: root.barHeight
       onActivated: function(id) { root.workspaceActivated(id) }
@@ -152,13 +160,13 @@ Item {
     WindowTitle {
       id: titleView
       anchors.verticalCenter: parent.verticalCenter
-      mode: root.style.title || "byline"
+      mode: root.shown("title") ? root.style.title || "byline" : "none"
       appClass: root.activeWindow ? root.activeWindow.cls : ""
       title: root.activeWindow ? root.activeWindow.title : ""
       home: root.home
       barHeight: root.barHeight
       // Never run under the centre clock or into the right zone.
-      maxWidth: Math.max(0, (root.clockRight ? right.x : centreClock.x) - left.x - x - Type.px(24))
+      maxWidth: Math.max(0, (centreClock.visible ? centreClock.x : right.x) - left.x - x - Type.px(24))
     }
   }
 
@@ -183,9 +191,9 @@ Item {
   // Room the right zone has for what is playing: from the centre clock (or
   // the window title's minimum when the clock is on the right) to the
   // right edge, less everything else in the zone and its dividers.
-  readonly property real zoneStart: clockRight ? width * 0.45 : centreClock.x + centreClock.width + Type.px(24)
-  readonly property real fixedRight: status.implicitWidth + inbox.implicitWidth
-    + (clockRight ? rightClock.implicitWidth : 0) + 4 * (Type.px(12) * 2 + 1)
+  readonly property real zoneStart: !centreClock.visible ? width * 0.45 : centreClock.x + centreClock.width + Type.px(24)
+  readonly property real fixedRight: status.implicitWidth + (inbox.visible ? inbox.implicitWidth : 0)
+    + (rightClock.visible ? rightClock.implicitWidth : 0) + 4 * (Type.px(12) * 2 + 1)
   // Room for the marks and hosted widgets, which never cross the clock.
   readonly property real extrasRoom: Math.max(0, width - Type.px(10) - zoneStart - fixedRight)
   readonly property real mediaRoom: extrasRoom - extras.width
@@ -206,7 +214,7 @@ Item {
   Clock {
     id: centreClock
     anchors.centerIn: parent
-    visible: !root.clockRight
+    visible: !root.clockRight && root.shown("clock")
     mode: root.style.clock || "stacked"
     now: root.now
     timeFormat: root.timeFormat
@@ -232,7 +240,7 @@ Item {
       // goes when there's no real room left for it.
       maxWidth: Math.min(Type.px(mode === "cell" ? 300 : 260), root.mediaRoom)
       visible: root.media !== null && mode !== "none" && root.mediaRoom >= Type.px(90)
-      mode: root.style.media || "underline"
+      mode: root.shown("media") ? root.style.media || "underline" : "none"
       media: root.media
       barHeight: root.barHeight
       onAction: function(name) { root.mediaAction(name) }
@@ -247,11 +255,11 @@ Item {
       meters: root.style.meters || "ticks"
       ruled: root.ruled
       barHeight: root.barHeight
-      volume: root.volume
-      network: root.network
-      battery: root.battery
-      brightness: root.brightness
-      bluetooth: root.style.bluetooth === "off" ? null : root.bluetooth
+      volume: root.shown("volume") ? root.volume : null
+      network: root.shown("network") ? root.network : null
+      battery: root.shown("battery") ? root.battery : null
+      brightness: root.shown("brightness") ? root.brightness : null
+      bluetooth: root.style.bluetooth === "off" || !root.shown("bluetooth") ? null : root.bluetooth
       onAction: function(name, how) { root.statusAction(name, how) }
     }
 
@@ -273,10 +281,10 @@ Item {
       Marks {
         id: marks
         anchors.verticalCenter: parent.verticalCenter
-        indicators: root.indicators
-        keyboard: root.keyboard
-        mic: root.mic
-        tray: root.tray
+        indicators: root.shownIndicators
+        keyboard: root.shown("keyboard") ? root.keyboard : null
+        mic: root.shown("mic") ? root.mic : null
+        tray: root.shownTray
         barHeight: root.barHeight
         compactTray: marks.fullWidth + root.hostedWidth > root.extrasRoom
         onIndicatorAction: function(key, how) { root.indicatorAction(key, how) }
@@ -289,7 +297,7 @@ Item {
         id: hostedRow
         height: root.barHeight
       Repeater {
-        model: root.hosted
+        model: root.shownHosted
         Row {
           id: hostedCell
           required property var modelData
@@ -319,10 +327,11 @@ Item {
     }
     }
 
-    Divider { ruled: root.ruled; visible: media.visible || status.visible || extras.implicitWidth > 0 }
+    Divider { ruled: root.ruled; visible: inbox.visible && (media.visible || status.visible || extras.implicitWidth > 0) }
 
     Inbox {
       id: inbox
+      visible: root.shown("notif")
       anchors.verticalCenter: parent.verticalCenter
       mode: root.style.notif || "stamps"
       notifications: root.notifications
@@ -331,12 +340,12 @@ Item {
       onAction: function(how) { root.inboxAction(how) }
     }
 
-    Divider { ruled: root.ruled; visible: rightClock.visible }
+    Divider { ruled: root.ruled; visible: rightClock.visible && (media.visible || status.visible || extras.implicitWidth > 0 || inbox.visible) }
 
     Clock {
       id: rightClock
       anchors.verticalCenter: parent.verticalCenter
-      visible: root.clockRight
+      visible: root.clockRight && root.shown("clock")
       mode: root.style.clock || "stacked"
       now: root.now
       timeFormat: root.timeFormat
@@ -348,6 +357,7 @@ Item {
   // Edge: the side facing the desktop (hairline, day rule, rod or both),
   // inside the frame when inset.
   Edge {
+    shown: root.shown("edge")
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: root.atBottom ? undefined : parent.bottom

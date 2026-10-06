@@ -50,6 +50,46 @@ function normalizeMotion(m) {
   return MOTIONS.indexOf(String(m)) >= 0 ? String(m) : DEFAULT_MOTION
 }
 
+// Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
+// page), beside the sixteen like the seal glyph: no preset sets them and a
+// reset keeps them. A part is a name the bar knows: seal, spaces, title,
+// clock, media, network, bluetooth, volume, brightness, battery, notif,
+// edge, keyboard, mic, tray; or indicator:<key>, tray:<item id> and
+// hosted:<widget id> for the marks, tray apps and hosted widgets.
+// As a setting it is `show:<part>`, shown or hidden, so the settings page
+// and `hanko style set show:mic hidden` go through withSetting().
+var SHOW_OPTIONS = ["shown", "hidden"]
+// Parts a setting can also leave out: showing one again puts it back.
+var OFF = { seal: "none", title: "none", media: "none", bluetooth: "off" }
+var PARTS = ["seal", "spaces", "title", "clock", "media", "network", "bluetooth", "volume",
+             "brightness", "battery", "notif", "edge", "keyboard", "mic", "tray"]
+
+// A part name the bar knows; tray app and widget ids can be anything.
+function isPart(part) {
+  var p = String(part || "")
+  return PARTS.indexOf(p) >= 0 || /^(indicator|tray|hosted):\S+$/.test(p)
+}
+
+function normalizeHidden(list, warnings) {
+  var out = []
+  if (!Array.isArray(list)) return out
+  for (var i = 0; i < list.length; i++) {
+    var p = String(list[i] === undefined || list[i] === null ? "" : list[i]).trim()
+    if (!p) continue
+    if (!isPart(p)) { if (warnings) warnings.push("ignored unknown part " + p + " in hidden"); continue }
+    if (out.indexOf(p) < 0) out.push(p)
+  }
+  return out.sort()
+}
+
+// Whether a resolved style shows a part: not hidden, and not left out by
+// its own setting (seal: none and the like).
+function shows(style, part) {
+  var hidden = style && Array.isArray(style.hidden) ? style.hidden : []
+  if (hidden.indexOf(part) >= 0) return false
+  return !(OFF[part] !== undefined && style && style[part] === OFF[part])
+}
+
 // "40" from a hand-edited file or the CLI is the same as 40.
 function coerce(key, value) {
   var options = OPTIONS[key]
@@ -99,7 +139,7 @@ function normalizeGlyph(glyph) {
 }
 
 // A style document as stored in style.json:
-//   { preset, edits: {...}, sealGlyph, motion, monitors: { "<name>": {...} } }
+//   { preset, edits: {...}, sealGlyph, motion, hidden: [...], monitors: { "<name>": {...} } }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
@@ -116,6 +156,7 @@ function normalize(doc, warnings) {
     edits: cleanEdits(doc.edits, warnings),
     sealGlyph: normalizeGlyph(doc.sealGlyph),
     motion: normalizeMotion(doc.motion),
+    hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
   }
 }
@@ -129,6 +170,7 @@ function resolve(doc, monitor) {
   if (m) for (var j in m) style[j] = m[j]
   style.sealGlyph = d.sealGlyph
   style.motion = d.motion
+  style.hidden = d.hidden.slice()
   style.preset = d.preset
   style.edited = Object.keys(d.edits).length > 0
   return style
@@ -145,10 +187,31 @@ function withSetting(doc, key, value) {
     d.motion = String(value)
     return d
   }
+  if (String(key).indexOf("show:") === 0) return withShown(d, String(key).slice(5), value)
   var v = coerce(key, value)
   if (v === undefined) return null
   if (PRESETS[d.preset][key] === v) delete d.edits[key]
   else d.edits[key] = v
+  // Picking a way to draw a hidden part (a seal stamp) shows it again.
+  if (OFF[key] !== undefined && v !== OFF[key]) d.hidden = d.hidden.filter(function(h) { return h !== key })
+  return d
+}
+
+// Show or hide one part (`shown` / `hidden`). Showing a part its own
+// setting leaves out (seal: none) also sets it back: to the preset's way
+// when the preset draws it, else the first way that draws it.
+function withShown(doc, part, value) {
+  var d = normalize(doc)
+  var p = String(part || "").trim()
+  if (!isPart(p) || SHOW_OPTIONS.indexOf(String(value)) < 0) return null
+  var hidden = d.hidden.filter(function(h) { return h !== p })
+  if (value === "hidden") hidden.push(p)
+  d.hidden = normalizeHidden(hidden)
+  if (value === "shown" && OFF[p] !== undefined && resolve(d)[p] === OFF[p]) {
+    var preset = PRESETS[d.preset][p]
+    var on = preset !== OFF[p] ? preset : OPTIONS[p].filter(function(o) { return o !== OFF[p] })[0]
+    return withSetting(d, p, on)
+  }
   return d
 }
 
