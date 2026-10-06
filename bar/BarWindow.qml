@@ -13,8 +13,21 @@ PanelWindow {
   required property var bar          // the Bar.qml root
   property var style: Typeset.styleFor(screen ? screen.name : "")
 
+  // What the bar actually draws: Hanko's style, Omarchy's position, and
+  // Omarchy's transparency toggle turning solid paper into glass.
+  readonly property var shown: {
+    var s = Object.assign({}, win.style)
+    s.position = win.bar.position
+    if (win.bar.transparent && s.surface === "solid") s.surface = "glass"
+    return s
+  }
+
   readonly property int barHeight: Type.px(style.height)
   readonly property bool atBottom: bar.position === "bottom"
+  // Inset floats 8 px off the screen's edges. Hyprland adds the margin on
+  // the anchored edge to the exclusive zone, so windows stay 8 px clear of
+  // the frame too.
+  readonly property int gap: shown.surface === "inset" ? 8 : 0
 
   color: "transparent"
   implicitHeight: barHeight
@@ -32,17 +45,15 @@ PanelWindow {
   }
 
   margins {
-    top: bar.barHidden && !win.atBottom ? -win.barHeight : 0
-    bottom: bar.barHidden && win.atBottom ? -win.barHeight : 0
+    top: win.atBottom ? 0 : (win.bar.barHidden ? -win.barHeight - win.gap : win.gap)
+    bottom: !win.atBottom ? 0 : (win.bar.barHidden ? -win.barHeight - win.gap : win.gap)
+    left: win.gap
+    right: win.gap
   }
 
   BarSurface {
     anchors.fill: parent
-    style: {
-      var s = Object.assign({}, win.style)
-      s.position = win.bar.position
-      return s
-    }
+    style: win.shown
     now: win.bar.now
     spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
     activeWindow: Hypr.activeWindow
@@ -65,5 +76,7 @@ PanelWindow {
     onMediaAction: function(name) { Media.act(name) }
     onStatusAction: function(name, how) { Status.act(name, how) }
     onInboxAction: function(how) { Status.act("notif", how) }
+    // The rod unrolls the scroll; Phase 7 gives it somewhere to go.
+    onEdgePulled: win.bar.edgePulled(win.screen ? win.screen.name : "")
   }
 }

@@ -64,11 +64,11 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Notifications: `count` / `stamps`, with the do-not-disturb state.
 - The red rule: a glyph turns solid red only when it needs you (muted, low battery, disconnected).
 
-### Phase 5 · Edge and frame ⬜
-- Edge: `hairline` / `dayrule` / `rod` / `rodrule`. The day rule's now-notch moves every minute.
+### Phase 5 · Edge and frame ✅
+- Edge: `hairline` / `dayrule` / `rod` / `rodrule`. The day rule's now-notch moves every minute. The rod's grip lifts on hover and a drag away from the bar pulls it (the scroll it unrolls arrives in Phase 7).
 - Dividers on or off; heights 32, 36, 40 and 44 (with the compact one-line cells at 32).
 - Surface: `solid` / `glass` / `inset`. Position: top or bottom, with edge details flipping side.
-- Follows Omarchy's `bar.position` and transparency toggle unless Hanko overrides them.
+- Follows Omarchy's `bar.position` and transparency toggle unless Hanko overrides them. The toggle turns solid paper into glass.
 
 ### Phase 6 · Sheets ⬜
 - `panels: sheets`: a flush sheet drops from the clicked cell, joined to the bar.

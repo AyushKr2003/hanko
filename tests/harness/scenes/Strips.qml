@@ -60,18 +60,43 @@ Rectangle {
         }
 
         Rectangle {
+          id: desk
+          readonly property var style: S.resolve(modelData.doc || {})
+          // Inset floats 8 px off the screen's edges, like BarWindow's margins.
+          readonly property int gap: style.surface === "inset" ? 8 : 0
+          readonly property bool atBottom: style.position === "bottom"
           width: parent.width
-          height: bar.height + 2
+          height: bar.height + 2 + gap
           color: "transparent"
           border.color: Ink.lineSoft
+          clip: true
+
+          // Something behind the bar, so glass has a desktop to show.
+          Row {
+            visible: !!modelData.backdrop
+            x: desk.width * 0.55
+            y: 1
+            height: desk.height - 2
+            spacing: 6
+            Repeater {
+              model: 40
+              Rectangle {
+                required property int index
+                width: 6
+                height: parent.height
+                color: index % 3 === 0 ? Ink.seal : Ink.ink
+              }
+            }
+          }
 
           BarSurface {
             id: bar
-            x: 1; y: 1
-            width: parent.width - 2
+            x: 1 + desk.gap
+            y: 1 + (desk.atBottom ? 0 : desk.gap)
+            width: parent.width - 2 - 2 * desk.gap
             height: implicitHeight
-            style: S.resolve(modelData.doc || {})
-            now: new Date(sheet.p.now || "2026-10-06T21:44:00")
+            style: desk.style
+            now: new Date(modelData.now || sheet.p.now || "2026-10-06T21:44:00")
             spaces: modelData.spaces || sheet.p.spaces || []
             activeWindow: modelData.window !== undefined ? modelData.window : (sheet.p.window || null)
             home: "/home/ayush"

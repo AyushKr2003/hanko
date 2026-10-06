@@ -20,6 +20,7 @@ const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
   "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY"])
+const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 
 let passed = 0
 function test(name, fn) {
@@ -237,6 +238,44 @@ test("notification files parse newest first with stamps", () => {
   assert.equal(St.stampGlyph(""), "・")
   assert.equal(St.count2(3), "03")
   assert.equal(St.count2(140), "99")
+})
+
+test("the day rule: spent part of the day, minute by minute", () => {
+  assert.equal(E.dayFraction(new Date(2026, 9, 6, 0, 0)), 0)
+  assert.equal(E.dayFraction(new Date(2026, 9, 6, 6, 0)), 0.25)
+  assert.equal(E.dayFraction(new Date(2026, 9, 6, 0, 30)), 30 / 1440)
+  assert.equal(E.dayFraction(new Date(2026, 9, 6, 21, 44)), (21 * 60 + 44) / 1440)
+  assert.ok(E.dayFraction(new Date(2026, 9, 6, 23, 59)) < 1)
+  assert.equal(E.dayFraction("not a date"), 0)
+})
+
+test("the day rule: 23 hour ticks, majors every sixth hour", () => {
+  const t = E.hourTicks()
+  assert.equal(t.length, 23)
+  assert.equal(t[0].hour, 1)
+  assert.deepEqual(t.filter(x => x.major).map(x => x.hour), [6, 12, 18])
+  assert.equal(t[11].fraction, 0.5)
+})
+
+test("edge marks stay on whole pixels inside the bar", () => {
+  assert.equal(E.at(0.5, 1000, 2), 500)
+  assert.equal(E.at(0, 1000, 2), 0)
+  assert.equal(E.at(1, 1000, 2), 998)
+  assert.equal(E.at(-3, 100, 1), 0)
+})
+
+test("edge span: rod caps and inset frame hold the edge in", () => {
+  assert.deepEqual(E.span("hairline", 1000, false), { left: 0, width: 1000 })
+  assert.deepEqual(E.span("dayrule", 1000, true), { left: 10, width: 980 })
+  assert.deepEqual(E.span("rod", 1000, false), { left: 10, width: 980 })
+  assert.deepEqual(E.span("rodrule", 1000, true), { left: 14, width: 972 })
+})
+
+test("a rod pull goes away from the bar's own edge", () => {
+  assert.ok(E.pulled(E.PULL_THRESHOLD, false))
+  assert.ok(!E.pulled(E.PULL_THRESHOLD - 1, false))
+  assert.ok(!E.pulled(40, true))
+  assert.ok(E.pulled(-40, true))
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-06, after Phase 4 (commit `bb1cc08` on `dev`).
+Last updated: 2026-10-06, after Phase 5 (on `claude/hanko-plugin-zzm827`, one commit ahead of `dev`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -59,7 +59,8 @@ Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at
 | `gama1` | Design direction 3, **the merge the user chose**: every part of the bar is a setting (15 settings, 6 presets, 2,985,984 combinations), with a Typesetting 組版 settings page. 19 sheets in `docs/mockups/gama1/`, spec in `docs/COMPONENTS.md`, overview in `docs/DESIGN.md`. | Frozen design. This is the spec the plugin implements. |
 | `gama1-plugin` | Roadmap + Phase 0 + Phase 1 of the plugin. | Merged into `main` (fast-forward), no longer used. |
 | `main` | = `gama1-plugin` at `101a6b6` (Phase 1). | Only updated when the user asks. |
-| **`dev`** | **All current work.** Phases 2, 3, 4 on top of main. | **Active branch.** |
+| **`dev`** | **All current work.** Phases 2–5 on top of main. | **Active branch.** |
+| `claude/hanko-plugin-zzm827` | A cloud session's working branch: `dev` + Phase 5. | Fast-forward `dev` to it when the user agrees. |
 
 `git log --oneline dev`:
 
@@ -150,9 +151,9 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 - `height: 32`: two-line cells (title, media, status, inbox count) collapse to one line, label then value; the stacked clock puts the date beside the time; the seal shrinks to 22 px. *(Done.)*
 - `status: numerals` + `ticks`: a five-tick ruler after each quantity. `glyphs` + `ticks`: a four-tick ruler; network keeps its name, no bars. *(Done.)*
 - `clockAt: right`: clock goes after notifications with a divider; the centre is left empty on purpose. *(Done.)*
-- `edge: dayrule|rodrule` + `clockAt: right`: the now-notch stays at the real hour, no longer under the clock. *(Phase 5.)*
+- `edge: dayrule|rodrule` + `clockAt: right`: the now-notch stays at the real hour, no longer under the clock. *(Done: the notch always sits at the hour.)*
 - `position: bottom`: `dayrule`, `rod`, `rodrule` draw along the bar's **top** side; the scroll unrolls **upward** and its index plate moves to the bottom; sheets rise instead of drop. *(Phases 5–7.)*
-- `surface: inset`: the edge runs inside the frame, 10 px from each end. `glass`: stamps, seal and inverted plates stay opaque; only the paper is translucent. *(Phase 5.)*
+- `surface: inset`: the edge runs inside the frame, 10 px from each end (rod 14 px, as the kit draws it); a `hairline` edge is dropped since the frame is one. `glass`: stamps, seal and inverted plates stay opaque; only the paper is translucent. *(Done.)*
 - `seal: workspace` + `spaces: kanji`: the active kanji shows twice, intentionally.
 - `seal: none`: left zone starts at 14 px padding, first divider dropped.
 - `title: none` + `media: none`: identity, clock and status only (Quiet).
@@ -262,6 +263,8 @@ bar/
   NowPlaying.qml         underline (progress underline) | cell | none
   StatusRow.qml          cells | glyphs | numerals × ticks | off; Wi-Fi bars; red rule
   Inbox.qml              count | stamps (tilted seals, fan on hover), DND state
+  Edge.qml               hairline | dayrule | rod | rodrule, mirrored at the bottom,
+                         inset-aware; rod grip lifts on hover, drag emits pulled()
 core/
   Ink.qml   (singleton)  paper, ink, inkDim, inkMuted, inkFaint, seal, bone, boneInk,
                          line, lineSoft, lineStrong, light, alpha(), paperAt()
@@ -278,6 +281,8 @@ core/
                          {app, head, dir, leaf}, findPath, tildify
   Spaces.js              numeral (壱 弐 参…), folio, layoutOf(windows, area),
                          usableArea(monitor), list(workspaces, activeId, min=5)
+  Edge.js                dayFraction, hourTicks, at (pixel snap), span (rod/inset
+                         padding), pulled(dy, atBottom), PULL_THRESHOLD 24
   Status.js              ticks, bars, network, volume, battery (LOW_BATTERY 15),
                          brightness, stampGlyph (+ STAMP_KANJI), tilt, notifications,
                          count2
@@ -295,10 +300,10 @@ scripts/hanko            CLI: install | dev | uninstall | style get|doc|set|pres
 assets/fonts/            Fraunces.ttf, Fraunces-Italic.ttf, SpaceGrotesk.ttf + OFL texts
 tests/
   run                    unit tests → manifest check → qmllint → renders (--quick skips renders)
-  unit.mjs               Node tests for core/*.js (22 tests)
+  unit.mjs               Node tests for core/*.js (27 tests)
   harness/render.py      PySide6 offscreen renderer (QT_SCALE_FACTOR=2)
   harness/scenes/Strips.qml  a sheet of labelled BarSurface strips from a params JSON
-  harness/params/*.json  one per phase (phase1, phase2, phase2-light, phase3, phase4)
+  harness/params/*.json  one per phase (phase1, phase2, phase2-light, phase3, phase4, phase5, phase5-light); a strip may set `now` (its own time) and `backdrop: true` (stripes behind the bar, for glass)
   harness/stubs/         fake Quickshell, Quickshell.Io/Hyprland/Wayland/Services.*,
                          qs.Commons, just enough to lint and render
 docs/                    ROADMAP, COMPONENTS (spec), DESIGN, HANDOFF (this), history/,
@@ -379,29 +384,18 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Notifications count (`INBOX 03` + red dot; `QUIET 静` + hollow ring under DND) and stamps (up to 3, tilt −6…6° from a hash, newest on top, fan out on hover, urgent ones solid; grey under DND). Click = `showHistory`, right/middle = toggle DND.
 - Status clicks call `omarchy-shell shell toggle omarchy.audio|omarchy.network|omarchy.power` as a stand-in until Phase 6; **these don't work yet under Hanko** (§12, issue 1).
 
-## 10. Instructions for the remaining phases (5–10)
+### Phase 5 · Edge and frame ✅
+- `core/Edge.js` (+5 unit tests) and `bar/Edge.qml`, replacing the plain hairline. All four edges from the kit's CSS (`alpha.css` `.rod`, `beta-parts.css` `.dayrule`, `gama.css` `.rodrule`): day rule = base `line`, spent part `lineStrong`, ticks 3 px (6/12/18 h 5 px, `lineStrong`), red now-notch 2×7 px with a 3 px head; rod = 2 px `lineStrong`, 6 px `inkMuted` caps, 34×4 paper grip; rodrule adds the spent part in `inkMuted`, ticks above the rod and an 8 px notch. Nothing changes the bar's height (the kit draws edges inside the bar), so `barSize` is unchanged. The rod sits 2 px up so its caps fit inside the window.
+- At `position: bottom` the edge is mirrored as a whole onto the top side.
+- Rod interaction: an 8 px band along the edge; hover lifts the grip 2 px, pressing inks the rod, a drag of 24 px (scaled) away from the bar emits `pulled()` → `BarSurface.edgePulled` → `Bar.edgePulled(screenName)`, which has no receiver until Phase 7.
+- Inset: `BarWindow` sets 8 px margins on the anchored edge and both sides (hidden: parks at `-(height + 8)`); the paper gets a 1 px `Ink.line` frame with 7 px corners (the kit's `gama.css`; COMPONENTS.md says 3 px, the rendered sheets show 7, the sheets won).
+- Transparency: `Bar.transparent` follows `barConfig.transparent`; `toggleTransparency()` writes `bar.transparent` through `shell.mutateShellConfig` exactly like Omarchy's own bar (falls back to a session-only flip). `BarWindow.shown` turns `solid` into `glass` while it is on; glass and inset are left alone. style.json is never written.
+- Blur: Omarchy requests no blur for its own bar (no layer rule in `default/hypr/apps/omarchy-shell.lua`), so Hanko doesn't either; README documents a `hl.layer_rule` for namespace `hanko-bar`.
+- Harness: `phase5.json` (every edge × top/bottom, day rule at 00:30/06:00/21:44, rodrule + clock right, rules off, four heights, three surfaces over a backdrop, inset bottom and inset hairline, four presets) and `phase5-light.json`.
+
+## 10. Instructions for the remaining phases (6–10)
 
 Each phase: read the matching gama1 sheets and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
-
-### Phase 5 · Edge and frame
-
-Target sheets: `14-edge-dividers.png`, `15-height-surface-position.png`, `23-desk-quiet-bottom.png`, `24-desk-islet-kanagawa.png`. CSS: `gama.css` (search for `rod`, `dayrule`, `inset`).
-
-1. **`bar/Edge.qml`**, replacing the plain hairline at the end of `BarSurface.qml`. Props: `mode`, `now`, `atBottom` (draw on the bar's top side when the bar is at the bottom), `inset` (run inside the frame, 10 px from each end). Modes:
-   - `hairline`: one 1 px `Ink.line`.
-   - `dayrule`: 24-hour ruler across the full width. Hour ticks short, every 6 h longer; the spent part of the day (`0 → now`) a shade brighter (`Ink.inkMuted` vs `Ink.line`); a **red now-notch** (`Ink.seal`) at `now`, moving every minute (the bar's `now` already ticks per minute). Put the maths (tick positions, now fraction) in a new `core/Edge.js` with unit tests.
-   - `rod`: the scroll roller: a thicker rounded bar with end caps and a centre grip. Hover raises the grip (2–3 px). It is a drag handle: emit `pulled()` when dragged down past a threshold (wired in Phase 7; for now a signal with no receiver, or open the scroll stub).
-   - `rodrule`: the rod carrying the day: rod + ticks + spent part + now-notch together.
-   - Each mode changes the bar's total height only if the sheet shows it does; check against sheet 14 (`barSize` must include any extra so Hyprland reserves the right space).
-2. **Dividers** (`rules`) are done; verify against sheet 14 that every divider (including inside cells) obeys it.
-3. **Heights** 32/36/40/44 are done (`Type.px(style.height)`); verify the one-baseline rule at each height in the render.
-4. **Surface:**
-   - `solid`: done.
-   - `glass`: paper at 74 % (done via `Ink.paperAt(0.74)`) **plus a background blur**: Hyprland blurs layer surfaces by namespace with a layer rule. Find how Omarchy's own bar requests blur for its namespace (grep `blur` / `layerrule` in `omarchy/default/hypr/` and `shell/plugins/bar/Bar.qml`); do the same for namespace `hanko-bar` without editing the user's Hyprland config (prefer a runtime `hyprctl keyword` / Lua dispatch only if Omarchy itself does that; otherwise document the rule for the user). Seal, stamps and inverted plates stay fully opaque.
-   - `inset`: the window floats 8 px off the screen edges (`margins` on the `PanelWindow`, plus exclusive zone = height + 8), with a hairline frame (1 px `Ink.line` border) and 3 px corners. The edge runs inside the frame, 10 px from each end.
-5. **Position:** top/bottom done; flip edge details to the bar's top side at the bottom.
-6. **Omarchy's transparency toggle:** implement `toggleTransparency()` in `Bar.qml`. When the user hasn't set `surface` in Hanko (`edits` has no `surface`), toggling flips solid ↔ glass at runtime (do not write style.json); when they have, it still flips but say so in a comment. Also honour `barConfig.transparent === true` at start-up the same way. Look at Omarchy's `shell/plugins/bar/Bar.qml` `toggleTransparency` (~line 860) for semantics.
-7. Params `phase5.json`: every edge × top/bottom, dayrule at several times (00:30, 06:00, 21:44), rules on/off, all four heights, solid/glass/inset, the clock-right + dayrule interaction, and on a light theme.
 
 ### Phase 6 · Sheets (`panels: sheets`)
 
@@ -479,6 +473,7 @@ Target sheets: `01-settings.png`, `02-settings-light.png`, `03-presets.png`, `04
 4. **Not implemented yet from the spec:** `layout` workspaces "hover opens it to show window names"; glyph status "dashed when off" and "hover adds the Latin word"; `clockClicked` has no receiver (Phase 6 Time sheet).
 5. **Unverified on hardware:** layer-shell behaviour at each height, `ExclusionMode` when hidden, multi-monitor per-monitor overrides, the DSP sink resolution, brightness on laptops, FileView watching a directory (`Bar.qml` hiding), Omarchy's clock format detection, Fraunces variable axes rendering in the real Qt.
 6. `tests/run` does not set `HANKO_HARNESS_FONTS` itself; export it (§8) or kanji/mono may fall back to whatever the container has.
+7. **Phase 5 to verify on hardware:** the inset exclusive zone (Hyprland should add the 8 px margin to it; if windows touch the frame, set `exclusiveZone` explicitly), the blur rule's field names in Hyprland's Lua config (`blur`, `ignore_alpha`), `toggleTransparency` round-tripping through `mutateShellConfig` for a third-party bar, and the rod's 8 px drag band not swallowing clicks meant for cells above it.
 
 ## 13. QML pitfalls already hit
 
