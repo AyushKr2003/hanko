@@ -65,7 +65,7 @@ cmd_install() {
   # The plugin needs its QML, scripts and fonts; the design docs and test
   # harness stay in the checkout.
   rsync -a --delete \
-    --exclude .git --exclude docs --exclude tests --exclude CLAUDE.md --exclude '*.png' \
+    --exclude .git --exclude docs --exclude tests --exclude CLAUDE.md --exclude '*.png' --exclude '*.webp' \
     "$SRC/" "$DEST/"
   activate
   say "Hanko is installed at $DEST and is now your bar."

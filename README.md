@@ -22,16 +22,16 @@ Hanko only replaces the bar. If it ever fails to load, Omarchy falls back to its
 hl.layer_rule({ match = { namespace = "hanko-bar" }, blur = true, ignore_alpha = 0.5 })
 ```
 
-![The Typesetting settings page](docs/mockups/typeset/01-settings.png)
-![Six presets](docs/mockups/typeset/03-presets.png)
+![The Typesetting settings page](docs/mockups/typeset/01-settings.webp)
+![Six presets](docs/mockups/typeset/03-presets.webp)
 
 - **[Every component and combination](docs/COMPONENTS.md)**
 - [Handoff: the full state of the build](docs/HANDOFF.md)
 - [Design overview](docs/DESIGN.md)
-- [Twelve random combinations](docs/mockups/typeset/04-shuffle.png)
-- [Presets across themes](docs/mockups/typeset/05-presets-x-themes.png)
-- [Hanko preset with the scroll open](docs/mockups/typeset/20-desk-hanko-scroll.png)
-- [Sheet preset with a sheet open](docs/mockups/typeset/21-desk-sheet-sound.png)
+- [Twelve random combinations](docs/mockups/typeset/04-shuffle.webp)
+- [Presets across themes](docs/mockups/typeset/05-presets-x-themes.webp)
+- [Hanko preset with the scroll open](docs/mockups/typeset/20-desk-hanko-scroll.webp)
+- [Sheet preset with a sheet open](docs/mockups/typeset/21-desk-sheet-sound.webp)
 - [All Typeset mockups](docs/mockups/typeset/)
 
 Earlier directions: [Sheet](docs/history/sheet-DESIGN.md) and [Scroll](docs/history/scroll-DESIGN.md).

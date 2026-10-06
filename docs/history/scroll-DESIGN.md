@@ -75,12 +75,12 @@ Hanko is one `bar`-kind plugin (`hanko.bar`), built the same way as Omacale: `ma
 
 | File | Shows |
 |---|---|
-| `../mockups/scroll/01-desktop.png` | The bar at rest on the signature theme, with a dithered marble plate |
-| `../mockups/scroll/02-bar.png` | Each bar component at rest and when touched |
-| `../mockups/scroll/03-scroll-sound.png` | The handscroll on Sound, with Time and Network curling at the edges |
-| `../mockups/scroll/04-scroll-spaces-light.png` | Spaces and Inbox on Flexoki Light |
-| `../mockups/scroll/05-motion.png` | Unroll, pan and stamp storyboards with their curves |
-| `../mockups/scroll/06-themes.png` | Six Omarchy themes |
+| `../mockups/scroll/01-desktop.webp` | The bar at rest on the signature theme, with a dithered marble plate |
+| `../mockups/scroll/02-bar.webp` | Each bar component at rest and when touched |
+| `../mockups/scroll/03-scroll-sound.webp` | The handscroll on Sound, with Time and Network curling at the edges |
+| `../mockups/scroll/04-scroll-spaces-light.webp` | Spaces and Inbox on Flexoki Light |
+| `../mockups/scroll/05-motion.webp` | Unroll, pan and stamp storyboards with their curves |
+| `../mockups/scroll/06-themes.webp` | Six Omarchy themes |
 
 `../mockups/scroll/source/` holds the HTML. `emaki.html` takes `?theme=&focus=&h=&ink=&nudge=&closed=&stamp=` to pose any frame.
 

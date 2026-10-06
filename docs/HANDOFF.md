@@ -162,7 +162,7 @@ Resolution: preset → `edits` → `monitors[name]`. Invalid keys/values are dro
 
 ### Mockups
 
-`docs/mockups/typeset/*.png` (19 sheets; index in COMPONENTS.md §8) are the visual target for every phase. Compare each phase's render against the matching sheet. The HTML kit that drew them is `docs/mockups/typeset/source/` (`cat.html`, `desk.html`, `studio.html`, `typeset.css`, `typeset.js`, `shootq.mjs`), rendered with Node + Playwright:
+`docs/mockups/typeset/*.webp` (19 sheets; index in COMPONENTS.md §8) are the visual target for every phase. Compare each phase's render against the matching sheet. The HTML kit that drew them is `docs/mockups/typeset/source/` (`cat.html`, `desk.html`, `studio.html`, `typeset.css`, `typeset.js`, `shootq.mjs`), rendered with Node + Playwright:
 
 ```sh
 cd docs/mockups/typeset/source
@@ -389,7 +389,7 @@ Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarS
 
 ### Phase 6 · Sheets (`panels: sheets`)
 
-Target sheets: `21-desk-sheet-sound.png`, `22-desk-instrument-time.png`, Sheet's `03-sound-sheet.png` and `04-time-sheet-kanagawa.png`. HTML: `desk.html` panels `sheet-sound`, `sheet-time`.
+Target sheets: `21-desk-sheet-sound.webp`, `22-desk-instrument-time.webp`, Sheet's `03-sound-sheet.webp` and `04-time-sheet-kanagawa.webp`. HTML: `desk.html` panels `sheet-sound`, `sheet-time`.
 
 1. **Host contract first (this also fixes §12 issue 1):** implement in `Bar.qml` `summonBarWidget(id)`, `hideBarWidget(id)`, `isBarWidgetOpen(id)` and `panelWidgetIdAt(section, index)`. Map Omarchy ids to Hanko sheets: `omarchy.audio` → Sound, `omarchy.clock` → Time, `omarchy.network` → Network, `omarchy.power` → Power. Notifications history → Inbox. Read `omacale/Bar.qml` (~line 263) and `omacale/modules/drawers/ScreenScope.qml` (~line 225: "opens, never toggles; the host asks isBarWidgetOpen first") for a working example. `panelWidgetIdAt("right", N)` should count Hanko's right-zone cells in order so `togglePanelAt right N` hotkeys keep meaning "the Nth thing on the right".
 2. **Then switch `Status.act`** from `toggle("omarchy.audio")` etc. to opening Hanko's own sheet (`panels: sheets`) or scroll section (`panels: scroll`, Phase 7). Until Phase 7, `scroll` mode may open the sheet as a fallback.
@@ -406,7 +406,7 @@ Target sheets: `21-desk-sheet-sound.png`, `22-desk-instrument-time.png`, Sheet's
 
 ### Phase 7 · The handscroll (`panels: scroll`)
 
-Target sheets: `20-desk-hanko-scroll.png`, `24-desk-islet-kanagawa.png`, `25-desk-scroll-flexoki-light.png`, Scroll's `03`/`04` scroll views and `05` motion. HTML: `desk.html` panels `scroll-0`…`scroll-5`, and `scroll.css`/`scroll.js` in the Typeset source kit.
+Target sheets: `20-desk-hanko-scroll.webp`, `24-desk-islet-kanagawa.webp`, `25-desk-scroll-flexoki-light.webp`, Scroll's `03`/`04` scroll views and `05` motion. HTML: `desk.html` panels `scroll-0`…`scroll-5`, and `scroll.css`/`scroll.js` in the Typeset source kit.
 
 1. One surface that **unrolls from the rod** (drag the rod down, `Super+Space`, or click any status/clock/stamp). It hangs between two **rollers**; sections curl under the rollers at the edges so neighbours are always visible.
 2. An **index plate** at the top: `時 01 TIME · 音 02 SOUND · 網 03 NETWORK · 電 04 POWER · 頁 05 SPACES · 報 06 INBOX`, current one inverted. A position bar along the foot with key hints (`H` `L` pan, `Esc` roll up). At `position: bottom` the scroll unrolls upward and the plate moves to the bottom.
@@ -418,7 +418,7 @@ Target sheets: `20-desk-hanko-scroll.png`, `24-desk-islet-kanagawa.png`, `25-des
 
 ### Phase 8 · Settings window and CLI parity
 
-Target sheets: `01-settings.png`, `02-settings-light.png`, `03-presets.png`, `04-shuffle.png`. HTML: `studio.html`. Spec: COMPONENTS.md §6.
+Target sheets: `01-settings.webp`, `02-settings-light.webp`, `03-presets.webp`, `04-shuffle.webp`. HTML: `studio.html`. Spec: COMPONENTS.md §6.
 
 1. A real window (a floating Hyprland window via a Quickshell `FloatingWindow`, or a layer surface with keyboard focus) in the **Ryoku Hub grammar**: numbered rail on the left (`01 BAR`: Typesetting 組版 · Colour 色 · Widgets 部品; `02 PANELS`: Sheets 紙 · Scroll 巻; `03 FEEL`: Motion 動 · Keys 鍵; `04 SHARE`: Presets 型), search field at the top, **Advanced** switch at the foot (shows `sealGlyph`, per-monitor overrides, raw JSON).
 2. **Typesetting 組版** page: live preview (a `BarSurface` with the draft style over a sample plate), preset gallery (six cards, current inverted, `*` when edited), six cards of segmented controls grouped Left / Centre / Right / Edge / Frame / Panels (+ Seal glyph), action bar **Reset to preset · Revert · Save**. Changes preview live but only apply on Save (keep a draft doc separate from `Typeset.doc`).
