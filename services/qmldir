@@ -1,1 +1,2 @@
 singleton Hypr 1.0 Hypr.qml
+singleton Media 1.0 Media.qml

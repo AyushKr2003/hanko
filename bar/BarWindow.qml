@@ -47,6 +47,8 @@ PanelWindow {
     spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
     activeWindow: Hypr.activeWindow
     home: Hypr.home
+    media: Media.now
+    timeFormat: win.bar.timeFormat
 
     onSealClicked: function(button) {
       if (button === Qt.RightButton) Hypr.openTerminal()
@@ -54,5 +56,6 @@ PanelWindow {
     }
     onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
     onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
+    onMediaAction: function(name) { Media.act(name) }
   }
 }

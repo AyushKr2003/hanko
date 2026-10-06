@@ -54,7 +54,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Workspaces: `folio` / `layout` / `kanji` / `dots`, from Hyprland. `layout` draws each workspace's real tiling from client geometry. Urgent workspaces get the red dot.
 - Window title: `cell` / `byline` / `none`, with app-name cleanup and a path that recedes.
 
-### Phase 3 · Centre: when ⬜
+### Phase 3 · Centre: when ✅
 - Clock: `stacked` / `inline` / `mono`, at `center` or `right`.
 - Now playing: `cell` / `underline` / `none`. The underline in `underline` mode is the progress bar. Click plays or pauses, middle-click skips, and scroll moves between tracks.
 

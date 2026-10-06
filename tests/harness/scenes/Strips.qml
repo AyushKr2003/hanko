@@ -69,6 +69,8 @@ Rectangle {
             spaces: modelData.spaces || sheet.p.spaces || []
             activeWindow: modelData.window !== undefined ? modelData.window : (sheet.p.window || null)
             home: "/home/ayush"
+            media: modelData.media !== undefined ? modelData.media : (sheet.p.media || null)
+            timeFormat: modelData.timeFormat || "HH:mm"
           }
         }
       }

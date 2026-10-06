@@ -15,6 +15,9 @@ Item {
   // { cls, title } of the focused window, or null.
   property var activeWindow: null
   property string home: ""
+  // { title, artist, progress, playing } or null.
+  property var media: null
+  property string timeFormat: "HH:mm"
 
   readonly property int workspace: {
     for (var i = 0; i < spaces.length; i++) if (spaces[i].active) return spaces[i].id
@@ -24,6 +27,8 @@ Item {
   signal sealClicked(int button)
   signal workspaceActivated(int id)
   signal workspaceStepped(int delta)
+  signal mediaAction(string name)
+  signal clockClicked()
 
   readonly property int barHeight: Type.px(style.height || 40)
   readonly property bool atBottom: style.position === "bottom"
@@ -87,8 +92,8 @@ Item {
       title: root.activeWindow ? root.activeWindow.title : ""
       home: root.home
       barHeight: root.barHeight
-      // Never run under the centre clock.
-      maxWidth: Math.max(0, root.width / 2 - left.x - x - Type.px(140))
+      // Never run under the centre clock or into the right zone.
+      maxWidth: Math.max(0, (root.clockRight ? right.x : centreClock.x) - left.x - x - Type.px(24))
     }
   }
 
@@ -108,12 +113,52 @@ Item {
     }
   }
 
-  // Centre: when. Anchored to the exact screen centre.
+  readonly property bool clockRight: style.clockAt === "right"
+
+  // Centre: when. Anchored to the exact screen centre, or left empty on
+  // purpose when the clock joins the right zone.
   Clock {
+    id: centreClock
     anchors.centerIn: parent
+    visible: !root.clockRight
     mode: root.style.clock || "stacked"
     now: root.now
+    timeFormat: root.timeFormat
     barHeight: root.barHeight
+    onClicked: root.clockClicked()
+  }
+
+  // Right zone: how things are. Media, then (phase 4) status and
+  // notifications, then the clock when it sits on the right.
+  Row {
+    id: right
+    anchors.right: parent.right
+    anchors.rightMargin: Type.px(10)
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    layoutDirection: Qt.LeftToRight
+
+    NowPlaying {
+      id: media
+      anchors.verticalCenter: parent.verticalCenter
+      mode: root.style.media || "underline"
+      media: root.media
+      barHeight: root.barHeight
+      onAction: function(name) { root.mediaAction(name) }
+    }
+
+    Divider { ruled: root.ruled; visible: media.visible && rightClock.visible }
+
+    Clock {
+      id: rightClock
+      anchors.verticalCenter: parent.verticalCenter
+      visible: root.clockRight
+      mode: root.style.clock || "stacked"
+      now: root.now
+      timeFormat: root.timeFormat
+      barHeight: root.barHeight
+      onClicked: root.clockClicked()
+    }
   }
 
   // Edge: a hairline on the side facing the desktop.
