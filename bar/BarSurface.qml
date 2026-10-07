@@ -41,7 +41,11 @@ Item {
   // Parts you hid on the Widgets page (style.hidden, core/Style.js).
   function shown(part) { return !style.hidden || style.hidden.indexOf(part) < 0 }
   // Hanko's own marks and the hosted widgets, less the hidden ones.
-  readonly property var shownIndicators: indicators.filter(function(i) { return root.shown("indicator:" + i.key) })
+  // `indicators: active` keeps only those that are on (a list without
+  // `on` is all on).
+  readonly property var shownIndicators: indicators.filter(function(i) {
+    return root.shown("indicator:" + i.key) && (root.style.indicators !== "active" || i.on !== false)
+  })
   readonly property var shownTray: shown("tray") ? tray.filter(function(t) { return root.shown("tray:" + t.id) }) : []
   readonly property var shownHosted: hosted.filter(function(h) { return root.shown("hosted:" + h.id) })
 
@@ -196,7 +200,7 @@ Item {
     + (rightClock.visible ? rightClock.implicitWidth : 0) + 4 * (Type.px(12) * 2 + 1)
   // Room for the marks and hosted widgets, which never cross the clock.
   readonly property real extrasRoom: Math.max(0, width - Type.px(10) - zoneStart - fixedRight)
-  readonly property real mediaRoom: extrasRoom - extras.width
+  readonly property real mediaRoom: extrasRoom - extras.width - marks.nameWidth
   // What the hosted widgets would take if they all showed (collapsed ones
   // included), for deciding when the tray folds: the tray folds before any
   // widget is dropped.
@@ -266,6 +270,11 @@ Item {
 
     Divider { ruled: root.ruled; visible: extras.implicitWidth > 0 && (media.visible || status.visible) }
 
+    // The blank the hovered indicator's name opens over (bar/Marks.qml):
+    // the zone is anchored right, so it moves what is left of it, never
+    // the stamps.
+    Item { width: marks.nameWidth; height: root.barHeight; visible: width > 0 }
+
     // Hanko's own marks, then other widgets from Omarchy's bar layout, in
     // Hanko's ink. One row, so the zone knows how much room they take.
     Item {
@@ -283,11 +292,15 @@ Item {
         id: marks
         anchors.verticalCenter: parent.verticalCenter
         indicators: root.shownIndicators
+        markStyle: root.style.indicatorStyle || "icon"
         keyboard: root.shown("keyboard") ? root.keyboard : null
         mic: root.shown("mic") ? root.mic : null
         tray: root.shownTray
         barHeight: root.barHeight
         compactTray: marks.fullWidth + root.hostedWidth > root.extrasRoom
+        // The zone's spare room, or the real gap before it when that is
+        // wider (the room above is reckoned with every divider showing).
+        nameRoom: Math.max(0, root.extrasRoom - extras.width, right.x - root.zoneStart + marks.nameWidth)
         onIndicatorAction: function(key, how) { root.indicatorAction(key, how) }
         onKeyboardAction: function(how) { root.keyboardAction(how) }
         onMicAction: function(how) { root.micAction(how) }

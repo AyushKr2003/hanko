@@ -2,11 +2,14 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 import "../core"
+import "../core/Status.js" as StatusJs
 
 // Hanko's own small marks in the right zone, for what Omarchy shows as
-// widgets: indicators as kanji (録 recording, 書 dictation, 鈴 reminder,
-// 醒 stay awake, 夜 night light; only what is on, red only for "now"), the
-// keyboard layout as a mono code, the microphone as 声 (red when muted),
+// widgets: indicators as small stamps carrying Omarchy's own icons
+// (recording, dictation, reminder, stay awake, night light, do not
+// disturb; what is on is pressed and slightly askew, solid red only for
+// "now"; the ones that are off stay as faint outlines, a click switching
+// them on; hovering one names it), the keyboard layout as a mono code, the microphone as 声 (red when muted),
 // and the tray, every icon inked in the dim tier. Pure: data in, signals
 // out.
 Item {
@@ -14,6 +17,12 @@ Item {
 
   // core/Extras.js shapes.
   property var indicators: []
+  // What is on an indicator stamp (Style.js indicatorStyle): icon or kanji,
+  // and with iconname/kanjiname an indicator that is on has its name
+  // beside it (the off ones are named on hover, as always).
+  property string markStyle: "icon"
+  readonly property bool kanjiMarks: markStyle === "kanji" || markStyle === "kanjiname"
+  readonly property bool namedMarks: markStyle === "iconname" || markStyle === "kanjiname"
   property var keyboard: null      // { label, count } or null
   property var mic: null           // { muted, percent } or null
   property var tray: []
@@ -35,8 +44,21 @@ Item {
 
   readonly property bool showKeyboard: !!keyboard && keyboard.count > 1
   // How wide the marks are with the tray unfolded.
-  readonly property real fullWidth: fixedPart.implicitWidth + tray.length * (Type.px(16) + row.spacing)
+  readonly property real fullWidth: fixedPart.implicitWidth
+  // The name hovering opens is drawn left of the marks, outside them; the
+  // bar keeps a blank of nameWidth there (BarSurface). Were it inside, the
+  // stamps would shift a frame before the bar moved them back, the pointer
+  // would leave the stamp and the name would flicker. nameRoom is what the
+  // bar has spare for it.
+  property real nameRoom: 100000
+  readonly property real nameWidth: nameClip.width
+    + tray.length * (Type.px(16) + row.spacing)
   readonly property int glyphSize: Type.px(13)
+
+  // Hovering the stamps straightens them, like the inbox's.
+  HoverHandler { id: hover }
+  // The indicator under the pointer, named in small caps beside the stamps.
+  property var named: null
 
   visible: indicators.length > 0 || showKeyboard || !!mic || tray.length > 0
   implicitWidth: visible ? row.implicitWidth : 0
@@ -58,43 +80,49 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
       spacing: Type.px(12)
 
-      // Indicators: a kanji each, a small count for reminders.
-      Repeater {
-        model: root.indicators
+      // Indicators: a stamp each, a small count for reminders, the name of
+      // the one under the pointer to their left.
+      Item {
+        id: stampsCell
+        visible: root.indicators.length > 0
+        width: stampsRow.width
+        height: root.barHeight
+
+        // The name opens out to the left of the stamps, over the bar's blank.
         Item {
-          id: mark
-          required property var modelData
-          width: markRow.implicitWidth
-          height: root.barHeight
-          Row {
-            id: markRow
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: Type.px(2)
-            Text {
-              anchors.verticalCenter: parent.verticalCenter
-              text: mark.modelData.glyph
-              color: mark.modelData.red ? Ink.seal : Ink.inkDim
-              font.family: Type.jp
-              font.pixelSize: root.glyphSize
-            }
-            Text {
-              visible: mark.modelData.count > 1
-              anchors.bottom: parent.bottom
-              text: String(mark.modelData.count)
-              color: Ink.inkMuted
-              font.family: Type.mono
-              font.pixelSize: Type.px(8)
-            }
+          id: nameClip
+          anchors.verticalCenter: parent.verticalCenter
+          anchors.right: stampsRow.left
+          clip: true
+          height: nameText.implicitHeight
+          width: root.named ? Math.max(0, Math.min(nameText.implicitWidth + Type.px(8), root.nameRoom)) : 0
+          Behavior on width { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
+          Text {
+            id: nameText
+            anchors.right: parent.right
+            anchors.rightMargin: Type.px(8)
+            text: root.named ? (root.named.title + (root.named.on ? "" : " · off")).toUpperCase() : ""
+            color: Ink.inkMuted
+            font.family: Type.mono
+            font.pixelSize: Type.px(8)
+            font.letterSpacing: 1.4
           }
-          MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
-            cursorShape: Qt.PointingHandCursor
-            onClicked: function(mouse) { root.indicatorAction(mark.modelData.key, root.how(mouse)) }
+        }
+
+        Row {
+          id: stampsRow
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: Type.px(5)
+
+          Repeater {
+            model: root.indicators
+            IndicatorStamp {
+              required property var modelData
+              mark: modelData
+            }
           }
         }
       }
-
       // Keyboard layout: "US", "DE"; a click goes to the next layout.
       Item {
         visible: root.showKeyboard
@@ -222,6 +250,125 @@ Item {
           onWheel: function(wheel) { root.trayAction(cell.modelData.id, wheel.angleDelta.y > 0 ? "up" : "down", cell) }
         }
       }
+    }
+  }
+
+  // One indicator: a small square seal with Omarchy's icon in it. On, it is
+  // pressed, askew and inked (solid red for "now"); off, it is a faint
+  // outline that a click switches on.
+  component IndicatorStamp: Item {
+    id: cell
+    property var mark: ({})
+    readonly property bool on: mark.on !== false
+    // Kanji stamps are small seals, like the one at the far left, when on;
+    // off, they are faint outlines like the icon stamps. Icon stamps keep
+    // red for "now".
+    readonly property bool seal: root.kanjiMarks || !mark.icon
+    readonly property bool solid: on && (seal || !!mark.red)
+    // 0 = held above the bar, oversized and tilted; 1 = pressed and settled.
+    property real press: 1
+
+    width: stamp.width + (badge.visible ? badge.implicitWidth + 1 : 0)
+      + (label.visible ? label.implicitWidth + Type.px(5) : 0)
+    height: root.barHeight
+    opacity: on ? 1 : (pointer.hovered ? 0.85 : 0.4)
+    Behavior on opacity { enabled: !Motion.still; NumberAnimation { duration: Motion.fade } }
+
+    onOnChanged: if (on && Motion.live) pressing.start()
+    NumberAnimation {
+      id: pressing
+      target: cell
+      property: "press"
+      from: 0
+      to: 1
+      duration: Motion.stamp
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Motion.stampCurve
+    }
+
+    Rectangle {
+      id: stamp
+      anchors.verticalCenter: parent.verticalCenter
+      width: Type.px(18)
+      height: width
+      radius: 2
+      antialiasing: true
+      color: cell.solid ? Ink.seal : "transparent"
+      border.width: 1.5
+      border.color: cell.solid ? Ink.seal : cell.on ? Ink.inkMuted : Ink.line
+
+      // The inner rule of a carved seal, as on bar/Seal.qml.
+      Rectangle {
+        visible: cell.solid && cell.seal
+        anchors.fill: parent
+        anchors.margins: 2
+        radius: 1
+        color: "transparent"
+        border.width: 1
+        border.color: Ink.alpha(Ink.paper, 0.5)
+      }
+      rotation: cell.on && !hover.hovered ? StatusJs.tilt(cell.mark.key) : 0
+      Behavior on rotation { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
+      transform: [
+        Scale {
+          origin.x: stamp.width / 2; origin.y: stamp.height / 2
+          xScale: 1 + 0.45 * (1 - cell.press); yScale: xScale
+        },
+        Rotation { origin.x: stamp.width / 2; origin.y: stamp.height / 2; angle: -12 * (1 - cell.press) }
+      ]
+
+      Text {
+        readonly property bool kanji: cell.seal
+        anchors.centerIn: parent
+        anchors.verticalCenterOffset: kanji ? -0.5 : 0
+        text: kanji ? cell.mark.glyph || "" : cell.mark.icon
+        color: cell.solid ? Ink.paper : cell.on ? Ink.ink : Ink.inkFaint
+        font.family: kanji ? Type.jpSerif : Type.mono
+        font.weight: kanji ? Font.Medium : Font.Normal
+        font.pixelSize: Type.px(kanji ? 10.5 : 11)
+      }
+    }
+
+    // iconname, kanjiname: the name in small caps after the stamp, while
+    // it is on.
+    Text {
+      id: label
+      visible: root.namedMarks && cell.on
+      anchors.verticalCenter: parent.verticalCenter
+      anchors.right: parent.right
+      text: String(cell.mark.title || "").toUpperCase()
+      color: cell.mark.red ? Ink.seal : Ink.inkDim
+      font.family: Type.mono
+      font.pixelSize: Type.px(8)
+      font.letterSpacing: 1.4
+    }
+
+    // How many reminders wait, when more than one.
+    Text {
+      id: badge
+      visible: cell.on && cell.mark.count > 1
+      anchors.left: stamp.right
+      anchors.leftMargin: 1
+      anchors.bottom: stamp.bottom
+      anchors.bottomMargin: -Type.px(2)
+      text: String(cell.mark.count)
+      color: Ink.inkMuted
+      font.family: Type.mono
+      font.pixelSize: Type.px(8)
+    }
+
+    HoverHandler {
+      id: pointer
+      onHoveredChanged: {
+        if (hovered && !label.visible) root.named = cell.mark
+        else if (root.named && root.named.key === cell.mark.key) root.named = null
+      }
+    }
+    MouseArea {
+      anchors.fill: parent
+      acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+      cursorShape: Qt.PointingHandCursor
+      onClicked: function(mouse) { root.indicatorAction(cell.mark.key, root.how(mouse)) }
     }
   }
 }

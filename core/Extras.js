@@ -5,19 +5,26 @@
 // microphone, and the tray. Plain data only; services/Extras.qml reads the
 // machine, bar/Marks.qml draws.
 
-// Indicator marks, in the order they sit. Red means "you" or "now": only a
-// recording and live dictation are red.
+// Indicator marks, in the order they sit: each a stamp with the same icon
+// Omarchy's bar uses (Nerd Font, so it reads without knowing the kanji),
+// the kanji kept for the settings and the stamp's name. Red means "you" or
+// "now": only a recording and live dictation are red.
 var INDICATORS = [
-  { key: "recording", glyph: "録", title: "Screen recording", red: true },
-  { key: "dictation", glyph: "書", title: "Dictation", red: true },
-  { key: "reminder",  glyph: "鈴", title: "Reminder", red: false },
-  { key: "awake",     glyph: "醒", title: "Stay awake", red: false },
-  { key: "night",     glyph: "夜", title: "Night light", red: false }
+  { key: "recording", glyph: "録", icon: "\u{f0ec2}", title: "Screen recording", red: true },
+  { key: "dictation", glyph: "書", icon: "\u{f036c}", title: "Dictation", red: true },
+  { key: "reminder",  glyph: "鈴", icon: "\u{f088c}", title: "Reminder", red: false },
+  { key: "awake",     glyph: "醒", icon: "\u{f0176}", title: "Stay awake", red: false },
+  { key: "night",     glyph: "夜", icon: "\u{f050e}", title: "Night light", red: false },
+  { key: "dnd",       glyph: "静", icon: "\u{f009b}", title: "Do not disturb", red: false }
 ]
+// Dictation at work on what it heard: an hourglass instead of the mic.
+var TRANSCRIBING_ICON = "\u{f051f}"
 
-// The marks to show for a state { recording, dictation: "recording" |
-// "transcribing" | "idle", reminders: n, awake, night }: only what is on.
-function indicators(state) {
+// The marks for a state { recording, dictation: "recording" |
+// "transcribing" | "idle", reminders: n, awake, night, dnd }: only what is
+// on, or with `all` every one, those that are off marked on: false (the
+// bar shows them as faint outlines, to switch on).
+function indicators(state, all) {
   var s = state || {}
   var out = []
   for (var i = 0; i < INDICATORS.length; i++) {
@@ -25,11 +32,13 @@ function indicators(state) {
     var on = d.key === "dictation" ? (s.dictation === "recording" || s.dictation === "transcribing")
       : d.key === "reminder" ? Number(s.reminders) > 0
       : !!s[d.key]
-    if (!on) continue
-    out.push({ key: d.key, glyph: d.glyph, title: d.title,
+    if (!on && !all) continue
+    var transcribing = d.key === "dictation" && s.dictation === "transcribing"
+    out.push({ key: d.key, glyph: d.glyph, title: d.title, on: on,
+               icon: transcribing ? TRANSCRIBING_ICON : d.icon,
                // Transcribing is work in progress, not "now": dim, not red.
-               red: d.red && !(d.key === "dictation" && s.dictation === "transcribing"),
-               count: d.key === "reminder" ? Number(s.reminders) : 0 })
+               red: on && d.red && !transcribing,
+               count: d.key === "reminder" && on ? Number(s.reminders) : 0 })
   }
   return out
 }

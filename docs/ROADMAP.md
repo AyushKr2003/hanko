@@ -88,7 +88,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 
 ### Phase 9 · Hosting other widgets ✅
 - Widgets in Omarchy's bar layout that Hanko doesn't draw (weather, Bluetooth, monitors, system update, third-party widgets) are hosted in the right zone from the host's widget registry, in Hanko's ink, with their own panels and Omarchy's hotkeys still reaching them.
-- Hanko's own marks for the rest: the indicators as kanji (録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light; only what's on, red only for "now"), the keyboard layout as a mono code, the microphone as 声 (red when muted), and the tray with every icon inked.
+- Hanko's own marks for the rest: the indicators as kanji (録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light; only what's on, red only for "now"; after the phase they became stamps with Omarchy's icons, do not disturb 静 joined them, and two settings, `indicators` and `indicatorStyle`, choose all or only what is on, and icon or kanji, alone or named), the keyboard layout as a mono code, the microphone as 声 (red when muted), and the tray with every icon inked.
 - When the right zone fills up, what is playing gives way first, then the tray folds into 盆 with a count, then hosted widgets drop out whole; nothing ever runs into the clock.
 
 ### Phase 10 · Motion ✅ and release ⬜

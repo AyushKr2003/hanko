@@ -46,9 +46,21 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("eighteen settings, 967,458,816 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 18)
-  assert.equal(S.combinations(), 967458816)
+test("twenty settings, 7,739,670,528 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 20)
+  assert.equal(S.combinations(), 7739670528)
+})
+
+test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
+  assert.deepEqual(S.OPTIONS.indicators, ["all", "active"])
+  assert.deepEqual(S.OPTIONS.indicatorStyle, ["icon", "kanji", "iconname", "kanjiname"])
+  assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
+  assert.equal(S.resolve({}).indicators, "all")
+  assert.equal(S.resolve({}).indicatorStyle, "icon")
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "all", "active", "all", "active"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "icon", "icon", "iconname", "icon"])
+  assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "icon")
+  assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
 
 test("bluetooth styles: device, marks, count, off; an older \"on\" reads as device", () => {
@@ -556,7 +568,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the eighteen settings once", () => {
+test("settings: six cards hold every one of the twenty settings once", () => {
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
@@ -584,7 +596,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 8)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 10)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -646,6 +658,12 @@ test("own marks: only the indicators that are on, red only for now", () => {
   assert.deepEqual(all.map(i => i.red), [true, true, false, false, false])
   assert.equal(all[2].count, 2)
   assert.equal(X.indicators({ dictation: "transcribing" })[0].red, false)
+  assert.equal(X.indicators({ dictation: "transcribing" })[0].icon, "\u{f051f}")
+  const every = X.indicators({ night: true, dnd: true }, true)
+  assert.deepEqual(every.map(i => i.key), ["recording", "dictation", "reminder", "awake", "night", "dnd"])
+  assert.deepEqual(every.filter(i => i.on).map(i => i.key), ["night", "dnd"])
+  assert.equal(every[4].icon, "\u{f050e}")
+  assert.equal(every.find(i => i.key === "recording").red, false)
   assert.deepEqual(X.moduleJson('warm up\n{"count":1,"tooltip":"tea"}'), { count: 1, tooltip: "tea" })
   assert.deepEqual(X.moduleJson("plain"), { text: "plain" })
 })
@@ -745,7 +763,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 967458816)
+  assert.equal(S.combinations(), 7739670528)
 })
 
 test("hidden parts: shown or hidden per part, kept through presets, shuffles and resets", () => {

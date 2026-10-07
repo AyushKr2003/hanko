@@ -27,10 +27,15 @@ Singleton {
   property bool recording: false
   property string dictation: "idle"
   property int reminders: 0
-  readonly property var indicators: wantIndicators ? X.indicators({
+  // Do not disturb, the bar's own reading (Bar.qml, from Status).
+  property bool dnd: false
+  readonly property var indicatorState: ({
     recording: recording, dictation: dictation, reminders: reminders,
-    awake: !!(idleProxy && idleProxy.stayAwake), night: !!(nightProxy && nightProxy.enabled)
-  }) : []
+    awake: !!(idleProxy && idleProxy.stayAwake), night: !!(nightProxy && nightProxy.enabled), dnd: dnd
+  })
+  // Every indicator, those that are off marked so (the bar shows them as
+  // faint outlines to switch on).
+  readonly property var indicators: wantIndicators ? X.indicators(indicatorState, true) : []
 
   property Timer _recordingPoll: Timer {
     interval: 2000
@@ -68,13 +73,22 @@ Singleton {
     }
   }
 
+  // A click switches the indicator, as on Omarchy's bar: a recording
+  // stops (or the capture menu opens to start one), a reminder lists or
+  // asks for one, the rest toggle.
   function indicatorAction(key, how) {
-    if (key === "recording") Quickshell.execDetached(["omarchy-capture-screenrecording", "--stop-recording"])
+    if (key === "recording") Quickshell.execDetached(recording ? ["omarchy-capture-screenrecording", "--stop-recording"]
+                                                               : ["omarchy-menu", "toggle", "trigger.capture.screenrecord"])
     else if (key === "dictation") Quickshell.execDetached(["omarchy-voxtype-config"])
-    else if (key === "reminder") Quickshell.execDetached(reminders > 0 ? ["omarchy-reminder", "show"] : ["omarchy-reminder", "-i"])
-    else if (key === "awake" && idleProxy) idleProxy.setIdleEnabled(true)
-    else if (key === "night" && nightProxy) nightProxy.setNightlight(false)
+    else if (key === "reminder") Quickshell.execDetached(reminders > 0 && how !== "right" ? ["omarchy-reminder", "show"] : ["omarchy-reminder", "-i"])
+    else if (key === "awake") {
+      if (idleProxy) idleProxy.setIdleEnabled(!!idleProxy.stayAwake)
+      else Quickshell.execDetached(["omarchy-toggle-idle"])
+    }
+    else if (key === "night" && nightProxy) nightProxy.setNightlight(!nightProxy.enabled)
+    else if (key === "dnd") Status.act("notif", "right")
     _reminderPoll.restart()
+    _recordingPoll.restart()
   }
 
   // ---------------------------------------------------------- keyboard

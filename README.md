@@ -6,10 +6,10 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 
 ## What you get
 
-- **Every part is a setting:** 18 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
+- **Every part is a setting:** 20 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
-- **Right:** sound, network, Bluetooth, battery, brightness and notifications.
+- **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).
 - **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
 - **Follows your theme,** light or dark, and switches with it live.
@@ -65,6 +65,7 @@ scripts/hanko uninstall
 | Unroll the scroll | `scripts/hanko scroll` |
 | Pick the scroll's dividers | `scripts/hanko style set interlude kotoba` |
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
+| Indicator stamps: only what is on, kanji with names | `scripts/hanko style set indicators active` / `scripts/hanko style set indicatorStyle kanjiname` |
 | Turn motion off | `scripts/hanko style set motion still` |
 | Add Setup › Hanko to the Omarchy menu | `scripts/hanko menu add` |
 

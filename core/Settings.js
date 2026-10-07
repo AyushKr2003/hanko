@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the eighteen settings into six cards, and the
+// Typesetting 組版 page groups the twenty settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -37,7 +37,9 @@ var CARDS = [
     { key: "status", name: "Status", detail: "Cells, kanji glyphs or numerals" },
     { key: "meters", name: "Meters", detail: "Ticks beside quantities" },
     { key: "notif", name: "Notifications", detail: "" },
-    { key: "bluetooth", name: "Bluetooth", detail: "A BT 藍 cell for your devices" }] },
+    { key: "bluetooth", name: "Bluetooth", detail: "A BT 藍 cell for your devices" },
+    { key: "indicators", name: "Indicators", detail: "All six, the off ones faint, or only what is on" },
+    { key: "indicatorStyle", name: "Indicator marks", detail: "Icon or kanji, alone or named while on" }] },
   { title: "Edge", rows: [
     { key: "edge", name: "Bottom edge", detail: "Hairline, day rule, rod, both" },
     { key: "rules", name: "Dividers", detail: "Hairlines between groups" }] },
@@ -52,7 +54,7 @@ var CARDS = [
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
-// The Motion 動 page: one switch outside the eighteen (style.json `motion`),
+// The Motion 動 page: one switch outside the twenty (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
@@ -163,7 +165,7 @@ function visibilityCards(ctx) {
   if (own.indicators) {
     var inds = c.indicators || []
     for (var i = 0; i < inds.length; i++)
-      marks.push(row("indicator:" + inds[i].key, inds[i].title + " " + inds[i].glyph, "Indicator, only while it is on"))
+      marks.push(row("indicator:" + inds[i].key, inds[i].title + " " + inds[i].glyph, "Indicator stamp"))
   }
   if (own.keyboard) marks.push(row("keyboard", "Keyboard layout", "Only with more than one layout"))
   if (own.mic) marks.push(row("mic", "Microphone", "Its mute mark"))
@@ -204,7 +206,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// eighteen that resolves differently, the seal glyph, and each monitor whose
+// twenty that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)

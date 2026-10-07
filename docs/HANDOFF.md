@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the scroll's end leaf setting (on `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the indicator stamps and their two settings (on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -96,7 +96,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The eighteen settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
+### The twenty settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
 
 | Zone | Key | Options |
 |---|---|---|
@@ -110,6 +110,8 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | Right | `meters` | **`ticks`**, `off` |
 | Right | `notif` | `count`, **`stamps`** |
 | Right | `bluetooth` | **`device`**, `marks`, `count`, `off` (added after Typeset; `on` reads as `device`) |
+| Right | `indicators` | **`all`**, `active` (added after Typeset; Omarchy's six indicators as stamps) |
+| Right | `indicatorStyle` | **`icon`**, `kanji`, `iconname`, `kanjiname` (added after Typeset; `full` reads as `iconname`) |
 | Edge | `edge` | `hairline`, `dayrule`, `rod`, **`rodrule`** |
 | Edge | `rules` | **`on`**, `off` |
 | Frame | `height` | `32`, `36`, **`40`**, `44` |
@@ -133,6 +135,8 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | meters | ticks | off | ticks | off | ticks | ticks |
 | notif | count | stamps | stamps | count | count | stamps |
 | bluetooth | device | marks | device | off | device | marks |
+| indicators | all | active | all | active | all | active |
+| indicatorStyle | kanji | kanji | icon | icon | iconname | icon |
 | edge | dayrule | rod | rodrule | hairline | dayrule | rodrule |
 | rules | on | off | on | off | on | off |
 | height | 36 | 40 | 40 | 32 | 44 | 36 |
@@ -289,7 +293,7 @@ core/
   Style.js               OPTIONS, KEYS, PRESETS, PRESET_NAMES, DEFAULT_PRESET, coerce,
                          normalize, resolve(doc, monitor), withSetting, withPreset,
                          shuffled(doc, rng), combinations(); MOTIONS (motion and
-                         sealGlyph sit beside the edits, outside the eighteen)
+                         sealGlyph sit beside the edits, outside the twenty)
   InkMath.js             hexToRgb, mix, luminance, contrast, tier, isLight, ramp (TIERS)
   Title.js               appName (NAMES map, reverse-DNS), describe(cls, title) →
                          {app, head, dir, leaf}, findPath, tildify
@@ -464,7 +468,7 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **The user chose** (asked at the start of the phase): Hanko draws its own keyboard-layout and microphone marks rather than hosting Omarchy's.
 - **`core/Hosted.js`** (+ tests): `DRAWN` (ids Hanko already is: menu, workspaces, active-window, clock, elsewhen, audio, network, power, media, notifications, spacer), `OWN` (tray, indicators, keyboard-layout, microphone → Hanko's own marks), `hosted(barConfig, has, allowMultiple)` (everything else that the registry has, in layout order, once unless `allowMultiple`; key `id#n` for repeats), `own(barConfig)` (which own marks the layout asks for; Omarchy's defaults when the layout lists nothing), `cell`/`idOfCell`. `Sheets.panelAt` counts `hosted:<id>` cells in place.
 - **Hosting**: `Bar.hostedEntries` (from the injected `barWidgetRegistry`, which the host keeps live), `bar/HostedSlot.qml` (creates the widget with `bar`, `moduleName`, `settings` as initial properties, like omacale; rebuilds only on a different Component; collapses to zero width rather than hiding, since hiding a parent on its child's visibility latches), `bar/HostBar.qml` (the `PluginBarApi` facade: Hanko's ink, mono face, `barSize` = bar height, popouts coordinated through `Bar.requestHostedPopout/releaseHostedPopout`, `shell` = `pluginShellForBarEntry(pluginId, moduleName)`, tooltips are no-ops). One popout at a time across sheets, scroll and hosted panels. `summonBarWidget/hideBarWidget/isBarWidgetOpen` fall through to a hosted widget's `open()/close()/opened` for its id (bluetooth, monitor, weather…).
-- **Own marks**: `core/Extras.js` (+ tests: `indicators(state)`, `moduleJson`, `keyboard(hyprctl devices)`, `tray(items)`), `services/Extras.qml` (pgrep for gpu-screen-recorder every 2 s; `omarchy-voxtype-status` stream; `omarchy-reminder show --json` every minute; the idle and nightlight proxies; `hyprctl -j devices` on `activelayout`; `Pipewire.defaultAudioSource`; `SystemTray.items`), `bar/Marks.qml` (pure). Actions: indicator click turns it off / opens its tool (as Omarchy's do), keyboard click/right-click `hyprctl switchxkblayout all next|prev`, mic click `omarchy-audio-input-mute`, wheel ±5 %, middle opens Sound; tray left `activate()` (or the menu when `onlyMenu`), right `display()` (Quickshell's platform menu), middle `secondaryActivate()`, wheel `scroll()`. Do-not-disturb has no mark: the inbox already shows it.
+- **Own marks**: `core/Extras.js` (+ tests: `indicators(state)`, `moduleJson`, `keyboard(hyprctl devices)`, `tray(items)`), `services/Extras.qml` (pgrep for gpu-screen-recorder every 2 s; `omarchy-voxtype-status` stream; `omarchy-reminder show --json` every minute; the idle and nightlight proxies; `hyprctl -j devices` on `activelayout`; `Pipewire.defaultAudioSource`; `SystemTray.items`), `bar/Marks.qml` (pure). Actions: indicator click turns it off / opens its tool (as Omarchy's do), keyboard click/right-click `hyprctl switchxkblayout all next|prev`, mic click `omarchy-audio-input-mute`, wheel ±5 %, middle opens Sound; tray left `activate()` (or the menu when `onlyMenu`), right `display()` (Quickshell's platform menu), middle `secondaryActivate()`, wheel `scroll()`. Do-not-disturb had no mark then; the indicator stamps (below) added one.
 - **Room**: `BarSurface.extrasRoom` (right edge to the centre clock, less status, inbox and the right clock) bounds the marks and hosted row; `mediaRoom` is what's left for now playing (hidden under 90 px). Order of giving way: media, then the tray folds (`盆` + count, a click unfolds it for 8 s), then hosted widgets drop out whole (`HostedSlot.fits`, measured from the cells before it). Natural widths are measured apart (`Marks.fullWidth`, each cell's `naturalWidth`) so folding never feeds back into its own decision.
 - Harness: `tests/harness/widgets/FakeWidget.qml` (an Omarchy-style widget reading `bar.barForeground`/`fontFamily`), `phase9.json` (indicators, keyboard, mic, tray, hosted, everything at once in five presets). Unit tests: 58.
 
@@ -509,6 +513,17 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - `services/Leaf.qml` (singleton): `wanted` and `kind` (Bar.qml: `scrollOpen`, the scroll screen's `endleaf`), `reading`. Reads only for the kind shown and only while the scroll is out, except a CPU sample a minute while `kiki` is chosen and the focus timer's 1 s tick while one runs. Actions: `sessionAct`, `setTheme`, `openThemes`, `runTool`, `focusAct`, `toggleNote`, `editNotes`, `copyClip`.
 - `bar/scroll/EndLeaf.qml` (a ScrollSection per kind, plus the batsu afterword). `ScrollView.endleaf` + `endWidth` (`Weather.leafWidth` with Inbox's width) places it and an Interlude (its `after` names the leaf) right of Inbox. `ScrollWindow` feeds `leaf`, `endShown`, `font`, `version`, `preset`, `switches`, `sealGlyph`. `Bar.leafRequest` handles its clicks (stay awake through `Extras.idleProxy`, night light through `Display`, silence through `Status`). Part `endleaf`; a row in the Widgets page's Centre card; the Scroll 巻 settings page has an "After Inbox" gallery of nine live tiles; `Settings.ENDLEAVES` / `endleafLabels` for the Typesetting row.
 - Params `endleaves.json`, `endleaves-light.json`, `endleaf-settings.json`. Unit tests: 79.
+
+### Inbox and network fixes ✅ (`6b47a25`, `1e06e1b`)
+- The inbox read `00` whenever no toast was on screen: one `awk` over `notifications/*.json` and `history/*.json` died on the unmatched first glob (gawk treats a missing file as fatal). `services/Status.qml` now loops over both globs.
+- The Network sheet and scroll section listed only the joined network: `nmcli … --rescan no` reads NetworkManager's cache, which it barely refreshes while connected. `services/Net.qml` rescans when either opens and every 30 s while open.
+
+### Indicator stamps 印 ✅ (asked for by the user after the end leaf)
+- All six of Omarchy's indicators (`omarchy.indicators`: recording, dictation, reminder, stay awake, night light, and the new do not disturb) as 18 px stamps in `bar/Marks.qml`, before the inbox. On: pressed with the stamp press, askew by `Status.tilt(key)`. Off: a faint outline; a click switches it on, as on Omarchy's bar. Hover straightens them and opens the hovered one's name to the left.
+- Two settings (twenty in all, 7,739,670,528 combinations): `indicators: all | active` and `indicatorStyle: icon | kanji | iconname | kanjiname`. Icons are the Nerd Font codepoints Omarchy's own indicators use (`Extras.INDICATORS[].icon`; an hourglass while transcribing). Kanji stamps that are on are small seals like `bar/Seal.qml` (red plate, inner rule, Noto Serif CJK in paper); off they match the icon stamps. Names are in small caps, red only for a recording or live dictation. Presets: Sheet all/kanji, Scroll active/kanji, Hanko all/icon, Quiet active/icon, Instrument all/iconname, Islet active/icon.
+- `core/Extras.js` `indicators(state, all)` marks each `on`; `services/Extras.qml` returns all six, `dnd` set by `Bar.qml` from `Status.doNotDisturb` (reading `Status` from inside the Extras singleton gave `undefined` at load), and `indicatorAction` toggles each the way Omarchy's does.
+- The hover name sits outside the marks over a blank `BarSurface` keeps in the right zone (`marks.nameWidth`), capped at the real gap before the zone (`nameRoom`). Growing inside the marks made the stamps jump for a frame before the right-anchored row moved them back, so the hover dropped and the name flickered.
+- Unit tests: 80.
 
 ## 10. Instructions for the remaining phase (10)
 
@@ -555,6 +570,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 15. **Bluetooth styles to verify on hardware:** the device `icon` names BlueZ reports (they pick the mark; unknown kinds get 器) and the marks' baseline beside the other cells in the user's fonts.
 16. **Scroll dividers to verify on hardware:** each style's spacing at the user's scale, the `su` numerals and `kotoba` lines in the user's Fraunces and Noto CJK, and the gallery tiles at small window widths.
 17. **End leaf to verify on hardware:** `omarchy-theme-set` with the display name, `omarchy-shell shell summon omarchy.image-picker '{"source":"themes"}'` from a third-party bar, `idleProxy.setIdleEnabled` toggling stay awake, `top -b -n2 -o %CPU` column numbers on the user's procps, hwmon names for the CPU temperature, `omarchy-launch-editor` opening notes.md, `omarchy-clipboard-paste-text --copy-only --history-index N`, `notify-send` for the focus timer, and the hold-to-press seals not firing on a click.
+18. **Indicator stamps:** twice, right after a shell restart with do not disturb on and an `indicatorStyle` change, only the stamp that was on showed (the five off ones were gone, though `indicators` was `all`). It never came back in later runs and nothing in the log explains it. Also verify the Nerd Font icons in the user's mono font, and the hover name on a crowded bar (it is cut short when there is no room, and the marks' `clip` can hide it when the zone overflows).
 
 ## 13. QML pitfalls already hit
 

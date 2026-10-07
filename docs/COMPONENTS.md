@@ -6,14 +6,14 @@ Typeset merges the two earlier directions into one bar. Sheet (the printed runni
 - **Scroll** is the Scroll design as drawn.
 - **Hanko** is the merge, and the default.
 
-Eighteen settings give **967,458,816** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
+Twenty settings give **7,739,670,528** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
 ![The settings page](mockups/typeset/01-settings.webp)
 
 ## Contents
 
 1. [The rules every option keeps](#1-the-rules-every-option-keeps)
-2. [The eighteen settings](#2-the-eighteen-settings)
+2. [The twenty settings](#2-the-twenty-settings)
 3. [How options interact](#3-how-options-interact)
 4. [Presets](#4-presets)
 5. [Counting the combinations](#5-counting-the-combinations)
@@ -38,7 +38,7 @@ These rules are what let any combination look designed rather than assembled.
 
 ---
 
-## 2. The eighteen settings
+## 2. The twenty settings
 
 Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset.
 
@@ -140,6 +140,24 @@ All six status × meters pairs are drawn on sheet 12.
 | `off` | No Bluetooth cell. The panel is still in the scroll and on Omarchy's hotkey. | New |
 
 In every style a click opens the Bluetooth panel and a middle- or right-click turns Bluetooth on or off; machines without an adapter never show the cell. A device at 15 % or less turns its mark, its dot or the count red (it needs you). The old `on` still reads as `device`. Added after the Typeset mockups were drawn, in the same grammar as the other status cells.
+
+#### Indicators `indicators` and indicator marks `indicatorStyle` 印
+
+Omarchy's six indicators (screen recording, dictation, reminder, stay awake, night light, do not disturb) as small square stamps in the right zone, before the inbox. One that is on is pressed down slightly askew (the stamp press, like a new notification); hovering the stamps straightens them, and hovering one opens its name in small caps to its left, pushing the zone over (the stamps never move). A click does what Omarchy's indicator does: stops a recording or opens the capture menu, opens dictation's settings, lists reminders (right-click adds one), or switches stay awake, night light or do not disturb.
+
+| `indicators` | What it does |
+|---|---|
+| **`all`** (default) | All six, the ones that are off as faint outlines to click on. |
+| `active` | Only the ones that are on. |
+
+| `indicatorStyle` | What it does |
+|---|---|
+| **`icon`** (default) | Omarchy's own icon in the stamp (the Nerd Font glyph its bar uses), readable without the kanji. Red only for "now": a recording and live dictation are solid red; transcribing shows an hourglass. |
+| `kanji` | The kanji: 録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light, 静 do not disturb. One that is on is a small seal like the one at the far left (solid red, an inner rule, paper serif kanji); off, a faint outline like an off icon stamp. |
+| `iconname` | `icon`, with the name in small caps beside each one that is on. |
+| `kanjiname` | `kanji`, with the name beside each one that is on. |
+
+The name is in the same ink as the icon styles (red only for a recording or live dictation). The old `full` reads as `iconname`. Each indicator can be hidden on the Widgets page. Added after the Typeset mockups were drawn.
 
 ### Edge
 
@@ -277,7 +295,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/typeset/03-presets.webp)
 
-A preset sets all eighteen settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
+A preset sets all twenty settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
 | Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet |
 |---|---|---|---|---|---|---|
@@ -291,6 +309,8 @@ A preset sets all eighteen settings at once. Change any setting afterwards and t
 | meters | ticks | off | ticks | off | ticks | ticks |
 | notif | count | stamps | stamps | count | count | stamps |
 | bluetooth | device | marks | device | off | device | marks |
+| indicators | all | active | all | active | all | active |
+| indicatorStyle | kanji | kanji | icon | icon | iconname | icon |
 | edge | dayrule | rod | rodrule | hairline | dayrule | rodrule |
 | rules | on | off | on | off | on | off |
 | height | 36 | 40 | 40 | 32 | 44 | 36 |
@@ -325,6 +345,8 @@ A preset sets all eighteen settings at once. Change any setting afterwards and t
 | meters | 2 |
 | notif | 2 |
 | bluetooth | 4 |
+| indicators | 2 |
+| indicatorStyle | 4 |
 | edge | 4 |
 | rules | 2 |
 | height | 4 |
@@ -334,9 +356,9 @@ A preset sets all eighteen settings at once. Change any setting afterwards and t
 | interlude | 9 |
 | endleaf | 9 |
 
-3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 × 9 × 9 = **967,458,816** bars.
+3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 × 9 × 9 = **7,739,670,528** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers and its end leaf, is 2,985,984 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers and its end leaf, is 23,887,872 combinations.
 
 ![Twelve random combinations](mockups/typeset/04-shuffle.webp)
 
@@ -364,7 +386,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Widgets 部品** shows or hides anything the bar can show, each row `shown | hidden`, in cards: *Left* (seal, workspaces, window title), *Centre* (clock, now playing), *Right · readings* (network, Bluetooth, volume, brightness, battery, notifications), *Marks · Hanko's own* (each indicator, the keyboard layout, the microphone, the tray, as your Omarchy layout has them), *Tray apps* (each app in the tray now), *Widgets · from your Omarchy bar* (every hosted widget, marked Omarchy or third-party) and *Edge*. A part its own setting leaves out (`seal: none`, `title: none`, `media: none`, `bluetooth: off`) reads hidden, and showing it sets it back to the preset's way. Show all puts every hidden part back. Hiding is for this bar only: the widget stays in Omarchy's layout. From a terminal: `hanko hide <part>`, `hanko show <part>`, or `hanko style set show:<part> hidden`.
 
-**Motion 動** holds one switch outside the eighteen settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
+**Motion 動** holds one switch outside the twenty settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
 **Typesetting 組版**, the page drawn on sheets 01 and 02, holds every setting in this document:
 
@@ -373,7 +395,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 3. **Six cards of segmented controls**, grouped the way the bar reads:
    - *Left · where you are*: Seal, Workspaces, Window title
    - *Centre · when*: Clock, Clock position, Now playing
-   - *Right · how things are*: Status, Meters, Notifications, Bluetooth
+   - *Right · how things are*: Status, Meters, Notifications, Bluetooth, Indicators, Indicator marks
    - *Edge*: Bottom edge, Dividers
    - *Frame*: Height, Surface, Position
    - *Panels*: Panels open as, Seal glyph
@@ -416,7 +438,7 @@ Resolution order: preset → `edits` → `monitors[name]`. Unknown keys and inva
 In QML, the bar reads one resolved object:
 
 ```qml
-property var style: Typeset.current   // 18 settings
+property var style: Typeset.current   // 20 settings
 Seal   { mode: style.seal }
 Spaces { mode: style.spaces }
 Clock  { mode: style.clock; anchor: style.clockAt }

@@ -210,6 +210,7 @@ Item {
   Binding { target: Extras; property: "wantKeyboard"; value: root.own.keyboard }
   Binding { target: Extras; property: "wantMic"; value: root.own.mic }
   Binding { target: Extras; property: "wantTray"; value: root.own.tray }
+  Binding { target: Extras; property: "dnd"; value: Status.doNotDisturb }
   Binding {
     target: Extras
     property: "idleProxy"
