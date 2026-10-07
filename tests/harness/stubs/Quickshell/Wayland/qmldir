@@ -1,1 +1,2 @@
 module Quickshell.Wayland
+singleton ToplevelManager 1.0 ToplevelManager.qml

@@ -294,6 +294,10 @@ What helps you find your way on the scroll: the index plate of tabs (on top; bel
 
 Added after the Typeset mockups were drawn.
 
+### Workspace overview 一覧 (not a setting)
+
+Right-click the workspaces (or `omarchy-shell hanko overview`) and every screen lays out its workspaces on a sheet of the theme's paper, under the bar. Workspaces 1–10 (the ten the live one is in) sit in two rows of five pages, a row with nothing on it folded away. Each page has a folio band (number, kanji numeral, how many windows, a red dot when urgent; the live page's number inverted with `//`) over its screen: every window where it really sits, framed in hairlines, live, with its name on a tab (bone for the focused one, ◇ for a floating one). A bare page shows its kanji, large and faint. The live page is pressed like a seal, with a hard red print under it. Arrows or hjkl switch the workspace while the overview stays open, 1–9 and 0 jump, the wheel walks them; a click on a page or a window goes there; dragging a window onto another page moves it there without following; middle-click closes a window; Enter, Esc or a click away is done.
+
 ## 3. How options interact
 
 Most settings are independent. These are the places where one setting changes how another is drawn. None of them forbid a combination; they adapt it.

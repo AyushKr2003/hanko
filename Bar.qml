@@ -103,6 +103,7 @@ Item {
   function openSheet(key, screenName) {
     if (!sheetReady(key) || barHidden) return false
     closeScroll()
+    closeOverview()
     closeHostedPopout()
     if (key !== sheet) timeShift = 0
     sheetScreen = screenName || focusedScreen()
@@ -282,6 +283,22 @@ Item {
 
   SettingsWindow { bar: root }
 
+  // ------------------------------------------------------------- overview
+  //
+  // The workspace overview 一覧 (bar/OverviewWindow.qml): every screen lays
+  // out its workspaces at once; the focused one takes the keyboard. Right-
+  // click on the workspaces, or `omarchy-shell hanko overview`.
+  property bool overviewOpen: false
+  function openOverview() {
+    closeSheet()
+    closeScroll()
+    closeHostedPopout()
+    Hypr.refresh()
+    overviewOpen = true
+  }
+  function closeOverview() { overviewOpen = false }
+  function toggleOverview() { if (overviewOpen) closeOverview(); else openOverview() }
+
   // ------------------------------------------------------------- scroll
   //
   // The handscroll (panels: scroll): open on one screen at a time, panned
@@ -298,6 +315,7 @@ Item {
     if (barHidden) return false
     closeSheet()
     closeHostedPopout()
+    closeOverview()
     var i = Scroll.indexOf(key)
     if (i >= 0) scrollSection = i
     scrollScreen = screenName || focusedScreen()
@@ -489,6 +507,10 @@ Item {
     // One setting for one monitor (style.json `monitors`).
     function styleSetFor(monitor: string, key: string, value: string): string {
       return Typeset.setFor(monitor, key, value) ? "ok" : "invalid"
+    }
+    function overview(): string {
+      root.toggleOverview()
+      return root.overviewOpen ? "open" : "closed"
     }
     function scroll(): string {
       if (root.scrollOpen) { root.closeScroll(); return "closed" }

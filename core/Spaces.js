@@ -21,20 +21,23 @@ function clamp01(v) {
 
 // windows: [{ at: [x, y], size: [w, h], floating, focused }] in layout px.
 // area: { x, y, width, height } the monitor's usable area in the same px.
-// Floating windows are left out: the glyph shows the tiling.
-function layoutOf(windows, area) {
+// Floating windows are left out: the glyph shows the tiling. keepFloating
+// keeps them (flagged `floating`), for the overview, which shows every window.
+function layoutOf(windows, area, keepFloating) {
   var out = []
   if (!area || !(area.width > 0) || !(area.height > 0)) return out
   for (var i = 0; i < (windows || []).length; i++) {
     var w = windows[i]
-    if (!w || !w.at || !w.size || w.floating) continue
+    if (!w || !w.at || !w.size || (w.floating && !keepFloating)) continue
     var x = clamp01((w.at[0] - area.x) / area.width)
     var y = clamp01((w.at[1] - area.y) / area.height)
     var r = clamp01((w.at[0] + w.size[0] - area.x) / area.width)
     var b = clamp01((w.at[1] + w.size[1] - area.y) / area.height)
     if (r - x < 0.01 || b - y < 0.01) continue
-    out.push({ x: x, y: y, w: r - x, h: b - y, focused: !!w.focused,
-               name: String(w.name || ""), address: String(w.address || "") })
+    var o = { x: x, y: y, w: r - x, h: b - y, focused: !!w.focused,
+              name: String(w.name || ""), address: String(w.address || "") }
+    if (keepFloating) { o.floating = !!w.floating; o.title = String(w.title || ""); o.fullscreen = !!w.fullscreen }
+    out.push(o)
   }
   // Fullscreen or a single window still reads as one pane.
   return out
@@ -83,7 +86,8 @@ function list(workspaces, activeId, min) {
       name: w.name || String(id),
       active: id === activeId,
       urgent: !!w.urgent,
-      windows: w.windows || []
+      windows: w.windows || [],
+      all: w.all || w.windows || []
     }
   })
 }

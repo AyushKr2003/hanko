@@ -57,6 +57,7 @@ Item {
   signal sealClicked(int button)
   signal workspaceActivated(int id)
   signal workspaceStepped(int delta)
+  signal overviewRequested()
   signal mediaAction(string name)
   signal clockClicked()
   signal statusAction(string name, string how)
@@ -157,6 +158,7 @@ Item {
       barHeight: root.barHeight
       onActivated: function(id) { root.workspaceActivated(id) }
       onStepped: function(delta) { root.workspaceStepped(delta) }
+      onOverviewRequested: root.overviewRequested()
     }
 
     Divider { ruled: root.ruled; visible: titleView.visible && (seal.visible || spacesView.visible) }

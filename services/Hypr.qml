@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
 import "../core/Spaces.js" as Spaces
 import "../core/Title.js" as Title
 
@@ -28,7 +29,8 @@ Singleton {
       var id = d.workspace.id
       if (!byWs[id]) byWs[id] = []
       byWs[id].push({ at: d.at, size: d.size, floating: !!d.floating, focus: d.focusHistoryID === undefined ? 1e9 : d.focusHistoryID,
-                      name: Title.appName(d.class || ""), address: d.address || "" })
+                      name: Title.appName(d.class || ""), address: d.address || "", title: d.title || "",
+                      fullscreen: (d.fullscreen || 0) > 0 })
     }
     var out = []
     var wss = Hyprland.workspaces.values
@@ -46,7 +48,9 @@ Singleton {
         name: ws.name,
         urgent: !!ws.urgent,
         count: wins.length,
-        windows: Spaces.layoutOf(wins, Spaces.usableArea(mon))
+        windows: Spaces.layoutOf(wins, Spaces.usableArea(mon)),
+        // Every window, floating ones too, for the overview.
+        all: Spaces.layoutOf(wins, Spaces.usableArea(mon), true)
       })
     }
     return out
@@ -57,7 +61,7 @@ Singleton {
     var mon = monitorNamed(screenName)
     var active = mon && mon.activeWorkspace ? mon.activeWorkspace.id : (Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1)
     var list = Spaces.list(root.workspaces.map(function(w) {
-      return { id: w.id, name: w.name, urgent: w.urgent, windows: w.windows, count: w.count }
+      return { id: w.id, name: w.name, urgent: w.urgent, windows: w.windows, count: w.count, all: w.all }
     }), active)
     var counts = {}
     for (var i = 0; i < root.workspaces.length; i++) counts[root.workspaces[i].id] = root.workspaces[i].count
@@ -102,6 +106,40 @@ Singleton {
   function focusWindow(address) {
     if (/^0x[0-9a-fA-F]+$/.test(String(address)))
       Hyprland.dispatch("hl.dsp.focus({ window = " + luaStr("address:" + address) + " })")
+  }
+
+  // Read windows and workspaces again now (the overview opening).
+  function refresh() { refreshTimer.restart() }
+
+  // The overview's actions. A window moves without following it.
+  function moveWindow(address, workspace) {
+    if (/^0x[0-9a-fA-F]+$/.test(String(address)) && Number(workspace) > 0)
+      Hyprland.dispatch("hl.dsp.window.move({ window = " + luaStr("address:" + address) + ", workspace = " + luaStr(String(workspace)) + ", follow = false })")
+  }
+  function closeWindow(address) {
+    if (/^0x[0-9a-fA-F]+$/.test(String(address)))
+      Hyprland.dispatch("hl.dsp.window.close({ window = " + luaStr("address:" + address) + " })")
+  }
+  // The Wayland toplevel behind a Hyprland window, for the overview's live
+  // snapshot (ScreencopyView). Matched through the HyprlandToplevel attached
+  // to each of ToplevelManager's toplevels, as omarchy-overview does; null
+  // when there is none.
+  function toplevelFor(address) {
+    var want = String(address || "").replace(/^0x/, "").toLowerCase()
+    if (!want) return null
+    var tops = ToplevelManager.toplevels.values
+    for (var i = 0; i < tops.length; i++) {
+      var h = tops[i].HyprlandToplevel
+      if (h && String(h.address || "").replace(/^0x/, "").toLowerCase() === want) return tops[i]
+    }
+    return null
+  }
+  // The monitor's height / width, for the overview's pages.
+  function aspectFor(screenName) {
+    var m = monitorNamed(screenName)
+    var d = m ? m.lastIpcObject : null
+    var a = Spaces.usableArea(d)
+    return a ? a.height / a.width : 0.5625
   }
 
   function openMenu() { Quickshell.execDetached(["omarchy-shell", "shell", "toggle", "omarchy.menu", "{\"menu\":\"root\"}"]) }

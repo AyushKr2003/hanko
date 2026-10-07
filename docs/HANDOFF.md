@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the Profile, About and Credits plates were made responsive (on `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the workspace overview 一覧 (on `claude/hanko-plugin-zzm827`, fast-forwarded from `dev`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -273,6 +273,8 @@ bar/
   Inbox.qml              count | stamps (tilted seals, fan on hover), DND state
   SheetWindow.qml        the layer a sheet is printed on (see Phase 6 in §9)
   ScrollWindow.qml       the layer the handscroll unrolls on (see Phase 7 in §9)
+  OverviewWindow.qml     the layer the workspace overview 一覧 is laid on, one per screen
+  overview/              OverviewView, OverviewPage (pure): the overview's pages
   SettingsWindow.qml     the settings window (see Phase 8 in §9)
   settings/              SettingsPage, SettingsCard, Segmented, Plate (all pure); the
                          plates ProfilePlate, AboutPlate, CreditsPlate with their art
@@ -581,6 +583,13 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
 
+### Workspace overview 一覧 ✅ (asked for by the user: "a workspace overview like we have in Ryoku")
+- Studied Ryoku's `shell/quickshell/shell/modules/overview/` (Overview, WorkspaceCell, OverviewSurface) for the idea, and took the **working principle** from the user's own `AyushKr2003/omarchy-overview` (after Shanu-Kumawat/quickshell-overview), which runs on real Omarchy: a full-screen Overlay layer on every screen, the keyboard (Exclusive) on the focused monitor only, a `HyprlandFocusGrab` that closes it on click-away (armed 120 ms after mapping), a fixed rows × columns grid holding the group of ids the live workspace is in with empty rows folded, arrows/hjkl that switch the real workspace while it stays open, digits that jump in the group, the wheel walking the group, live `ScreencopyView` snapshots found through `ToplevelManager.toplevels` and each one's attached `HyprlandToplevel.address`, a click to go, middle-click to close a window, drag to move it with `hl.dsp.window.move({ window = "address:…", workspace = "N", follow = false })`. Ryoku's desktop strip is left out (Omarchy has no desktops).
+- Hanko's look: a sheet of the theme's paper (94 %) under the bar strip (the mask leaves the bar working), a register line `── 一覧 · OVERVIEW · DP-1`, a Fraunces title, the time and `05 SPACES · 10 WINDOWS`; each workspace a page with a folio band (number, kanji numeral, window count, urgent dot; the live page's number on a bone plate with `//`), its windows at their real fractions as hairline frames over an ink fallback (the app name in Fraunces italic), the snapshot over it and a mono name tab (bone for the focused one, ◇ for floating); bare pages show their kanji large and faint; the live page gets the hard seal-red print `style.lua` gives the focused window; a drop target is framed in red; the carried window is a paper tab with an ink print. The keys run along the foot. Pages print in with `Motion.unroll`.
+- `core/Overview.js` (+ tests): `ROWS` 2, `COLUMNS` 5, `group`, `pages(spaces, activeId, rows, cols, fold)`, `rowsShown`, `fit` (largest page at the monitor's aspect), `step` (arrows, wrapping in the group), `jump`, `wheel`, `visibleWindows` (fullscreen alone, floats last), `summary`, `KEYS`.
+- `services/Hypr.qml`: each workspace also carries `all` (floating windows too, with `title` and `fullscreen`; `Spaces.layoutOf(…, keepFloating)`), and `refresh()`, `moveWindow`, `closeWindow`, `toplevelFor(address)`, `aspectFor(screen)`. `Bar.qml`: `overviewOpen`, `openOverview` (closes a sheet, the scroll and hosted popouts), `closeOverview`, `toggleOverview`, IPC `hanko overview`; sheets and the scroll close it. Right-click on the bar's workspaces toggles it (`Workspaces.overviewRequested`).
+- Harness: `scenes/Overview.qml` (the bar over the sample plate, the view on top), params `overview`, `overview-light` (rows not folded), `overview-narrow` (1100 × 720, 16:10). `tests/run` lints `bar/overview`; a `ToplevelManager` stub. Unit tests: 94.
+
 ### Phase 10 · Motion and release
 
 Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
@@ -628,6 +637,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 20. **Scroll sides to verify on hardware:** the curl's shading on the user's theme (light themes may want it fainter), and the scroll's edges against the screen edge on a 1x display.
 21. **Profile plate to verify on hardware:** the probe's facts on the user's machine (theme name, `omarchy-version`, Hyprland tag, install date from `stat -c %W /`), Save image writing to `~/Pictures` (or `$XDG_PICTURES_DIR`; the folder must exist), the inline name field with a long name, and the leaders landing on the seal at the window's real size. Also resize the settings window through the sizes the harness renders (600 px to ultrawide, and short) and check nothing overlaps at the user's `typeSize` and font scale.
 22. **Window style:** a change in the settings window does not reach Hyprland until `hyprctl reload`; Hanko could run `hyprctl reload` (or an `hyprctl eval` hook like Omacale's) when `surface` or `motion` changes. Also check the red print on a light theme and next to floating windows, and that `popin 96%` reads as a print rather than a zoom.
+23. **Overview to verify on hardware:** live snapshots (`ToplevelManager` + `HyprlandToplevel.address` matching Hanko's `0x` addresses), the focus grab closing on click-away and not on the first click inside, keyboard on the focused monitor only with two screens, `hl.dsp.window.move` with `window` and `workspace` together, the deferred focus after a click (90 ms; raise it if focus snaps back), and the page fit on a portrait monitor.
 
 
 ## 13. QML pitfalls already hit
