@@ -27,7 +27,7 @@ const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId",
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
 const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs", "streams", "master", "inputNote", "sheet"])
-const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", "securityName", "connectHow", "sheet"])
+const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", "securityName", "connectHow", "sheet", "remember", "KEEP_MS"])
 const Pw = load("core/Power.js", ["keyValues", "profiles", "stateLabel", "blurb", "details", "sheet"])
 const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell", "layout", "centred", "nearest",
   "clampTrack", "landing", "position"])
@@ -457,6 +457,21 @@ test("network: nmcli terse lines, escaped colons and all", () => {
   assert.deepEqual(rows.map(r => [r.ssid, r.signal, r.inUse]), [["Kumo", 82, true], ["Neighbour", 91, false], ["Library", 30, false]])
   assert.equal(rows[2].secure, false)
   assert.deepEqual(N.parseSaved("Kumo:802-11-wireless\nWired connection 1:802-3-ethernet\n"), ["Kumo"])
+})
+
+test("network: a pruned cache doesn't shrink the list to the network you're on", () => {
+  const full = N.parseWifi("*:82:WPA2:5180:Kumo\n :91:WPA2:2412:Neighbour\n :30::2462:Library")
+  const a = N.remember({}, full, 1000)
+  assert.equal(a.rows.length, 3)
+  // A minute later NetworkManager's cache holds only the joined network.
+  const b = N.remember(a.seen, N.parseWifi("*:80:WPA2:5180:Kumo"), 61000)
+  assert.deepEqual(b.rows.map(r => [r.ssid, r.signal, r.inUse]), [["Kumo", 80, true], ["Neighbour", 91, false], ["Library", 30, false]])
+  // Only the latest reading says what is in use.
+  const c = N.remember(b.seen, N.parseWifi("*:88:WPA2:2412:Neighbour"), 62000)
+  assert.deepEqual(c.rows.filter(r => r.inUse).map(r => r.ssid), ["Neighbour"])
+  // Gone for longer than KEEP_MS: dropped.
+  const d = N.remember(c.seen, N.parseWifi("*:88:WPA2:2412:Neighbour"), 62000 + N.KEEP_MS + 1)
+  assert.deepEqual(d.rows.map(r => r.ssid), ["Neighbour"])
 })
 
 test("network: bands, security and how a click connects", () => {

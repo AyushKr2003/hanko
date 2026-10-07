@@ -43,6 +43,32 @@ function parseWifi(text) {
   return rows
 }
 
+// NetworkManager prunes access points from its cache as they age, and
+// barely scans while connected, so a plain read can shrink to the network
+// you're on. Keep what was seen in the last `keepMs` (by SSID, latest
+// reading wins); only the latest reading can say which one is in use.
+// `seen` is { ssid: { row, at } }; returns { seen, rows } in parseWifi order.
+var KEEP_MS = 5 * 60 * 1000
+
+function remember(seen, rows, now, keepMs) {
+  var keep = keepMs === undefined ? KEEP_MS : keepMs
+  var next = {}
+  var k
+  for (k in (seen || {})) if (now - seen[k].at <= keep) next[k] = seen[k]
+  var fresh = {}
+  for (var i = 0; i < (rows || []).length; i++) {
+    next[rows[i].ssid] = { row: rows[i], at: now }
+    fresh[rows[i].ssid] = true
+  }
+  var out = []
+  for (k in next) {
+    var r = next[k].row
+    out.push(fresh[k] ? r : { ssid: r.ssid, signal: r.signal, inUse: false, secure: r.secure, security: r.security, freq: r.freq })
+  }
+  out.sort(function(a, b) { return (b.inUse ? 1 : 0) - (a.inUse ? 1 : 0) || b.signal - a.signal || (a.ssid < b.ssid ? -1 : 1) })
+  return { seen: next, rows: out }
+}
+
 // `nmcli -t -f NAME,TYPE connection show`: the saved Wi-Fi connection names.
 function parseSaved(text) {
   var out = []
