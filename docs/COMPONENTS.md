@@ -6,14 +6,14 @@ Typeset merges the two earlier directions into one bar. Sheet (the printed runni
 - **Scroll** is the Scroll design as drawn.
 - **Hanko** is the merge, and the default.
 
-Twenty settings give **7,739,670,528** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
+Twenty-one settings give **15,479,341,056** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
 ![The settings page](mockups/typeset/01-settings.webp)
 
 ## Contents
 
 1. [The rules every option keeps](#1-the-rules-every-option-keeps)
-2. [The twenty settings](#2-the-twenty-settings)
+2. [The twenty-one settings](#2-the-twenty-one-settings)
 3. [How options interact](#3-how-options-interact)
 4. [Presets](#4-presets)
 5. [Counting the combinations](#5-counting-the-combinations)
@@ -39,7 +39,7 @@ These rules are what let any combination look designed rather than assembled.
 
 ---
 
-## 2. The twenty settings
+## 2. The twenty-one settings
 
 Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset.
 
@@ -217,7 +217,7 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 | Option | What it does | From |
 |---|---|---|
 | `sheets` | Clicking a cell inverts it and a flush sheet drops from it, joined to the bar: a mini settings page with eyebrow, serif title, `//` groups and an action strip. | Sheet |
-| **`scroll`** (default) | Every panel lives on one handscroll that unrolls from the bar, between two rollers, with an index plate and an interlude between each two sections. Pan with `H` `L`. | Scroll |
+| **`scroll`** (default) | Every panel lives on one handscroll that unrolls from the bar, its edges finished by the `sides` setting, with an index plate and an interlude between each two sections. Pan with `H` `L`. | Scroll |
 
 Sheets 20–25 show both on full desktops.
 
@@ -233,7 +233,7 @@ What sits between two sections of the scroll. Pick it on the Scroll 巻 page (a 
 | `kotoba` 詞 | The next section's red kanji and its number and name set vertically, between two hairlines (a text column, as handscrolls put text between pictures). | Scroll |
 | `tsugime` 継 | A paper join: the next sheet laps over the last, with a soft shadow on the earlier one. | |
 | **`seal`** 印 (default) | The paper join, with a seal of the next section's kanji pressed across it, half on each sheet. | Hanko |
-| `jiku` 軸 | A slim inner roller with caps, echoing the scroll's own rollers. | |
+| `jiku` 軸 | A slim inner roller with caps, echoing the rollers the scroll once had at its edges. | |
 | `fuda` 札 | A bone index tab with the next section's red kanji and number, on a faint line. | Islet |
 | `su` 数 | The next section's number, large in the display face and set sideways, with a red point. | |
 
@@ -270,6 +270,17 @@ It uses the same data as Omarchy's own weather panel, so it needs no setting: th
 
 ---
 
+#### Scroll sides `sides`
+
+What finishes the scroll's left and right edges. The rollers with caps that stood there felt heavy next to the paper, so they are gone; ten alternatives were drawn in `docs/revision3/` on the `docs` branch and two were built. Set it in the Typesetting Panels card or with `hanko style set sides bare`.
+
+| Option | What it is | Presets |
+|---|---|---|
+| `bare` | No rollers and no side lines: the paper simply meets the screen. | Sheet, Quiet, Instrument |
+| **`curl`** 巻 (default) | A soft shaded fold, 22 px, at each edge, as if the paper rolls under; no caps. | Scroll, Hanko, Islet |
+
+Added after the Typeset mockups were drawn.
+
 ## 3. How options interact
 
 Most settings are independent. These are the places where one setting changes how another is drawn. None of them forbid a combination; they adapt it.
@@ -296,7 +307,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/typeset/03-presets.webp)
 
-A preset sets all twenty settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
+A preset sets all twenty-one settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
 | Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet |
 |---|---|---|---|---|---|---|
@@ -320,6 +331,7 @@ A preset sets all twenty settings at once. Change any setting afterwards and the
 | panels | sheets | scroll | scroll | sheets | sheets | scroll |
 | interlude | folio | kotoba | seal | ma | folio | fuda |
 | endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu |
+| sides | bare | curl | curl | bare | bare | curl |
 
 - **Sheet**: the Sheet design, exactly. A spec table across the top of the page.
 - **Scroll**: the Scroll design, exactly. Calm type and a handscroll underneath.
@@ -356,10 +368,11 @@ A preset sets all twenty settings at once. Change any setting afterwards and the
 | panels | 2 |
 | interlude | 9 |
 | endleaf | 9 |
+| sides | 2 |
 
-3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 × 9 × 9 = **7,739,670,528** bars.
+3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 × 9 × 9 × 2 = **15,479,341,056** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers and its end leaf, is 23,887,872 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers, its end leaf and its sides, is 23,887,872 combinations.
 
 ![Twelve random combinations](mockups/typeset/04-shuffle.webp)
 
@@ -387,7 +400,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Widgets 部品** shows or hides anything the bar can show, each row `shown | hidden`, in cards: *Left* (seal, workspaces, window title), *Centre* (clock, now playing), *Right · readings* (network, Bluetooth, volume, brightness, battery, notifications), *Marks · Hanko's own* (each indicator, the keyboard layout, the microphone, the tray, as your Omarchy layout has them), *Tray apps* (each app in the tray now), *Widgets · from your Omarchy bar* (every hosted widget, marked Omarchy or third-party) and *Edge*. A part its own setting leaves out (`seal: none`, `title: none`, `media: none`, `bluetooth: off`) reads hidden, and showing it sets it back to the preset's way. Show all puts every hidden part back. Hiding is for this bar only: the widget stays in Omarchy's layout. From a terminal: `hanko hide <part>`, `hanko show <part>`, or `hanko style set show:<part> hidden`.
 
-**Motion 動** holds one switch outside the twenty settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
+**Motion 動** holds one switch outside the twenty-one settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
 **Typesetting 組版**, the page drawn on sheets 01 and 02, holds every setting in this document:
 
@@ -439,7 +452,7 @@ Resolution order: preset → `edits` → `monitors[name]`. Unknown keys and inva
 In QML, the bar reads one resolved object:
 
 ```qml
-property var style: Typeset.current   // 20 settings
+property var style: Typeset.current   // 21 settings
 Seal   { mode: style.seal }
 Spaces { mode: style.spaces }
 Clock  { mode: style.clock; anchor: style.clockAt }

@@ -6,9 +6,9 @@ import "../../core/Weather.js" as Wx
 import "../../core/Leaf.js" as LeafJs
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): one
-// long paper held between two rollers, its eight sections side by side with
-// an interlude between each two (Interlude.qml); sections curl under the rollers at the
-// edges so the neighbours always show. An index plate names every section
+// long paper, its eight sections side by side with an interlude between
+// each two (Interlude.qml); sections fade out at the side edges so the
+// neighbours always show, and the edges are bare or curl under (`sides`). An index plate names every section
 // (the one in the middle inverted), and a position bar runs along the foot.
 // Pure QtQuick: bar/ScrollWindow.qml drives the motion and feeds live data;
 // the harness renders it still.
@@ -34,6 +34,8 @@ Item {
   property string divider: "seal"
   // Which leaf sits after Inbox (Style.js `endleaf`).
   property string endleaf: "koyomi"
+  // The side edges (Style.js `sides`): bare or curl.
+  property string sides: "curl"
 
   signal request(string section, string what, var arg)
   // A name on the index plate was clicked.
@@ -74,9 +76,8 @@ Item {
       y: root.atBottom ? press.height - root.height : 0
 
       Rectangle { anchors.fill: parent; color: Ink.paper }
-      // Hairlines on the free sides, none against the bar.
-      Rectangle { width: 1; height: parent.height; color: Ink.line }
-      Rectangle { x: parent.width - 1; width: 1; height: parent.height; color: Ink.line }
+      // A hairline on the free edge, none against the bar; the sides are
+      // drawn below (Style.js `sides`).
       Rectangle { y: root.atBottom ? 0 : parent.height - 1; width: parent.width; height: 1; color: Ink.line }
 
       // ------------------------------------------------------ the paper
@@ -236,7 +237,7 @@ Item {
           }
         }
 
-        // Sections curl under the rollers: the paper fades into itself.
+        // Sections fade out at the side edges: the paper fades into itself.
         Rectangle {
           width: Type.px(120)
           height: parent.height
@@ -258,39 +259,33 @@ Item {
         }
       }
 
-      // ------------------------------------------------------ the rollers
-      Repeater {
-        model: 2
-        Item {
-          id: roller
-          required property int index
-          x: index === 0 ? Type.px(10) : paper.width - Type.px(10) - width
-          y: Type.px(18)
-          width: Type.px(9)
-          height: paper.height - Type.px(36)
-          Rectangle {
-            anchors.fill: parent
-            radius: width / 2
-            gradient: Gradient {
-              orientation: Gradient.Horizontal
-              GradientStop { position: 0; color: Ink.inkFaint }
-              GradientStop { position: 0.45; color: Ink.ink }
-              GradientStop { position: 1; color: Ink.inkMuted }
-            }
-          }
-          Repeater {
-            model: 2
-            Rectangle {
-              id: cap
-              required property int index
-              x: -Type.px(3)
-              y: cap.index === 0 ? -Type.px(7) : roller.height + Type.px(1)
-              width: Type.px(15)
-              height: Type.px(6)
-              radius: height / 2
-              color: Ink.inkMuted
-            }
-          }
+      // ------------------------------------------------------ the sides
+      // Style.js `sides` (docs/revision3 on the docs branch; they replaced
+      // the rollers): bare leaves the paper to fade out on its own, curl
+      // shades each edge as if the paper rolls under there.
+      Rectangle {
+        visible: root.sides === "curl"
+        width: Type.px(22)
+        height: paper.height
+        gradient: Gradient {
+          orientation: Gradient.Horizontal
+          GradientStop { position: 0; color: Ink.alpha(Ink.ink, 0.16) }
+          GradientStop { position: 0.35; color: Ink.alpha(Ink.ink, 0.05) }
+          GradientStop { position: 0.6; color: Ink.alpha(Ink.ink, 0.02) }
+          GradientStop { position: 1; color: Ink.alpha(Ink.ink, 0) }
+        }
+      }
+      Rectangle {
+        visible: root.sides === "curl"
+        x: paper.width - width
+        width: Type.px(22)
+        height: paper.height
+        gradient: Gradient {
+          orientation: Gradient.Horizontal
+          GradientStop { position: 0; color: Ink.alpha(Ink.ink, 0) }
+          GradientStop { position: 0.4; color: Ink.alpha(Ink.ink, 0.02) }
+          GradientStop { position: 0.65; color: Ink.alpha(Ink.ink, 0.05) }
+          GradientStop { position: 1; color: Ink.alpha(Ink.ink, 0.16) }
         }
       }
 

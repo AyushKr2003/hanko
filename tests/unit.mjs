@@ -46,9 +46,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty settings, 7,739,670,528 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 20)
-  assert.equal(S.combinations(), 7739670528)
+test("twenty-one settings, 15,479,341,056 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 21)
+  assert.equal(S.combinations(), 15479341056)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -583,7 +583,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the twenty settings once", () => {
+test("settings: six cards hold every one of the twenty-one settings once", () => {
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph" && k !== "typeSize")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
@@ -778,7 +778,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 7739670528)
+  assert.equal(S.combinations(), 15479341056)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -1088,5 +1088,12 @@ test("end leaf: notes you can tick, and the clipboard", () => {
   assert.equal(clips[2].index, 2)
   assert.deepEqual(Lf.clipboard("nope"), [])
   assert.equal(Lf.afterword(new Date(2026, 9, 6), 8).line, "Eight sections · Tuesday 06 · X · 2026")
+})
+
+test("scroll sides: bare or curl, in place of the rollers", () => {
+  assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
+  assert.equal(S.resolve({}).sides, "curl")
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl"])
+  assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
 })
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

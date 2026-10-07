@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the type scale and the `typeSize` setting (on `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the scroll sides (`sides`, on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -96,7 +96,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The twenty settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
+### The twenty-one settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
 
 | Zone | Key | Options |
 |---|---|---|
@@ -120,6 +120,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | Panels | `panels` | `sheets`, **`scroll`** |
 | Panels | `interlude` | `ma`, `hairline`, `folio`, `kotoba`, `tsugime`, **`seal`**, `jiku`, `fuda`, `su` (added after Typeset; what sits between scroll sections) |
 | Panels | `endleaf` | `okugaki`, **`koyomi`**, `kiki`, `shimai`, `iro`, `dougu`, `shuchu`, `hikae`, `batsu` (added after Typeset; the leaf right of Inbox on the scroll) |
+| Panels | `sides` | `bare`, **`curl`** (added after Typeset; the scroll's left and right edges, in place of the rollers) |
 
 ### Presets
 
@@ -145,6 +146,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | panels | sheets | scroll | scroll | sheets | sheets | scroll |
 | interlude | folio | kotoba | seal | ma | folio | fuda |
 | endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu |
+| sides | bare | curl | curl | bare | bare | curl |
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -296,7 +298,7 @@ core/
   Style.js               OPTIONS, KEYS, PRESETS, PRESET_NAMES, DEFAULT_PRESET, coerce,
                          normalize, resolve(doc, monitor), withSetting, withPreset,
                          shuffled(doc, rng), combinations(); MOTIONS (motion and
-                         sealGlyph sit beside the edits, outside the twenty)
+                         sealGlyph sit beside the edits, outside the twenty-one)
   InkMath.js             hexToRgb, mix, luminance, contrast, tier, isLight, ramp (TIERS)
   Title.js               appName (NAMES map, reverse-DNS), describe(cls, title) →
                          {app, head, dir, leaf}, findPath, tildify
@@ -438,7 +440,7 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 
 ### Phase 7 · The handscroll ✅ (`5354f5e` paper, `34576c4` window and wiring)
 - **`core/Scroll.js`** (+ tests): `SECTIONS` (time, sound, network, power, spaces, inbox; widths 600/660/540/420/700/560 at 12 px base, `INTERLUDE` 70), `layout(scale)`, `centred(i, viewW)` (track x putting a section in the middle), `nearest`, `clampTrack`, `landing(x, velocity)` (carry 0.18 s of speed, then nearest), `position(i)` (foot bar), `forCell`, and `sliver(w, h, seed)` (the kit's fbm + Bayer dither, as 0/1).
-- **`bar/scroll/`** (pure): `ScrollView` (paper with hairlines, rollers with caps, 120 px curls, index plate, foot with keys and position bar, `reveal` and `ink` 0..1; a pan `MouseArea` behind the sections emits `dragged(dx)`, `released(velocity)`, `stepped(±1)`), `ScrollSection` (red kanji, `02 // SOUND`, 46 px serif title, mono caption, 230 px watermark), `ListRow` (index, name/detail, note, bone plate, `leading`/`trailing` components), `Fader`, `SignalBars`, `Interlude` (Canvas painting `sliver` in `Ink.ink`), and the sections (eight since the Bluetooth panel). Sections send the same requests as the sheets (`Bar.sheetRequest`), plus `spaces` (`window` address → `Hypr.focusWindow`, `workspace` id) and `sound`/`input` (mic level).
+- **`bar/scroll/`** (pure): `ScrollView` (paper, its `sides` (bare, or a 22 px curl at each edge; the rollers with caps are gone), 120 px curls, index plate, foot with keys and position bar, `reveal` and `ink` 0..1; a pan `MouseArea` behind the sections emits `dragged(dx)`, `released(velocity)`, `stepped(±1)`), `ScrollSection` (red kanji, `02 // SOUND`, 46 px serif title, mono caption, 230 px watermark), `ListRow` (index, name/detail, note, bone plate, `leading`/`trailing` components), `Fader`, `SignalBars`, `Interlude` (Canvas painting `sliver` in `Ink.ink`), and the sections (eight since the Bluetooth panel). Sections send the same requests as the sheets (`Bar.sheetRequest`), plus `spaces` (`window` address → `Hypr.focusWindow`, `workspace` id) and `sound`/`input` (mic level).
 - **`bar/ScrollWindow.qml`**: SheetWindow's layer pattern (namespace `hanko-scroll`). Width = screen minus 6.9 % each side (min 16 px), height 460 px scaled. Motion: `reveal` 300 ms bezier(.2,.9,.25,1), `ink` 120 ms delay + 200 ms bezier(.4,0,.2,1), `trackX` 260 ms bezier(.16,1,.3,1) except while dragging; closing reverses in 220/100 ms and unmaps after 320 ms. `Style.reduceMotion` (Omarchy's animations-off flag, from `qs.Commons`) sets every duration to 0. Keys: `H`/`L`/arrows/Tab pan, `1`–`6` jump, `Esc` rolls up; the wheel steps once per 260 ms.
 - **State and routing** (`Bar.qml`): `scrollOpen`, `scrollScreen`, `scrollSection`; `openScroll/closeScroll/toggleScroll/scrollTo/stepScroll`; `openPanel/panelOpen/closePanel` pick sheet or scroll by the screen's `panels` style, so `summonBarWidget` and friends serve both. A sheet and the scroll never show together. `BarWindow.cellClicked` unrolls at the cell's section under `panels: scroll`; `rodPulled(x)` (Edge now reports where the pull started; `BarSurface.cellAt(x)`) unrolls the scroll, or under sheets drops the sheet of the cell under the pointer (Time otherwise). Every sheet service is `wanted` while the scroll is out. IPC `hanko scroll` (toggle, any `panels`) and `hanko scrollTo <section>`.
 - **No `Super+Space`**: Omarchy binds it (and every `Super+…+Space`) already, and has no plugin hook for binds; README documents `o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")`.
@@ -539,6 +541,12 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Also fixed: a duplicated `id: cell` in `bar/Marks.qml` (the indicator stamp is now `ind`) that the newer qmllint reports as an error.
 - Unit tests: 81.
 
+### Scroll sides ✅ (asked for by the user after the type scale)
+- The user found the rollers with caps at the scroll's two edges heavy. Ten alternatives were drawn (docs branch, `docs/revision3/`); the user picked 02 Bare and 04 Curl, which shipped as a twenty-first setting, `sides: bare | curl`. 15,479,341,056 combinations.
+- The rollers and the paper's side hairlines are removed from `ScrollView.qml`; `curl` draws two 22 px gradient strips (ink at 0.16, 0.05, 0.02, 0 inward). Default, Scroll, Hanko and Islet `curl`; Sheet, Quiet and Instrument `bare`.
+- A Panels row "Scroll sides" in Typesetting; `hanko style set sides bare`.
+- Unit tests: 83. Params: `sides.json`, `sides-light.json` (Sheets scene, three desks).
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -587,6 +595,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 18. **Indicator stamps:** twice, right after a shell restart with do not disturb on and an `indicatorStyle` change, only the stamp that was on showed (the five off ones were gone, though `indicators` was `all`). It never came back in later runs and nothing in the log explains it. Also verify the Nerd Font icons in the user's mono font, and the hover name on a crowded bar (it is cut short when there is no room, and the marks' `clip` can hide it when the zone overflows).
 
 19. **Type scale to verify:** the bar at 36 px with label over value (about 30 px of type), `typeSize: large` with a 44 px bar (51 px), and the Medium values in another mono face. After a shell restart the window title stayed empty until focus changed (seen once while testing; not caused by the type change, worth a look).
+20. **Scroll sides to verify on hardware:** the curl's shading on the user's theme (light themes may want it fainter), and the scroll's edges against the screen edge on a 1x display.
+
 
 ## 13. QML pitfalls already hit
 

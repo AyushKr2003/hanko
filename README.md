@@ -6,7 +6,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 
 ## What you get
 
-- **Every part is a setting:** 20 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
+- **Every part is a setting:** 21 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
 - **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).
@@ -65,6 +65,7 @@ scripts/hanko uninstall
 | Unroll the scroll | `scripts/hanko scroll` |
 | Pick the scroll's dividers | `scripts/hanko style set interlude kotoba` |
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
+| Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |
 | Indicator stamps: only what is on, kanji with names | `scripts/hanko style set indicators active` / `scripts/hanko style set indicatorStyle kanjiname` |
 | Turn motion off | `scripts/hanko style set motion still` |
 | Larger or smaller text (the bar grows with it) | `scripts/hanko style set typeSize large` (`small`, `regular`, `large`) |

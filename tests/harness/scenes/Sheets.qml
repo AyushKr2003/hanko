@@ -120,6 +120,7 @@ Rectangle {
             atBottom: desk.atBottom
             divider: desk.style.interlude
             endleaf: desk.style.endleaf
+            sides: desk.style.sides
             current: deskColumn.modelData.current || 0
             ink: deskColumn.modelData.ink !== undefined ? deskColumn.modelData.ink : 1
             reveal: deskColumn.modelData.reveal !== undefined ? deskColumn.modelData.reveal : 1

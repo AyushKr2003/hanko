@@ -142,6 +142,7 @@ PanelWindow {
       trackX: win.trackX
       divider: win.barWindow.style.interlude || "seal"
       endleaf: win.barWindow.style.endleaf || "koyomi"
+      sides: win.barWindow.style.sides || "curl"
       reveal: 0
       ink: 0
       feed: ({

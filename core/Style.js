@@ -1,6 +1,6 @@
 .pragma library
 
-// The twenty typesetting settings, the presets, and how a style document
+// The twenty-one typesetting settings, the presets, and how a style document
 // resolves into the one flat object the bar reads. Pure JavaScript with no
 // QML or Quickshell dependency, so tests/unit.mjs can run it under Node.
 // docs/COMPONENTS.md is the spec for every option below.
@@ -43,25 +43,29 @@ var OPTIONS = {
   // machine, koyomi = the almanac, kiki = the machine's load, shimai = the
   // session's end, iro = themes, dougu = tools, shuchu = a focus timer,
   // hikae = notes, batsu = an afterword.
-  endleaf: ["okugaki", "koyomi", "kiki", "shimai", "iro", "dougu", "shuchu", "hikae", "batsu"]
+  endleaf: ["okugaki", "koyomi", "kiki", "shimai", "iro", "dougu", "shuchu", "hikae", "batsu"],
+  // The scroll's two side edges (docs/revision3 on the docs branch; they
+  // replaced the rollers): bare = the paper simply fades out, curl = a soft
+  // shaded fold, as if the paper rolls under.
+  sides: ["bare", "curl"]
 }
 
 var KEYS = Object.keys(OPTIONS)
 
 var PRESETS = {
-  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai" },
-  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki" },
-  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "all", indicatorStyle: "icon", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "seal", endleaf: "koyomi" },
-  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu" },
-  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu" }
+  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai", sides: "bare" },
+  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki", sides: "curl" },
+  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "all", indicatorStyle: "icon", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "seal", endleaf: "koyomi", sides: "curl" },
+  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare" },
+  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl" }
 }
 
 var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]
 var DEFAULT_PRESET = "Hanko"
 var DEFAULT_SEAL_GLYPH = "印"
 
-// Motion 動 sits outside the twenty settings (no preset sets it and it is
+// Motion 動 sits outside the twenty-one settings (no preset sets it and it is
 // not counted): paper moves like paper, still cuts every transition to its
 // end frame. Omarchy's own reduced motion makes Hanko still as well.
 var MOTIONS = ["paper", "still"]
@@ -83,7 +87,7 @@ function normalizeTypeSize(t) {
 }
 
 // Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
-// page), beside the twenty like the seal glyph: no preset sets them and a
+// page), beside the twenty-one like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
 // clock, media, network, bluetooth, volume, brightness, battery, notif,
 // edge, keyboard, mic, tray, weather and endleaf (the scroll's two leaves);
