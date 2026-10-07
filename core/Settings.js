@@ -5,6 +5,7 @@
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
+  { group: "00 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" }] },
   { group: "01 BAR",    pages: [{ key: "typesetting", label: "Typesetting", jp: "組版" },
                                 { key: "colour", label: "Colour", jp: "色" },
                                 { key: "widgets", label: "Widgets", jp: "部品" }] },
@@ -12,8 +13,14 @@ var RAIL = [
                                 { key: "scroll", label: "Scroll", jp: "巻" }] },
   { group: "03 FEEL",   pages: [{ key: "motion", label: "Motion", jp: "動" },
                                 { key: "keys", label: "Keys", jp: "鍵" }] },
-  { group: "04 SHARE",  pages: [{ key: "presets", label: "Presets", jp: "型" }] }
+  { group: "04 SHARE",  pages: [{ key: "presets", label: "Presets", jp: "型" }] },
+  { group: "05 HANKO",  pages: [{ key: "about", label: "About", jp: "由来" },
+                                { key: "credits", label: "Credits", jp: "謝辞" }] }
 ]
+
+// Rail pages drawn as full plates (no title, no cards): Profile, About,
+// Credits (bar/settings/*Plate.qml).
+var PLATES = ["profile", "about", "credits"]
 
 var PRESET_BLURBS = {
   Sheet: "the printed bar", Scroll: "the handscroll", Hanko: "the two together",

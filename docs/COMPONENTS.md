@@ -406,12 +406,20 @@ Hanko's settings open as their own window in the Ryoku Hub grammar: a numbered r
 
 | Group | Pages |
 |---|---|
+| `00 YOU` | Profile 印影 |
 | `01 BAR` | Typesetting 組版 · Colour 色 · Widgets 部品 |
 | `02 PANELS` | Sheets 紙 · Scroll 巻 (the scroll dividers, as a gallery) |
 | `03 FEEL` | Motion 動 · Keys 鍵 |
 | `04 SHARE` | Presets 型 |
+| `05 HANKO` | About 由来 · Credits 謝辞 |
 
 There is a search field at the top and an **Advanced** switch at the foot (which shows `sealGlyph`, per-monitor overrides and raw JSON). Per-monitor overrides are set there too: pick a monitor, and every setting is listed with the value that monitor gets; a red tick marks one it sets for itself, and picking what the other screens get drops the override.
+
+**Profile 印影, About 由来 and Credits 謝辞** are plates, not pages: they fill the page like posters (the action bar shows only while there is something to save). They follow the grammar of Ryoku's Profile and Credits pages, with Hanko's own art drawn in code from the theme.
+
+- *Profile*, the seal register: your seal glyph pressed large and worn, bleeding off the right, over its own watermark; your name in 104 px Fraunces, `@host · time` and a line of your own; the bar's live readings (spaces, sound, network, power, inbox) pinned to the impression by hairline leaders; the dossier's small print at the foot (preset and edits, which of the combinations this bar is, theme, compositor, kernel, uptime, Omarchy and Hanko versions), the six inks you are set in, an edition number for this machine, and today as a rule with the now-notch. **EDIT**: click your name or line to rewrite it, an eye on each block hides it (watermark, seal, vitals, specs, palette, day, spine), Save image writes `~/Pictures/hanko-profile-DATE.png`, Reset clears it all. Kept in `~/.config/hanko/profile.json`.
+- *About*: 判子 Hanko, a deck, how it is put together (kind, version, settings, files, commands, source), the three directions it was drawn in, and a colophon that sets each face in itself and prints the inks with their contrast; a whole dithered moon on the right.
+- *Credits*: 感謝 Gratitude, everything Hanko stands on as editorial lines (a linked one inverts under the pointer and opens), and one bone placard for the people who test it; a hanging scroll with an ink landscape on the right.
 
 **Widgets 部品** shows or hides anything the bar can show, each row `shown | hidden`, in cards: *Left* (seal, workspaces, window title), *Centre* (clock, now playing), *Right · readings* (network, Bluetooth, volume, brightness, battery, notifications), *Marks · Hanko's own* (each indicator, the keyboard layout, the microphone, the tray, as your Omarchy layout has them), *Tray apps* (each app in the tray now), *Widgets · from your Omarchy bar* (every hosted widget, marked Omarchy or third-party) and *Edge*. A part its own setting leaves out (`seal: none`, `title: none`, `media: none`, `bluetooth: off`) reads hidden, and showing it sets it back to the preset's way. Show all puts every hidden part back. Hiding is for this bar only: the widget stays in Omarchy's layout. From a terminal: `hanko hide <part>`, `hanko show <part>`, or `hanko style set show:<part> hidden`.
 

@@ -9,6 +9,11 @@ Canvas {
   id: root
 
   readonly property color ink: Ink.ink
+  // The orb's centre and radius, as fractions of the height (the default
+  // rises from below the bottom right; About draws it as a whole moon).
+  property real cxw: 0.74
+  property real cyh: 1.9
+  property real rh: 1.75
   onInkChanged: requestPaint()
   onWidthChanged: requestPaint()
   onHeightChanged: requestPaint()
@@ -19,7 +24,7 @@ Canvas {
     var w = Math.floor(width), h = Math.floor(height)
     if (w <= 0 || h <= 0) return
     var cell = 2
-    var cx = w * 0.74, cy = h * 1.9, r = h * 1.75
+    var cx = w * cxw, cy = h * cyh, r = h * rh
     ctx.fillStyle = ink
     for (var y = 0; y < h; y += cell) for (var x = Math.max(0, Math.floor((cx - r) / cell) * cell); x < Math.min(w, cx + r); x += cell) {
       var dx = (x - cx) / r, dy = (y - cy) / r, rr = dx * dx + dy * dy
