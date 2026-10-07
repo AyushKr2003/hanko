@@ -257,7 +257,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: Type.px(34)
         height: Type.px(18)
-        radius: height / 2
+        radius: 3
         color: root.advanced ? Ink.alpha(Ink.ink, 0.14) : "transparent"
         border.width: 1
         border.color: Ink.lineStrong
@@ -266,7 +266,7 @@ Rectangle {
           anchors.verticalCenter: parent.verticalCenter
           width: Type.px(10)
           height: width
-          radius: width / 2
+          radius: 1
           color: root.advanced ? Ink.ink : Ink.inkFaint
           Behavior on x { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
         }
