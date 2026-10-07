@@ -20,9 +20,9 @@
 --   * Corners are square, like the solid bar. With `surface: inset` the bar
 --     floats 8 px off the screen with 7 px corners, and the windows take the
 --     same gap and radius so their edges line up with its frame.
---   * The focused window is pressed onto the page like a seal: a hard,
---     unblurred print offset down and right, in seal red, because red means
---     "you" or "now". Unfocused windows cast nothing.
+--   * Windows lie on the desk like sheets of paper: a short, tight black
+--     shadow falling down and right, darker under the focused sheet, which
+--     sits a little higher. Pick another below (`shadow_style`).
 --   * Motion follows core/Motion.qml: no springs, nothing over 320 ms, and
 --     `motion: still` in style.json cuts window animations too.
 
@@ -84,7 +84,24 @@ local inset = surface == "inset"
 
 -- ── Frame ───────────────────────────────────────────────────────────────────
 
-local print_offset = 4
+-- How windows sit on the page:
+--   "paper"  a short soft black shadow, down and right; the focused sheet
+--            lifts higher and darker (default)
+--   "print"  a hard black offset, no blur, focused window only
+--   "seal"   the same hard offset in seal red ("you"), focused window only
+--   "none"   hairlines only, as the bar itself
+local shadow_style = "paper"
+
+local black = "000000"
+local shadows = {
+  paper = { sharp = false, range = 14, render_power = 3, offset = { 3, 5 },
+            color = rgba(black, 0.55), color_inactive = rgba(black, 0.25) },
+  print = { sharp = true, range = 0, render_power = 1, offset = { 4, 4 },
+            color = rgba(black, 0.85), color_inactive = clear },
+  seal  = { sharp = true, range = 0, render_power = 1, offset = { 4, 4 },
+            color = seal, color_inactive = clear },
+}
+local shadow = shadows[shadow_style]
 
 hl.config({
   general = {
@@ -102,15 +119,15 @@ hl.config({
   decoration = {
     rounding = inset and 7 or 0,
 
-    shadow = {
+    shadow = shadow and {
       enabled = true,
-      sharp = true,
-      range = 0,
-      render_power = 1,
-      offset = { print_offset, print_offset },
-      color = seal,
-      color_inactive = clear,
-    },
+      sharp = shadow.sharp,
+      range = shadow.range,
+      render_power = shadow.render_power,
+      offset = shadow.offset,
+      color = shadow.color,
+      color_inactive = shadow.color_inactive,
+    } or { enabled = false },
   },
 
   group = {
