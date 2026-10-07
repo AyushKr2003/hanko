@@ -12,6 +12,7 @@
 - Bluetooth cell styles: `device` (was `on`), `marks` (a kanji per device, its charge filling it) and `count` (a count and a dot per device); Scroll and Islet use marks (11,943,936 combinations).
 - Weather 天: a leaf left of Time on the scroll, with today's curve, rain, sun and the next three days, from the same place, units and forecast as Omarchy's weather panel; `hanko hide weather` removes it.
 - Scroll dividers 間: the dither between the scroll's sections is replaced by a seventeenth setting, `interlude`, with nine styles (ma, hairline, folio, kotoba, tsugime, seal, jiku, fuda, su), a gallery on the Scroll settings page and a kanji row in Typesetting (107,495,424 combinations).
+- Fix: the inbox read empty whenever no toast was on screen (the history was never reached); it now lists Omarchy's notification history.
 
 ## Typeset design · 2026-10-06
 
