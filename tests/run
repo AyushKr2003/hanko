@@ -34,9 +34,9 @@ fi
 step "qmllint"
 # Errors fail the run. Warnings are printed: the stubs in tests/harness/stubs
 # do not model layer-shell attached properties, so BarWindow.qml shows a few.
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml services/*.qml 2>&1 \
-  | grep -E '^(Error|Warning)' | grep -v 'bar/BarWindow.qml' || true
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml core/*.qml services/*.qml 2>&1 \
+  | grep -E '^(Error|Warning)' | grep -v -E 'bar/(BarWindow|SheetWindow|ScrollWindow).qml' || true
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
 
 [[ ${1:-} == --quick ]] && exit $status
 
@@ -44,8 +44,25 @@ step "renders"
 mkdir -p tests/out
 for params in tests/harness/params/*.json; do
   name="$(basename "$params" .json)"
-  if timeout 60 python3 tests/harness/render.py tests/harness/scenes/Strips.qml "$params" "tests/out/$name.png"; then
+  # A params file names its scene ("scene": "Sheets"); bar strips by default.
+  scene="$(jq -r '.scene // "Strips"' "$params")"
+  if timeout 60 python3 tests/harness/render.py "tests/harness/scenes/$scene.qml" "$params" "tests/out/$name.png"; then
     echo "tests/out/$name.png"
+  else
+    status=1
+  fi
+done
+
+# The renders above are at 2x, like the mockups; most laptop panels are 1x,
+# where small type has half the pixels. Check the bar, a sheet, the scroll
+# and the settings page at 1x too (tests/out/1x/).
+step "renders at 1x"
+mkdir -p tests/out/1x
+for name in phase4 phase6 phase7 phase8; do
+  params="tests/harness/params/$name.json"
+  scene="$(jq -r '.scene // "Strips"' "$params")"
+  if QT_SCALE_FACTOR=1 timeout 60 python3 tests/harness/render.py "tests/harness/scenes/$scene.qml" "$params" "tests/out/1x/$name.png"; then
+    echo "tests/out/1x/$name.png"
   else
     status=1
   fi

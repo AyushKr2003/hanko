@@ -12,6 +12,9 @@ import "Style.js" as S
 //   Typeset.styleFor(name)     the style with that monitor's overrides
 //   Typeset.set(key, value)    change one setting
 //   Typeset.applyPreset(name)  start again from a preset
+//   Typeset.draft              the settings window's unsaved document: while
+//                              it is set the bar shows it; save() keeps it,
+//                              revert() drops it
 QtObject {
   id: root
 
@@ -22,16 +25,73 @@ QtObject {
   readonly property var presets: S.PRESETS
   readonly property var presetNames: S.PRESET_NAMES
 
-  // The normalized document: { preset, edits, sealGlyph, monitors }.
+  // The normalized document: { preset, edits, sealGlyph, motion, typeSize, hidden, monitors }.
   property var doc: S.normalize({})
   property var warnings: []
-  readonly property var current: S.resolve(doc)
+  // Edits in the settings window print live on the bar but only reach
+  // style.json on save().
+  property var draft: null
+  readonly property var live: draft || doc
+  readonly property var current: S.resolve(live)
 
   // True when position comes from Hanko rather than Omarchy's bar.position.
-  readonly property bool ownsPosition: doc.edits.position !== undefined
+  readonly property bool ownsPosition: live.edits.position !== undefined
 
   function styleFor(screenName) {
-    return S.resolve(doc, String(screenName || ""))
+    return S.resolve(live, String(screenName || ""))
+  }
+
+  // The settings window's edits: each returns false when the value is not
+  // one the setting takes.
+  function draftSet(key, value) {
+    var next = S.withSetting(live, key, value)
+    if (!next) return false
+    draft = next
+    return true
+  }
+  function draftPreset(name) {
+    var next = S.withPreset(live, name)
+    if (!next) return false
+    draft = next
+    return true
+  }
+  function draftMonitor(monitor, key, value) {
+    var next = S.withMonitorSetting(live, monitor, key, value)
+    if (!next) return false
+    draft = next
+    return true
+  }
+  // Back to the preset the draft is on, edits dropped (monitors, the seal
+  // glyph, motion and hidden parts kept, as reset() does).
+  function draftReset() {
+    draft = S.normalize({ preset: live.preset, sealGlyph: live.sealGlyph, motion: live.motion, typeSize: live.typeSize, hidden: live.hidden, monitors: live.monitors })
+  }
+  function draftClearMonitor(name) {
+    var next = S.normalize(live)
+    delete next.monitors[name]
+    draft = next
+  }
+  function draftShuffle() { draft = S.shuffled(live, Math.random) }
+  // Every hidden part back on the bar.
+  function draftShowAll() {
+    var next = S.normalize(live)
+    next.hidden = []
+    draft = next
+  }
+  function save() {
+    if (!draft) return
+    var next = draft
+    draft = null
+    _commit(next)
+  }
+  function revert() { draft = null }
+
+  // One setting for one monitor, saved at once (the CLI's --monitor).
+  function setFor(monitor, key, value) {
+    var next = S.withMonitorSetting(doc, monitor, key, value)
+    if (!next) return false
+    _commit(next)
+    return true
   }
 
   function set(key, value) {
@@ -49,7 +109,7 @@ QtObject {
   }
 
   function reset() {
-    _commit(S.normalize({ sealGlyph: doc.sealGlyph, monitors: doc.monitors }))
+    _commit(S.normalize({ sealGlyph: doc.sealGlyph, motion: doc.motion, typeSize: doc.typeSize, hidden: doc.hidden, monitors: doc.monitors }))
   }
 
   function setSealGlyph(glyph) {

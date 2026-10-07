@@ -24,8 +24,9 @@ Item {
   // of its own (the frame already is one).
   property bool inset: false
 
-  // Dragged away from the bar far enough to unroll the scroll.
-  signal pulled()
+  // Dragged away from the bar far enough to unroll the scroll; x is where
+  // along the bar the pull started.
+  signal pulled(real x)
 
   readonly property bool isRod: mode === "rod" || mode === "rodrule"
   readonly property bool isDay: mode === "dayrule" || mode === "rodrule"
@@ -37,7 +38,9 @@ Item {
   readonly property int rodY: height - 4
 
   implicitHeight: 12
-  visible: !(inset && mode === "hairline")
+  // false when hidden on the Widgets page.
+  property bool shown: true
+  visible: shown && !(inset && mode === "hairline")
 
   // Mirrored as a whole at the bottom, so every mark keeps its distance
   // from the edge it belongs to.
@@ -91,6 +94,7 @@ Item {
         y: day.height - 7
         stem: 7
         head: true
+        creeps: true
       }
     }
 
@@ -151,6 +155,7 @@ Item {
         x: E.at(root.dayFraction, rod.width, 2)
         y: -6
         stem: 8
+        creeps: true
       }
 
       // The grip: a small paper plate on the rod's centre that lifts when
@@ -164,7 +169,7 @@ Item {
         color: Ink.paper
         border.width: 1
         border.color: drag.pressed ? Ink.ink : Ink.lineStrong
-        Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Motion.still; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
       }
     }
   }
@@ -174,7 +179,13 @@ Item {
     id: notch
     property int stem: 7
     property bool head: false
+    // Each minute the notch creeps to the new hour mark instead of jumping.
+    property bool creeps: false
     width: 2
+    Behavior on x {
+      enabled: notch.creeps && Motion.live
+      NumberAnimation { duration: Motion.creep; easing.type: Easing.InOutSine }
+    }
     height: stem
 
     Rectangle {
@@ -216,14 +227,15 @@ Item {
     preventStealing: true
 
     property real startY: 0
+    property real startX: 0
     property bool fired: false
 
-    onPressed: function(mouse) { startY = mouse.y; fired = false }
+    onPressed: function(mouse) { startY = mouse.y; startX = mouse.x; fired = false }
     onPositionChanged: function(mouse) {
       if (!pressed || fired) return
       if (E.pulled(mouse.y - startY, root.atBottom, Type.px(E.PULL_THRESHOLD))) {
         fired = true
-        root.pulled()
+        root.pulled(startX)
       }
     }
   }

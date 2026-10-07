@@ -1,6 +1,6 @@
 .pragma library
 
-// The fifteen typesetting settings, the presets, and how a style document
+// The twenty-two typesetting settings, the presets, and how a style document
 // resolves into the one flat object the bar reads. Pure JavaScript with no
 // QML or Quickshell dependency, so tests/unit.mjs can run it under Node.
 // docs/COMPONENTS.md is the spec for every option below.
@@ -15,33 +15,131 @@ var OPTIONS = {
   status:   ["cells", "glyphs", "numerals"],
   meters:   ["ticks", "off"],
   notif:    ["count", "stamps"],
+  // A BT 藍 cell for Bluetooth (only where there is an adapter):
+  // device = the connected device's name and battery, marks = one kanji
+  // mark per device with its charge under it, count = how many, as dots.
+  bluetooth: ["device", "marks", "count", "off"],
+  // Omarchy's indicators (recording, dictation, reminder, stay awake,
+  // night light, do not disturb) as stamps in the right zone: all six, the
+  // ones that are off faint, or only those that are on; and what is on a
+  // stamp: Omarchy's icon or its kanji, alone or (iconname, kanjiname) with
+  // its name in small caps beside it while it is on.
+  indicators: ["all", "active"],
+  indicatorStyle: ["icon", "kanji", "iconname", "kanjiname"],
   edge:     ["hairline", "dayrule", "rod", "rodrule"],
   rules:    ["on", "off"],
   height:   [32, 36, 40, 44],
   surface:  ["solid", "glass", "inset"],
   position: ["top", "bottom"],
-  panels:   ["sheets", "scroll"]
+  panels:   ["sheets", "scroll"],
+  // What sits between two sections of the scroll (docs/revision1 on the
+  // docs branch): ma = space alone, hairline, folio = a ruler with the
+  // section numbers, kotoba = the next section's name set vertically,
+  // tsugime = a paper join, seal = the join with a seal pressed across it,
+  // jiku = a slim inner roller, fuda = an index tab, su = the next number.
+  interlude: ["ma", "hairline", "folio", "kotoba", "tsugime", "seal", "jiku", "fuda", "su"],
+  // The leaf on the bare paper right of 08 // INBOX (core/Leaf.js; designs
+  // in docs/revision2 on the docs branch): okugaki = a colophon of the
+  // machine, koyomi = the almanac, kiki = the machine's load, shimai = the
+  // session's end, iro = themes, dougu = tools, shuchu = a focus timer,
+  // hikae = notes, batsu = an afterword.
+  endleaf: ["okugaki", "koyomi", "kiki", "shimai", "iro", "dougu", "shuchu", "hikae", "batsu"],
+  // The scroll's two side edges (docs/revision3 on the docs branch; they
+  // replaced the rollers): bare = the paper simply fades out, curl = a soft
+  // shaded fold, as if the paper rolls under.
+  sides: ["bare", "curl"],
+  // What helps you find your way on the scroll: both = the index plate of
+  // tabs on top and the position bar along the foot, tabs = the plate only,
+  // foot = the position bar only, none = bare paper.
+  guides: ["both", "tabs", "foot", "none"]
 }
 
 var KEYS = Object.keys(OPTIONS)
 
 var PRESETS = {
-  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets" },
-  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll" },
-  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll" },
-  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets" },
-  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll" }
+  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai", sides: "bare", guides: "both" },
+  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki", sides: "curl", guides: "both" },
+  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "all", indicatorStyle: "icon", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "both" },
+  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both" },
+  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare", guides: "both" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" }
 }
 
 var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]
 var DEFAULT_PRESET = "Hanko"
 var DEFAULT_SEAL_GLYPH = "印"
 
+// Motion 動 sits outside the twenty-two settings (no preset sets it and it is
+// not counted): paper moves like paper, still cuts every transition to its
+// end frame. Omarchy's own reduced motion makes Hanko still as well.
+var MOTIONS = ["paper", "still"]
+var DEFAULT_MOTION = "paper"
+
+function normalizeMotion(m) {
+  return MOTIONS.indexOf(String(m)) >= 0 ? String(m) : DEFAULT_MOTION
+}
+
+// Type size sits beside motion: Hanko's own text on top of Omarchy's
+// `[font] base-size`, for a 1x laptop panel or a HiDPI desk. Every size,
+// the bar's height with it, is multiplied by TYPE_SCALE.
+var TYPE_SIZES = ["small", "regular", "large"]
+var TYPE_SCALE = { small: 0.9, regular: 1, large: 1.15 }
+var DEFAULT_TYPE_SIZE = "regular"
+
+function normalizeTypeSize(t) {
+  return TYPE_SIZES.indexOf(String(t)) >= 0 ? String(t) : DEFAULT_TYPE_SIZE
+}
+
+// Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
+// page), beside the twenty-two like the seal glyph: no preset sets them and a
+// reset keeps them. A part is a name the bar knows: seal, spaces, title,
+// clock, media, network, bluetooth, volume, brightness, battery, notif,
+// edge, keyboard, mic, tray, weather and endleaf (the scroll's two leaves);
+// or indicator:<key>, tray:<item id> and
+// hosted:<widget id> for the marks, tray apps and hosted widgets.
+// As a setting it is `show:<part>`, shown or hidden, so the settings page
+// and `hanko style set show:mic hidden` go through withSetting().
+var SHOW_OPTIONS = ["shown", "hidden"]
+// Parts a setting can also leave out: showing one again puts it back.
+var OFF = { seal: "none", title: "none", media: "none", bluetooth: "off" }
+var PARTS = ["seal", "spaces", "title", "clock", "media", "network", "bluetooth", "volume",
+             "brightness", "battery", "notif", "edge", "keyboard", "mic", "tray", "weather", "endleaf"]
+
+// A part name the bar knows; tray app and widget ids can be anything.
+function isPart(part) {
+  var p = String(part || "")
+  return PARTS.indexOf(p) >= 0 || /^(indicator|tray|hosted):\S+$/.test(p)
+}
+
+function normalizeHidden(list, warnings) {
+  var out = []
+  if (!Array.isArray(list)) return out
+  for (var i = 0; i < list.length; i++) {
+    var p = String(list[i] === undefined || list[i] === null ? "" : list[i]).trim()
+    if (!p) continue
+    if (!isPart(p)) { if (warnings) warnings.push("ignored unknown part " + p + " in hidden"); continue }
+    if (out.indexOf(p) < 0) out.push(p)
+  }
+  return out.sort()
+}
+
+// Whether a resolved style shows a part: not hidden, and not left out by
+// its own setting (seal: none and the like).
+function shows(style, part) {
+  var hidden = style && Array.isArray(style.hidden) ? style.hidden : []
+  if (hidden.indexOf(part) >= 0) return false
+  return !(OFF[part] !== undefined && style && style[part] === OFF[part])
+}
+
 // "40" from a hand-edited file or the CLI is the same as 40.
+// Values older Hankos wrote, and what they mean now.
+var ALIASES = { bluetooth: { on: "device" }, indicatorStyle: { full: "iconname" } }
+
 function coerce(key, value) {
   var options = OPTIONS[key]
   if (!options) return undefined
+  var alias = ALIASES[key] && ALIASES[key][String(value)]
+  if (alias !== undefined) value = alias
   for (var i = 0; i < options.length; i++)
     if (String(options[i]) === String(value)) return options[i]
   return undefined
@@ -87,7 +185,7 @@ function normalizeGlyph(glyph) {
 }
 
 // A style document as stored in style.json:
-//   { preset, edits: {...}, sealGlyph, monitors: { "<name>": {...} } }
+//   { preset, edits: {...}, sealGlyph, motion, typeSize, hidden: [...], monitors: { "<name>": {...} } }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
@@ -103,6 +201,9 @@ function normalize(doc, warnings) {
     preset: preset,
     edits: cleanEdits(doc.edits, warnings),
     sealGlyph: normalizeGlyph(doc.sealGlyph),
+    motion: normalizeMotion(doc.motion),
+    typeSize: normalizeTypeSize(doc.typeSize),
+    hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
   }
 }
@@ -115,19 +216,71 @@ function resolve(doc, monitor) {
   var m = monitor && d.monitors[monitor]
   if (m) for (var j in m) style[j] = m[j]
   style.sealGlyph = d.sealGlyph
+  style.motion = d.motion
+  style.typeSize = d.typeSize
+  style.hidden = d.hidden.slice()
   style.preset = d.preset
   style.edited = Object.keys(d.edits).length > 0
   return style
 }
 
 // Setting a value equal to the preset's drops the edit instead of storing it,
-// so `edits` always lists exactly what differs.
+// so `edits` always lists exactly what differs. The seal glyph, motion and type size
+// are kept beside the edits, the same for every preset.
 function withSetting(doc, key, value) {
   var d = normalize(doc)
+  if (key === "sealGlyph") { d.sealGlyph = normalizeGlyph(value); return d }
+  if (key === "motion") {
+    if (MOTIONS.indexOf(String(value)) < 0) return null
+    d.motion = String(value)
+    return d
+  }
+  if (key === "typeSize") {
+    if (TYPE_SIZES.indexOf(String(value)) < 0) return null
+    d.typeSize = String(value)
+    return d
+  }
+  if (String(key).indexOf("show:") === 0) return withShown(d, String(key).slice(5), value)
   var v = coerce(key, value)
   if (v === undefined) return null
   if (PRESETS[d.preset][key] === v) delete d.edits[key]
   else d.edits[key] = v
+  // Picking a way to draw a hidden part (a seal stamp) shows it again.
+  if (OFF[key] !== undefined && v !== OFF[key]) d.hidden = d.hidden.filter(function(h) { return h !== key })
+  return d
+}
+
+// Show or hide one part (`shown` / `hidden`). Showing a part its own
+// setting leaves out (seal: none) also sets it back: to the preset's way
+// when the preset draws it, else the first way that draws it.
+function withShown(doc, part, value) {
+  var d = normalize(doc)
+  var p = String(part || "").trim()
+  if (!isPart(p) || SHOW_OPTIONS.indexOf(String(value)) < 0) return null
+  var hidden = d.hidden.filter(function(h) { return h !== p })
+  if (value === "hidden") hidden.push(p)
+  d.hidden = normalizeHidden(hidden)
+  if (value === "shown" && OFF[p] !== undefined && resolve(d)[p] === OFF[p]) {
+    var preset = PRESETS[d.preset][p]
+    var on = preset !== OFF[p] ? preset : OPTIONS[p].filter(function(o) { return o !== OFF[p] })[0]
+    return withSetting(d, p, on)
+  }
+  return d
+}
+
+// One setting for one monitor only (style.json `monitors`); a value equal
+// to what the monitor would get anyway drops the override. An empty
+// override list drops the monitor.
+function withMonitorSetting(doc, monitor, key, value) {
+  var d = normalize(doc)
+  var name = String(monitor || "").trim()
+  var v = coerce(key, value)
+  if (!name || v === undefined) return null
+  var own = d.monitors[name] || {}
+  delete own[key]
+  if (resolve({ preset: d.preset, edits: d.edits, sealGlyph: d.sealGlyph, monitors: {} })[key] !== v) own[key] = v
+  if (Object.keys(own).length) d.monitors[name] = own
+  else delete d.monitors[name]
   return d
 }
 

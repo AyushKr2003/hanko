@@ -2,7 +2,11 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import "core"
+import "core/Sheets.js" as Sheets
+import "core/Scroll.js" as Scroll
+import "core/Hosted.js" as Hosted
 import "bar"
 import "services"
 
@@ -45,10 +49,6 @@ Item {
   property bool transparent: false
   onBarConfigChanged: transparent = !!(barConfig && barConfig.transparent === true)
 
-  // The rod was pulled on a screen (edge: rod | rodrule). Phase 7 unrolls
-  // the scroll from here.
-  signal edgePulled(string screenName)
-
   // Called by the host. Like Omarchy's own bar it writes bar.transparent to
   // shell.json through the host, so the choice survives a restart and the
   // new barConfig comes back to us; without that API it flips for this
@@ -79,6 +79,323 @@ Item {
         if (list[i] && list[i].id === "omarchy.clock" && list[i].format) return String(list[i].format)
     }
     return "HH:mm"
+  }
+
+  // ------------------------------------------------------------- sheets
+  //
+  // One sheet open at a time, across every screen. panels: scroll falls
+  // back to sheets until the handscroll lands (Phase 7).
+  property string sheet: ""
+  property string sheetScreen: ""
+  // Weeks the Time sheet's ribbon is moved from today.
+  property int timeShift: 0
+  // The sheets that can open.
+  readonly property var sheetsReady: ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
+
+  function sheetReady(key) { return !!key && sheetsReady.indexOf(key) >= 0 }
+
+  function focusedScreen() {
+    var m = Hyprland.focusedMonitor
+    if (m && m.name) return m.name
+    return Quickshell.screens.length ? Quickshell.screens[0].name : ""
+  }
+
+  function openSheet(key, screenName) {
+    if (!sheetReady(key) || barHidden) return false
+    closeScroll()
+    closeHostedPopout()
+    if (key !== sheet) timeShift = 0
+    sheetScreen = screenName || focusedScreen()
+    sheet = key
+    return true
+  }
+  function closeSheet() { sheet = "" }
+  function toggleSheet(key, screenName) {
+    if (sheet === key && sheetScreen === screenName) closeSheet()
+    else openSheet(key, screenName)
+  }
+  function cycleSheet(delta) {
+    if (sheet) openSheet(Sheets.step(sheet, delta, sheetsReady), sheetScreen)
+  }
+  // Something a sheet asked for: pages, values, devices.
+  function sheetRequest(key, what, arg) {
+    if (key === "time" && what === "shift") timeShift = Number(arg) || 0
+    else if (key === "sound") {
+      if (what === "master") Sound.setMaster(Number(arg))
+      else if (what === "mute") Sound.toggleMute()
+      else if (what === "output") Sound.setOutput(arg.id, arg.name)
+      else if (what === "nextOutput") Sound.nextOutput()
+      else if (what === "stream") Sound.setStream(arg.id, arg.name, Number(arg.value))
+      else if (what === "streamMute") Sound.toggleStream(arg.id, arg.name)
+      else if (what === "inputMute") Sound.toggleInput()
+      else if (what === "input") Sound.setInput(Number(arg))
+    } else if (key === "network") {
+      if (what === "connect") Net.connect(arg.ssid, arg.saved, arg.secure)
+      else if (what === "radio") Net.setRadio(!!arg)
+      else if (what === "rescan") Net.rescan()
+      // Omarchy's speed test and Wi-Fi share card are panels of their own.
+      else if (what === "speedtest" || what === "share") {
+        closeSheet()
+        if (shell && typeof shell.summon === "function")
+          shell.summon(what === "speedtest" ? "omarchy.speedtest" : "omarchy.wifiqr", "{}")
+      }
+    } else if (key === "power") {
+      if (what === "profile") Power.setProfile(String(arg))
+    } else if (key === "bluetooth") {
+      if (what === "power") Blue.setPower(!!arg)
+      else if (what === "device") Blue.device(String(arg.address), String(arg.action))
+    } else if (key === "display") {
+      if (what === "brightness") Display.setBrightness(Number(arg))
+      else if (what === "monitor") Display.pick(String(arg))
+      else if (what === "night") Display.setNight(!!arg)
+      else if (what === "edit") { closeSheet(); closeScroll(); Display.editMonitors() }
+    } else if (key === "spaces") {
+      if (what === "window") Hypr.focusWindow(String(arg))
+      else if (what === "workspace") Hypr.focusWorkspace(Number(arg))
+      closeScroll()
+    } else if (key === "inbox") {
+      if (what === "dnd") Status.act("notif", "right")
+      else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
+      // `clear` forgets the history, `dismissAll` the toasts still on screen.
+      else if (what === "clear") Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
+    } else if (key === "leaf") leafRequest(what, arg)
+  }
+
+  // The end leaf after Inbox on the scroll (bar/scroll/EndLeaf.qml).
+  function leafRequest(what, arg) {
+    if (what === "session") { closeScroll(); Leaf.sessionAct(String(arg)) }
+    else if (what === "theme") Leaf.setTheme(String(arg))
+    else if (what === "themes") { closeScroll(); Leaf.openThemes() }
+    else if (what === "focus") Leaf.focusAct(String(arg))
+    else if (what === "note") Leaf.toggleNote(Number(arg))
+    else if (what === "notes") { closeScroll(); Leaf.editNotes() }
+    else if (what === "clip") Leaf.copyClip(Number(arg))
+    else if (what === "tool") {
+      var key = String(arg)
+      if (key === "awake") {
+        // Omarchy's idle service: stay awake is idle switched off.
+        var idle = Extras.idleProxy
+        if (idle && typeof idle.setIdleEnabled === "function") idle.setIdleEnabled(!!idle.stayAwake)
+        else Quickshell.execDetached(["omarchy-toggle-idle"])
+      } else if (key === "night") Display.setNight(!(Extras.nightProxy && Extras.nightProxy.enabled))
+      else if (key === "silence") Status.act("notif", "right")
+      else { closeScroll(); Leaf.runTool(key) }
+    }
+  }
+
+  // ------------------------------------------------------------- hosted
+  //
+  // Widgets from Omarchy's bar layout that Hanko neither is nor draws its
+  // own way (weather, Bluetooth, monitors, third-party), created from the
+  // host's widget registry with a facade (bar/HostBar.qml).
+  readonly property var hostedEntries: {
+    var reg = barWidgetRegistry
+    if (!reg) return []
+    void reg.revision
+    var widgets = reg.widgets || {}
+    var list = Hosted.hosted(barConfig, function(id) { return !!widgets[id] },
+      function(id) { return !!(widgets[id] && widgets[id].metadata && widgets[id].metadata.allowMultiple) })
+    return list.map(function(e) {
+      var w = widgets[e.id]
+      var m = w.metadata || {}
+      return { id: e.id, key: e.key, settings: e.settings, component: w.component,
+               pluginId: m.pluginId || e.id,
+               // For the Widgets page: what to call it and whose it is.
+               name: String(m.displayName || ""), description: String(m.description || ""),
+               firstParty: m.firstParty === true || e.id.indexOf("omarchy.") === 0 }
+    })
+  }
+  readonly property var own: Hosted.own(barConfig)
+  Binding { target: Extras; property: "wantIndicators"; value: root.own.indicators }
+  Binding { target: Extras; property: "wantKeyboard"; value: root.own.keyboard }
+  Binding { target: Extras; property: "wantMic"; value: root.own.mic }
+  Binding { target: Extras; property: "wantTray"; value: root.own.tray }
+  Binding { target: Extras; property: "dnd"; value: Status.doNotDisturb }
+  Binding {
+    target: Extras
+    property: "idleProxy"
+    value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.idle") : null
+  }
+  Binding {
+    target: Extras
+    property: "nightProxy"
+    value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.nightlight") : null
+  }
+
+  // One popout at a time across Hanko's sheets, its scroll and hosted
+  // widgets' panels.
+  property var hostedPopout: null
+  function requestHostedPopout(owner) {
+    if (hostedPopout && hostedPopout !== owner) closeHostedPopout()
+    closeSheet()
+    closeScroll()
+    hostedPopout = owner
+  }
+  function releaseHostedPopout(owner) { if (hostedPopout === owner) hostedPopout = null }
+  function closeHostedPopout() {
+    var p = hostedPopout
+    hostedPopout = null
+    try { if (p && typeof p.close === "function") p.close() } catch (e) {}
+  }
+
+  // Live hosted widget items by entry key (one per screen).
+  property var hostedItems: ({})
+  function registerHosted(key, item) {
+    var next = Object.assign({}, hostedItems)
+    next[key] = (next[key] || []).filter(function(i) { return i !== item }).concat([item])
+    hostedItems = next
+  }
+  function unregisterHosted(key, item) {
+    if (!hostedItems[key]) return
+    var next = Object.assign({}, hostedItems)
+    next[key] = next[key].filter(function(i) { return i !== item })
+    hostedItems = next
+  }
+  function hostedWidgets(id) {
+    var out = []
+    for (var k in hostedItems) if (k === id || k.indexOf(id + "#") === 0) out = out.concat(hostedItems[k])
+    return out
+  }
+  // The hosted widget on the focused screen (or any), for the host's panel
+  // calls.
+  function hostedItemFor(id) {
+    var items = hostedWidgets(id)
+    var screen = focusedScreen()
+    for (var i = 0; i < items.length; i++) {
+      var w = items[i] && items[i].QsWindow ? items[i].QsWindow.window : null
+      if (w && w.screen && w.screen.name === screen) return items[i]
+    }
+    return items.length ? items[0] : null
+  }
+  function run(command) { if (command) Quickshell.execDetached(["sh", "-c", String(command)]) }
+
+  // ------------------------------------------------------------- settings
+  //
+  // The settings window edits Typeset's draft; closing it unsaved drops
+  // the draft, so the bar goes back to what style.json holds.
+  property bool settingsOpen: false
+  function openSettings() { settingsOpen = true }
+  function closeSettings() {
+    Typeset.revert()
+    settingsOpen = false
+  }
+
+  SettingsWindow { bar: root }
+
+  // ------------------------------------------------------------- scroll
+  //
+  // The handscroll (panels: scroll): open on one screen at a time, panned
+  // to one section. It stays where you left it between unrolls.
+  property bool scrollOpen: false
+  property string scrollScreen: ""
+  property int scrollSection: 0
+
+  function panelsFor(screenName) {
+    return Typeset.styleFor(screenName || focusedScreen()).panels
+  }
+  // Unroll at a section key ("" keeps the last one).
+  function openScroll(key, screenName) {
+    if (barHidden) return false
+    closeSheet()
+    closeHostedPopout()
+    var i = Scroll.indexOf(key)
+    if (i >= 0) scrollSection = i
+    scrollScreen = screenName || focusedScreen()
+    scrollOpen = true
+    return true
+  }
+  function closeScroll() { scrollOpen = false }
+  // Open at a section, pan to it if open elsewhere, roll up if it's showing.
+  function toggleScroll(key, screenName) {
+    var i = Scroll.indexOf(key)
+    if (scrollOpen && scrollScreen === screenName && (i < 0 || i === scrollSection)) closeScroll()
+    else openScroll(key, screenName)
+  }
+  function scrollTo(index) {
+    scrollSection = Math.max(0, Math.min(Scroll.SECTIONS.length - 1, index))
+  }
+  function stepScroll(delta) { scrollTo(scrollSection + delta) }
+  readonly property string scrollKey: Scroll.SECTIONS[scrollSection].key
+
+  // A panel for one of Omarchy's ids, as this screen's style wants it.
+  function openPanel(key, screenName) {
+    if (!key) return false
+    if (panelsFor(screenName) === "scroll") return openScroll(key, screenName)
+    return openSheet(key, screenName)
+  }
+  function panelOpen(key) {
+    return key !== "" && (sheet === key || (scrollOpen && scrollKey === key))
+  }
+  function closePanel(key) {
+    if (sheet === key) closeSheet()
+    if (scrollOpen && scrollKey === key) closeScroll()
+  }
+
+  onBarHiddenChanged: if (barHidden) { closeSheet(); closeScroll() }
+
+  Binding { target: Zones; property: "barConfig"; value: root.barConfig }
+  // Data for a sheet is gathered while it is open; the scroll shows every
+  // section at once, so all of it while the scroll is out.
+  Binding { target: Zones; property: "wanted"; value: root.sheet === "time" || root.scrollOpen }
+  Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" || root.scrollOpen }
+  Binding { target: Net; property: "wanted"; value: root.sheet === "network" || root.scrollOpen }
+  Binding { target: Power; property: "wanted"; value: root.sheet === "power" || root.scrollOpen }
+  Binding { target: Display; property: "wanted"; value: root.sheet === "display" || root.scrollOpen }
+  Binding { target: Weather; property: "wanted"; value: root.scrollOpen }
+  Binding { target: Leaf; property: "wanted"; value: root.scrollOpen }
+  Binding { target: Leaf; property: "kind"; value: Typeset.styleFor(root.scrollScreen || root.focusedScreen()).endleaf || "koyomi" }
+  Binding { target: Weather; property: "barConfig"; value: root.barConfig }
+  Binding { target: Blue; property: "wanted"; value: root.sheet === "bluetooth" || root.scrollOpen }
+
+  // BarWindows by screen name, for the host's per-screen questions.
+  property var windows: ({})
+  function registerWindow(name, w) {
+    var next = Object.assign({}, windows)
+    next[name] = w
+    windows = next
+  }
+  function unregisterWindow(name, w) {
+    if (windows[name] !== w) return
+    var next = Object.assign({}, windows)
+    delete next[name]
+    windows = next
+  }
+
+  // ------------------------------------------------- host: bar widgets
+  //
+  // Omarchy's audio, clock, network and power panels are kind bar-widget,
+  // so with Hanko as the bar `omarchy-shell shell toggle omarchy.audio`
+  // (and SUPER+CTRL+A, W, P, ALT+D, ALT+E) land here. Hanko answers with
+  // its own sheets, or the scroll at that section under panels: scroll.
+  // The host asks isBarWidgetOpen first: summon opens, never toggles.
+  // A hosted widget answers for its own id through its open()/close().
+  function summonBarWidget(id) {
+    var key = Sheets.forOmarchyId(id)
+    if (sheetReady(key)) return openPanel(key, focusedScreen())
+    var w = hostedItemFor(String(id))
+    if (w && typeof w.open === "function") { w.open(); return true }
+    return false
+  }
+  function hideBarWidget(id) {
+    var key = Sheets.forOmarchyId(id)
+    if (sheetReady(key)) { closePanel(key); return true }
+    var items = hostedWidgets(String(id))
+    for (var i = 0; i < items.length; i++) if (typeof items[i].close === "function") items[i].close()
+    return items.length > 0
+  }
+  function isBarWidgetOpen(id) {
+    var key = Sheets.forOmarchyId(id)
+    if (key) return panelOpen(key)
+    var items = hostedWidgets(String(id))
+    for (var i = 0; i < items.length; i++) if (items[i].opened === true) return true
+    return false
+  }
+  // `togglePanelAt right N` (SUPER+CTRL+1..9): the Nth Omarchy panel among
+  // Hanko's right-zone cells, on the focused screen.
+  function panelWidgetIdAt(section, index) {
+    if (barHidden || String(section) !== "right") return ""
+    var w = windows[focusedScreen()]
+    return w ? Sheets.panelAt(w.surface.rightCells, index) : ""
   }
 
   // Omarchy's choice of media player, when the host offers it.
@@ -153,5 +470,32 @@ Item {
     function styleReset(): string { Typeset.reset(); return "ok" }
     function styleShuffle(): string { Typeset.shuffle(); return "ok" }
     function warnings(): string { return Typeset.warnings.join("\n") }
+    function sheet(name: string): string {
+      if (root.sheet === name) { root.closeSheet(); return "closed" }
+      return root.openSheet(name, root.focusedScreen()) ? "open" : "unknown"
+    }
+    function sheetClose(): string { root.closeSheet(); return "ok" }
+    // Unroll or roll up the handscroll on the focused screen, whatever
+    // `panels` says (bind it to a key: see the README).
+    function settings(): string {
+      if (root.settingsOpen) { root.closeSettings(); return "closed" }
+      root.openSettings()
+      return "open"
+    }
+    // Hide or show one part of the bar (the Widgets page's parts:
+    // seal, volume, tray, indicator:night, hosted:omarchy.weather, ...).
+    function hide(part: string): string { return Typeset.set("show:" + part, "hidden") ? "ok" : "invalid" }
+    function show(part: string): string { return Typeset.set("show:" + part, "shown") ? "ok" : "invalid" }
+    // One setting for one monitor (style.json `monitors`).
+    function styleSetFor(monitor: string, key: string, value: string): string {
+      return Typeset.setFor(monitor, key, value) ? "ok" : "invalid"
+    }
+    function scroll(): string {
+      if (root.scrollOpen) { root.closeScroll(); return "closed" }
+      return root.openScroll("", root.focusedScreen()) ? "open" : "hidden"
+    }
+    function scrollTo(name: string): string {
+      return Scroll.indexOf(name) >= 0 && root.openScroll(name, root.focusedScreen()) ? "open" : "unknown"
+    }
   }
 }

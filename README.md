@@ -1,39 +1,117 @@
-# Hanko
+# Hanko 判子
 
-判子 · a configurable bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
+A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-**Status: early plugin (phase 5 of 10).** Typeset merges the Sheet and Scroll directions into one bar where every part is a setting: 15 settings, 6 presets, 2,985,984 combinations. The plugin (`hanko.bar`, a full-bar Omarchy plugin) is being built phase by phase; see the [roadmap](docs/ROADMAP.md). Right now it draws the seal, your workspaces, the window title, the clock (stacked, inline or mono, following your 12- or 24-hour setting), what is playing, your sound, network, battery and brightness, and your notifications on your theme's paper, edged with a hairline, a day rule, a scroll rod or the rod carrying the day, solid, glass or floating inset, and reads every setting from `~/.config/hanko/style.json`.
+![The Typesetting settings page](docs/mockups/typeset/01-settings.webp)
 
-## Try it
+## What you get
+
+- **Every part is a setting:** 22 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
+- **Left:** a seal, your workspaces and the window title.
+- **Centre:** the clock and what's playing.
+- **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).
+- **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
+- **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
+- **Follows your theme,** light or dark, and switches with it live.
+- **Safe to try:** if Hanko fails to load, Omarchy puts its own bar back.
+
+## Requirements
+
+- Omarchy with its shell running (`omarchy-shell`)
+- `jq` and `rsync` for the CLI; `curl` for the weather
+- Noto CJK fonts for the kanji (Omarchy installs them)
+
+## Install
 
 ```sh
 git clone -b dev https://github.com/AyushKr2003/hanko.git
 cd hanko
-scripts/hanko install      # or `scripts/hanko dev` to symlink the checkout
-scripts/hanko style preset Sheet
-scripts/hanko uninstall    # puts your previous bar back
+scripts/hanko install
 ```
 
-Hanko only replaces the bar. If it ever fails to load, Omarchy falls back to its own bar on its own.
+- This copies Hanko to `~/.config/omarchy/plugins/hanko.bar` and makes it your bar.
+- It remembers the bar you had, so uninstalling puts that one back.
+- **For development:** `scripts/hanko dev` symlinks the checkout instead, and saving a file reloads the bar.
+- **Check the install:** `scripts/hanko doctor`.
 
-**Glass needs a blur rule.** The `glass` surface (and Omarchy's bar transparency toggle, which Hanko shows as glass) draws the paper at 74 %. Omarchy doesn't blur its own bar, so Hanko doesn't change your Hyprland config either; for the frosted look, add this to `~/.config/hypr/hyprland.lua`:
+## Update
+
+```sh
+cd hanko && git pull && scripts/hanko install
+```
+
+## Uninstall
+
+```sh
+scripts/hanko menu remove   # only if you added the menu entry
+scripts/hanko uninstall
+```
+
+- This switches back to your previous bar and removes the plugin folder.
+- Your style is kept in `~/.config/hanko/`. Delete that folder to remove it too.
+
+## Use
+
+| Do this | Command |
+|---|---|
+| Open the settings window | `scripts/hanko settings` |
+| Pick a preset | `scripts/hanko style preset Sheet` |
+| Change one setting | `scripts/hanko style set clock mono` |
+| Change it on one monitor | `scripts/hanko style set --monitor DP-2 height 32` |
+| Random look | `scripts/hanko style shuffle` |
+| Back to the preset | `scripts/hanko style reset` |
+| See the current style | `scripts/hanko style get` |
+| Hide or show a part | `scripts/hanko hide tray` / `scripts/hanko show tray` |
+| Unroll the scroll | `scripts/hanko scroll` |
+| Pick the scroll's dividers | `scripts/hanko style set interlude kotoba` |
+| Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
+| Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |
+| The scroll's tabs on top, position bar at the foot, both or neither | `scripts/hanko style set guides tabs` (`both`, `tabs`, `foot`, `none`) |
+| Indicator stamps: only what is on, kanji with names | `scripts/hanko style set indicators active` / `scripts/hanko style set indicatorStyle kanjiname` |
+| Turn motion off | `scripts/hanko style set motion still` |
+| Larger or smaller text (the bar grows with it) | `scripts/hanko style set typeSize large` (`small`, `regular`, `large`) |
+| Add Setup › Hanko to the Omarchy menu | `scripts/hanko menu add` |
+
+- Changes show on the bar at once and are saved to `~/.config/hanko/style.json`.
+- Every setting and option is listed in [COMPONENTS.md](docs/COMPONENTS.md).
+- Parts you can hide include `seal`, `clock`, `volume`, `weather`, `tray`, `indicator:<name>`, `tray:<app>` and `hosted:<widget id>`.
+
+## Optional extras
+
+**A key for the scroll.** Add this to `~/.config/hypr/bindings.lua`:
+
+```lua
+o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")
+```
+
+**Frosted glass.** The `glass` surface needs a blur rule in `~/.config/hypr/hyprland.lua`:
 
 ```lua
 hl.layer_rule({ match = { namespace = "hanko-bar" }, blur = true, ignore_alpha = 0.5 })
 ```
 
-![The Typesetting settings page](docs/mockups/typeset/01-settings.webp)
-![Six presets](docs/mockups/typeset/03-presets.webp)
+## Troubleshooting
 
-- **[Every component and combination](docs/COMPONENTS.md)**
-- [Handoff: the full state of the build](docs/HANDOFF.md)
+- **Bar didn't change:** run `scripts/hanko doctor`.
+- **QML errors:** check `journalctl --user -f`.
+- **A setting was ignored:** `omarchy-shell hanko warnings` lists what `style.json` got wrong.
+- **No weather on the scroll:** it needs `curl` and a network connection, and only shows on screens about 1600 px wide or more.
+
+## Docs
+
+- [Every component and combination](docs/COMPONENTS.md)
 - [Design overview](docs/DESIGN.md)
-- [Twelve random combinations](docs/mockups/typeset/04-shuffle.webp)
-- [Presets across themes](docs/mockups/typeset/05-presets-x-themes.webp)
-- [Hanko preset with the scroll open](docs/mockups/typeset/20-desk-hanko-scroll.webp)
-- [Sheet preset with a sheet open](docs/mockups/typeset/21-desk-sheet-sound.webp)
-- [All Typeset mockups](docs/mockups/typeset/)
+- [Roadmap](docs/ROADMAP.md)
+- [Handoff: the full state of the build](docs/HANDOFF.md)
+- [Changelog](CHANGELOG.md)
+- Earlier design directions are on the `docs` branch.
 
-Earlier directions: [Sheet](docs/history/sheet-DESIGN.md) and [Scroll](docs/history/scroll-DESIGN.md).
+## Credits
 
-Design language inspired by [Ryoku](https://github.com/Ryoku-dev/ryoku)'s settings app and [ryoku.dev](https://ryoku.dev). The wallpaper plates in the mockups are procedural and made for them.
+- Design language inspired by [Ryoku](https://github.com/Ryoku-dev/ryoku)'s settings app and [ryoku.dev](https://ryoku.dev). No Ryoku code is used.
+- Bundled fonts: Fraunces and Space Grotesk, under the SIL Open Font License (`assets/fonts/`).
+
+## License
+
+- Hanko is [MIT](LICENSE).
+- The bundled fonts keep their own SIL Open Font License (`assets/fonts/*-OFL.txt`).

@@ -15,6 +15,15 @@ Rectangle {
   height: column.implicitHeight + 72
   color: Ink.paper
 
+  // Hosted widgets for a strip: [{ id, label }] become registry-like
+  // entries built from tests/harness/widgets/FakeWidget.qml.
+  readonly property var fakeWidget: Qt.createComponent(Qt.resolvedUrl("../widgets/FakeWidget.qml"))
+  function hostedFor(strip) {
+    return (strip.hosted || []).map(function(h) {
+      return { id: h.id, key: h.id, settings: { label: h.label }, component: sheet.fakeWidget, pluginId: h.id }
+    })
+  }
+
   // A strip's own value wins, then the sheet's, then nothing.
   function pick(strip, key) {
     if (strip[key] !== undefined) return strip[key]
@@ -106,8 +115,14 @@ Rectangle {
             network: sheet.pick(modelData, "network")
             battery: sheet.pick(modelData, "battery")
             brightness: sheet.pick(modelData, "brightness")
+            bluetooth: sheet.pick(modelData, "bluetooth")
             notifications: sheet.pick(modelData, "notifications") || []
             dnd: !!sheet.pick(modelData, "dnd")
+            hosted: sheet.hostedFor(modelData)
+            indicators: sheet.pick(modelData, "indicators") || []
+            keyboard: sheet.pick(modelData, "keyboard")
+            mic: sheet.pick(modelData, "mic")
+            tray: sheet.pick(modelData, "tray") || []
           }
         }
       }

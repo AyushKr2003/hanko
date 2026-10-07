@@ -2,6 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import "../core"
+import "../core/Sheets.js" as Sheets
+import "../core/Scroll.js" as Scroll
 import "../services"
 
 // One layer-shell bar per screen. It reserves its own height and, when the
@@ -51,7 +53,35 @@ PanelWindow {
     right: win.gap
   }
 
+  readonly property string screenName: screen ? screen.name : ""
+  readonly property alias surface: surface
+
+  Component.onCompleted: bar.registerWindow(screenName, win)
+  Component.onDestruction: bar.unregisterWindow(screenName, win)
+
+  // panels: scroll unrolls the handscroll; panels: sheets drops sheets.
+  readonly property bool scrolls: shown.panels === "scroll"
+
+  // A click on a cell with a panel opens (or closes) it at that cell's
+  // sheet or section; anything else goes to the service as before.
+  function cellClicked(cell, how, fallback) {
+    if (how !== "click") { fallback(); return }
+    if (scrolls && Scroll.forCell(cell)) bar.toggleScroll(Scroll.forCell(cell), screenName)
+    else if (bar.sheetReady(Sheets.forCell(cell))) bar.toggleSheet(Sheets.forCell(cell), screenName)
+    else fallback()
+  }
+
+  // A pull on the rod: the scroll unrolls (at the section under the
+  // pointer, else where it was); with sheets, the sheet of the cell under
+  // the pointer drops, or Time.
+  function rodPulled(x) {
+    var cell = surface.cellAt(x)
+    if (scrolls) bar.openScroll(Scroll.forCell(cell) || "", screenName)
+    else bar.openSheet(Sheets.forCell(cell) || "time", screenName)
+  }
+
   BarSurface {
+    id: surface
     anchors.fill: parent
     style: win.shown
     now: win.bar.now
@@ -64,8 +94,20 @@ PanelWindow {
     network: Status.network
     battery: Status.battery
     brightness: Status.brightness
+    bluetooth: Blue.cell
     notifications: Status.notifications
     dnd: Status.doNotDisturb
+    hosted: win.bar.hostedEntries
+    host: win.bar
+    indicators: Extras.indicators
+    keyboard: Extras.keyboard
+    mic: Extras.mic
+    tray: Extras.tray
+    onIndicatorAction: function(key, how) { Extras.indicatorAction(key, how) }
+    onKeyboardAction: function(how) { Extras.keyboardAction(how) }
+    // Middle-click on the mic opens Sound, where the input is.
+    onMicAction: function(how) { if (how === "middle") win.bar.openPanel("sound", win.screenName); else Extras.micAction(how) }
+    onTrayAction: function(id, how, cell) { Extras.trayAction(id, how, cell) }
 
     onSealClicked: function(button) {
       if (button === Qt.RightButton) Hypr.openTerminal()
@@ -74,9 +116,21 @@ PanelWindow {
     onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
     onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
     onMediaAction: function(name) { Media.act(name) }
-    onStatusAction: function(name, how) { Status.act(name, how) }
-    onInboxAction: function(how) { Status.act("notif", how) }
-    // The rod unrolls the scroll; Phase 7 gives it somewhere to go.
-    onEdgePulled: win.bar.edgePulled(win.screen ? win.screen.name : "")
+    onStatusAction: function(name, how) { win.cellClicked(name, how, function() { Status.act(name, how) }) }
+    onInboxAction: function(how) { win.cellClicked("notif", how, function() { Status.act("notif", how) }) }
+    onClockClicked: win.cellClicked("clock", "click", function() {})
+    // The rod unrolls the scroll, or drops the sheet under the pull.
+    onEdgePulled: function(x) { win.rodPulled(x) }
+  }
+
+  ScrollWindow {
+    bar: win.bar
+    barWindow: win
+  }
+
+  SheetWindow {
+    bar: win.bar
+    barWindow: win
+    surface: surface
   }
 }

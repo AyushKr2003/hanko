@@ -33,7 +33,8 @@ function layoutOf(windows, area) {
     var r = clamp01((w.at[0] + w.size[0] - area.x) / area.width)
     var b = clamp01((w.at[1] + w.size[1] - area.y) / area.height)
     if (r - x < 0.01 || b - y < 0.01) continue
-    out.push({ x: x, y: y, w: r - x, h: b - y, focused: !!w.focused })
+    out.push({ x: x, y: y, w: r - x, h: b - y, focused: !!w.focused,
+               name: String(w.name || ""), address: String(w.address || "") })
   }
   // Fullscreen or a single window still reads as one pane.
   return out

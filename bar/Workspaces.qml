@@ -5,6 +5,7 @@ import "../core/Spaces.js" as SpacesJs
 
 // Workspaces 頁, in four styles (docs/COMPONENTS.md):
 //   folio   page numbers; the live one inverts with a // lead; dots count windows
+//           (one bone plate slides to whichever page is live)
 //   layout  each workspace drawn as its real tiling, focused window filled
 //   kanji   壱 弐 参 with window dots; the live one inverts
 //   dots    one dot each; the live one a short bar
@@ -20,10 +21,32 @@ Item {
   signal stepped(int delta)
 
   readonly property bool compact: barHeight <= Type.px(32)
+  // The live workspace's cell; folio and kanji invert it with one plate
+  // that slides from page to page (Motion.slide), like Ryoku's rail.
+  // Reported by the cells themselves (see Segmented.qml for why).
+  property Item liveCell: null
+  function note(item: Item, on: bool) {
+    if (on) liveCell = item
+    else if (liveCell === item) liveCell = null
+  }
+  readonly property bool plated: mode === "folio" || mode === "kanji"
 
   visible: mode !== "none"
   implicitWidth: row.implicitWidth
   implicitHeight: barHeight
+
+  Rectangle {
+    id: plate
+    visible: root.plated && root.liveCell !== null
+    x: row.x + (root.liveCell ? root.liveCell.x : 0)
+    y: row.y + (root.liveCell ? root.liveCell.y : 0)
+    width: root.liveCell ? root.liveCell.width : 0
+    height: root.liveCell ? root.liveCell.height : 0
+    radius: root.mode === "kanji" ? 3 : 2
+    color: Ink.bone
+    Behavior on x { enabled: Motion.live; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
+    Behavior on width { enabled: Motion.live; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
+  }
 
   Row {
     id: row
@@ -37,6 +60,9 @@ Item {
         id: cell
         required property var modelData
         readonly property bool on: modelData.active
+        onOnChanged: root.note(cell, cell.on)
+        Component.onCompleted: root.note(cell, cell.on)
+        Component.onDestruction: if (root.liveCell === cell) root.liveCell = null
         readonly property bool occupied: modelData.count > 0
 
         implicitWidth: loader.implicitWidth
@@ -80,7 +106,7 @@ Item {
       implicitWidth: Math.max(Type.px(30), label.implicitWidth + Type.px(on ? 18 : 12))
       implicitHeight: Type.px(root.compact ? 20 : 22)
       radius: 2
-      color: on ? Ink.bone : "transparent"
+      color: "transparent"
 
       Row {
         id: label
@@ -177,7 +203,7 @@ Item {
       implicitWidth: Type.px(root.compact ? 22 : 24)
       implicitHeight: implicitWidth
       radius: 3
-      color: on ? Ink.bone : "transparent"
+      color: "transparent"
 
       Text {
         anchors.centerIn: parent
@@ -211,6 +237,7 @@ Item {
       readonly property bool occupied: !!(ws && ws.count > 0)
       implicitWidth: on ? Type.px(18) : Type.px(5)
       implicitHeight: Type.px(5)
+      Behavior on implicitWidth { enabled: Motion.live; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
 
       Rectangle {
         anchors.fill: parent

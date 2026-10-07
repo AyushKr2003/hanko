@@ -44,7 +44,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - One layer-shell `PanelWindow` per screen. It reserves its space, follows `position`, and parks off screen when hidden (the same trick Omarchy uses).
 - The host contract: `barHidden` (flag file plus `omarchy.bar syncHidden`), `barSize`, `position` and `fontFamily`.
 - **Ink**: paper, four ink tiers at 12, 9, 6.2 and 4.6 : 1, seal red, and hairlines, all derived live from the theme.
-- **Typeset**: the 15 settings, the six presets and validation. The style is read from `~/.config/hanko/style.json` with a live file watch; resolution order is preset, then edits, then per-monitor overrides.
+- **Typeset**: the 15 settings (16 since the Bluetooth cell), the six presets and validation. The style is read from `~/.config/hanko/style.json` with a live file watch; resolution order is preset, then edits, then per-monitor overrides.
 - Fonts are bundled and loaded.
 - A first bar: the seal (`stamp`) and the clock (`stacked`), on paper, with a hairline edge.
 - The `hanko` CLI: `install`, `uninstall` (restores your previous bar), `dev` (symlinks the checkout), `style get|set|preset|reset`, and `doctor`.
@@ -70,26 +70,34 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Surface: `solid` / `glass` / `inset`. Position: top or bottom, with edge details flipping side.
 - Follows Omarchy's `bar.position` and transparency toggle unless Hanko overrides them. The toggle turns solid paper into glass.
 
-### Phase 6 · Sheets ⬜
-- `panels: sheets`: a flush sheet drops from the clicked cell, joined to the bar.
-- Sheets: Sound (master, outputs, per-app mixer), Time (day ribbon, Elsewhen), Network, Power (battery, profiles), Inbox.
-- Keyboard: `Esc`, arrow keys, and `Tab` between sheets. The host's panel hotkeys open the matching sheet.
+### Phase 6 · Sheets ✅
+- `panels: sheets`: a flush sheet drops from the clicked cell, joined to the bar by a bone tear, printed top-down (bottom-up from a bar at the bottom). Until the handscroll lands, `panels: scroll` opens sheets too.
+- Sheets: Time (day ribbon, Elsewhen), Sound (master, outputs, per-app mixer, input), Network (connection, Wi-Fi, speed test and share card), Bluetooth (the BT cell's panel: connected, known and nearby devices, power; added after the phase), Power (battery, profiles), Display (the LUM cell's panel: brightness per monitor, monitors, night light; added after the phase), Inbox (stamped letters, do not disturb, clear).
+- Keyboard: `Esc`, arrow keys, and `Tab` between sheets. The host's panel hotkeys (`SUPER+CTRL+A/W/P`, `ALT+D/E`, `togglePanelAt right N`) open the matching sheet.
 
-### Phase 7 · The handscroll ⬜
-- `panels: scroll`: one surface that unrolls from the rod, with rollers, an index plate, interludes, `H`/`L` panning with snap, and `Esc` to roll up.
-- The same six sections, reusing the sheet contents in scroll layout.
+### Phase 7 · The handscroll ✅
+- `panels: scroll`: one paper (its edges bare or curling under, the `sides` setting; the rollers came out after the phase) holding eight sections (Time, Sound, Network, Bluetooth, Power, Display, Spaces, Inbox) with dividers between them (nine styles, the `interlude` setting, added after the phase), a weather leaf left of Time and an end leaf right of Inbox (both added after the phase; the end leaf is the `endleaf` setting, nine kinds); an index plate on top (below, for a bar at the bottom) and a position bar along the foot, either or both shown by the `guides` setting (added after the phase).
+- Unrolls from a status, clock or inbox click (at that section), a pull on the rod, Omarchy's panel hotkeys, or `omarchy-shell hanko scroll`. Pans with a drag, the wheel, `H`/`L` or the arrows, lands centred on a section; `Esc` rolls it up.
+- Sections in ryoku.dev's grammar with Scroll's controls: the day ribbon, a fader bank, the networks, the power profiles, a map of every workspace's tiling (click a window to go there) and stamped letters.
+- Motion as Scroll drew it (unroll 300 ms, ink 200 ms after 120 ms, pan snap 260 ms); Omarchy's reduced motion cuts to the end frames.
 
-### Phase 8 · Settings window and CLI parity ⬜
-- The Typesetting 組版 page as a real window: rail, live preview, preset gallery, segmented controls, and Reset / Revert / Save.
-- `hanko style shuffle`; IPC `hanko settings`, `hanko style ...`; an Omarchy menu entry under Setup.
+### Phase 8 · Settings window and CLI parity ✅
+- The settings window (a normal floating window) in the Ryoku Hub grammar: rail, search, Advanced. Typesetting 組版 has the live preview, the preset gallery, six cards of segmented controls, and Reset to preset / Revert / Save. Edits show on the bar at once; only Save writes style.json, and closing unsaved puts the saved style back.
+- Advanced: any seal glyph, each monitor's overrides, the raw document. Presets 型: the six as bars, plus shuffle. The other rail pages say what they will hold (Motion 動 became a real page in Phase 10).
+- Open it with `hanko settings` (IPC `hanko settings`), or `hanko menu add` for Setup › Hanko in the Omarchy menu. CLI parity: `hanko style set --monitor DP-2 height 32`.
 
-### Phase 9 · Hosting other widgets ⬜
-- Third-party bar widgets from `bar.layout` render in Hanko's right zone, with Hanko's spacing and ink.
-- Tray support.
+### Phase 9 · Hosting other widgets ✅
+- Widgets in Omarchy's bar layout that Hanko doesn't draw (weather, Bluetooth, monitors, system update, third-party widgets) are hosted in the right zone from the host's widget registry, in Hanko's ink, with their own panels and Omarchy's hotkeys still reaching them.
+- Hanko's own marks for the rest: the indicators as kanji (録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light; only what's on, red only for "now"; after the phase they became stamps with Omarchy's icons, do not disturb 静 joined them, and two settings, `indicators` and `indicatorStyle`, choose all or only what is on, and icon or kanji, alone or named), the keyboard layout as a mono code, the microphone as 声 (red when muted), and the tray with every icon inked.
+- When the right zone fills up, what is playing gives way first, then the tray folds into 盆 with a count, then hosted widgets drop out whole; nothing ever runs into the clock.
 
-### Phase 10 · Motion and release ⬜
-- The motion spec from Scroll: paper-like timings, stamp press, and the reduced-motion cut.
-- A per-monitor override UI, a README install guide, the `v0.1.0` manifest version, and a listing on omarchyplugins.com.
+### Phase 10 · Motion ✅ and release ⬜
+- ✅ The motion spec from Scroll: the scroll unrolls and pans on paper-like curves, a sheet prints from its cell, the live page's plate slides to the next one, readings and the clock fade to new values, the now-notch creeps, and a new stamp is pressed down and settles (the only overshoot). A Motion 動 page with a paper/still switch (style.json `motion`, outside the eighteen settings); still, or Omarchy's animations off, cuts every move to its end frame.
+- ✅ A per-monitor override UI under Advanced: pick a monitor, set any setting for it alone, see which ones differ.
+- ✅ Visibility (asked for after Phase 10): every part of the bar, each mark and tray app, and every hosted Omarchy or third-party widget can be shown or hidden on the Widgets 部品 page or with `hanko hide|show <part>` (style.json `hidden`).
+- ✅ The settings window reflows to any window size.
+- ✅ Type scale (asked for after the indicator stamps, from screenshots of the real bar at 1x): one scale for every size, weight and tracking in `core/Type.qml`, readable floors, Medium labels and values, the bold byline fixed, a `typeSize` setting (small, regular, large), and a 1x render pass in `tests/run`.
+- ⬜ Release, left to the user after testing on hardware: a README install guide, the manifest version, a CHANGELOG entry, a listing on omarchyplugins.com, and merging into `main`.
 
 ## Dev loop
 

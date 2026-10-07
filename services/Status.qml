@@ -86,7 +86,9 @@ Singleton {
 
   Process {
     id: notifProc
-    command: ["sh", "-c", "awk 1 \"$1\"/*.json \"$1\"/history/*.json 2>/dev/null; true", "--", root.notifDir]
+    // A loop, not one awk: with no live toast the first glob stays literal
+    // and gawk stops dead on it, before it ever reaches the history.
+    command: ["sh", "-c", "for f in \"$1\"/*.json \"$1\"/history/*.json; do [ -f \"$f\" ] && cat \"$f\" && echo; done; true", "--", root.notifDir]
     stdout: StdioCollector {
       onStreamFinished: root.notifications = StatusJs.notifications(text)
     }
@@ -136,6 +138,9 @@ Singleton {
       if (how === "up") run(["omarchy-brightness-display", "+5%"])
       else if (how === "down") run(["omarchy-brightness-display", "5%-"])
       else toggle("omarchy.power")
+    } else if (name === "bluetooth") {
+      // The middle or right button switches Bluetooth on or off.
+      if (how === "middle" || how === "right") Blue.setPower(!Blue.powered)
     } else if (name === "network") {
       toggle("omarchy.network")
     } else if (name === "battery") {
