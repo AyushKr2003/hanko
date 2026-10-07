@@ -5,8 +5,8 @@ import "../../core"
 // The desktop strip along the top of the dynamic overview (Ryoku's): one
 // card per desktop that holds workspaces (a block of ten ids), its number
 // and a dot per workspace (filled when it has windows), then one NEW card
-// with a + to start a desktop. The live desktop wears the seal red, the
-// viewed one a lighter ring; every card has a small hard shadow. Dragging a
+// with a + to start a desktop. The live desktop and the viewed one wear
+// the seal red; every card has a small hard shadow. Dragging a
 // window onto a card moves it to that desktop (DynamicView does the hit
 // test; the card only shows `dropHot`).
 Row {
@@ -45,8 +45,7 @@ Row {
         anchors.fill: parent
         color: Qt.tint(strip.view ? strip.view.cardColor : Ink.paper, card.dropHot || card.viewed || card.live ? Ink.alpha(Ink.seal, 0.09) : "transparent")
         border.width: card.viewed || card.live || card.dropHot ? 2 : 1
-        border.color: card.dropHot || card.live ? Ink.seal
-          : card.viewed ? strip.view.sealLit
+        border.color: card.dropHot || card.live || card.viewed ? Ink.seal
           : card.hovered ? Ink.lineStrong
           : Ink.line
         Behavior on border.color { enabled: !Motion.still; ColorAnimation { duration: 90 } }

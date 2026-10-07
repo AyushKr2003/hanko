@@ -122,7 +122,6 @@ Item {
   // Ryoku's card and tile fills, from the theme's paper and ink.
   readonly property color cardColor: Qt.tint(Ink.paper, Ink.alpha(Ink.ink, 0.03))
   readonly property color tileColor: Qt.tint(Ink.paper, Ink.alpha(Ink.ink, 0.07))
-  readonly property color sealLit: Qt.lighter(Ink.seal, 1.22)
 
   // The scrim over the desk; a click on it dismisses.
   Rectangle {

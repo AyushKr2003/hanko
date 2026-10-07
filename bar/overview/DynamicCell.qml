@@ -71,13 +71,7 @@ Item {
     anchors.fill: parent
     // Opaque: the shadow sits right behind it.
     color: Qt.tint(cell.view ? cell.view.cardColor : Ink.paper, cell.active ? Ink.alpha(Ink.seal, 0.08) : "transparent")
-    border.width: cell.active || cell.hot || cell.selected ? 2 : 1
-    border.color: cell.hot || cell.active ? Ink.seal
-      : cell.selected ? (cell.view ? cell.view.sealLit : Ink.seal)
-      : cell.hovered ? Ink.lineStrong
-      : Ink.line
     clip: true
-    Behavior on border.color { enabled: !Motion.still; ColorAnimation { duration: 90 } }
 
     // The wallpaper, cropped to the cell and dimmed under the windows.
     Image {
@@ -296,5 +290,17 @@ Item {
         onClicked: if (cell.view) cell.view.go(cell.slot.id)
       }
     }
+  }
+
+  // The frame, laid over the wallpaper and the windows: drawn as mini's own
+  // border it sat under them and the dimmed picture washed the seal to pink.
+  Rectangle {
+    anchors.fill: mini
+    color: "transparent"
+    border.width: cell.active || cell.hot || cell.selected ? 2 : 1
+    border.color: cell.hot || cell.active || cell.selected ? Ink.seal
+      : cell.hovered ? Ink.lineStrong
+      : Ink.line
+    Behavior on border.color { enabled: !Motion.still; ColorAnimation { duration: 90 } }
   }
 }
