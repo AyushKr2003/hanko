@@ -91,6 +91,14 @@ o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")
 hl.layer_rule({ match = { namespace = "hanko-bar" }, blur = true, ignore_alpha = 0.5 })
 ```
 
+**Windows that match the bar.** `style.lua` gives Hyprland windows the bar's look: 1 px hairline frames in your theme's ink, square corners (7 px with the `inset` surface, whose 8 px gap the windows share), a hard print offset in seal red under the focused window, flat mono group tabs and the bar's motion timings (`motion: still` stops window animations too). It reads `colors.toml` and `~/.config/hanko/style.json`, so it follows `omarchy theme set`. Load it last in `~/.config/hypr/looknfeel.lua`:
+
+```lua
+pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/hanko.bar/style.lua")
+```
+
+After a style change in Hanko, run `hyprctl reload` to bring the windows along.
+
 ## Troubleshooting
 
 - **Bar didn't change:** run `scripts/hanko doctor`.

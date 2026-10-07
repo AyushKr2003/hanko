@@ -250,6 +250,7 @@ Everything is plain QML/JS, no build step.
 
 ```
 manifest.json            plugin manifest (hanko.bar, kind bar)
+style.lua                Hyprland look'n'feel for windows (dofile'd from ~/.config/hypr/looknfeel.lua)
 Bar.qml                  entry point: injected props, host contract, per-screen windows,
                          hiding, proxy bindings, `hanko` IPC
 bar/
@@ -568,6 +569,14 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **Responsive (asked for after the plates: the art went translucent behind the text on small windows and blocks ran into each other).** Each plate has two layouts and nothing is ever drawn under the type. Profile: *poster* when the plate is at least 1000 px wide and the seal gets at least 280 px in the room right of the readings and their leaders, under EDIT and over the day rule (`posterSeal`); otherwise *stacked*, one column with the seal beside the readings (or above them, readings in two columns, under 520 px). Its blocks are inline components (`Head`, `LiveHead`, `Callout`, `SpecsBlock`, `PaletteBlock`, `EditionLine`, `DayRule`) placed by either layout; EDIT's eye chips sit on a block's top right corner, and the edit strip gets its own band under the page. About and Credits: the moon / hanging scroll sits in its own room right of the column when there is at least 260 / 240 px of it, else small beside the title, or not at all under 420 px of column. Every plate scrolls when the window is too short instead of piling blocks up. `PlateSpine.length` lets a plate drop the spine on a short window. Save image grabs the whole page, also what is scrolled away.
 - The Settings scene takes `settings.width` / `settings.height`; params `profile-narrow`, `profile-short`, `about-narrow`, `credits-narrow`, `credits-mid` render the other layouts.
 
+### Window style 窓 ✅ (asked for by the user: "make the hyprland window look match the bar")
+- `style.lua` at the plugin root, modelled on Omacale's `omacale.lua`: `pcall(dofile, …)` from `~/.config/hypr/looknfeel.lua` (the user's already had the line), so it re-reads on every `hyprctl reload` and loads after the theme's `hyprland.lua` (Omarchy requires `omarchy.current.theme.hyprland` at the end of `default.hypr.omarchy`, before the user's files).
+- Colours: `$XDG_STATE_HOME/omarchy/current/theme/colors.toml` `foreground`, `background`, `red` (else `color1`, as Omarchy's `Color.qml` picks `urgent`). Active border ink, inactive `Ink.line` (foreground at 22%), `border_size` 1.
+- Surface from `~/.config/hanko/style.json` (`edits.surface`, else the preset's; the preset table copies `core/Style.js` and must be kept in step). `inset`: rounding 7 like `BarSurface`'s frame; otherwise 0. Gaps 8 out / 4 in for every surface.
+- The focused window gets a hard print (`shadow.sharp`, `range` 0, offset 4 4) in seal red; inactive `color_inactive` transparent. This is the one place a "shadow" appears: it is an unblurred print, not depth, and red keeps its meaning ("you"). Checked on Hyprland 0.56.2: `hyprctl configerrors` clean, the print draws with range 0.
+- Groupbar: no gradients, mono 10, 1 px indicator, ink / line / muted text. Animations from `core/Motion.qml` (speed = ms / 100): windows in 180 ms on the unroll curve with `popin 96%`, out 140 ms, moves and workspaces 260 ms on the pan curve (workspaces `slide`), border and fades 140 ms; `motion: still` sets `animations.enabled = false`.
+- Per-monitor overrides are ignored (Hyprland's decoration is global). The shell does not push changes: a style or theme change reaches the windows on the next `hyprctl reload` (`omarchy theme set` runs one).
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -618,6 +627,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 19. **Type scale to verify:** the bar at 36 px with label over value (about 30 px of type), `typeSize: large` with a 44 px bar (51 px), and the Medium values in another mono face. After a shell restart the window title stayed empty until focus changed (seen once while testing; not caused by the type change, worth a look).
 20. **Scroll sides to verify on hardware:** the curl's shading on the user's theme (light themes may want it fainter), and the scroll's edges against the screen edge on a 1x display.
 21. **Profile plate to verify on hardware:** the probe's facts on the user's machine (theme name, `omarchy-version`, Hyprland tag, install date from `stat -c %W /`), Save image writing to `~/Pictures` (or `$XDG_PICTURES_DIR`; the folder must exist), the inline name field with a long name, and the leaders landing on the seal at the window's real size. Also resize the settings window through the sizes the harness renders (600 px to ultrawide, and short) and check nothing overlaps at the user's `typeSize` and font scale.
+22. **Window style:** a change in the settings window does not reach Hyprland until `hyprctl reload`; Hanko could run `hyprctl reload` (or an `hyprctl eval` hook like Omacale's) when `surface` or `motion` changes. Also check the red print on a light theme and next to floating windows, and that `popin 96%` reads as a print rather than a zoom.
 
 
 ## 13. QML pitfalls already hit
