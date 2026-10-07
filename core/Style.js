@@ -90,6 +90,16 @@ function normalizeTypeSize(t) {
   return TYPE_SIZES.indexOf(String(t)) >= 0 ? String(t) : DEFAULT_TYPE_SIZE
 }
 
+// Which workspace overview 一覧 opens, beside the twenty-two like motion:
+// grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
+// overview (only workspaces with windows, a + for a new one, desktops).
+var OVERVIEWS = ["grid", "dynamic"]
+var DEFAULT_OVERVIEW = "grid"
+
+function normalizeOverview(o) {
+  return OVERVIEWS.indexOf(String(o)) >= 0 ? String(o) : DEFAULT_OVERVIEW
+}
+
 // Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
 // page), beside the twenty-two like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
@@ -185,7 +195,7 @@ function normalizeGlyph(glyph) {
 }
 
 // A style document as stored in style.json:
-//   { preset, edits: {...}, sealGlyph, motion, typeSize, hidden: [...], monitors: { "<name>": {...} } }
+//   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, hidden: [...], monitors: { "<name>": {...} } }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
@@ -203,6 +213,7 @@ function normalize(doc, warnings) {
     sealGlyph: normalizeGlyph(doc.sealGlyph),
     motion: normalizeMotion(doc.motion),
     typeSize: normalizeTypeSize(doc.typeSize),
+    overview: normalizeOverview(doc.overview),
     hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
   }
@@ -218,6 +229,7 @@ function resolve(doc, monitor) {
   style.sealGlyph = d.sealGlyph
   style.motion = d.motion
   style.typeSize = d.typeSize
+  style.overview = d.overview
   style.hidden = d.hidden.slice()
   style.preset = d.preset
   style.edited = Object.keys(d.edits).length > 0
@@ -238,6 +250,11 @@ function withSetting(doc, key, value) {
   if (key === "typeSize") {
     if (TYPE_SIZES.indexOf(String(value)) < 0) return null
     d.typeSize = String(value)
+    return d
+  }
+  if (key === "overview") {
+    if (OVERVIEWS.indexOf(String(value)) < 0) return null
+    d.overview = String(value)
     return d
   }
   if (String(key).indexOf("show:") === 0) return withShown(d, String(key).slice(5), value)

@@ -30,6 +30,11 @@ PanelWindow {
   readonly property bool atBottom: bar.position === "bottom"
   readonly property int strip: barWindow.barHeight + barWindow.gap
   readonly property int activeId: monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : 1
+  // Which overview (style.json `overview`): grid, Hanko's pages; dynamic,
+  // Ryoku's (bar/overview/DynamicView.qml).
+  readonly property bool dynamic: Typeset.current.overview === "dynamic"
+  // This screen's workspaces, for the dynamic overview.
+  readonly property var screenSpaces: Hypr.workspaces.filter(function(w) { return w.id > 0 && (!w.monitor || w.monitor === win.screenName) })
 
   screen: barWindow.screen
   visible: open || closing.running
@@ -85,11 +90,14 @@ PanelWindow {
     if (open) {
       closing.stop()
       view.reveal = 1
+      ryoku.reveal = 1
+      ryoku.seed()
       grabLater.restart()
       if (focusedHere) keys.forceActiveFocus()
     } else {
       grab.active = false
       view.reveal = 0
+      ryoku.reveal = 0
       closing.restart()
     }
   }
@@ -110,6 +118,7 @@ PanelWindow {
 
   OverviewView {
     id: view
+    visible: !win.dynamic
     anchors.fill: parent
     topInset: win.atBottom ? 0 : win.strip
     bottomInset: win.atBottom ? win.strip : 0
@@ -143,6 +152,35 @@ PanelWindow {
     }
   }
 
+  DynamicView {
+    id: ryoku
+    visible: win.dynamic
+    anchors.fill: parent
+    topInset: win.atBottom ? 0 : win.strip
+    bottomInset: win.atBottom ? win.strip : 0
+    spaces: win.screenSpaces
+    allIds: Hypr.workspaces.filter(function(w) { return w.id > 0 }).map(function(w) { return w.id })
+    activeId: win.activeId
+    aspect: Hypr.aspectFor(win.screenName)
+    glyph: Typeset.current.sealGlyph || "印"
+    wallpaper: "file://" + Quickshell.env("HOME") + "/.local/state/omarchy/current/background"
+    snapshot: win.open && win.dynamic ? snapshotComponent : null
+    iconFor: function(cls) {
+      var c = String(cls || "")
+      if (!c) return ""
+      var entry = DesktopEntries.heuristicLookup(c)
+      return Quickshell.iconPath(entry && entry.icon ? entry.icon : c.toLowerCase(), true)
+    }
+    reveal: 0
+    Behavior on reveal { NumberAnimation { duration: Motion.ms(240); easing.type: Easing.OutCubic } }
+
+    onGoTo: function(id) { win.closeThen(function() { Hypr.focusWorkspace(id) }) }
+    onWindowFocused: function(address) { win.closeThen(function() { Hypr.focusWindow(address) }) }
+    onWindowClosed: function(address) { Hypr.closeWindow(address) }
+    onWindowMoved: function(address, id) { Hypr.moveWindow(address, id) }
+    onDismissed: win.bar.closeOverview()
+  }
+
   // A window's live picture, while the overview is open.
   Component {
     id: snapshotComponent
@@ -160,6 +198,7 @@ PanelWindow {
     anchors.fill: parent
     focus: win.open && win.focusedHere
     Keys.onPressed: function(event) {
+      if (win.dynamic) { win.dynamicKey(event); return }
       var k = event.key, dir = ""
       if (k === Qt.Key_Escape || k === Qt.Key_Return || k === Qt.Key_Enter) { win.bar.closeOverview(); event.accepted = true; return }
       if (k === Qt.Key_Left || k === Qt.Key_H) dir = "left"
@@ -173,5 +212,22 @@ PanelWindow {
         event.accepted = true
       }
     }
+  }
+
+  // Ryoku's keys for the dynamic overview: Tab and the arrows move the
+  // selection (nothing switches yet), Alt+Tab steps desktops, Enter goes,
+  // Esc dismisses.
+  function dynamicKey(event) {
+    var k = event.key
+    var alt = (event.modifiers & Qt.AltModifier) !== 0
+    var shift = (event.modifiers & Qt.ShiftModifier) !== 0
+    if (k === Qt.Key_Escape) win.bar.closeOverview()
+    else if (alt && (k === Qt.Key_Tab || k === Qt.Key_Right || k === Qt.Key_Backtab || k === Qt.Key_Left))
+      ryoku.cycleDesk(shift || k === Qt.Key_Backtab || k === Qt.Key_Left ? -1 : 1)
+    else if (k === Qt.Key_Tab || k === Qt.Key_Right || k === Qt.Key_Down) ryoku.cycle(shift ? -1 : 1)
+    else if (k === Qt.Key_Backtab || k === Qt.Key_Left || k === Qt.Key_Up) ryoku.cycle(-1)
+    else if (k === Qt.Key_Return || k === Qt.Key_Enter) ryoku.activateSelected()
+    else return
+    event.accepted = true
   }
 }

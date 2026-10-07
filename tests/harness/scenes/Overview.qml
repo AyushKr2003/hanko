@@ -9,7 +9,7 @@ import "../../../bar/overview"
 
 // The workspace overview over a desk with the bar on top. render.py passes
 // `params`: { theme, now, spaces (Hypr.spacesFor() rows with `all`),
-//   overview: { active, aspect, screen, width, height, rows, columns, fold } }
+//   overview: { layout, active, selected, aspect, screen, width, height, rows, columns, fold } }
 Rectangle {
   id: sheet
   readonly property var p: JSON.parse(params)
@@ -43,7 +43,21 @@ Rectangle {
     notifications: sheet.p.notifications || []
   }
 
+  // overview.layout: dynamic draws Ryoku's instead.
+  DynamicView {
+    visible: sheet.o.layout === "dynamic"
+    anchors.fill: parent
+    topInset: bar.height
+    spaces: sheet.p.spaces
+    allIds: sheet.p.spaces.map(function(s) { return s.id })
+    activeId: sheet.o.active || 1
+    aspect: sheet.o.aspect || 0.5625
+    animateIn: false
+    Component.onCompleted: { seed(); if (sheet.o.selected !== undefined) selected = sheet.o.selected }
+  }
+
   OverviewView {
+    visible: sheet.o.layout !== "dynamic"
     anchors.fill: parent
     topInset: bar.height
     pages: O.pages(sheet.p.spaces, sheet.o.active || 1, sheet.o.rows || O.ROWS, sheet.o.columns || O.COLUMNS, sheet.o.fold !== false)

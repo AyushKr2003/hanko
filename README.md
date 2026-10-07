@@ -11,7 +11,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 - **Centre:** the clock and what's playing.
 - **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).
 - **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
-- **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch, a click goes there, dragging moves a window, middle-click closes one.
+- **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch, a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top.
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
 - **Follows your theme,** light or dark, and switches with it live.
 - **A profile plate to show off your desk:** Profile 印影 in the settings window presses your seal large beside your name, your bar's live readings and your machine's small print; EDIT renames it, hides any block and saves it as an image. About 由来 and Credits 謝辞 sit beside it.
@@ -66,6 +66,7 @@ scripts/hanko uninstall
 | Hide or show a part | `scripts/hanko hide tray` / `scripts/hanko show tray` |
 | Unroll the scroll | `scripts/hanko scroll` |
 | Lay out every workspace (the overview) | `omarchy-shell hanko overview`, or right-click the workspaces |
+| Ryoku's overview instead (busy spaces and a +) | `scripts/hanko style set overview dynamic` (`grid`, `dynamic`) |
 | Pick the scroll's dividers | `scripts/hanko style set interlude kotoba` |
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
 | Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |
@@ -92,6 +93,12 @@ o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")
 ```lua
 hl.unbind("SUPER + TAB")
 o.bind("SUPER + TAB", "Hanko overview", "omarchy-shell hanko overview")
+```
+
+**A blurred desk under the overview.** Ryoku's layout dims the desk; to blur it as well:
+
+```lua
+hl.layer_rule({ match = { namespace = "hanko-overview" }, blur = true })
 ```
 
 **Frosted glass.** The `glass` surface needs a blur rule in `~/.config/hypr/hyprland.lua`:

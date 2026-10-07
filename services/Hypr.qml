@@ -29,7 +29,7 @@ Singleton {
       var id = d.workspace.id
       if (!byWs[id]) byWs[id] = []
       byWs[id].push({ at: d.at, size: d.size, floating: !!d.floating, focus: d.focusHistoryID === undefined ? 1e9 : d.focusHistoryID,
-                      name: Title.appName(d.class || ""), address: d.address || "", title: d.title || "",
+                      name: Title.appName(d.class || ""), address: d.address || "", title: d.title || "", cls: d.class || "",
                       fullscreen: (d.fullscreen || 0) > 0 })
     }
     var out = []
@@ -46,6 +46,7 @@ Singleton {
       out.push({
         id: ws.id,
         name: ws.name,
+        monitor: ws.monitor ? ws.monitor.name : "",
         urgent: !!ws.urgent,
         count: wins.length,
         windows: Spaces.layoutOf(wins, Spaces.usableArea(mon)),
