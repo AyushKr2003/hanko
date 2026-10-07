@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Effects
 import "../../core"
 import "../../core/Spaces.js" as Spaces
 import "../../core/Overview.js" as O
@@ -8,9 +9,9 @@ import "../../core/Overview.js" as O
 // number, its kanji, how many windows; the live page's number inverted on
 // a bone plate with a // lead, as the bar's folio does), then the screen
 // with every window where it really sits, framed in hairlines, its live
-// snapshot inside and its name on a paper tab. The live page is pressed
-// like a seal: a hard red print offset down and right, the way style.lua
-// prints the focused window. Pure: OverviewView passes the data and takes
+// snapshot inside and its name on a paper tab. Every page lies on the desk
+// like a sheet, with the short soft shadow style.lua gives Hyprland's windows
+// ("paper"), cast in ink (light on a dark theme), stronger under the live page. Pure: OverviewView passes the data and takes
 // the gestures.
 Item {
   id: root
@@ -29,14 +30,19 @@ Item {
   readonly property var windows: O.visibleWindows(page.windows)
   property bool hovered: false
 
-  // The seal's print under the live page.
-  Rectangle {
-    visible: root.live
-    x: Type.px(6)
-    y: Type.px(6)
-    width: parent.width
-    height: parent.height
-    color: Ink.seal
+  // The sheet's shadow on the desk, matched to style.lua's "paper" as
+  // Hyprland draws it (range 14 at render_power 3 reads as a dense band,
+  // then a short fade): offset 3, 5, a tight blur. Cast in the theme's ink
+  // so it reads on the dark desk: 55% under the live page, 25% under the
+  // rest, the shadow's color and color_inactive.
+  RectangularShadow {
+    anchors.fill: parent
+    offset.x: Type.px(3)
+    offset.y: Type.px(5)
+    blur: Type.px(4)
+    spread: Type.px(2)
+    color: Ink.alpha(Ink.ink, root.live ? 0.55 : 0.25)
+    Behavior on color { ColorAnimation { duration: Motion.ink } }
   }
 
   Rectangle {
