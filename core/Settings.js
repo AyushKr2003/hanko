@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the twenty-one settings into six cards, and the
+// Typesetting 組版 page groups the twenty-two settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -53,10 +53,11 @@ var CARDS = [
     { key: "interlude", name: "Scroll dividers", detail: "What sits between the scroll's sections" },
     { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
     { key: "sides", name: "Scroll sides", detail: "Bare paper, or paper curling under" },
+    { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both or none" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
-// The Motion 動 page: one switch outside the twenty-one (style.json `motion`),
+// The Motion 動 page: one switch outside the twenty-two (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
@@ -210,7 +211,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// twenty-one that resolves differently, the seal glyph, and each monitor whose
+// twenty-two that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)

@@ -143,6 +143,7 @@ PanelWindow {
       divider: win.barWindow.style.interlude || "seal"
       endleaf: win.barWindow.style.endleaf || "koyomi"
       sides: win.barWindow.style.sides || "curl"
+      guides: win.barWindow.style.guides || "both"
       reveal: 0
       ink: 0
       feed: ({

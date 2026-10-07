@@ -9,7 +9,8 @@ import "../../core/Leaf.js" as LeafJs
 // long paper, its eight sections side by side with an interlude between
 // each two (Interlude.qml); sections fade out at the side edges so the
 // neighbours always show, and the edges are bare or curl under (`sides`). An index plate names every section
-// (the one in the middle inverted), and a position bar runs along the foot.
+// (the one in the middle inverted), and a position bar runs along the foot;
+// `guides` shows both, either or neither.
 // Pure QtQuick: bar/ScrollWindow.qml drives the motion and feeds live data;
 // the harness renders it still.
 Item {
@@ -36,6 +37,9 @@ Item {
   property string endleaf: "koyomi"
   // The side edges (Style.js `sides`): bare or curl.
   property string sides: "curl"
+  // The index plate and the position bar (Style.js `guides`): both, tabs,
+  // foot or none.
+  property string guides: "both"
 
   signal request(string section, string what, var arg)
   // A name on the index plate was clicked.
@@ -292,6 +296,7 @@ Item {
       // ------------------------------------------------------ index plate
       Rectangle {
         id: plate
+        visible: root.guides === "both" || root.guides === "tabs"
         anchors.horizontalCenter: parent.horizontalCenter
         y: root.atBottom ? paper.height - Type.px(14) - height : Type.px(14)
         width: names.width + 2 * Type.px(3)
@@ -353,6 +358,7 @@ Item {
       // ------------------------------------------------------ the foot
       Item {
         id: foot
+        visible: root.guides === "both" || root.guides === "foot"
         x: Type.px(40)
         width: paper.width - 2 * x
         height: Type.px(16)

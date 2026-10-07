@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the scroll sides (`sides`, on `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the scroll guides (`guides`, on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -96,7 +96,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The twenty-one settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
+### The twenty-two settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
 
 | Zone | Key | Options |
 |---|---|---|
@@ -121,6 +121,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | Panels | `interlude` | `ma`, `hairline`, `folio`, `kotoba`, `tsugime`, **`seal`**, `jiku`, `fuda`, `su` (added after Typeset; what sits between scroll sections) |
 | Panels | `endleaf` | `okugaki`, **`koyomi`**, `kiki`, `shimai`, `iro`, `dougu`, `shuchu`, `hikae`, `batsu` (added after Typeset; the leaf right of Inbox on the scroll) |
 | Panels | `sides` | `bare`, **`curl`** (added after Typeset; the scroll's left and right edges, in place of the rollers) |
+| Panels | `guides` | **`both`**, `tabs`, `foot`, `none` (added after Typeset; the scroll's index plate and position bar) |
 
 ### Presets
 
@@ -147,6 +148,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | interlude | folio | kotoba | seal | ma | folio | fuda |
 | endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu |
 | sides | bare | curl | curl | bare | bare | curl |
+| guides | both | both | both | both | both | both |
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -298,7 +300,7 @@ core/
   Style.js               OPTIONS, KEYS, PRESETS, PRESET_NAMES, DEFAULT_PRESET, coerce,
                          normalize, resolve(doc, monitor), withSetting, withPreset,
                          shuffled(doc, rng), combinations(); MOTIONS (motion and
-                         sealGlyph sit beside the edits, outside the twenty-one)
+                         sealGlyph sit beside the edits, outside the twenty-two)
   InkMath.js             hexToRgb, mix, luminance, contrast, tier, isLight, ramp (TIERS)
   Title.js               appName (NAMES map, reverse-DNS), describe(cls, title) →
                          {app, head, dir, leaf}, findPath, tildify
@@ -546,6 +548,12 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - The rollers and the paper's side hairlines are removed from `ScrollView.qml`; `curl` draws two 22 px gradient strips (ink at 0.16, 0.05, 0.02, 0 inward). Default, Scroll, Hanko and Islet `curl`; Sheet, Quiet and Instrument `bare`.
 - A Panels row "Scroll sides" in Typesetting; `hanko style set sides bare`.
 - Unit tests: 83. Params: `sides.json`, `sides-light.json` (Sheets scene, three desks).
+
+### Scroll guides ✅ (asked for by the user after the scroll sides)
+- A twenty-second setting, `guides: both | tabs | foot | none`, shows the index plate (the tabs) and the foot (keys and position bar) together, either one, or neither. 61,917,364,224 combinations.
+- `ScrollView.qml` sets `visible` on `plate` and `foot`; nothing else moves. Every preset is `both`.
+- A Panels row "Scroll guides" in Typesetting; `hanko style set guides tabs`.
+- Unit tests: 84. Params: `guides.json`, `guides-light.json` (Sheets scene, four desks).
 
 ## 10. Instructions for the remaining phase (10)
 

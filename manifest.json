@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "author": "AyushKr2003",
   "license": "MIT",
-  "description": "A printed bar in your theme's paper and ink. Every part of it is a setting: twenty-one settings, six presets.",
+  "description": "A printed bar in your theme's paper and ink. Every part of it is a setting: twenty-two settings, six presets.",
   "kinds": ["bar"],
   "entryPoints": {
     "bar": "Bar.qml"

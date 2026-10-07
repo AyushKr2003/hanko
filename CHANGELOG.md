@@ -20,6 +20,7 @@
 - Fix: the Network sheet could open with only the network you were on (NetworkManager prunes its cache while connected, and the scan landed seconds after the sheet closed). Opening it, or Rescan, now runs a full scan and shows it as soon as it lands, and networks seen in the last five minutes stay listed, so the sheet and the scroll agree.
 - End leaf 跋: the bare paper after Inbox on the scroll holds one of nine leaves, an eighteenth setting `endleaf`: a colophon of your machine, an almanac (month, solar term, microseason, moon), the machine's load over the last hour, the session (hold a seal to lock, suspend, log out, restart or shut down), Omarchy's themes, Omarchy's tools, a focus timer, today's notes with the clipboard, or an afterword. A gallery on the Scroll settings page, a kanji row in Typesetting, `hanko hide endleaf` (967,458,816 combinations).
 - Scroll sides: the rollers at the scroll's two edges are gone. A twenty-first setting, `sides`, picks `bare` (the paper meets the screen) or `curl` (the default, a soft fold as if the paper rolls under). 15,479,341,056 combinations.
+- Scroll guides: a twenty-second setting, `guides`, shows the scroll's index plate of tabs on top and the position bar along the foot together (`both`, the default), either one (`tabs`, `foot`) or neither (`none`). A Panels row in Typesetting, `hanko style set guides tabs`. 61,917,364,224 combinations.
 
 ## Typeset design · 2026-10-06
 

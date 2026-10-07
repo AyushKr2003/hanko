@@ -46,9 +46,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-one settings, 15,479,341,056 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 21)
-  assert.equal(S.combinations(), 15479341056)
+test("twenty-two settings, 61,917,364,224 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 22)
+  assert.equal(S.combinations(), 61917364224)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -583,7 +583,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the twenty-one settings once", () => {
+test("settings: six cards hold every one of the twenty-two settings once", () => {
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph" && k !== "typeSize")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
@@ -778,7 +778,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 15479341056)
+  assert.equal(S.combinations(), 61917364224)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -1095,5 +1095,13 @@ test("scroll sides: bare or curl, in place of the rollers", () => {
   assert.equal(S.resolve({}).sides, "curl")
   assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl"])
   assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
+})
+
+test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
+  assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
+  assert.equal(S.resolve({}).guides, "both")
+  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === "both"))
+  assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
+  assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "both")
 })
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
