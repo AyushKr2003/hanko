@@ -38,6 +38,10 @@ Rectangle {
     query: sheet.s.query || ""
     advanced: !!sheet.s.advanced
     monitors: sheet.s.monitors || []
+    machine: Object.assign({ user: "", host: "", kernel: "", uptime: 0, theme: "", omarchy: "", hyprland: "", packages: 0, since: "", machine: "" }, sheet.s.machine || {})
+    profile: Object.assign({ name: "", tagline: "", hidden: [] }, sheet.s.profile || {})
+    version: "0.1.0"
+    profileEditing: !!sheet.s.editing
     overrideMonitor: sheet.s.monitor || ""
     barData: ({
       now: new Date(sheet.p.now || "2026-10-06T21:44:00"),

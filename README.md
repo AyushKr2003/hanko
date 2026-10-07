@@ -13,6 +13,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 - **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
 - **Follows your theme,** light or dark, and switches with it live.
+- **A profile plate to show off your desk:** Profile 印影 in the settings window presses your seal large beside your name, your bar's live readings and your machine's small print; EDIT renames it, hides any block and saves it as an image. About 由来 and Credits 謝辞 sit beside it.
 - **Safe to try:** if Hanko fails to load, Omarchy puts its own bar back.
 
 ## Requirements

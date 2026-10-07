@@ -30,6 +30,9 @@ FloatingWindow {
   // window whatever room it has anyway.
   minimumSize: Qt.size(Type.px(420), Type.px(360))
 
+  // The Profile plate's machine facts, read while the window is open.
+  Binding { target: Machine; property: "wanted"; value: win.visible }
+
   // Closed by the window manager (Super+W, the close button): like Cancel.
   onVisibleChanged: if (!visible && bar.settingsOpen) bar.closeSettings()
 
@@ -57,6 +60,10 @@ FloatingWindow {
       query: win.query
       advanced: win.advanced
       monitors: Quickshell.screens.map(function(s) { return s.name })
+      machine: Machine.info
+      profile: Dossier.doc
+      version: win.bar.version
+      picturesDir: (Quickshell.env("XDG_PICTURES_DIR") || Quickshell.env("HOME") + "/Pictures")
       // What the Widgets page lists besides Hanko's own parts.
       visibility: ({
         own: win.bar.own,
@@ -97,6 +104,9 @@ FloatingWindow {
       onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value) }
       onShuffle: Typeset.draftShuffle()
       onShowAll: Typeset.draftShowAll()
+      onProfileTextEdited: function(field, value) { Dossier.setText(field, value) }
+      onProfileBlockToggled: function(block) { Dossier.toggle(block) }
+      onProfileReset: Dossier.reset()
     }
   }
 }

@@ -588,7 +588,7 @@ test("settings: six cards hold every one of the twenty-two settings once", () =>
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 8)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -1104,4 +1104,65 @@ test("scroll guides: the tabs on top, the position bar at the foot, both or none
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "both")
 })
+const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE"])
+
+test("profile: the machine probe's lines become facts", () => {
+  const m = Pr.parseMachine("user=ayush\nhost=kumo\nkernel=6.18\nuptime=187420.5\ntheme=Unknown\npackages=1184\nnoise\nbogus=1")
+  assert.equal(m.user, "ayush")
+  assert.equal(m.uptime, 187420.5)
+  assert.equal(m.packages, 1184)
+  assert.equal(m.theme, "")
+  assert.equal(m.bogus, undefined)
+  assert.equal(Pr.parseMachine("").host, "")
+  assert.ok(Pr.PROBE.includes("omarchy-theme-current") && Pr.PROBE.includes("/proc/uptime"))
+})
+
+test("profile: uptime, dashes, edition numbers", () => {
+  assert.equal(Pr.uptime(187420), "2 d 4 h")
+  assert.equal(Pr.uptime(3 * 3600 + 12 * 60), "3 h 12 m")
+  assert.equal(Pr.uptime(20), "1 m")
+  assert.equal(Pr.uptime(0), "—")
+  assert.equal(Pr.fv(""), "—")
+  assert.equal(Pr.fv("Kumo"), "Kumo")
+  assert.match(Pr.edition("abc"), /^\d{4}$/)
+  assert.equal(Pr.edition("abc"), Pr.edition("abc"))
+  assert.notEqual(Pr.edition("abc"), Pr.edition("abd"))
+  assert.equal(Pr.grouped(5971968), "5,971,968")
+})
+
+test("profile: which of the combinations a bar is, first to last", () => {
+  const first = {}, last = {}
+  for (const k of S.KEYS) { first[k] = S.OPTIONS[k][0]; last[k] = S.OPTIONS[k][S.OPTIONS[k].length - 1] }
+  assert.equal(Pr.combination(first, S.OPTIONS, S.KEYS), 1)
+  assert.equal(Pr.combination(last, S.OPTIONS, S.KEYS), S.combinations())
+  const a = Pr.combination(S.resolve({}), S.OPTIONS, S.KEYS), b = Pr.combination(S.resolve({ preset: "Quiet" }), S.OPTIONS, S.KEYS)
+  assert.notEqual(a, b)
+})
+
+test("profile: live readings and the small print", () => {
+  const v = Pr.vitals({ spaces: [{ id: 1, count: 2 }, { id: 3, active: true, count: 1 }], volume: { percent: 62, muted: false },
+                        network: { kind: "wifi", name: "Kumo", bars: 3 }, notifications: [{ app: "Signal" }] })
+  assert.deepEqual(v.map(x => x.key), ["spaces", "sound", "network", "inbox"])
+  assert.equal(v[0].big, "02")
+  assert.equal(v[0].sub, "3 windows · on 03")
+  assert.equal(v[2].sub, "Wi-Fi · 3 of 4 bars")
+  assert.equal(v[3].sub, "Signal last")
+  assert.equal(Pr.vitals({}).length, 1)
+  const rows = Pr.specs(S.resolve({ edits: { clock: "mono" } }), S.normalize({ edits: { clock: "mono" } }), { theme: "Kanagawa", hyprland: "v0.52.1", uptime: 60 }, "0.1.0", S.OPTIONS, S.KEYS, S.combinations())
+  assert.deepEqual(rows[0], ["Preset", "Hanko + 1 edit"])
+  assert.match(rows[1][1], /^No\. [\d,]+ of [\d,]+$/)
+  assert.deepEqual(rows[3], ["Compositor", "Hyprland 0.52.1"])
+  assert.deepEqual(rows[5], ["Uptime", "1 m"])
+})
+
+test("about and credits: every line is whole, links are https", () => {
+  for (const p of Pr.PROJECTS) { assert.ok(p.name && p.role); assert.ok(p.url === "" || p.url.startsWith("https://")) }
+  for (const p of Pr.PROOFREADERS) assert.ok(p.url.startsWith("https://github.com/"))
+  const f = Pr.facts("0.1.0", 10, "22", 6)
+  assert.equal(f.length, 8)
+  assert.equal(f[f.length - 1][2], "https://github.com/AyushKr2003/hanko")
+  assert.equal(Pr.LINEAGE.length, 3)
+  assert.ok(Se.RAIL.some(g => g.pages.some(p => p.key === "profile")))
+})
+
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

@@ -30,6 +30,15 @@ Rectangle {
   // media, volume, network, battery, brightness, notifications, dnd,
   // timeFormat }.
   property var barData: ({})
+  // For the plates: services/Machine.qml info, core/Dossier.qml doc, the
+  // plugin's version and where Profile saves an image.
+  property var machine: ({ user: "", host: "", kernel: "", uptime: 0, theme: "", omarchy: "", hyprland: "", packages: 0, since: "", machine: "" })
+  property var profile: ({ name: "", tagline: "", hidden: [] })
+  property string version: ""
+  property string picturesDir: ""
+  // Opens Profile in EDIT (the harness).
+  property bool profileEditing: false
+  readonly property bool onPlate: Settings.PLATES.indexOf(page) >= 0
   // What the Widgets page lists besides Hanko's own parts
   // (Settings.visibilityCards ctx: own, indicators, tray, hosted).
   property var visibility: ({})
@@ -45,6 +54,11 @@ Rectangle {
   signal monitorCleared(string name)
   signal monitorPicked(string monitor, string key, string value)
   signal shuffle()
+  // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
+  // core/Profile.js BLOCKS.
+  signal profileTextEdited(string field, string value)
+  signal profileBlockToggled(string block)
+  signal profileReset()
   signal showAll()
 
   readonly property var style: S.resolve(draft)
@@ -287,8 +301,19 @@ Rectangle {
     width: parent.width - rail.width
     height: parent.height
 
+    // Profile, About and Credits fill the page, as posters.
+    Loader {
+      id: plateLoader
+      active: root.onPlate
+      visible: active
+      width: parent.width
+      height: parent.height - (actions.visible ? actions.height : 0)
+      sourceComponent: root.page === "profile" ? profilePlate : root.page === "about" ? aboutPlate : creditsPlate
+    }
+
     Flickable {
       id: scroller
+      visible: !root.onPlate
       width: parent.width
       height: parent.height - actions.height
       contentHeight: pageColumn.height + Type.px(40)
@@ -1095,6 +1120,8 @@ Rectangle {
     // ------------------------------------------------ action bar
     Item {
       id: actions
+      // On a plate only while there is something to save.
+      visible: !root.onPlate || root.changes > 0
       anchors.bottom: parent.bottom
       width: parent.width
       height: Type.px(56)
@@ -1138,6 +1165,32 @@ Rectangle {
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
     keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+S saves. Rebinding comes later."
   })
+
+  Component {
+    id: profilePlate
+    ProfilePlate {
+      style: root.style
+      doc: root.draft
+      machine: root.machine
+      profile: root.profile
+      barData: root.barData
+      now: root.barData.now || new Date()
+      version: root.version
+      picturesDir: root.picturesDir
+      editing: root.profileEditing
+      onTextEdited: function(field, value) { root.profileTextEdited(field, value) }
+      onBlockToggled: function(block) { root.profileBlockToggled(block) }
+      onProfileReset: root.profileReset()
+    }
+  }
+  Component {
+    id: aboutPlate
+    AboutPlate { version: root.version }
+  }
+  Component {
+    id: creditsPlate
+    CreditsPlate {}
+  }
 
   component SmallButton: Rectangle {
     id: button
