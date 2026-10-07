@@ -97,7 +97,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - ✅ Visibility (asked for after Phase 10): every part of the bar, each mark and tray app, and every hosted Omarchy or third-party widget can be shown or hidden on the Widgets 部品 page or with `hanko hide|show <part>` (style.json `hidden`).
 - ✅ The settings window reflows to any window size.
 - ✅ Type scale (asked for after the indicator stamps, from screenshots of the real bar at 1x): one scale for every size, weight and tracking in `core/Type.qml`, readable floors, Medium labels and values, the bold byline fixed, a `typeSize` setting (small, regular, large), and a 1x render pass in `tests/run`.
-- ✅ Profile 印影, About 由来 and Credits 謝辞 (asked for after the scroll guides): poster plates in the settings window in the grammar of Ryoku's Profile and Credits pages, with Hanko's own art; the profile's name, line and hidden blocks in `~/.config/hanko/profile.json`, and Save image.
+- ✅ Profile 印影, About 由来 and Credits 謝辞 (asked for after the scroll guides): poster plates in the settings window in the grammar of Ryoku's Profile and Credits pages, with Hanko's own art; the profile's name, line and hidden blocks in `~/.config/hanko/profile.json`, and Save image. Made responsive afterwards: a poster and a stacked layout for each, the art never under the type, scrolling when short.
 - ⬜ Release, left to the user after testing on hardware: a README install guide, the manifest version, a CHANGELOG entry, a listing on omarchyplugins.com, and merging into `main`.
 
 ## Dev loop

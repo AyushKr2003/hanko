@@ -10,7 +10,9 @@ face on machines that lack them.
 import os, sys, json
 from pathlib import Path
 
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+# Always offscreen: under a Wayland session the default would open a real
+# window, and the compositor would tile it to its own size.
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 os.environ.setdefault("QT_SCALE_FACTOR", "2")
 
 from PySide6.QtCore import QUrl, QTimer

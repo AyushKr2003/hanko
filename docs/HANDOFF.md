@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the Profile, About and Credits plates (on `claude/hanko-plugin-zzm827`, fast-forwarded from `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the Profile, About and Credits plates were made responsive (on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -565,6 +565,8 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - `services/Machine.qml` runs the probe while the settings window is visible (and each minute). `core/Dossier.qml` keeps `~/.config/hanko/profile.json` (`name`, `tagline`, `hidden` blocks), written at once, not a draft.
 - Canvas `fillText` could not find "Noto Serif CJK JP" by name in the harness, so glyphs on the art are real `Text` items over the canvas.
 - Params: `profile`, `profile-edit` (EDIT, palette hidden), `profile-light`, `about`, `about-light`, `credits`, `credits-light` (Settings scene; `settings.machine`, `settings.profile`, `settings.editing`). Unit tests: 89.
+- **Responsive (asked for after the plates: the art went translucent behind the text on small windows and blocks ran into each other).** Each plate has two layouts and nothing is ever drawn under the type. Profile: *poster* when the plate is at least 1000 px wide and the seal gets at least 280 px in the room right of the readings and their leaders, under EDIT and over the day rule (`posterSeal`); otherwise *stacked*, one column with the seal beside the readings (or above them, readings in two columns, under 520 px). Its blocks are inline components (`Head`, `LiveHead`, `Callout`, `SpecsBlock`, `PaletteBlock`, `EditionLine`, `DayRule`) placed by either layout; EDIT's eye chips sit on a block's top right corner, and the edit strip gets its own band under the page. About and Credits: the moon / hanging scroll sits in its own room right of the column when there is at least 260 / 240 px of it, else small beside the title, or not at all under 420 px of column. Every plate scrolls when the window is too short instead of piling blocks up. `PlateSpine.length` lets a plate drop the spine on a short window. Save image grabs the whole page, also what is scrolled away.
+- The Settings scene takes `settings.width` / `settings.height`; params `profile-narrow`, `profile-short`, `about-narrow`, `credits-narrow`, `credits-mid` render the other layouts.
 
 ## 10. Instructions for the remaining phase (10)
 
@@ -615,10 +617,12 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 
 19. **Type scale to verify:** the bar at 36 px with label over value (about 30 px of type), `typeSize: large` with a 44 px bar (51 px), and the Medium values in another mono face. After a shell restart the window title stayed empty until focus changed (seen once while testing; not caused by the type change, worth a look).
 20. **Scroll sides to verify on hardware:** the curl's shading on the user's theme (light themes may want it fainter), and the scroll's edges against the screen edge on a 1x display.
-21. **Profile plate to verify on hardware:** the probe's facts on the user's machine (theme name, `omarchy-version`, Hyprland tag, install date from `stat -c %W /`), Save image writing to `~/Pictures` (or `$XDG_PICTURES_DIR`; the folder must exist), the inline name field with a long name, and the leaders landing on the seal at the window's real size.
+21. **Profile plate to verify on hardware:** the probe's facts on the user's machine (theme name, `omarchy-version`, Hyprland tag, install date from `stat -c %W /`), Save image writing to `~/Pictures` (or `$XDG_PICTURES_DIR`; the folder must exist), the inline name field with a long name, and the leaders landing on the seal at the window's real size. Also resize the settings window through the sizes the harness renders (600 px to ultrawide, and short) and check nothing overlaps at the user's `typeSize` and font scale.
 
 
 ## 13. QML pitfalls already hit
+
+- Under a Wayland session `QT_QPA_PLATFORM` is already set, so the harness opened a real window that Hyprland tiled to its own size. `render.py` now forces `offscreen`.
 
 - A property named `onSomething` is parsed as a **signal handler** (`onBone` broke; renamed `boneInk`). Never start a property name with `on` + capital.
 - The id `gc` masks a JS global and fails at load (lint missed it, the render caught it). Avoid ids that shadow globals (`gc`, `print`, `console`, `Qt`).

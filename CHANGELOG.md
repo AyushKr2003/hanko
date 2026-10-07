@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Profile 印影, About 由来, Credits 謝辞: three poster plates in the settings window. Profile presses your seal beside your name, the bar's live readings and your machine's small print, and can be edited and saved as an image (`~/.config/hanko/profile.json`).
+- Profile 印影, About 由来, Credits 謝辞: three poster plates in the settings window. Profile presses your seal beside your name, the bar's live readings and your machine's small print, and can be edited and saved as an image (`~/.config/hanko/profile.json`). The three plates fit any window: the art moves beside the title or into its own room instead of fading behind the text, and short windows scroll.
 - Display 明: the LUM cell's panel, as a sheet and a scroll section (brightness per monitor, monitors, night light).
 - Motion 動: Scroll's motion across the bar (sliding plates, fading values, a creeping now-notch, the stamp press, sheets that print) and a paper/still switch on a new Motion page.
 - Per-monitor overrides can be set in the settings window under Advanced.
