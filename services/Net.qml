@@ -36,6 +36,18 @@ Singleton {
   function setRadio(on) { Status.run(["nmcli", "radio", "wifi", on ? "on" : "off"]); again.restart() }
   function rescan() { Quickshell.execDetached(["nmcli", "device", "wifi", "rescan"]); again.restart() }
 
+  // The list below is NetworkManager's cache (--rescan no), which it
+  // barely refreshes while connected and prunes as access points age out:
+  // left alone it shrinks to the network you're on. So scan on opening
+  // and every half minute while open.
+  onWantedChanged: if (wanted) rescan()
+  property Timer _scan: Timer {
+    interval: 30000
+    repeat: true
+    running: root.wanted
+    onTriggered: root.rescan()
+  }
+
   property Timer _poll: Timer {
     interval: 5000
     repeat: true

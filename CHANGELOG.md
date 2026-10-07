@@ -13,6 +13,7 @@
 - Weather 天: a leaf left of Time on the scroll, with today's curve, rain, sun and the next three days, from the same place, units and forecast as Omarchy's weather panel; `hanko hide weather` removes it.
 - Scroll dividers 間: the dither between the scroll's sections is replaced by a seventeenth setting, `interlude`, with nine styles (ma, hairline, folio, kotoba, tsugime, seal, jiku, fuda, su), a gallery on the Scroll settings page and a kanji row in Typesetting (107,495,424 combinations).
 - Fix: the inbox read empty whenever no toast was on screen (the history was never reached); it now lists Omarchy's notification history.
+- Fix: the Network sheet and scroll section showed only the network you were on; they now ask NetworkManager to scan when they open and every 30 s while open.
 - End leaf 跋: the bare paper after Inbox on the scroll holds one of nine leaves, an eighteenth setting `endleaf`: a colophon of your machine, an almanac (month, solar term, microseason, moon), the machine's load over the last hour, the session (hold a seal to lock, suspend, log out, restart or shut down), Omarchy's themes, Omarchy's tools, a focus timer, today's notes with the clipboard, or an afterword. A gallery on the Scroll settings page, a kanji row in Typesetting, `hanko hide endleaf` (967,458,816 combinations).
 
 ## Typeset design · 2026-10-06
