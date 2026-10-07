@@ -69,7 +69,7 @@ Rectangle {
           text: root.labels[String(seg.modelData)] || String(seg.modelData)
           color: seg.on ? Ink.boneInk : Ink.inkDim
           font.family: jp ? Type.jp : Type.mono
-          font.pixelSize: jp ? Type.px(11) : Type.px(9.5)
+          font.pixelSize: jp ? Type.glossMid : Type.label
           font.letterSpacing: 1
         }
         MouseArea {

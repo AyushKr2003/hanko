@@ -36,7 +36,7 @@ Item {
       font.family: Type.display
       font.pixelSize: Type.px(22)
       font.weight: Font.Normal
-      font.variableAxes: { "opsz": 36, "wght": 400 }
+      font.variableAxes: Type.axes(Type.px(22))
     }
 
     Item {
@@ -107,7 +107,7 @@ Item {
       text: root.name
       color: Ink.inkDim
       font.family: Type.text
-      font.pixelSize: Type.px(11.5)
+      font.pixelSize: Type.note
     }
   }
 }

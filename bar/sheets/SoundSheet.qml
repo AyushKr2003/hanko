@@ -57,9 +57,9 @@ Item {
           text: root.master ? String(root.master.percent) : "—"
           color: root.master && root.master.muted ? Ink.seal : Ink.ink
           font.family: Type.display
-          font.pixelSize: Type.px(40)
+          font.pixelSize: Type.title
           font.weight: Font.Normal
-          font.variableAxes: { "opsz": 72, "wght": 400 }
+          font.variableAxes: Type.axes(Type.title)
         }
         Ruler {
           anchors.verticalCenter: parent.verticalCenter

@@ -61,7 +61,7 @@ ScrollSection {
                 text: day.modelData.letter
                 color: day.modelData.today ? Ink.boneInk : Ink.inkFaint
                 font.family: Type.mono
-                font.pixelSize: Type.px(7.5)
+                font.pixelSize: Type.tag
                 font.letterSpacing: 1
               }
               Text {
@@ -70,7 +70,7 @@ ScrollSection {
                 color: day.modelData.today ? Ink.boneInk
                   : day.modelData.weekend || day.modelData.past ? Ink.inkFaint : Ink.inkDim
                 font.family: Type.mono
-                font.pixelSize: Type.px(10.5)
+                font.pixelSize: Type.px(11)
               }
             }
           }
@@ -99,10 +99,10 @@ ScrollSection {
 
     Text {
       text: (root.days.current + " ← drag the ribbon → " + root.days.after).toUpperCase()
-      color: Ink.inkFaint
+      color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9)
-      font.letterSpacing: Type.px(1.8)
+      font.pixelSize: Type.label
+      font.letterSpacing: Type.trackLabel
     }
   }
 }

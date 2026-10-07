@@ -154,7 +154,7 @@ Item {
                 color: day.modelData.today ? Ink.paper : day.modelData.past ? Ink.inkFaint
                   : day.modelData.weekend ? Ink.inkMuted : Ink.inkDim
                 font.family: Type.mono
-                font.pixelSize: Type.px(9.5)
+                font.pixelSize: Type.label
               }
               // The day the next solar term starts.
               Rectangle {
@@ -707,7 +707,7 @@ Item {
             text: clip.modelData.text
             color: clipHover.containsMouse ? Ink.ink : clip.modelData.image ? Ink.inkMuted : Ink.inkDim
             font.family: Type.mono
-            font.pixelSize: Type.px(9)
+            font.pixelSize: Type.label
             font.italic: clip.modelData.image
           }
           MouseArea {
@@ -744,8 +744,9 @@ Item {
         textFormat: Text.StyledText
         color: Ink.inkMuted
         font.family: Type.display
-        font.variableAxes: { "opsz": 24, "wght": 380 }
+        font.variableAxes: Type.axes(Type.px(20))
         font.pixelSize: Type.px(20)
+        font.weight: Font.Normal
       }
       Mono {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -760,15 +761,16 @@ Item {
   // ---------------------------------------------------------- pieces
   component Mono: Text {
     font.family: Type.mono
-    font.pixelSize: Type.px(9)
-    font.letterSpacing: Type.px(1.6)
+    font.pixelSize: Type.label
+    font.letterSpacing: Type.trackLabel
     font.capitalization: Font.AllUppercase
   }
 
   component Serif: Text {
     font.family: Type.display
-    font.variableAxes: { "opsz": 24, "wght": 380 }
-    font.pixelSize: Type.px(15)
+    font.variableAxes: Type.axes(Type.label)
+    font.pixelSize: Type.byline
+    font.weight: Font.Normal
   }
 
   component Link: Text {
@@ -776,8 +778,8 @@ Item {
     signal clicked()
     color: linkArea.containsMouse ? Ink.ink : Ink.inkMuted
     font.family: Type.mono
-    font.pixelSize: Type.px(9)
-    font.letterSpacing: Type.px(1.6)
+    font.pixelSize: Type.label
+    font.letterSpacing: Type.trackLabel
     font.capitalization: Font.AllUppercase
     MouseArea {
       id: linkArea
@@ -800,10 +802,10 @@ Item {
       id: factKey
       anchors.verticalCenter: parent.verticalCenter
       text: fact.k
-      color: Ink.inkFaint
+      color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9)
-      font.letterSpacing: Type.px(1.6)
+      font.pixelSize: Type.label
+      font.letterSpacing: Type.trackLabel
       font.capitalization: Font.AllUppercase
     }
     Text {
@@ -815,8 +817,9 @@ Item {
       text: fact.v
       color: Ink.inkDim
       font.family: Type.display
-      font.variableAxes: { "opsz": 24, "wght": 380 }
+      font.variableAxes: Type.axes(Type.px(14))
       font.pixelSize: Type.px(14)
+      font.weight: Font.Normal
       font.italic: fact.italic
     }
     Rectangle { y: parent.height - 1; width: parent.width; height: 1; color: Ink.lineSoft }
@@ -885,8 +888,8 @@ Item {
       text: pill.label
       color: pill.on ? Ink.boneInk : Ink.inkDim
       font.family: Type.mono
-      font.pixelSize: Type.px(9)
-      font.letterSpacing: Type.px(1.6)
+      font.pixelSize: Type.label
+      font.letterSpacing: Type.trackLabel
       font.capitalization: Font.AllUppercase
     }
     MouseArea {

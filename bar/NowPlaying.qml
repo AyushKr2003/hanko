@@ -63,7 +63,8 @@ Item {
         font.family: Type.display
         font.italic: true
         font.pixelSize: Type.px(14)
-        font.variableAxes: { "opsz": 14, "wght": 400 }
+        font.weight: Font.Normal
+        font.variableAxes: Type.axes(Type.px(14))
       }
       Text {
         id: artist
@@ -73,7 +74,7 @@ Item {
         text: root.media && root.media.artist ? "· " + root.media.artist : ""
         color: Ink.inkDim
         font.family: Type.text
-        font.pixelSize: Type.px(12.5)
+        font.pixelSize: Type.value
       }
     }
 
@@ -108,14 +109,15 @@ Item {
         text: "NOW"
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(8)
-        font.letterSpacing: 1.6
+        font.pixelSize: Type.label
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackLabel
       }
       Text {
         text: "再生"
-        color: Ink.inkFaint
+        color: Ink.inkMuted
         font.family: Type.jp
-        font.pixelSize: Type.px(8.5)
+        font.pixelSize: Type.gloss
       }
     }
     Text {
@@ -125,7 +127,9 @@ Item {
       text: root.media ? root.esc(root.media.artist) + " <font color='" + Ink.inkMuted + "'>— " + root.esc(root.media.title) + "</font>" : ""
       color: root.songInk
       font.family: Type.text
-      font.pixelSize: Type.px(12.5)
+      font.pixelSize: Type.value
+      font.weight: Type.valueWeight
+      font.variableAxes: Type.valueAxes
     }
   }
 
@@ -141,8 +145,9 @@ Item {
       text: "NOW"
       color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(8)
-      font.letterSpacing: 1.6
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
     Text {
       anchors.verticalCenter: parent.verticalCenter
@@ -152,7 +157,9 @@ Item {
       text: root.media ? root.esc(root.media.artist) + " <font color='" + Ink.inkMuted + "'>— " + root.esc(root.media.title) + "</font>" : ""
       color: root.songInk
       font.family: Type.text
-      font.pixelSize: Type.px(12.5)
+      font.pixelSize: Type.value
+      font.weight: Type.valueWeight
+      font.variableAxes: Type.valueAxes
     }
   }
 }

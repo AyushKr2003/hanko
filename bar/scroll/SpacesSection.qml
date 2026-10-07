@@ -70,7 +70,7 @@ ScrollSection {
                 text: win.modelData.name || ""
                 color: win.plate ? Ink.boneInk : Ink.inkDim
                 font.family: Type.text
-                font.pixelSize: Type.px(10.5)
+                font.pixelSize: Type.px(11)
               }
               MouseArea {
                 id: hover
@@ -98,10 +98,10 @@ ScrollSection {
           Text {
             anchors.verticalCenter: parent.verticalCenter
             text: space.modelData.count ? space.modelData.count + " WIN" : "EMPTY"
-            color: Ink.inkFaint
+            color: Ink.inkMuted
             font.family: Type.mono
-            font.pixelSize: Type.px(9)
-            font.letterSpacing: Type.px(1.8)
+            font.pixelSize: Type.label
+            font.letterSpacing: Type.trackLabel
           }
         }
       }

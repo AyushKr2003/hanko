@@ -60,9 +60,9 @@ Item {
         text: root.timeMarkup(Ink.inkMuted)
         color: Ink.ink
         font.family: Type.display
-        font.pixelSize: Type.px(root.compact ? 18 : root.tall ? 24 : 21)
+        font.pixelSize: Type.px(root.compact ? 18 : root.tall ? 24 : 22)
         font.weight: Font.Normal
-        font.variableAxes: { "opsz": 36, "wght": 400 }
+        font.variableAxes: Type.axes(Type.px(root.compact ? 18 : root.tall ? 24 : 22))
         font.letterSpacing: 0.2
       }
 
@@ -74,16 +74,17 @@ Item {
           text: Qt.formatDate(root.now, "ddd").toUpperCase()
           color: Ink.inkDim
           font.family: Type.mono
-          font.pixelSize: Type.px(8)
+          font.pixelSize: Type.label
           font.weight: Font.Medium
-          font.letterSpacing: 1.6
+          font.letterSpacing: Type.trackLabel
         }
         Text {
           text: Qt.formatDate(root.now, "dd MMM").toUpperCase()
           color: Ink.inkMuted
           font.family: Type.mono
-          font.pixelSize: Type.px(8)
-          font.letterSpacing: 1.6
+          font.pixelSize: Type.label
+          font.weight: Type.labelWeight
+          font.letterSpacing: Type.trackLabel
         }
       }
 
@@ -94,8 +95,9 @@ Item {
         text: Qt.formatDate(root.now, "ddd dd MMM").toUpperCase()
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(8)
-        font.letterSpacing: 1.6
+        font.pixelSize: Type.label
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackLabel
       }
     }
   }
@@ -113,9 +115,9 @@ Item {
         text: root.timeMarkup(Ink.seal)
         color: Ink.ink
         font.family: Type.display
-        font.pixelSize: Type.px(root.compact ? 19 : root.tall ? 25 : 23)
+        font.pixelSize: Type.px(root.compact ? 18 : root.tall ? 24 : 22)
         font.weight: Font.Normal
-        font.variableAxes: { "opsz": 36, "wght": 400 }
+        font.variableAxes: Type.axes(Type.px(root.compact ? 18 : root.tall ? 24 : 22))
         font.letterSpacing: 0.3
       }
 
@@ -124,10 +126,11 @@ Item {
         text: Qt.formatDate(root.now, "ddd d MMM").toLowerCase()
         color: Ink.inkMuted
         font.family: Type.display
-        font.pixelSize: Type.px(13.5)
+        font.pixelSize: Type.px(13)
+        font.weight: Font.Normal
         font.capitalization: Font.SmallCaps
         font.letterSpacing: 1.2
-        font.variableAxes: { "opsz": 14, "wght": 400 }
+        font.variableAxes: Type.axes(Type.px(13))
       }
     }
   }
@@ -144,7 +147,7 @@ Item {
         text: root.time
         color: Ink.ink
         font.family: Type.mono
-        font.pixelSize: Type.px(12.5)
+        font.pixelSize: Type.px(13)
         font.letterSpacing: 1
       }
 
@@ -153,8 +156,9 @@ Item {
         text: Qt.formatDate(root.now, "ddd dd MMM").toUpperCase()
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(9)
-        font.letterSpacing: 1.8
+        font.pixelSize: Type.label
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackLabel
       }
     }
   }

@@ -72,7 +72,7 @@ Item {
         rotation: 90
         text: root.prev.no + " — " + root.next.no
         color: Ink.inkMuted
-        font.family: Type.mono; font.pixelSize: 9 * root.s; font.letterSpacing: 2 * root.s
+        font.family: Type.mono; font.pixelSize: 10 * root.s; font.letterSpacing: 2 * root.s
       }
     }
   }
@@ -94,7 +94,7 @@ Item {
       horizontalAlignment: Text.AlignHCenter
       lineHeight: 0.92
       color: Ink.inkMuted
-      font.family: Type.mono; font.pixelSize: 9 * root.s
+      font.family: Type.mono; font.pixelSize: 10 * root.s
     }
     Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 1; height: 70 * root.s; color: Ink.line }
   }
@@ -175,7 +175,7 @@ Item {
         anchors.centerIn: parent
         spacing: 6 * root.s
         Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.next.jp; color: Ink.seal; font.family: Type.jpSerif; font.pixelSize: 12 * root.s; font.weight: Font.DemiBold }
-        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.next.no.split("").join("\n"); horizontalAlignment: Text.AlignHCenter; lineHeight: 0.9; color: Ink.boneInk; font.family: Type.mono; font.pixelSize: 9 * root.s }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.next.no.split("").join("\n"); horizontalAlignment: Text.AlignHCenter; lineHeight: 0.9; color: Ink.boneInk; font.family: Type.mono; font.pixelSize: 10 * root.s }
       }
     }
   }

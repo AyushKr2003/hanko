@@ -13,7 +13,7 @@ function load(file, names) {
   return new Function(`${src}\nreturn { ${names.join(", ")} }`)()
 }
 
-const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
+const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
@@ -569,7 +569,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
 })
 
 test("settings: six cards hold every one of the twenty settings once", () => {
-  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph")
+  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph" && k !== "typeSize")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
@@ -764,6 +764,20 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
   assert.equal(S.combinations(), 7739670528)
+})
+
+test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
+  assert.equal(S.resolve({}).typeSize, "regular")
+  assert.equal(S.resolve({ typeSize: "huge" }).typeSize, "regular")
+  const d = S.withSetting({ preset: "Islet" }, "typeSize", "large")
+  assert.equal(d.typeSize, "large")
+  assert.deepEqual(d.edits, {})
+  assert.equal(S.withSetting({}, "typeSize", "tiny"), null)
+  assert.equal(S.withPreset(d, "Sheet").typeSize, "large")
+  assert.equal(S.shuffled(d, () => 0.5).typeSize, "large")
+  assert.deepEqual(S.TYPE_SIZES.map((t) => S.TYPE_SCALE[t]), [0.9, 1, 1.15])
+  assert.deepEqual(Se.optionsFor("typeSize", S.OPTIONS), S.TYPE_SIZES)
+  assert.equal(Se.changes({}, { typeSize: "small" }, S.resolve), 1)
 })
 
 test("hidden parts: shown or hidden per part, kept through presets, shuffles and resets", () => {

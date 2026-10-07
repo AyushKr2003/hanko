@@ -28,15 +28,16 @@ Item {
       text: "//"
       color: Ink.inkFaint
       font.family: Type.mono
-      font.pixelSize: Type.px(10)
-      font.letterSpacing: Type.px(2)
+      font.pixelSize: Type.eyebrow
+      font.letterSpacing: Type.trackEyebrow
     }
     Text {
       text: root.title.toUpperCase()
       color: Ink.inkDim
       font.family: Type.mono
-      font.pixelSize: Type.px(10)
-      font.letterSpacing: Type.px(2)
+      font.pixelSize: Type.eyebrow
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackEyebrow
     }
   }
 
@@ -45,10 +46,10 @@ Item {
     anchors.right: parent.right
     anchors.verticalCenter: head.verticalCenter
     text: root.summary.toUpperCase()
-    color: Ink.inkFaint
+    color: Ink.inkMuted
     font.family: Type.mono
-    font.pixelSize: Type.px(9)
-    font.letterSpacing: Type.px(1.6)
+    font.pixelSize: Type.label
+    font.letterSpacing: Type.trackLabel
   }
 
   Row {
@@ -63,10 +64,10 @@ Item {
         id: act
         required property var modelData
         text: String(act.modelData.text).toUpperCase()
-        color: hover.containsMouse ? Ink.ink : Ink.inkFaint
+        color: hover.containsMouse ? Ink.ink : Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(9)
-        font.letterSpacing: Type.px(1.6)
+        font.pixelSize: Type.label
+        font.letterSpacing: Type.trackLabel
         MouseArea {
           id: hover
           anchors.fill: parent

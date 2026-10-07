@@ -104,8 +104,9 @@ Item {
             text: root.named ? (root.named.title + (root.named.on ? "" : " · off")).toUpperCase() : ""
             color: Ink.inkMuted
             font.family: Type.mono
-            font.pixelSize: Type.px(8)
-            font.letterSpacing: 1.4
+            font.pixelSize: Type.label
+            font.weight: Type.labelWeight
+            font.letterSpacing: Type.trackLabel
           }
         }
 
@@ -143,7 +144,7 @@ Item {
             text: root.keyboard ? root.keyboard.label : ""
             color: Ink.inkDim
             font.family: Type.mono
-            font.pixelSize: Type.px(10)
+            font.pixelSize: Type.label
             font.letterSpacing: 1
           }
         }
@@ -196,7 +197,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(2)
         Text { anchors.verticalCenter: parent.verticalCenter; text: "盆"; color: Ink.inkDim; font.family: Type.jp; font.pixelSize: root.glyphSize }
-        Text { anchors.bottom: parent.bottom; text: String(root.tray.length); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.px(8) }
+        Text { anchors.bottom: parent.bottom; text: String(root.tray.length); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.label }
       }
       MouseArea {
         anchors.fill: parent
@@ -240,7 +241,7 @@ Item {
           text: cell.modelData.letter
           color: Ink.inkMuted
           font.family: Type.text
-          font.pixelSize: Type.px(11)
+          font.pixelSize: Type.note
         }
         MouseArea {
           anchors.fill: parent
@@ -257,7 +258,7 @@ Item {
   // pressed, askew and inked (solid red for "now"); off, it is a faint
   // outline that a click switches on.
   component IndicatorStamp: Item {
-    id: cell
+    id: ind
     property var mark: ({})
     readonly property bool on: mark.on !== false
     // Kanji stamps are small seals, like the one at the far left, when on;
@@ -277,7 +278,7 @@ Item {
     onOnChanged: if (on && Motion.live) pressing.start()
     NumberAnimation {
       id: pressing
-      target: cell
+      target: ind
       property: "press"
       from: 0
       to: 1
@@ -293,13 +294,13 @@ Item {
       height: width
       radius: 2
       antialiasing: true
-      color: cell.solid ? Ink.seal : "transparent"
+      color: ind.solid ? Ink.seal : "transparent"
       border.width: 1.5
-      border.color: cell.solid ? Ink.seal : cell.on ? Ink.inkMuted : Ink.line
+      border.color: ind.solid ? Ink.seal : ind.on ? Ink.inkMuted : Ink.line
 
       // The inner rule of a carved seal, as on bar/Seal.qml.
       Rectangle {
-        visible: cell.solid && cell.seal
+        visible: ind.solid && ind.seal
         anchors.fill: parent
         anchors.margins: 2
         radius: 1
@@ -307,22 +308,22 @@ Item {
         border.width: 1
         border.color: Ink.alpha(Ink.paper, 0.5)
       }
-      rotation: cell.on && !hover.hovered ? StatusJs.tilt(cell.mark.key) : 0
+      rotation: ind.on && !hover.hovered ? StatusJs.tilt(ind.mark.key) : 0
       Behavior on rotation { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
       transform: [
         Scale {
           origin.x: stamp.width / 2; origin.y: stamp.height / 2
-          xScale: 1 + 0.45 * (1 - cell.press); yScale: xScale
+          xScale: 1 + 0.45 * (1 - ind.press); yScale: xScale
         },
-        Rotation { origin.x: stamp.width / 2; origin.y: stamp.height / 2; angle: -12 * (1 - cell.press) }
+        Rotation { origin.x: stamp.width / 2; origin.y: stamp.height / 2; angle: -12 * (1 - ind.press) }
       ]
 
       Text {
-        readonly property bool kanji: cell.seal
+        readonly property bool kanji: ind.seal
         anchors.centerIn: parent
         anchors.verticalCenterOffset: kanji ? -0.5 : 0
-        text: kanji ? cell.mark.glyph || "" : cell.mark.icon
-        color: cell.solid ? Ink.paper : cell.on ? Ink.ink : Ink.inkFaint
+        text: kanji ? ind.mark.glyph || "" : ind.mark.icon
+        color: ind.solid ? Ink.paper : ind.on ? Ink.ink : Ink.inkFaint
         font.family: kanji ? Type.jpSerif : Type.mono
         font.weight: kanji ? Font.Medium : Font.Normal
         font.pixelSize: Type.px(kanji ? 10.5 : 11)
@@ -333,42 +334,43 @@ Item {
     // it is on.
     Text {
       id: label
-      visible: root.namedMarks && cell.on
+      visible: root.namedMarks && ind.on
       anchors.verticalCenter: parent.verticalCenter
       anchors.right: parent.right
-      text: String(cell.mark.title || "").toUpperCase()
-      color: cell.mark.red ? Ink.seal : Ink.inkDim
+      text: String(ind.mark.title || "").toUpperCase()
+      color: ind.mark.red ? Ink.seal : Ink.inkDim
       font.family: Type.mono
-      font.pixelSize: Type.px(8)
-      font.letterSpacing: 1.4
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
 
     // How many reminders wait, when more than one.
     Text {
       id: badge
-      visible: cell.on && cell.mark.count > 1
+      visible: ind.on && ind.mark.count > 1
       anchors.left: stamp.right
       anchors.leftMargin: 1
       anchors.bottom: stamp.bottom
       anchors.bottomMargin: -Type.px(2)
-      text: String(cell.mark.count)
+      text: String(ind.mark.count)
       color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(8)
+      font.pixelSize: Type.label
     }
 
     HoverHandler {
       id: pointer
       onHoveredChanged: {
-        if (hovered && !label.visible) root.named = cell.mark
-        else if (root.named && root.named.key === cell.mark.key) root.named = null
+        if (hovered && !label.visible) root.named = ind.mark
+        else if (root.named && root.named.key === ind.mark.key) root.named = null
       }
     }
     MouseArea {
       anchors.fill: parent
       acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
       cursorShape: Qt.PointingHandCursor
-      onClicked: function(mouse) { root.indicatorAction(cell.mark.key, root.how(mouse)) }
+      onClicked: function(mouse) { root.indicatorAction(ind.mark.key, root.how(mouse)) }
     }
   }
 }

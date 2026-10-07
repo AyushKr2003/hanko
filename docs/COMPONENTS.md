@@ -33,6 +33,7 @@ These rules are what let any combination look designed rather than assembled.
 | **Red means "you" or "now".** The seal, the now-notch, an urgent workspace, a muted master fader, an unread dot. Nothing else is red. | Red stays a signal whatever you turn on. |
 | **Emphasis is inversion.** The selected thing becomes a solid ink plate (folio page, kanji page, index tab, settings segment). | Every option highlights in the same way. |
 | **Three typefaces with fixed jobs.** Fraunces for time, titles and bylines; Space Grotesk for values; your Omarchy mono for labels; Noto JP for kanji. | Swapping a clock style changes the face, never the system. |
+| **One type scale, read at 1x.** Every size comes from `core/Type.qml`: mono tag 9 / label 10 / eyebrow 11 / figure 12, text note 12 / value 13 / row 14, Fraunces byline 15 / clock 22 / title 40 / hero 46, kanji gloss 9 / 11 / 13 (at a 12 px Omarchy font). Nothing anyone reads is under 10 px, text at 11 px or less is never in `inkFaint`, labels and bar values are Medium, and kanji glosses stay as small as their label's capitals. | The mockups were drawn at 2x; on a 1x laptop panel anything smaller turns to smudge. |
 | **Hairlines, not shadows.** Dividers, frames and the edge are 1 px ink lines. | Glass and inset surfaces still look printed. |
 | **One baseline.** Every zone sits on the same text baseline at every height. | Mixing cells, glyphs and numerals never wobbles. |
 

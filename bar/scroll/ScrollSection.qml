@@ -44,15 +44,16 @@ Item {
         text: root.info.jp
         color: Ink.seal
         font.family: Type.jp
-        font.pixelSize: Type.px(13)
+        font.pixelSize: Type.glossBig
       }
       Text {
         anchors.verticalCenter: parent.verticalCenter
         text: root.info.no + " // " + root.info.label
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(10)
-        font.letterSpacing: Type.px(2.4)
+        font.pixelSize: Type.eyebrow
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackEyebrow
       }
     }
 
@@ -65,9 +66,9 @@ Item {
       text: root.title
       color: Ink.ink
       font.family: Type.display
-      font.pixelSize: Type.px(46)
+      font.pixelSize: Type.hero
       font.weight: Font.Normal
-      font.variableAxes: { "opsz": 120, "wght": 400 }
+      font.variableAxes: Type.axes(Type.hero)
       font.letterSpacing: -0.8
       lineHeight: 1
       lineHeightMode: Text.ProportionalHeight
@@ -79,10 +80,10 @@ Item {
       width: parent.width
       elide: Text.ElideRight
       text: root.caption.toUpperCase()
-      color: Ink.inkFaint
+      color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9)
-      font.letterSpacing: Type.px(1.8)
+      font.pixelSize: Type.label
+      font.letterSpacing: Type.trackLabel
     }
 
     Item {

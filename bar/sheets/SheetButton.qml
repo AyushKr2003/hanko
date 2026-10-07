@@ -29,8 +29,9 @@ Rectangle {
     text: root.text.toUpperCase()
     color: root.inverted ? Ink.boneInk : root.ghost ? Ink.inkFaint : Ink.ink
     font.family: Type.mono
-    font.pixelSize: Type.px(10)
-    font.letterSpacing: Type.px(1.8)
+    font.pixelSize: Type.label
+    font.weight: Type.labelWeight
+    font.letterSpacing: Type.trackLabel
   }
 
   MouseArea {

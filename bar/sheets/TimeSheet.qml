@@ -78,7 +78,7 @@ Item {
               text: day.modelData.letter
               color: day.modelData.today ? Ink.boneInk : Ink.inkFaint
               font.family: Type.mono
-              font.pixelSize: Type.px(7.5)
+              font.pixelSize: Type.tag
               font.letterSpacing: 1
             }
             Text {
@@ -86,7 +86,7 @@ Item {
               text: day.modelData.day
               color: day.ink
               font.family: Type.mono
-              font.pixelSize: Type.px(10.5)
+              font.pixelSize: Type.figure
             }
           }
         }
@@ -119,7 +119,7 @@ Item {
             font.family: Type.display
             font.pixelSize: Type.px(20)
             font.weight: Font.Normal
-            font.variableAxes: { "opsz": 24, "wght": 400 }
+            font.variableAxes: Type.axes(Type.px(20))
           }
           Text {
             anchors.baseline: zoneTime.baseline

@@ -58,9 +58,9 @@ Item {
       width: Type.px(18)
       anchors.verticalCenter: parent.verticalCenter
       text: root.selected ? "//" : ""
-      color: root.selected ? Ink.boneInk : Ink.inkFaint
+      color: root.selected ? Ink.boneInk : Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(12)
+      font.pixelSize: Type.figure
     }
 
     Column {
@@ -74,7 +74,7 @@ Item {
         text: root.name
         color: root.selected ? Ink.boneInk : Ink.ink
         font.family: Type.text
-        font.pixelSize: Type.px(14.5)
+        font.pixelSize: Type.row
       }
       Text {
         visible: text !== ""
@@ -83,7 +83,7 @@ Item {
         text: root.detail
         color: root.selected ? Ink.boneInk : Ink.inkMuted
         font.family: Type.text
-        font.pixelSize: Type.px(12)
+        font.pixelSize: Type.note
       }
     }
   }
@@ -102,8 +102,9 @@ Item {
       text: root.upperNote ? root.note.toUpperCase() : root.note
       color: root.selected ? Ink.boneInk : Ink.inkDim
       font.family: Type.mono
-      font.pixelSize: Type.px(11)
-      font.letterSpacing: 0.6
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
     Item {
       id: extra

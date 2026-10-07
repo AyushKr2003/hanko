@@ -338,10 +338,11 @@ Item {
                 Text {
                   anchors.verticalCenter: parent.verticalCenter
                   text: entry.modelData.no + " " + entry.modelData.label
-                  color: entry.on ? Ink.boneInk : Ink.inkFaint
+                  color: entry.on ? Ink.boneInk : Ink.inkMuted
                   font.family: Type.mono
-                  font.pixelSize: Type.px(9.5)
-                  font.letterSpacing: Type.px(1.6)
+                  font.pixelSize: Type.label
+                  font.weight: Type.labelWeight
+                  font.letterSpacing: Type.trackLabel
                 }
               }
               MouseArea {
@@ -415,16 +416,16 @@ Item {
       text: key.label.toUpperCase()
       color: Ink.inkDim
       font.family: Type.mono
-      font.pixelSize: Type.px(8.5)
+      font.pixelSize: Type.tag
     }
   }
 
   component Label: Text {
     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-    color: Ink.inkFaint
+    color: Ink.inkMuted
     font.family: Type.mono
-    font.pixelSize: Type.px(9)
-    font.letterSpacing: Type.px(1.8)
+    font.pixelSize: Type.label
+    font.letterSpacing: Type.trackLabel
     font.capitalization: Font.AllUppercase
   }
 }

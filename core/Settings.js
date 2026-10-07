@@ -45,6 +45,7 @@ var CARDS = [
     { key: "rules", name: "Dividers", detail: "Hairlines between groups" }] },
   { title: "Frame", rows: [
     { key: "height", name: "Height", detail: "px at font size 12" },
+    { key: "typeSize", name: "Type size", detail: "Hanko's text over Omarchy's font size" },
     { key: "surface", name: "Surface", detail: "" },
     { key: "position", name: "Position", detail: "" }] },
   { title: "Panels", rows: [
@@ -59,6 +60,7 @@ var CARDS = [
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
+var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
 
 // [name, what moves, Motion.qml property for its time]
 var MOTION_ROWS = [
@@ -195,6 +197,7 @@ function optionsFor(key, OPTIONS) {
   if (String(key).indexOf("show:") === 0) return ["shown", "hidden"]
   if (key === "sealGlyph") return GLYPHS.concat(["…"])
   if (key === "motion") return MOTION_OPTIONS.slice()
+  if (key === "typeSize") return TYPE_SIZE_OPTIONS.slice()
   return (OPTIONS[key] || []).map(String)
 }
 

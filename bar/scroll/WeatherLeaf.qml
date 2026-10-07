@@ -165,7 +165,7 @@ ScrollSection {
           text: (modelData.hi ? root.w.hi : root.w.lo) + "°"
           color: modelData.hi ? Ink.inkDim : Ink.inkMuted
           font.family: Type.mono
-          font.pixelSize: Type.px(8.5)
+          font.pixelSize: Type.tag
         }
       }
     }
@@ -181,9 +181,9 @@ ScrollSection {
           required property int index
           x: index === 0 ? 0 : index === 4 ? parent.width - width : Math.round(index / 4 * parent.width - width / 2)
           text: modelData
-          color: Ink.inkFaint
+          color: Ink.inkMuted
           font.family: Type.mono
-          font.pixelSize: Type.px(7.5)
+          font.pixelSize: Type.tag
           font.letterSpacing: 1
         }
       }
@@ -193,10 +193,10 @@ ScrollSection {
       width: parent.width
       elide: Text.ElideRight
       text: root.w ? (root.w.sunLine + (root.wet ? " · rain " + root.wet : "")).toUpperCase() : ""
-      color: Ink.inkFaint
+      color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9)
-      font.letterSpacing: Type.px(1.8)
+      font.pixelSize: Type.label
+      font.letterSpacing: Type.trackLabel
     }
 
     // ------------------------------------------------ the next three days
@@ -221,8 +221,8 @@ ScrollSection {
               text: row.modelData.name
               color: Ink.inkMuted
               font.family: Type.mono
-              font.pixelSize: Type.px(9)
-              font.letterSpacing: Type.px(1.4)
+              font.pixelSize: Type.label
+              font.letterSpacing: Type.trackLabel
             }
             Text {
               anchors.verticalCenter: parent.verticalCenter
@@ -243,7 +243,7 @@ ScrollSection {
               text: row.modelData.lo === null ? "—" : row.modelData.lo + "°"
               color: Ink.inkMuted
               font.family: Type.mono
-              font.pixelSize: Type.px(9.5)
+              font.pixelSize: Type.label
             }
             Text {
               width: Type.px(26)
@@ -251,7 +251,7 @@ ScrollSection {
               text: row.modelData.hi === null ? "—" : row.modelData.hi + "°"
               color: Ink.ink
               font.family: Type.mono
-              font.pixelSize: Type.px(9.5)
+              font.pixelSize: Type.label
             }
           }
           // Low to high on the span all four days share.

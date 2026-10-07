@@ -71,14 +71,15 @@ Item {
         text: root.dnd ? "QUIET" : "INBOX"
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(8)
-        font.letterSpacing: 1.6
+        font.pixelSize: Type.label
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackLabel
       }
       Text {
         text: root.dnd ? "静" : "報"
-        color: Ink.inkFaint
+        color: Ink.inkMuted
         font.family: Type.jp
-        font.pixelSize: Type.px(8.5)
+        font.pixelSize: Type.gloss
       }
     }
     Row {
@@ -88,7 +89,7 @@ Item {
         text: root.countText
         color: root.count > 0 ? Ink.ink : Ink.inkFaint
         font.family: Type.mono
-        font.pixelSize: Type.px(12)
+        font.pixelSize: Type.figure
         font.letterSpacing: 0.8
       }
       Dot { anchors.verticalCenter: countNum.verticalCenter }
@@ -105,8 +106,9 @@ Item {
       text: root.dnd ? "QUIET" : "INBOX"
       color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(8)
-      font.letterSpacing: 1.6
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
     Text {
       id: countNum2
@@ -114,7 +116,7 @@ Item {
       text: root.countText
       color: root.count > 0 ? Ink.ink : Ink.inkFaint
       font.family: Type.mono
-      font.pixelSize: Type.px(12)
+      font.pixelSize: Type.figure
     }
     Dot { anchors.verticalCenter: countNum2.verticalCenter }
   }
@@ -160,8 +162,9 @@ Item {
       text: root.countText
       color: root.count > 0 ? Ink.inkMuted : Ink.inkFaint
       font.family: Type.mono
-      font.pixelSize: Type.px(9.5)
-      font.letterSpacing: 1.2
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
   }
 

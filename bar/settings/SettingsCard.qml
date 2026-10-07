@@ -39,17 +39,17 @@ Rectangle {
       Row {
         id: head
         spacing: Type.px(8)
-        Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
-        Text { text: root.card.title.toUpperCase(); color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+        Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
+        Text { text: root.card.title.toUpperCase(); color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
       }
       Text {
         anchors.right: parent.right
         anchors.verticalCenter: head.verticalCenter
         text: (root.rows.length + (root.rows.length === 1 ? " row" : " rows")).toUpperCase()
-        color: Ink.inkFaint
+        color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(9)
-        font.letterSpacing: Type.px(2)
+        font.pixelSize: Type.label
+        font.letterSpacing: Type.trackLabel
       }
       Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Ink.line }
     }
@@ -85,7 +85,7 @@ Rectangle {
             text: row.modelData.name
             color: Ink.ink
             font.family: Type.text
-            font.pixelSize: Type.px(13.5)
+            font.pixelSize: Type.row
           }
           Text {
             visible: text !== ""
@@ -100,7 +100,7 @@ Rectangle {
               : row.modelData.detail
             color: Ink.inkMuted
             font.family: Type.text
-            font.pixelSize: Type.px(11)
+            font.pixelSize: Type.note
           }
         }
         Segmented {

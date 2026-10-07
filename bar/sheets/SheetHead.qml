@@ -38,7 +38,7 @@ Column {
       text: root.jp
       color: Ink.ink
       font.family: Type.jp
-      font.pixelSize: Type.px(11)
+      font.pixelSize: Type.glossMid
     }
     Text {
       id: labelText
@@ -46,8 +46,9 @@ Column {
       text: root.label.toUpperCase()
       color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9.5)
-      font.letterSpacing: Type.px(2.2)
+      font.pixelSize: Type.eyebrow
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackEyebrow
     }
     Rectangle {
       anchors.verticalCenter: parent.verticalCenter
@@ -63,9 +64,9 @@ Column {
     text: root.title
     color: root.titleColor
     font.family: Type.display
-    font.pixelSize: Type.px(38)
+    font.pixelSize: Type.title
     font.weight: Font.Normal
-    font.variableAxes: { "opsz": 96, "wght": 400 }
+    font.variableAxes: Type.axes(Type.title)
     font.letterSpacing: -0.4
     lineHeight: 1
     lineHeightMode: Text.ProportionalHeight
@@ -80,6 +81,6 @@ Column {
     color: Ink.inkMuted
     wrapMode: Text.Wrap
     font.family: Type.text
-    font.pixelSize: Type.px(13)
+    font.pixelSize: Type.value
   }
 }

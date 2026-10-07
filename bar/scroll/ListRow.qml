@@ -50,9 +50,9 @@ Item {
       width: Type.px(16)
       anchors.verticalCenter: parent.verticalCenter
       text: (root.position < 9 ? "0" : "") + (root.position + 1)
-      color: root.on ? Ink.boneInk : Ink.inkFaint
+      color: root.on ? Ink.boneInk : Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9.5)
+      font.pixelSize: Type.label
       font.letterSpacing: 1
     }
     Loader {
@@ -68,14 +68,14 @@ Item {
         text: root.name
         color: root.on ? Ink.boneInk : Ink.ink
         font.family: Type.text
-        font.pixelSize: Type.px(14)
+        font.pixelSize: Type.row
       }
       Text {
         visible: root.detail !== ""
         text: root.detail
         color: root.on ? Ink.boneInk : Ink.inkMuted
         font.family: Type.text
-        font.pixelSize: Type.px(12)
+        font.pixelSize: Type.note
       }
     }
   }
@@ -91,8 +91,9 @@ Item {
       text: root.upperNote ? root.note.toUpperCase() : root.note
       color: root.on ? Ink.boneInk : Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9.5)
-      font.letterSpacing: Type.px(1.6)
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
     Loader {
       active: !!root.trailing

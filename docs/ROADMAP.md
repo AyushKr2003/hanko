@@ -96,6 +96,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - ✅ A per-monitor override UI under Advanced: pick a monitor, set any setting for it alone, see which ones differ.
 - ✅ Visibility (asked for after Phase 10): every part of the bar, each mark and tray app, and every hosted Omarchy or third-party widget can be shown or hidden on the Widgets 部品 page or with `hanko hide|show <part>` (style.json `hidden`).
 - ✅ The settings window reflows to any window size.
+- ✅ Type scale (asked for after the indicator stamps, from screenshots of the real bar at 1x): one scale for every size, weight and tracking in `core/Type.qml`, readable floors, Medium labels and values, the bold byline fixed, a `typeSize` setting (small, regular, large), and a 1x render pass in `tests/run`.
 - ⬜ Release, left to the user after testing on hardware: a README install guide, the manifest version, a CHANGELOG entry, a listing on omarchyplugins.com, and merging into `main`.
 
 ## Dev loop

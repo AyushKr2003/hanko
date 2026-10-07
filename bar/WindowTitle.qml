@@ -55,8 +55,9 @@ Item {
       color: Ink.ink
       font.family: Type.display
       font.italic: true
-      font.pixelSize: Type.px(15)
-      font.variableAxes: { "opsz": 18, "wght": 400 }
+      font.pixelSize: Type.byline
+      font.weight: Font.Normal
+      font.variableAxes: Type.axes(Type.byline)
     }
 
     Text {
@@ -68,7 +69,7 @@ Item {
       text: root.styledTitle(Ink.inkMuted, Ink.inkMuted, Ink.inkDim)
       color: Ink.inkMuted
       font.family: Type.text
-      font.pixelSize: Type.px(13)
+      font.pixelSize: Type.value
     }
   }
 
@@ -88,14 +89,15 @@ Item {
         text: root.parts.app.toUpperCase()
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(8)
-        font.letterSpacing: 1.6
+        font.pixelSize: Type.label
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackLabel
       }
       Text {
         text: "窓"
-        color: Ink.inkFaint
+        color: Ink.inkMuted
         font.family: Type.jp
-        font.pixelSize: Type.px(8.5)
+        font.pixelSize: Type.gloss
       }
     }
 
@@ -106,7 +108,9 @@ Item {
       text: root.styledTitle(Ink.ink, Ink.inkMuted, Ink.ink)
       color: Ink.ink
       font.family: Type.text
-      font.pixelSize: Type.px(12.5)
+      font.pixelSize: Type.value
+      font.weight: Type.valueWeight
+      font.variableAxes: Type.valueAxes
     }
   }
 
@@ -122,8 +126,9 @@ Item {
       text: root.parts.app.toUpperCase()
       color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(8)
-      font.letterSpacing: 1.6
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
     Text {
       anchors.verticalCenter: parent.verticalCenter
@@ -131,7 +136,9 @@ Item {
       text: root.styledTitle(Ink.ink, Ink.inkMuted, Ink.ink)
       color: Ink.ink
       font.family: Type.text
-      font.pixelSize: Type.px(12.5)
+      font.pixelSize: Type.value
+      font.weight: Type.valueWeight
+      font.variableAxes: Type.valueAxes
     }
   }
 }

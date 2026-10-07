@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the indicator stamps and their two settings (on `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the type scale and the `typeSize` setting (on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -284,7 +284,10 @@ core/
   Ink.qml   (singleton)  paper, ink, inkDim, inkMuted, inkFaint, seal, bone, boneInk,
                          line, lineSoft, lineStrong, light, alpha(), paperAt()
   Type.qml  (singleton)  FontLoaders; display (Fraunces), text (Space Grotesk), mono,
-                         jp, jpSerif; scale; px()
+                         jp, jpSerif; scale (Omarchy's body / 12 × typeSize); px();
+                         the type scale: tag label eyebrow figure note value row byline
+                         clock title hero gloss glossMid glossBig, track*, labelWeight,
+                         valueWeight, valueAxes, axes(size, wght) for Fraunces
   Motion.qml (singleton) every timing and curve (Scroll mockup 05); still (motion: still
                          or Omarchy's reduced motion), live (awake and not still), ms()
   Typeset.qml (singleton) style.json FileView + watch; doc, warnings, current,
@@ -525,6 +528,16 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - The hover name sits outside the marks over a blank `BarSurface` keeps in the right zone (`marks.nameWidth`), capped at the real gap before the zone (`nameRoom`). Growing inside the marks made the stamps jump for a frame before the right-anchored row moved them back, so the hover dropped and the name flickered.
 - Unit tests: 80.
 
+### Type scale 組 ✅ (asked for by the user after the indicator stamps)
+- Screenshots of the real bar (1920×1080 at scale 1, 12 px Omarchy font) showed the 8 px labels and 8.5 px kanji as smudge: the mockups and the harness render at 2x, so they never showed it. About 25 sizes became one scale in `core/Type.qml` (sizes in its comment and in COMPONENTS.md §1): bar labels 8 → 10, section heads 9.5–10 → 11, captions 9 → 10, descriptions 10.5–11.5 → 12, row names 13–14.5 → 14, sheet and settings titles 38/44 → 40 (settings compact keeps 34/44), clock 21/23 → 22. Floors keep `tag`/`label`/`eyebrow` legible at `typeSize: small`.
+- Kanji glosses beside labels stay small (`Type.gloss` 9, the user asked for them not to grow); glosses on their own are 11, section kanji 13.
+- Small text that was `inkFaint` is `inkMuted`; labels are `Type.labelWeight` (Medium; JetBrains Mono Nerd Font has no Medium cut, so it falls back to Regular there); bar values are Medium through both `font.weight` and `font.variableAxes: Type.valueAxes` (Space Grotesk is variable and ignored the weight alone).
+- Fraunces: every use sets `font.weight: Font.Normal` and `font.variableAxes: Type.axes(<its size>)` (opsz follows the size). The window title's app name rendered bold for lack of `Font.Normal`.
+- `typeSize` (`small | regular | large` = 0.9 / 1 / 1.15) sits beside `motion` in style.json (`Style.TYPE_SIZES`, `TYPE_SCALE`; kept through presets, shuffles and resets, counted by `Settings.changes`); it multiplies `Type.scale`, so the bar's height grows with it. A Type size row in the Frame card; `hanko style set typeSize large`. Global, not per monitor (every component reads the one `Type` singleton).
+- `tests/run` renders phase4, phase6, phase7 and phase8 again at `QT_SCALE_FACTOR=1` into `tests/out/1x/`. Compare those, not only the 2x ones, after any type change.
+- Also fixed: a duplicated `id: cell` in `bar/Marks.qml` (the indicator stamp is now `ind`) that the newer qmllint reports as an error.
+- Unit tests: 81.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -572,13 +585,17 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 17. **End leaf to verify on hardware:** `omarchy-theme-set` with the display name, `omarchy-shell shell summon omarchy.image-picker '{"source":"themes"}'` from a third-party bar, `idleProxy.setIdleEnabled` toggling stay awake, `top -b -n2 -o %CPU` column numbers on the user's procps, hwmon names for the CPU temperature, `omarchy-launch-editor` opening notes.md, `omarchy-clipboard-paste-text --copy-only --history-index N`, `notify-send` for the focus timer, and the hold-to-press seals not firing on a click.
 18. **Indicator stamps:** twice, right after a shell restart with do not disturb on and an `indicatorStyle` change, only the stamp that was on showed (the five off ones were gone, though `indicators` was `all`). It never came back in later runs and nothing in the log explains it. Also verify the Nerd Font icons in the user's mono font, and the hover name on a crowded bar (it is cut short when there is no room, and the marks' `clip` can hide it when the zone overflows).
 
+19. **Type scale to verify:** the bar at 36 px with label over value (about 30 px of type), `typeSize: large` with a 44 px bar (51 px), and the Medium values in another mono face. After a shell restart the window title stayed empty until focus changed (seen once while testing; not caused by the type change, worth a look).
+
 ## 13. QML pitfalls already hit
 
 - A property named `onSomething` is parsed as a **signal handler** (`onBone` broke; renamed `boneInk`). Never start a property name with `on` + capital.
 - The id `gc` masks a JS global and fails at load (lint missed it, the render caught it). Avoid ids that shadow globals (`gc`, `print`, `console`, `Qt`).
 - Use `pragma ComponentBehavior: Bound` in files with delegates / `Loader` components, give delegates `required property` and qualify outer ids (`root.x`), or qmllint reports unqualified access.
 - Loader-based variants: give the component a `property var ws` and set it in `onLoaded` with `Qt.binding(...)`.
-- Fraunces is variable: set `font.weight: Font.Normal` **and** `font.variableAxes: { "opsz": N, "wght": 400 }`, or it renders bold.
+- Fraunces is variable: set `font.weight: Font.Normal` **and** `font.variableAxes: Type.axes(size)`, or it renders bold. Pass the size expression itself: `Type.axes(font.pixelSize)` is a binding loop on the font group.
+- Space Grotesk is variable too: `font.weight` alone left it Regular; give `font.variableAxes: Type.valueAxes` as well.
+- The live shell did not hot-reload Hanko's files on this machine; `omarchy-restart-shell` loads the edits. Screenshots of sheets and the scroll need about a second after the IPC call, or they catch the print or pan half way.
 - `Text.StyledText` with `<font color=…>` for mixed-ink runs; escape `& < >` in any user text (titles, songs, notifications) first.
 - Inline `component X: …` declarations can't see the delegate scope; pass what they need as properties.
 - Ids inside a file share one scope: don't reuse a short id like `n` that a component property also uses.

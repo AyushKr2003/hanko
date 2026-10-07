@@ -53,4 +53,19 @@ for params in tests/harness/params/*.json; do
   fi
 done
 
+# The renders above are at 2x, like the mockups; most laptop panels are 1x,
+# where small type has half the pixels. Check the bar, a sheet, the scroll
+# and the settings page at 1x too (tests/out/1x/).
+step "renders at 1x"
+mkdir -p tests/out/1x
+for name in phase4 phase6 phase7 phase8; do
+  params="tests/harness/params/$name.json"
+  scene="$(jq -r '.scene // "Strips"' "$params")"
+  if QT_SCALE_FACTOR=1 timeout 60 python3 tests/harness/render.py "tests/harness/scenes/$scene.qml" "$params" "tests/out/1x/$name.png"; then
+    echo "tests/out/1x/$name.png"
+  else
+    status=1
+  fi
+done
+
 exit $status

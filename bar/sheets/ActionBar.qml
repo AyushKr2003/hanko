@@ -37,8 +37,9 @@ Item {
       text: root.note.toUpperCase()
       color: Ink.inkDim
       font.family: Type.mono
-      font.pixelSize: Type.px(9.5)
-      font.letterSpacing: Type.px(1.8)
+      font.pixelSize: Type.label
+      font.weight: Type.labelWeight
+      font.letterSpacing: Type.trackLabel
     }
   }
 

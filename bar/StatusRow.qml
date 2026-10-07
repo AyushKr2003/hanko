@@ -168,14 +168,15 @@ Item {
           text: reading.r.label
           color: Ink.inkMuted
           font.family: Type.mono
-          font.pixelSize: Type.px(8)
-          font.letterSpacing: 1.6
+          font.pixelSize: Type.label
+          font.weight: Type.labelWeight
+          font.letterSpacing: Type.trackLabel
         }
         Text {
           text: reading.r.jp
-          color: Ink.inkFaint
+          color: Ink.inkMuted
           font.family: Type.jp
-          font.pixelSize: Type.px(8.5)
+          font.pixelSize: Type.gloss
         }
       }
       Value { r: reading.r; ink: reading.valueInk }
@@ -192,8 +193,9 @@ Item {
         text: reading.r.label
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(8)
-        font.letterSpacing: 1.6
+        font.pixelSize: Type.label
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackLabel
       }
       Value { anchors.verticalCenter: parent.verticalCenter; r: reading.r; ink: reading.valueInk }
     }
@@ -219,7 +221,7 @@ Item {
           text: reading.r.glyph
           color: reading.r.needsYou ? Ink.paper : Ink.inkDim
           font.family: Type.jp
-          font.pixelSize: Type.px(10.5)
+          font.pixelSize: Type.glossMid
         }
       }
       FadeText {
@@ -228,7 +230,9 @@ Item {
         text: reading.r.value
         color: reading.valueInk
         font.family: Type.text
-        font.pixelSize: Type.px(13)
+        font.pixelSize: Type.value
+        font.weight: Type.valueWeight
+        font.variableAxes: Type.valueAxes
       }
       BtValue { anchors.verticalCenter: parent.verticalCenter; r: reading.r; boxed: false }
       Ticks {
@@ -250,8 +254,9 @@ Item {
         text: reading.r.label
         color: Ink.inkMuted
         font.family: Type.mono
-        font.pixelSize: Type.px(8.5)
-        font.letterSpacing: 1.6
+        font.pixelSize: Type.label
+        font.weight: Type.labelWeight
+        font.letterSpacing: Type.trackLabel
       }
       BtValue { anchors.verticalCenter: parent.verticalCenter; r: reading.r; mono: true }
       FadeText {
@@ -261,7 +266,7 @@ Item {
         text: reading.r.value + (reading.r.key === "battery" ? "%" : "")
         color: reading.valueInk
         font.family: Type.mono
-        font.pixelSize: Type.px(11)
+        font.pixelSize: Type.figure
         font.letterSpacing: 0.6
       }
       Ticks {
@@ -287,7 +292,9 @@ Item {
       text: value.r.value
       color: value.ink
       font.family: Type.text
-      font.pixelSize: Type.px(12.5)
+      font.pixelSize: Type.value
+      font.weight: Type.valueWeight
+      font.variableAxes: Type.valueAxes
     }
     Text {
       visible: value.r.unit !== ""
@@ -295,7 +302,7 @@ Item {
       text: value.r.unit
       color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(8)
+      font.pixelSize: Type.tag
     }
     Ticks {
       anchors.verticalCenter: big.verticalCenter
@@ -390,7 +397,7 @@ Item {
       text: "+" + (btv.devs.length - btv.shownMarks)
       color: Ink.inkMuted
       font.family: Type.mono
-      font.pixelSize: Type.px(9)
+      font.pixelSize: Type.label
     }
     // Nothing connected: a single empty mark, dashed, so the cell keeps its place.
     Text {
@@ -399,7 +406,7 @@ Item {
       text: "—"
       color: Ink.inkFaint
       font.family: Type.text
-      font.pixelSize: Type.px(12.5)
+      font.pixelSize: Type.value
     }
 
     // ---- count
@@ -409,7 +416,7 @@ Item {
       text: btv.r.count || "00"
       color: btv.r.needsYou ? Ink.seal : btv.devs.length ? Ink.ink : Ink.inkFaint
       font.family: btv.mono ? Type.mono : Type.text
-      font.pixelSize: Type.px(btv.mono ? 11 : 12.5)
+      font.pixelSize: btv.mono ? Type.figure : Type.value
       font.letterSpacing: 0.6
     }
     Row {

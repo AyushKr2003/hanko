@@ -167,8 +167,8 @@ Rectangle {
               text: root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
               color: group.modelData.group === root.pageInfo.group ? Ink.inkDim : Ink.inkFaint
               font.family: Type.mono
-              font.pixelSize: Type.px(9.5)
-              font.letterSpacing: Type.px(2)
+              font.pixelSize: Type.label
+              font.letterSpacing: Type.trackLabel
             }
             Rectangle {
               x: groupName.width + Type.px(8)
@@ -208,7 +208,7 @@ Rectangle {
                   text: item.modelData.label
                   color: item.on ? Ink.boneInk : Ink.inkDim
                   font.family: Type.text
-                  font.pixelSize: Type.px(14.5)
+                  font.pixelSize: Type.row
                 }
               }
               // Folded, the glyph alone names the page, centred.
@@ -322,8 +322,8 @@ Rectangle {
               text: root.pageInfo.group.replace(/^\d+ /, "") + (root.page === "typesetting" ? " · " + Settings.presetLine(root.draft) : "")
               color: Ink.inkMuted
               font.family: Type.mono
-              font.pixelSize: Type.px(10)
-              font.letterSpacing: Type.px(2.2)
+              font.pixelSize: Type.eyebrow
+              font.letterSpacing: Type.trackEyebrow
               font.capitalization: Font.AllUppercase
             }
           }
@@ -336,8 +336,8 @@ Rectangle {
             text: "hanko.bar · omarchy"
             color: Ink.inkMuted
             font.family: Type.mono
-            font.pixelSize: Type.px(10)
-            font.letterSpacing: Type.px(2.2)
+            font.pixelSize: Type.eyebrow
+            font.letterSpacing: Type.trackEyebrow
           }
           Rectangle {
             x: eyebrow.width + Type.px(10)
@@ -355,7 +355,7 @@ Rectangle {
           font.family: Type.display
           font.pixelSize: Type.px(root.compact ? 34 : 44)
           font.weight: Font.Normal
-          font.variableAxes: { "opsz": 144, "wght": 400 }
+          font.variableAxes: Type.axes(Type.px(root.compact ? 34 : 44))
           font.letterSpacing: -0.8
         }
         Item { width: 1; height: Type.px(6) }
@@ -369,7 +369,7 @@ Rectangle {
               : root.placeholders[root.page] || ""
           color: Ink.inkMuted
           font.family: Type.text
-          font.pixelSize: Type.px(13.5)
+          font.pixelSize: Type.row
         }
 
         // ------------------------------------------------ Typesetting
@@ -411,10 +411,10 @@ Rectangle {
               anchors.bottom: parent.bottom
               anchors.bottomMargin: Type.px(8)
               text: "LIVE PREVIEW · YOUR THEME"
-              color: Ink.inkFaint
+              color: Ink.inkMuted
               font.family: Type.mono
-              font.pixelSize: Type.px(8.5)
-              font.letterSpacing: Type.px(1.8)
+              font.pixelSize: Type.label
+              font.letterSpacing: Type.trackLabel
             }
           }
 
@@ -462,7 +462,7 @@ Rectangle {
                     color: preset.on ? Ink.boneInk : Ink.inkMuted
                     opacity: preset.on ? 0.7 : 1
                     font.family: Type.text
-                    font.pixelSize: Type.px(11)
+                    font.pixelSize: Type.note
                   }
                 }
                 MouseArea {
@@ -538,8 +538,8 @@ Rectangle {
 
                 Row {
                   spacing: Type.px(8)
-                  Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
-                  Text { text: "ADVANCED"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+                  Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
+                  Text { text: "ADVANCED"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
                 }
                 Rectangle { width: parent.width; height: 1; color: Ink.line }
 
@@ -552,7 +552,7 @@ Rectangle {
                     text: "Seal glyph"
                     color: Ink.ink
                     font.family: Type.text
-                    font.pixelSize: Type.px(13.5)
+                    font.pixelSize: Type.row
                   }
                   Rectangle {
                     width: Type.px(44)
@@ -578,7 +578,7 @@ Rectangle {
                     text: "One character, used when the seal is a stamp."
                     color: Ink.inkMuted
                     font.family: Type.text
-                    font.pixelSize: Type.px(11)
+                    font.pixelSize: Type.note
                   }
                 }
 
@@ -599,7 +599,7 @@ Rectangle {
                       text: "Per monitor"
                       color: Ink.ink
                       font.family: Type.text
-                      font.pixelSize: Type.px(13.5)
+                      font.pixelSize: Type.row
                     }
                     Segmented {
                       anchors.verticalCenter: parent.verticalCenter
@@ -762,9 +762,9 @@ Rectangle {
             width: parent.width
             wrapMode: Text.Wrap
             text: "Hiding a part takes it off this bar only; the widget stays in Omarchy's bar layout. Add or remove widgets there."
-            color: Ink.inkFaint
+            color: Ink.inkMuted
             font.family: Type.text
-            font.pixelSize: Type.px(11.5)
+            font.pixelSize: Type.note
           }
         }
 
@@ -827,7 +827,7 @@ Rectangle {
                     text: timing.modelData[0]
                     color: Ink.ink
                     font.family: Type.text
-                    font.pixelSize: Type.px(13.5)
+                    font.pixelSize: Type.row
                   }
                   Text {
                     id: timingLine
@@ -838,7 +838,7 @@ Rectangle {
                     text: timing.modelData[1]
                     color: Ink.inkMuted
                     font.family: Type.text
-                    font.pixelSize: Type.px(11.5)
+                    font.pixelSize: Type.note
                   }
                   Text {
                     anchors.verticalCenter: parent.verticalCenter
@@ -866,8 +866,8 @@ Rectangle {
 
           Row {
             spacing: Type.px(8)
-            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
-            Text { text: "BETWEEN PANELS"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
+            Text { text: "BETWEEN PANELS"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
           }
 
           Grid {
@@ -933,7 +933,7 @@ Rectangle {
                   Text { text: tile.modelData.jp; color: tile.on ? Ink.seal : Ink.inkDim; font.family: Type.jp; font.pixelSize: Type.px(13) }
                   Column {
                     Text { text: tile.modelData.name.toUpperCase() + (tile.on ? "  · IN USE" : ""); color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
-                    Text { text: tile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(11) }
+                    Text { text: tile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
                   }
                 }
 
@@ -959,8 +959,8 @@ Rectangle {
 
           Row {
             spacing: Type.px(8)
-            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
-            Text { text: "AFTER INBOX"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
+            Text { text: "AFTER INBOX"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
           }
 
           Grid {
@@ -1013,7 +1013,7 @@ Rectangle {
                   Text { text: leafTile.modelData.jp; color: leafTile.on ? Ink.seal : Ink.inkDim; font.family: Type.jp; font.pixelSize: Type.px(13) }
                   Column {
                     Text { text: leafTile.modelData.name.toUpperCase() + (leafTile.on ? "  · IN USE" : ""); color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
-                    Text { text: leafTile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(11) }
+                    Text { text: leafTile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
                   }
                 }
 
@@ -1051,15 +1051,16 @@ Rectangle {
                   color: Ink.ink
                   font.family: Type.display
                   font.pixelSize: Type.px(22)
-                  font.variableAxes: { "opsz": 36, "wght": 400 }
+                  font.weight: Font.Normal
+                  font.variableAxes: Type.axes(Type.px(22))
                 }
                 Text {
                   id: blurbText
                   text: Settings.PRESET_BLURBS[strip.modelData].toUpperCase()
-                  color: Ink.inkFaint
+                  color: Ink.inkMuted
                   font.family: Type.mono
-                  font.pixelSize: Type.px(9)
-                  font.letterSpacing: Type.px(1.8)
+                  font.pixelSize: Type.label
+                  font.letterSpacing: Type.trackLabel
                 }
               }
               Rectangle {
@@ -1203,7 +1204,7 @@ Rectangle {
       anchors.rightMargin: Type.px(12)
       anchors.verticalCenter: parent.verticalCenter
       text: "/"
-      color: Ink.inkFaint
+      color: Ink.inkMuted
       font.family: Type.mono
       font.pixelSize: Type.px(10)
     }

@@ -71,6 +71,17 @@ function normalizeMotion(m) {
   return MOTIONS.indexOf(String(m)) >= 0 ? String(m) : DEFAULT_MOTION
 }
 
+// Type size sits beside motion: Hanko's own text on top of Omarchy's
+// `[font] base-size`, for a 1x laptop panel or a HiDPI desk. Every size,
+// the bar's height with it, is multiplied by TYPE_SCALE.
+var TYPE_SIZES = ["small", "regular", "large"]
+var TYPE_SCALE = { small: 0.9, regular: 1, large: 1.15 }
+var DEFAULT_TYPE_SIZE = "regular"
+
+function normalizeTypeSize(t) {
+  return TYPE_SIZES.indexOf(String(t)) >= 0 ? String(t) : DEFAULT_TYPE_SIZE
+}
+
 // Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
 // page), beside the twenty like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
@@ -166,7 +177,7 @@ function normalizeGlyph(glyph) {
 }
 
 // A style document as stored in style.json:
-//   { preset, edits: {...}, sealGlyph, motion, hidden: [...], monitors: { "<name>": {...} } }
+//   { preset, edits: {...}, sealGlyph, motion, typeSize, hidden: [...], monitors: { "<name>": {...} } }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
@@ -183,6 +194,7 @@ function normalize(doc, warnings) {
     edits: cleanEdits(doc.edits, warnings),
     sealGlyph: normalizeGlyph(doc.sealGlyph),
     motion: normalizeMotion(doc.motion),
+    typeSize: normalizeTypeSize(doc.typeSize),
     hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
   }
@@ -197,6 +209,7 @@ function resolve(doc, monitor) {
   if (m) for (var j in m) style[j] = m[j]
   style.sealGlyph = d.sealGlyph
   style.motion = d.motion
+  style.typeSize = d.typeSize
   style.hidden = d.hidden.slice()
   style.preset = d.preset
   style.edited = Object.keys(d.edits).length > 0
@@ -204,7 +217,7 @@ function resolve(doc, monitor) {
 }
 
 // Setting a value equal to the preset's drops the edit instead of storing it,
-// so `edits` always lists exactly what differs. The seal glyph and motion
+// so `edits` always lists exactly what differs. The seal glyph, motion and type size
 // are kept beside the edits, the same for every preset.
 function withSetting(doc, key, value) {
   var d = normalize(doc)
@@ -212,6 +225,11 @@ function withSetting(doc, key, value) {
   if (key === "motion") {
     if (MOTIONS.indexOf(String(value)) < 0) return null
     d.motion = String(value)
+    return d
+  }
+  if (key === "typeSize") {
+    if (TYPE_SIZES.indexOf(String(value)) < 0) return null
+    d.typeSize = String(value)
     return d
   }
   if (String(key).indexOf("show:") === 0) return withShown(d, String(key).slice(5), value)

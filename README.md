@@ -67,6 +67,7 @@ scripts/hanko uninstall
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
 | Indicator stamps: only what is on, kanji with names | `scripts/hanko style set indicators active` / `scripts/hanko style set indicatorStyle kanjiname` |
 | Turn motion off | `scripts/hanko style set motion still` |
+| Larger or smaller text (the bar grows with it) | `scripts/hanko style set typeSize large` (`small`, `regular`, `large`) |
 | Add Setup › Hanko to the Omarchy menu | `scripts/hanko menu add` |
 
 - Changes show on the bar at once and are saved to `~/.config/hanko/style.json`.
