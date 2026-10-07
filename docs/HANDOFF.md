@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the scroll dividers setting (on `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the scroll's end leaf setting (on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -96,7 +96,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The seventeen settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
+### The eighteen settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
 
 | Zone | Key | Options |
 |---|---|---|
@@ -117,6 +117,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | Frame | `position` | **`top`**, `bottom` |
 | Panels | `panels` | `sheets`, **`scroll`** |
 | Panels | `interlude` | `ma`, `hairline`, `folio`, `kotoba`, `tsugime`, **`seal`**, `jiku`, `fuda`, `su` (added after Typeset; what sits between scroll sections) |
+| Panels | `endleaf` | `okugaki`, **`koyomi`**, `kiki`, `shimai`, `iro`, `dougu`, `shuchu`, `hikae`, `batsu` (added after Typeset; the leaf right of Inbox on the scroll) |
 
 ### Presets
 
@@ -139,6 +140,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | position | top | top | top | top | top | top |
 | panels | sheets | scroll | scroll | sheets | sheets | scroll |
 | interlude | folio | kotoba | seal | ma | folio | fuda |
+| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu |
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -287,7 +289,7 @@ core/
   Style.js               OPTIONS, KEYS, PRESETS, PRESET_NAMES, DEFAULT_PRESET, coerce,
                          normalize, resolve(doc, monitor), withSetting, withPreset,
                          shuffled(doc, rng), combinations(); MOTIONS (motion and
-                         sealGlyph sit beside the edits, outside the seventeen)
+                         sealGlyph sit beside the edits, outside the eighteen)
   InkMath.js             hexToRgb, mix, luminance, contrast, tier, isLight, ramp (TIERS)
   Title.js               appName (NAMES map, reverse-DNS), describe(cls, title) →
                          {app, head, dir, leaf}, findPath, tildify
@@ -501,6 +503,13 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - `core/Settings.js`: `INTERLUDES`, `interludeOf`, `interludeLabels`; the Panels card row "Scroll dividers" shows kanji (`Segmented.labels`). The Scroll 巻 settings page is a gallery of nine live tiles; a click picks one.
 - Params `interludes.json`, `interludes-light.json`, `interlude-settings.json`.
 
+### Scroll end leaf 跋 ✅ (asked for by the user after the dividers)
+- The paper right of 08 Inbox was bare. Nine leaf designs were drawn (docs branch, `docs/revision2/`); the user liked all nine, so they shipped as an eighteenth setting, `endleaf`: `okugaki | koyomi | kiki | shimai | iro | dougu | shuchu | hikae | batsu` (奥 暦 機 終 色 具 集 控 跋). Default and Hanko `koyomi`; Sheet `shimai`; Scroll `okugaki`; Quiet `batsu`; Instrument `kiki`; Islet `dougu`. 967,458,816 combinations.
+- `core/Leaf.js` (+ 7 tests): `KINDS`, `colophon(raw, extra)`, `almanac(date)` (month grid, the 24 `SEKKI` and 72 `KO` by start date, `moon()` from the mean synodic month), `cpuTimes`/`cpuBusy`/`memory`/`temperature`/`disk`/`top`/`machine`, `SESSION` (Omarchy's system menu commands), `themes`/`themeWindow`/`themesView`, `TOOLS` (Omarchy's utility bindings), `focusState`/`focusStep`/`focusView` (25 + 5 min, 4 a day), `notes`/`toggled`/`notesView`, `clipboard`, `afterword`, `sample(now)` (the gallery's and harness's reading).
+- `services/Leaf.qml` (singleton): `wanted` and `kind` (Bar.qml: `scrollOpen`, the scroll screen's `endleaf`), `reading`. Reads only for the kind shown and only while the scroll is out, except a CPU sample a minute while `kiki` is chosen and the focus timer's 1 s tick while one runs. Actions: `sessionAct`, `setTheme`, `openThemes`, `runTool`, `focusAct`, `toggleNote`, `editNotes`, `copyClip`.
+- `bar/scroll/EndLeaf.qml` (a ScrollSection per kind, plus the batsu afterword). `ScrollView.endleaf` + `endWidth` (`Weather.leafWidth` with Inbox's width) places it and an Interlude (its `after` names the leaf) right of Inbox. `ScrollWindow` feeds `leaf`, `endShown`, `font`, `version`, `preset`, `switches`, `sealGlyph`. `Bar.leafRequest` handles its clicks (stay awake through `Extras.idleProxy`, night light through `Display`, silence through `Status`). Part `endleaf`; a row in the Widgets page's Centre card; the Scroll 巻 settings page has an "After Inbox" gallery of nine live tiles; `Settings.ENDLEAVES` / `endleafLabels` for the Typesetting row.
+- Params `endleaves.json`, `endleaves-light.json`, `endleaf-settings.json`. Unit tests: 79.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -509,7 +518,7 @@ Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarS
 
 Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 
-1. ~~The Scroll motion spec across the bar: inversion plates slide between items (one indicator, like Ryoku's rail); values crossfade; the now-notch creeps; a new stamp is pressed down oversized and tilted, then settles (140 ms, the only overshoot anywhere); sheets print top-down (~180 ms). A global **reduced motion** switch (Motion 動 page + style key, outside the 17 settings) that cuts every transition to its end frame.~~
+1. ~~The Scroll motion spec across the bar: inversion plates slide between items (one indicator, like Ryoku's rail); values crossfade; the now-notch creeps; a new stamp is pressed down oversized and tilted, then settles (140 ms, the only overshoot anywhere); sheets print top-down (~180 ms). A global **reduced motion** switch (Motion 動 page + style key, outside the 18 settings) that cuts every transition to its end frame.~~
 2. ~~Per-monitor override UI on the settings page (Advanced).~~
 3. README install guide (screenshots from renders), `manifest.json` version `0.1.0` → release version, CHANGELOG entry, listing on omarchyplugins.com (ask the user before publishing anything; the repo is private).
 4. Merge `dev` into `main` **only when the user asks**.
@@ -545,6 +554,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 14. **Weather leaf to verify on hardware:** `curl` present and Open-Meteo and wttr.in reachable, `weather.json` at `~/.local/state/omarchy/settings/` on the user's Omarchy, the leaf's width on the user's screen (left out under about 1600 px of scroll), and the °F rule matching Omarchy's panel.
 15. **Bluetooth styles to verify on hardware:** the device `icon` names BlueZ reports (they pick the mark; unknown kinds get 器) and the marks' baseline beside the other cells in the user's fonts.
 16. **Scroll dividers to verify on hardware:** each style's spacing at the user's scale, the `su` numerals and `kotoba` lines in the user's Fraunces and Noto CJK, and the gallery tiles at small window widths.
+17. **End leaf to verify on hardware:** `omarchy-theme-set` with the display name, `omarchy-shell shell summon omarchy.image-picker '{"source":"themes"}'` from a third-party bar, `idleProxy.setIdleEnabled` toggling stay awake, `top -b -n2 -o %CPU` column numbers on the user's procps, hwmon names for the CPU temperature, `omarchy-launch-editor` opening notes.md, `omarchy-clipboard-paste-text --copy-only --history-index N`, `notify-send` for the focus timer, and the hold-to-press seals not firing on a click.
 
 ## 13. QML pitfalls already hit
 

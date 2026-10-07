@@ -6,14 +6,14 @@ Typeset merges the two earlier directions into one bar. Sheet (the printed runni
 - **Scroll** is the Scroll design as drawn.
 - **Hanko** is the merge, and the default.
 
-Seventeen settings give **107,495,424** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
+Eighteen settings give **967,458,816** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
 ![The settings page](mockups/typeset/01-settings.webp)
 
 ## Contents
 
 1. [The rules every option keeps](#1-the-rules-every-option-keeps)
-2. [The seventeen settings](#2-the-seventeen-settings)
+2. [The eighteen settings](#2-the-eighteen-settings)
 3. [How options interact](#3-how-options-interact)
 4. [Presets](#4-presets)
 5. [Counting the combinations](#5-counting-the-combinations)
@@ -38,7 +38,7 @@ These rules are what let any combination look designed rather than assembled.
 
 ---
 
-## 2. The seventeen settings
+## 2. The eighteen settings
 
 Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset.
 
@@ -220,6 +220,24 @@ What sits between two sections of the scroll. Pick it on the Scroll 巻 page (a 
 
 Added after the Typeset mockups were drawn.
 
+#### Scroll end leaf `endleaf` 跋
+
+What sits on the bare paper right of 08 Inbox, the twin of the weather leaf on the left: `09 // …`, 400 px wide, shown while Inbox is in the middle (the index plate and the number keys skip it, as they skip the weather). Pick it on the Scroll 巻 page (a gallery that draws each one with a sample reading) or by kanji in the Panels card; from a terminal, `hanko style set endleaf shimai`. `hanko hide endleaf` (or the Widgets page, Centre card) leaves the paper bare. The designs and the research behind them are in `docs/revision2/` on the `docs` branch.
+
+| Option | What it shows, and what it does | Presets |
+|---|---|---|
+| `okugaki` 奥 | A colophon, the way a handscroll ends: host and model, kernel, Hyprland, packages and the last upgrade, theme, font and Hanko's version, with three seals (your initial, your theme's, 判). | Scroll |
+| **`koyomi`** 暦 (default) | The almanac: the month (Monday first) with today sealed and a dot on the day the next solar term starts; the solar term (sekki) and microseason (kō) we are in; the moon's phase and the next new or full moon; the year as a rule. Pure date maths, no network. | Hanko |
+| `kiki` 機 | The machine: CPU over the last hour as one ink curve (a sample a minute, kept while this leaf is chosen), CPU, memory, disk and heat as tick meters, and the two busiest processes. | Instrument |
+| `shimai` 終 | The session: Lock, Suspend, Log out, Restart and Shut down as seals, each pressed by holding it (700 ms, the seal fills with ink); the same commands as Omarchy's system menu. | Sheet |
+| `iro` 色 | Omarchy's themes as paper, ink and seal swatches around the current one; a click runs `omarchy-theme-set`, and the foot opens Omarchy's theme picker. | |
+| `dougu` 具 | Omarchy's utilities as tiles: screenshot, record, colour picker, stay awake, night light, silence (do not disturb), emoji, clipboard, lock. The switches show when they are on. | Islet |
+| `shuchu` 集 | A focus timer: 25 minutes on a ruler with the red now-notch, today's sessions stamped, pause, +5 min and stop; a five-minute break follows each one. It keeps time with the scroll rolled up (state in `~/.local/state/hanko/focus.json`) and sends a notification when a part ends. | |
+| `hikae` 控 | Today's list from `~/.config/hanko/notes.md` (`- [ ]` lines tick on a click and are written back), with the last three entries of Omarchy's clipboard history (a click copies one). | |
+| `batsu` 跋 | An afterword: a large 終, "the end of the scroll", the date, and your seal glyph. Nothing to read or do. | Quiet |
+
+Each leaf reads only what it shows and only while the scroll is open (services/Leaf.qml), apart from the machine's hourly curve and the focus timer.
+
 The panels are Time 時, Sound 音, Network 網, Bluetooth 藍, Power 電, Display 明 and Inbox 報 (as sheets), and the scroll adds Spaces 窓 between Display and Inbox: eight sections. Display is the LUM cell's panel (and Omarchy's `omarchy.monitor`, `Super+Ctrl+D`): the chosen monitor's brightness on a ruler, every monitor with its mode and scale, and night light. It was added after the Typeset mockups were drawn, in the same grammar. So was Bluetooth (the BT cell's panel and Omarchy's `omarchy.bluetooth`): what is connected as the title, then connected, known and nearby devices (the adapter scans only while the panel is open); a click disconnects, connects or pairs through `omarchy-bluetooth-device`, and the foot turns it on or off through `omarchy-bluetooth-power`.
 
 **The weather leaf 天.** With `panels: scroll`, Time sits in the middle of the paper when the scroll opens, which left bare paper to its left. A weather leaf (`00 // WEATHER`, not a section: the index plate and the number keys skip it) now fills it and slides away with Time:
@@ -259,7 +277,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/typeset/03-presets.webp)
 
-A preset sets all seventeen settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
+A preset sets all eighteen settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
 | Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet |
 |---|---|---|---|---|---|---|
@@ -280,6 +298,7 @@ A preset sets all seventeen settings at once. Change any setting afterwards and 
 | position | top | top | top | top | top | top |
 | panels | sheets | scroll | scroll | sheets | sheets | scroll |
 | interlude | folio | kotoba | seal | ma | folio | fuda |
+| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu |
 
 - **Sheet**: the Sheet design, exactly. A spec table across the top of the page.
 - **Scroll**: the Scroll design, exactly. Calm type and a handscroll underneath.
@@ -313,10 +332,11 @@ A preset sets all seventeen settings at once. Change any setting afterwards and 
 | position | 2 |
 | panels | 2 |
 | interlude | 9 |
+| endleaf | 9 |
 
-3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 × 9 = **107,495,424** bars.
+3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 × 9 × 9 = **967,458,816** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels and the scroll's dividers, is 2,985,984 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers and its end leaf, is 2,985,984 combinations.
 
 ![Twelve random combinations](mockups/typeset/04-shuffle.webp)
 
@@ -344,7 +364,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Widgets 部品** shows or hides anything the bar can show, each row `shown | hidden`, in cards: *Left* (seal, workspaces, window title), *Centre* (clock, now playing), *Right · readings* (network, Bluetooth, volume, brightness, battery, notifications), *Marks · Hanko's own* (each indicator, the keyboard layout, the microphone, the tray, as your Omarchy layout has them), *Tray apps* (each app in the tray now), *Widgets · from your Omarchy bar* (every hosted widget, marked Omarchy or third-party) and *Edge*. A part its own setting leaves out (`seal: none`, `title: none`, `media: none`, `bluetooth: off`) reads hidden, and showing it sets it back to the preset's way. Show all puts every hidden part back. Hiding is for this bar only: the widget stays in Omarchy's layout. From a terminal: `hanko hide <part>`, `hanko show <part>`, or `hanko style set show:<part> hidden`.
 
-**Motion 動** holds one switch outside the seventeen settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
+**Motion 動** holds one switch outside the eighteen settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
 **Typesetting 組版**, the page drawn on sheets 01 and 02, holds every setting in this document:
 
@@ -396,7 +416,7 @@ Resolution order: preset → `edits` → `monitors[name]`. Unknown keys and inva
 In QML, the bar reads one resolved object:
 
 ```qml
-property var style: Typeset.current   // 17 settings
+property var style: Typeset.current   // 18 settings
 Seal   { mode: style.seal }
 Spaces { mode: style.spaces }
 Clock  { mode: style.clock; anchor: style.clockAt }

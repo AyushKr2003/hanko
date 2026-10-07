@@ -3,6 +3,7 @@ import QtQuick
 import "../../core"
 import "../../core/Scroll.js" as Scroll
 import "../../core/Weather.js" as Wx
+import "../../core/Leaf.js" as LeafJs
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): one
 // long paper held between two rollers, its eight sections side by side with
@@ -25,10 +26,14 @@ Item {
   property real reveal: 1
   property real ink: 1
   // The sheets' feed (now, zones, timeShift, sound, network, bluetooth,
-  // power, display, letters, dnd) plus spaces, weather and weatherShown.
+  // power, display, letters, dnd) plus spaces, weather and weatherShown,
+  // and the end leaf's: leaf (services/Leaf.qml reading), endShown, font,
+  // version, preset, switches ({awake, night, dnd}) and sealGlyph.
   property var feed: ({})
   // What sits between sections (Style.js `interlude`).
   property string divider: "seal"
+  // Which leaf sits after Inbox (Style.js `endleaf`).
+  property string endleaf: "koyomi"
 
   signal request(string section, string what, var arg)
   // A name on the index plate was clicked.
@@ -46,6 +51,11 @@ Item {
   // the middle (0 when the view is too narrow, or the leaf is hidden).
   readonly property int leafWidth: root.feed.weatherShown === false ? 0
     : Wx.leafWidth(view.width, layout.widths[0], interlude, Type.scale)
+
+  // The end leaf's width: the bare paper right of Inbox while Inbox is in
+  // the middle, the weather leaf's twin.
+  readonly property int endWidth: root.feed.endShown === false ? 0
+    : Wx.leafWidth(view.width, layout.widths[layout.widths.length - 1], interlude, Type.scale)
 
   implicitHeight: Type.px(460)
 
@@ -179,6 +189,35 @@ Item {
             dnd: !!root.feed.dnd
             now: root.feed.now || new Date()
             onRequest: function(what, arg) { root.request("inbox", what, arg) }
+          }
+
+          // After Inbox, on paper that is otherwise bare: an interlude and
+          // the end leaf.
+          Interlude {
+            visible: root.endWidth > 0
+            seed: root.sections.length - 1
+            after: ({ no: "09", jp: LeafJs.kindOf(root.endleaf).jp, label: LeafJs.kindOf(root.endleaf).label })
+            style: root.divider
+            x: root.layout.xs[root.sections.length - 1] + root.layout.widths[root.sections.length - 1]
+            y: Type.px(64)
+            width: root.interlude
+            height: track.height - Type.px(98)
+          }
+          EndLeaf {
+            visible: root.endWidth > 0
+            x: root.layout.xs[root.sections.length - 1] + root.layout.widths[root.sections.length - 1] + root.interlude
+            width: root.endWidth
+            height: track.height
+            kind: root.endleaf
+            now: root.feed.now || new Date()
+            reading: root.feed.leaf || ({})
+            font: root.feed.font || Type.mono
+            version: root.feed.version || ""
+            preset: root.feed.preset || ""
+            switches: root.feed.switches || ({})
+            sealGlyph: root.feed.sealGlyph || "判"
+            sections: root.sections.length
+            onRequest: function(what, arg) { root.request("leaf", what, arg) }
           }
 
           // Interludes, in the gaps between sections.

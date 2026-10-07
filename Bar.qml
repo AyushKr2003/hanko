@@ -158,6 +158,28 @@ Item {
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
       // `clear` forgets the history, `dismissAll` the toasts still on screen.
       else if (what === "clear") Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
+    } else if (key === "leaf") leafRequest(what, arg)
+  }
+
+  // The end leaf after Inbox on the scroll (bar/scroll/EndLeaf.qml).
+  function leafRequest(what, arg) {
+    if (what === "session") { closeScroll(); Leaf.sessionAct(String(arg)) }
+    else if (what === "theme") Leaf.setTheme(String(arg))
+    else if (what === "themes") { closeScroll(); Leaf.openThemes() }
+    else if (what === "focus") Leaf.focusAct(String(arg))
+    else if (what === "note") Leaf.toggleNote(Number(arg))
+    else if (what === "notes") { closeScroll(); Leaf.editNotes() }
+    else if (what === "clip") Leaf.copyClip(Number(arg))
+    else if (what === "tool") {
+      var key = String(arg)
+      if (key === "awake") {
+        // Omarchy's idle service: stay awake is idle switched off.
+        var idle = Extras.idleProxy
+        if (idle && typeof idle.setIdleEnabled === "function") idle.setIdleEnabled(!!idle.stayAwake)
+        else Quickshell.execDetached(["omarchy-toggle-idle"])
+      } else if (key === "night") Display.setNight(!(Extras.nightProxy && Extras.nightProxy.enabled))
+      else if (key === "silence") Status.act("notif", "right")
+      else { closeScroll(); Leaf.runTool(key) }
     }
   }
 
@@ -319,6 +341,8 @@ Item {
   Binding { target: Power; property: "wanted"; value: root.sheet === "power" || root.scrollOpen }
   Binding { target: Display; property: "wanted"; value: root.sheet === "display" || root.scrollOpen }
   Binding { target: Weather; property: "wanted"; value: root.scrollOpen }
+  Binding { target: Leaf; property: "wanted"; value: root.scrollOpen }
+  Binding { target: Leaf; property: "kind"; value: Typeset.styleFor(root.scrollScreen || root.focusedScreen()).endleaf || "koyomi" }
   Binding { target: Weather; property: "barConfig"; value: root.barConfig }
   Binding { target: Blue; property: "wanted"; value: root.sheet === "bluetooth" || root.scrollOpen }
 

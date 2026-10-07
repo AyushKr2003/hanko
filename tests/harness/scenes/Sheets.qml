@@ -119,6 +119,7 @@ Rectangle {
             y: desk.atBottom ? bar.y - height : bar.y + bar.height
             atBottom: desk.atBottom
             divider: desk.style.interlude
+            endleaf: desk.style.endleaf
             current: deskColumn.modelData.current || 0
             ink: deskColumn.modelData.ink !== undefined ? deskColumn.modelData.ink : 1
             reveal: deskColumn.modelData.reveal !== undefined ? deskColumn.modelData.reveal : 1

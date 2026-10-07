@@ -20,8 +20,10 @@ Item {
 
   property int seed: 0
   property string style: "seal"
+  // What comes after, when it is not a section (the end leaf after Inbox).
+  property var after: null
   // The sections either side (seed 11 = the weather leaf, before Time).
-  readonly property var next: Scroll.SECTIONS[seed === 11 ? 0 : Math.min(seed + 1, Scroll.SECTIONS.length - 1)]
+  readonly property var next: after || Scroll.SECTIONS[seed === 11 ? 0 : Math.min(seed + 1, Scroll.SECTIONS.length - 1)]
   readonly property var prev: seed === 11 ? ({ no: "00", jp: "天", label: "WEATHER" }) : Scroll.SECTIONS[seed]
   readonly property real cx: Math.round(width / 2)
   // Drawing scale; the settings page draws them smaller.

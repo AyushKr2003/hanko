@@ -16,7 +16,7 @@ function load(file, names) {
 const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
-const Se = load("core/Settings.js", ["interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
+const Se = load("core/Settings.js", ["ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
@@ -31,6 +31,10 @@ const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", 
 const Pw = load("core/Power.js", ["keyValues", "profiles", "stateLabel", "blurb", "details", "sheet"])
 const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell", "layout", "centred", "nearest",
   "clampTrack", "landing", "position"])
+const Lf = load("core/Leaf.js", ["KINDS", "kindOf", "labels", "uptime", "uptimeShort", "themeName", "colophon", "almanac", "moon",
+  "cpuTimes", "cpuBusy", "memory", "temperature", "disk", "top", "bytes", "machine", "SESSION", "sessionAction", "themes", "themeWindow",
+  "themesView", "TOOLS", "tool", "toolsLine", "focusState", "focusStep", "focusView", "clock", "notes", "toggled", "notesView", "clipboard",
+  "afterword", "SEKKI", "KO"])
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
@@ -42,9 +46,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("seventeen settings, 107,495,424 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 17)
-  assert.equal(S.combinations(), 107495424)
+test("eighteen settings, 967,458,816 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 18)
+  assert.equal(S.combinations(), 967458816)
 })
 
 test("bluetooth styles: device, marks, count, off; an older \"on\" reads as device", () => {
@@ -552,7 +556,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the seventeen settings once", () => {
+test("settings: six cards hold every one of the eighteen settings once", () => {
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
@@ -580,7 +584,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 7)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 8)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -741,7 +745,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 107495424)
+  assert.equal(S.combinations(), 967458816)
 })
 
 test("hidden parts: shown or hidden per part, kept through presets, shuffles and resets", () => {
@@ -880,4 +884,162 @@ test("weather: the day's curve, range bars and how wide the leaf can be", () => 
   assert.equal(Wx.leafWidth(1500, 600, 70, 1), 340)
 })
 
+
+test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () => {
+  assert.deepEqual(S.OPTIONS.endleaf, ["okugaki", "koyomi", "kiki", "shimai", "iro", "dougu", "shuchu", "hikae", "batsu"])
+  assert.deepEqual(Lf.KINDS.map(k => k.key), S.OPTIONS.endleaf)
+  assert.deepEqual(Se.ENDLEAVES.map(k => k.key), S.OPTIONS.endleaf)
+  assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
+  assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
+  assert.equal(S.resolve({}).endleaf, "koyomi")
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu"])
+  assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
+  assert.equal(Se.endleafOf("iro").name, "Iro")
+  assert.equal(Lf.kindOf("nope").key, "koyomi")
+  assert.equal(S.shows(S.resolve({ hidden: ["endleaf"] }), "endleaf"), false)
+})
+
+test("end leaf: the almanac for Tuesday 6 October 2026", () => {
+  assert.equal(Lf.SEKKI.length, 24)
+  assert.equal(Lf.KO.length, 72)
+  const a = Lf.almanac(new Date(2026, 9, 6, 14, 30))
+  assert.equal(a.month, "October")
+  assert.equal(a.cells.length, 35)
+  assert.equal(a.cells[3].label, "01")          // 1 October 2026 is a Thursday
+  assert.ok(a.cells.find(c => c.today).day === 6)
+  assert.equal(a.sekki.name, "Shūbun")
+  assert.equal(a.title, "Shūbun, <i>autumn</i>")
+  assert.equal(a.ko.no, 48)
+  assert.equal(a.caption, "Kō 48 · farmers drain their fields")
+  assert.equal(a.next.name, "Kanro")
+  assert.equal(a.next.day, 8)
+  assert.ok(a.cells.find(c => c.term).day === 8)
+  assert.equal(a.day, 279)
+  assert.equal(a.days, 365)
+  // Early January belongs to last December's term and microseason.
+  const j = Lf.almanac(new Date(2027, 0, 2))
+  assert.equal(j.sekki.name, "Tōji")
+  assert.equal(j.ko.no, 66)
+  assert.equal(j.sekki.season, "winter")
+  assert.equal(Lf.almanac(new Date(2026, 1, 4)).ko.no, 1)
+  // The moon: a waning crescent, new in a few days.
+  const m = Lf.moon(new Date(2026, 9, 6, 14, 30))
+  assert.equal(m.waxing, false)
+  assert.ok(m.percent > 10 && m.percent < 35)
+  assert.match(m.next, /^New · 1[01]th$/)
+  assert.ok(Lf.moon(new Date(Date.UTC(2000, 0, 6, 18, 14))).percent === 0)
+})
+
+test("end leaf: the colophon from the machine's facts", () => {
+  const raw = "host\tkumo\nmodel\tThinkPad X1 Carbon Gen 11\nkernel\t6.17.2-arch1-1\npackages\t1214\nupgraded\tMon 05 Oct\nomarchy\t3.1.4\nhyprland\t0.51.0\nuptime\t279000.5\nuser\tayush\nname\tAyush Kumar\ntheme\ttokyo-night\n"
+  const c = Lf.colophon(raw, { font: "JetBrains Mono", version: "0.1.0", preset: "Hanko" })
+  assert.equal(c.title, "Set on <i>kumo</i>")
+  assert.equal(c.caption, "Omarchy 3.1.4 · up 3 days")
+  assert.deepEqual(c.rows.map(r => r.k), ["Host", "Kernel", "Hyprland", "Packages", "Theme", "Font", "Bar"])
+  assert.equal(c.rows[3].v, "1,214 · upgraded Mon 05 Oct")
+  assert.equal(c.rows[4].v, "Tokyo Night")
+  assert.deepEqual(c.seals.map(s => s.glyph), ["A", "T", "判"])
+  const bare = Lf.colophon("host\tbox\nmodel\tTo Be Filled By O.E.M.\n", {})
+  assert.equal(bare.rows[0].v, "box")
+  assert.equal(Lf.colophon("", {}).ready, false)
+  assert.equal(Lf.uptime(279000), "3 days 5 hours")
+  assert.equal(Lf.uptime(3700), "1 hour 1 min")
+  assert.equal(Lf.themeName("rose-pine-dawn"), "Rose Pine Dawn")
+})
+
+test("end leaf: the machine from /proc, df, sensors and top", () => {
+  const a = Lf.cpuTimes("cpu  100 0 100 700 100 0 0 0 0 0\ncpu0 1 2 3")
+  const b = Lf.cpuTimes("cpu  150 0 150 800 100 0 0 0 0 0")
+  assert.deepEqual(a, { idle: 800, total: 1000 })
+  assert.equal(Lf.cpuBusy(a, b), 0.5)
+  assert.equal(Lf.cpuBusy(null, b), null)
+  const mem = Lf.memory("MemTotal:       32000000 kB\nMemFree:  1000 kB\nMemAvailable:   24000000 kB\n")
+  assert.deepEqual(mem, { used: 8000000 * 1024, total: 32000000 * 1024 })
+  assert.equal(Lf.temperature("acpitz 38000\nnvme 45000\ncoretemp 41000\n"), 41)
+  assert.equal(Lf.temperature("nvme 45000\niwlwifi 0\n"), 45)
+  assert.equal(Lf.temperature(""), null)
+  assert.deepEqual(Lf.disk("     1B/size    1B/used\n465000000000 268000000000\n"), { used: 268e9, total: 465e9 })
+  assert.deepEqual(Lf.top("firefox\t6.1\nHyprland\t2.3\nquickshell\t1.4\nextra\t1\n").map(p => p.name), ["firefox", "Hyprland", "quickshell"])
+  assert.equal(Lf.bytes(7.4e9), "7.4 GB")
+  assert.equal(Lf.machine({ cpu: 0.5, mem: { used: 7.4e9, total: 32e9 } }).rows[1].v, "7.4 / 32 GB")
+  const m = Lf.machine({ cpu: 0.12, cores: 8, load: 0.42, mem: { used: 7.4e9, total: 32e9 }, disk: { used: 268e9, total: 465e9 },
+    temp: 41, history: [0.1, 0.61, 0.2], top: [{ name: "firefox", cpu: 6.1 }, { name: "Hyprland", cpu: 2.3 }] })
+  assert.equal(m.title, "12%, <i>quiet</i>")
+  assert.equal(m.caption, "8 cores · 41°C · load 0.42")
+  assert.deepEqual(m.rows.map(r => r.k), ["CPU", "Memory", "Disk", "Heat"])
+  assert.equal(m.peakLabel, "61% peak")
+  assert.equal(m.peakAt, 1)
+  assert.equal(m.top, "firefox 6% · Hyprland 2%")
+  assert.equal(Lf.machine(null).ready, false)
+})
+
+test("end leaf: themes around the current one, tools, session", () => {
+  const raw = ["kanagawa\t#1f1f28\t#dcd7ba\t#c34043\tdark", "nord\t#2e3440\t#d8dee9\t#bf616a\t", "rose-pine\t#faf4ed\t#575279\t#b4637a\tlight",
+    "kanagawa\t#000000\t#ffffff\t#ff0000\t", "broken\tnope\t#fff\t\t", "tokyo-night\t#1a1b26\t#a9b1d6\t\t"].join("\n")
+  const list = Lf.themes(raw)
+  assert.deepEqual(list.map(t => t.slug), ["kanagawa", "nord", "rose-pine", "tokyo-night"])
+  assert.equal(list[0].bg, "#1f1f28")          // the user's copy, listed first, wins
+  assert.equal(list[2].light, true)
+  assert.equal(list[3].red, "#a9b1d6")
+  assert.deepEqual(Lf.themeWindow(list, "nord", 3).map(t => t.slug), ["kanagawa", "nord", "rose-pine"])
+  assert.deepEqual(Lf.themeWindow(list, "kanagawa", 3).map(t => t.slug), ["tokyo-night", "kanagawa", "nord"])
+  const v = Lf.themesView(list, "rose-pine", 6)
+  assert.equal(v.title, "Rose Pine, <i>light</i>")
+  assert.equal(v.shown.length, 4)
+  assert.equal(v.more, 0)
+  assert.equal(Lf.TOOLS.length, 9)
+  assert.equal(Lf.tool("picker").closes, true)
+  assert.equal(Lf.toolsLine({ awake: true, dnd: true }), "Staying awake · silenced")
+  assert.equal(Lf.toolsLine({}), "Nothing is on")
+  assert.deepEqual(Lf.SESSION.map(a => a.key), ["lock", "suspend", "logout", "reboot", "shutdown"])
+  assert.deepEqual(Lf.sessionAction("suspend").command, ["systemctl", "suspend"])
+  assert.equal(Lf.sessionAction("nope"), null)
+})
+
+test("end leaf: the focus timer runs, pauses, ends and counts the day", () => {
+  const t0 = new Date(2026, 9, 6, 14, 30).getTime()
+  let s = Lf.focusState("")
+  assert.equal(s.kind, "idle")
+  assert.equal(Lf.focusView(s, t0).title, "25:00, <i>ready</i>")
+  s = Lf.focusStep(s, "start", t0).state
+  assert.equal(s.kind, "focus")
+  let v = Lf.focusView(s, t0 + 6 * 60000 + 18000)
+  assert.equal(v.title, "18:42, <i>focus</i>")
+  assert.equal(v.caption, "Session 1 of 4 · break at 14:55")
+  s = Lf.focusStep(s, "pause", t0 + 60000).state
+  assert.equal(Lf.focusView(s, t0 + 10 * 60000).title, "24:00, <i>paused</i>")
+  s = Lf.focusStep(s, "resume", t0 + 10 * 60000).state
+  s = Lf.focusStep(s, "more", t0 + 10 * 60000).state
+  assert.equal(Lf.clock(s.endsAt - (t0 + 10 * 60000)), "29:00")
+  let r = Lf.focusStep(s, "tick", s.endsAt)
+  assert.equal(r.state.kind, "break")
+  assert.equal(r.state.done, 1)
+  assert.equal(r.said, "Focus done · take five")
+  r = Lf.focusStep(r.state, "skip", r.state.endsAt - 1000)
+  assert.equal(r.state.kind, "idle")
+  assert.equal(r.said, "Break over")
+  // A new day starts the count again; stopping a focus counts nothing.
+  const next = Lf.focusStep(r.state, "start", t0 + 86400000).state
+  assert.equal(next.done, 0)
+  assert.equal(Lf.focusStep(next, "skip", t0 + 86400000 + 1000).state.done, 0)
+  assert.equal(Lf.focusState("{bad").kind, "idle")
+  assert.equal(Lf.focusState(JSON.stringify(s)).length, 30)
+})
+
+test("end leaf: notes you can tick, and the clipboard", () => {
+  const text = "# Today\n\n- [x] Test Hanko on the laptop\n- [ ] Reply to Kenji\n* [ ] Pick a name\nA plain line\n"
+  const items = Lf.notes(text)
+  assert.deepEqual(items.map(i => [i.text, i.done, i.box, i.line]),
+    [["Test Hanko on the laptop", true, true, 2], ["Reply to Kenji", false, true, 3], ["Pick a name", false, true, 4], ["A plain line", false, false, 5]])
+  assert.equal(Lf.toggled(text, 3).split("\n")[3], "- [x] Reply to Kenji")
+  assert.equal(Lf.toggled(text, 2).split("\n")[2], "- [ ] Test Hanko on the laptop")
+  assert.equal(Lf.toggled(text, 5), text)
+  assert.equal(Lf.notesView(items, true).title, "Two <i>to do</i>")
+  assert.equal(Lf.notesView([], false).title, "A blank <i>page</i>")
+  const clips = Lf.clipboard(JSON.stringify([{ type: "text", text: "git  push\n-u origin dev" }, { type: "image", path: "/tmp/a.png" }, "#c34043", { type: "text", text: "four" }]))
+  assert.deepEqual(clips.map(c => c.text), ["git push -u origin dev", "Image", "#c34043"])
+  assert.equal(clips[2].index, 2)
+  assert.deepEqual(Lf.clipboard("nope"), [])
+  assert.equal(Lf.afterword(new Date(2026, 9, 6), 8).line, "Eight sections · Tuesday 06 · X · 2026")
+})
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

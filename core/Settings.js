@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the seventeen settings into six cards, and the
+// Typesetting 組版 page groups the eighteen settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -48,10 +48,11 @@ var CARDS = [
   { title: "Panels", rows: [
     { key: "panels", name: "Panels open as", detail: "Flush sheets or one scroll" },
     { key: "interlude", name: "Scroll dividers", detail: "What sits between the scroll's sections" },
+    { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
-// The Motion 動 page: one switch outside the seventeen (style.json `motion`),
+// The Motion 動 page: one switch outside the eighteen (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
@@ -95,6 +96,31 @@ function interludeLabels() {
   return out
 }
 
+// The end leaves as the Scroll 巻 page and the Typesetting row show them
+// (core/Leaf.js KINDS draws them; the unit tests keep the two in step).
+var ENDLEAVES = [
+  { key: "okugaki", jp: "奥", name: "Okugaki", detail: "A colophon: the machine, and seals" },
+  { key: "koyomi",  jp: "暦", name: "Koyomi",  detail: "The month, the season, the moon" },
+  { key: "kiki",    jp: "機", name: "Kiki",    detail: "CPU, memory, disk and heat" },
+  { key: "shimai",  jp: "終", name: "Shimai",  detail: "Lock, suspend, log out, shut down" },
+  { key: "iro",     jp: "色", name: "Iro",     detail: "Omarchy's themes, to switch" },
+  { key: "dougu",   jp: "具", name: "Dōgu",    detail: "Screenshot, picker, stay awake" },
+  { key: "shuchu",  jp: "集", name: "Shūchū",  detail: "A focus timer" },
+  { key: "hikae",   jp: "控", name: "Hikae",   detail: "Today's list and the clipboard" },
+  { key: "batsu",   jp: "跋", name: "Batsu",   detail: "The end of the scroll" }
+]
+
+function endleafOf(key) {
+  for (var i = 0; i < ENDLEAVES.length; i++) if (ENDLEAVES[i].key === key) return ENDLEAVES[i]
+  return ENDLEAVES[1]
+}
+
+function endleafLabels() {
+  var out = {}
+  for (var i = 0; i < ENDLEAVES.length; i++) out[ENDLEAVES[i].key] = ENDLEAVES[i].jp
+  return out
+}
+
 // A setting's name as its card row gives it ("clockAt" -> "Clock position").
 function nameOf(key) {
   for (var i = 0; i < CARDS.length; i++)
@@ -123,7 +149,8 @@ function visibilityCards(ctx) {
     { title: "Centre · when", rows: [
       row("clock", "Clock", "The time and date"),
       row("media", "Now playing", "What is playing, while it plays"),
-      row("weather", "Weather leaf 天", "Left of Time on the scroll")] },
+      row("weather", "Weather leaf 天", "Left of Time on the scroll"),
+      row("endleaf", "End leaf 跋", "Right of Inbox on the scroll")] },
     { title: "Right · readings", rows: [
       row("network", "Network 網", "NET"),
       row("bluetooth", "Bluetooth 藍", "BT, where there is an adapter"),
@@ -177,7 +204,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// seventeen that resolves differently, the seal glyph, and each monitor whose
+// eighteen that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)

@@ -141,6 +141,7 @@ PanelWindow {
       current: win.dragging ? Scroll.nearest(win.trackX, viewWidth, Type.scale) : win.bar.scrollSection
       trackX: win.trackX
       divider: win.barWindow.style.interlude || "seal"
+      endleaf: win.barWindow.style.endleaf || "koyomi"
       reveal: 0
       ink: 0
       feed: ({
@@ -156,7 +157,18 @@ PanelWindow {
         weather: Weather.reading,
         weatherShown: (win.barWindow.style.hidden || []).indexOf("weather") < 0,
         dnd: Status.doNotDisturb,
-        spaces: Hypr.spacesFor(win.screenName)
+        spaces: Hypr.spacesFor(win.screenName),
+        leaf: Leaf.reading,
+        endShown: (win.barWindow.style.hidden || []).indexOf("endleaf") < 0,
+        font: Type.mono,
+        version: win.bar.version,
+        preset: win.barWindow.style.preset + (win.barWindow.style.edited ? " + edits" : ""),
+        switches: {
+          awake: !!(Extras.idleProxy && Extras.idleProxy.stayAwake),
+          night: !!(Extras.nightProxy && Extras.nightProxy.enabled),
+          dnd: Status.doNotDisturb
+        },
+        sealGlyph: win.barWindow.style.sealGlyph
       })
 
       Behavior on reveal {

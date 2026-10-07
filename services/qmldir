@@ -9,3 +9,4 @@ singleton Extras 1.0 Extras.qml
 singleton Display 1.0 Display.qml
 singleton Blue 1.0 Blue.qml
 singleton Weather 1.0 Weather.qml
+singleton Leaf 1.0 Leaf.qml

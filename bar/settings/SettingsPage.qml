@@ -3,6 +3,7 @@ import QtQuick
 import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
+import "../../core/Leaf.js" as LeafJs
 import ".."
 import "../scroll"
 
@@ -948,6 +949,86 @@ Rectangle {
           }
         }
 
+        // What sits after Inbox (the `endleaf` setting): each tile draws the
+        // real end leaf, small, with a sample reading.
+        Column {
+          visible: root.page === "scroll"
+          width: parent.width
+          topPadding: Type.px(26)
+          spacing: Type.px(12)
+
+          Row {
+            spacing: Type.px(8)
+            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+            Text { text: "AFTER INBOX"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+          }
+
+          Grid {
+            id: endleaves
+            width: parent.width
+            spacing: Type.px(8)
+            columns: width >= Type.px(760) ? 3 : 2
+            readonly property var reading: LeafJs.sample(new Date())
+            Repeater {
+              model: Settings.ENDLEAVES
+              Rectangle {
+                id: leafTile
+                required property var modelData
+                readonly property bool on: modelData.key === root.style.endleaf
+                width: (endleaves.width - (endleaves.columns - 1) * endleaves.spacing) / endleaves.columns
+                height: leafStage.height + leafCaption.height + Type.px(20)
+                radius: 3
+                color: leafHover.containsMouse && !on ? Ink.lineSoft : "transparent"
+                border.width: on ? 2 : 1
+                border.color: on ? Ink.bone : Ink.line
+
+                Item {
+                  id: leafStage
+                  x: Type.px(8)
+                  y: Type.px(8)
+                  width: parent.width - 2 * x
+                  height: Math.round(width * 0.82)
+                  clip: true
+                  EndLeaf {
+                    width: Type.px(400)
+                    height: Type.px(460)
+                    x: (leafStage.width - width * scale) / 2
+                    y: -Type.px(36) * scale
+                    transformOrigin: Item.TopLeft
+                    scale: leafStage.height / Type.px(390)
+                    kind: leafTile.modelData.key
+                    reading: endleaves.reading
+                    version: "0.1.0"
+                    preset: root.style.preset
+                    sealGlyph: root.style.sealGlyph
+                    enabled: false
+                  }
+                }
+
+                Row {
+                  id: leafCaption
+                  x: Type.px(12)
+                  y: leafStage.y + leafStage.height + Type.px(6)
+                  spacing: Type.px(8)
+                  Text { text: leafTile.modelData.jp; color: leafTile.on ? Ink.seal : Ink.inkDim; font.family: Type.jp; font.pixelSize: Type.px(13) }
+                  Column {
+                    Text { text: leafTile.modelData.name.toUpperCase() + (leafTile.on ? "  · IN USE" : ""); color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
+                    Text { text: leafTile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(11) }
+                  }
+                }
+
+                MouseArea {
+                  id: leafHover
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.settingPicked("endleaf", leafTile.modelData.key)
+                }
+              }
+            }
+          }
+        }
+
         // ------------------------------------------------ Presets
         Column {
           visible: root.page === "presets"
@@ -1052,7 +1133,7 @@ Rectangle {
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
     widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
     sheets: "Sheets drop flush from the cell you click. Choose them under Panels on Typesetting; their own settings come later.",
-    scroll: "The handscroll unrolls from the rod. Choose what sits between its panels; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
+    scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
     keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+S saves. Rebinding comes later."
   })
