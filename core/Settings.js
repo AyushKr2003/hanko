@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the sixteen settings into six cards, and the
+// Typesetting 組版 page groups the seventeen settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -47,10 +47,11 @@ var CARDS = [
     { key: "position", name: "Position", detail: "" }] },
   { title: "Panels", rows: [
     { key: "panels", name: "Panels open as", detail: "Flush sheets or one scroll" },
+    { key: "interlude", name: "Scroll dividers", detail: "What sits between the scroll's sections" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
-// The Motion 動 page: one switch outside the sixteen (style.json `motion`),
+// The Motion 動 page: one switch outside the seventeen (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
@@ -67,6 +68,32 @@ var MOTION_ROWS = [
   ["Stamp", "A new notification is pressed down, then settles: the only overshoot", "stamp"],
   ["Now-notch", "Creeps to the new minute instead of jumping", "creep"]
 ]
+
+// The interludes as the Scroll 巻 page and the Typesetting row show them:
+// a kanji for the segmented control, a name and a line for the gallery.
+var INTERLUDES = [
+  { key: "ma",       jp: "間", name: "Ma",       detail: "Space alone" },
+  { key: "hairline", jp: "罫", name: "Hairline", detail: "One fading rule with a ring" },
+  { key: "folio",    jp: "柱", name: "Folio",    detail: "A ruler with both numbers" },
+  { key: "kotoba",   jp: "詞", name: "Kotoba",   detail: "The next name, set vertically" },
+  { key: "tsugime",  jp: "継", name: "Tsugime",  detail: "A paper join" },
+  { key: "seal",     jp: "印", name: "Seal",     detail: "A seal pressed across the join" },
+  { key: "jiku",     jp: "軸", name: "Jiku",     detail: "A slim inner roller" },
+  { key: "fuda",     jp: "札", name: "Fuda",     detail: "An index tab" },
+  { key: "su",       jp: "数", name: "Su",       detail: "The next number, large" }
+]
+
+function interludeOf(key) {
+  for (var i = 0; i < INTERLUDES.length; i++) if (INTERLUDES[i].key === key) return INTERLUDES[i]
+  return INTERLUDES[0]
+}
+
+// value -> kanji, for the Typesetting row's segmented control.
+function interludeLabels() {
+  var out = {}
+  for (var i = 0; i < INTERLUDES.length; i++) out[INTERLUDES[i].key] = INTERLUDES[i].jp
+  return out
+}
 
 // A setting's name as its card row gives it ("clockAt" -> "Clock position").
 function nameOf(key) {
@@ -150,7 +177,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// sixteen that resolves differently, the seal glyph, and each monitor whose
+// seventeen that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)

@@ -76,7 +76,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - Keyboard: `Esc`, arrow keys, and `Tab` between sheets. The host's panel hotkeys (`SUPER+CTRL+A/W/P`, `ALT+D/E`, `togglePanelAt right N`) open the matching sheet.
 
 ### Phase 7 · The handscroll ✅
-- `panels: scroll`: one paper between two rollers holding eight sections (Time, Sound, Network, Bluetooth, Power, Display, Spaces, Inbox) with dithered interludes, and a weather leaf left of Time (added after the phase); an index plate on top (below, for a bar at the bottom) and a position bar along the foot.
+- `panels: scroll`: one paper between two rollers holding eight sections (Time, Sound, Network, Bluetooth, Power, Display, Spaces, Inbox) with dividers between them (nine styles, the `interlude` setting, added after the phase), and a weather leaf left of Time (added after the phase); an index plate on top (below, for a bar at the bottom) and a position bar along the foot.
 - Unrolls from a status, clock or inbox click (at that section), a pull on the rod, Omarchy's panel hotkeys, or `omarchy-shell hanko scroll`. Pans with a drag, the wheel, `H`/`L` or the arrows, lands centred on a section; `Esc` rolls it up.
 - Sections in ryoku.dev's grammar with Scroll's controls: the day ribbon, a fader bank, the networks, the power profiles, a map of every workspace's tiling (click a window to go there) and stamped letters.
 - Motion as Scroll drew it (unroll 300 ms, ink 200 ms after 120 ms, pan snap 260 ms); Omarchy's reduced motion cuts to the end frames.
@@ -92,7 +92,7 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - When the right zone fills up, what is playing gives way first, then the tray folds into 盆 with a count, then hosted widgets drop out whole; nothing ever runs into the clock.
 
 ### Phase 10 · Motion ✅ and release ⬜
-- ✅ The motion spec from Scroll: the scroll unrolls and pans on paper-like curves, a sheet prints from its cell, the live page's plate slides to the next one, readings and the clock fade to new values, the now-notch creeps, and a new stamp is pressed down and settles (the only overshoot). A Motion 動 page with a paper/still switch (style.json `motion`, outside the sixteen settings); still, or Omarchy's animations off, cuts every move to its end frame.
+- ✅ The motion spec from Scroll: the scroll unrolls and pans on paper-like curves, a sheet prints from its cell, the live page's plate slides to the next one, readings and the clock fade to new values, the now-notch creeps, and a new stamp is pressed down and settles (the only overshoot). A Motion 動 page with a paper/still switch (style.json `motion`, outside the seventeen settings); still, or Omarchy's animations off, cuts every move to its end frame.
 - ✅ A per-monitor override UI under Advanced: pick a monitor, set any setting for it alone, see which ones differ.
 - ✅ Visibility (asked for after Phase 10): every part of the bar, each mark and tray app, and every hosted Omarchy or third-party widget can be shown or hidden on the Widgets 部品 page or with `hanko hide|show <part>` (style.json `hidden`).
 - ✅ The settings window reflows to any window size.

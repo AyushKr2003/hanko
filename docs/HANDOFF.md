@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-06, after the Bluetooth cell styles and the weather leaf (on `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the scroll dividers setting (on `dev`). The release steps are left to the user, who is testing on hardware first.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -61,7 +61,7 @@ Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at
 The design directions, in the order they were drawn:
 
 1. **Sheet**: the bar as a printed running head. Seal, label-over-value cells, tick meters, the 24-hour day rule along the foot, folio workspaces, flush sheets that drop from a cell. 5 mockups. Lives on as the Sheet preset.
-2. **Scroll**: a calm one-line bar that unrolls into a horizontal handscroll (emakimono) holding every panel, with rollers, an index plate and dithered interludes. Workspace-numeral seal, real-layout workspace glyphs, serif byline, kanji glyph status, notification stamps, the rod. 6 mockups. Lives on as the Scroll preset.
+2. **Scroll**: a calm one-line bar that unrolls into a horizontal handscroll (emakimono) holding every panel, with rollers, an index plate and dithered interludes (since replaced by the `interlude` setting). Workspace-numeral seal, real-layout workspace glyphs, serif byline, kanji glyph status, notification stamps, the rod. 6 mockups. Lives on as the Scroll preset.
 3. **Typeset** (chosen): the two merged; every part of the bar is a setting, with a Typesetting 組版 settings page. 19 mockups in `docs/mockups/typeset/`, spec in `docs/COMPONENTS.md`, overview in `docs/DESIGN.md`. This is the spec the plugin implements.
 
 Older commit messages call these designs beta1, alpha1 and gama1.
@@ -96,7 +96,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The sixteen settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
+### The seventeen settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
 
 | Zone | Key | Options |
 |---|---|---|
@@ -116,6 +116,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | Frame | `surface` | **`solid`**, `glass`, `inset` |
 | Frame | `position` | **`top`**, `bottom` |
 | Panels | `panels` | `sheets`, **`scroll`** |
+| Panels | `interlude` | `ma`, `hairline`, `folio`, `kotoba`, `tsugime`, **`seal`**, `jiku`, `fuda`, `su` (added after Typeset; what sits between scroll sections) |
 
 ### Presets
 
@@ -137,6 +138,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 | surface | solid | solid | solid | glass | solid | inset |
 | position | top | top | top | top | top | top |
 | panels | sheets | scroll | scroll | sheets | sheets | scroll |
+| interlude | folio | kotoba | seal | ma | folio | fuda |
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -285,7 +287,7 @@ core/
   Style.js               OPTIONS, KEYS, PRESETS, PRESET_NAMES, DEFAULT_PRESET, coerce,
                          normalize, resolve(doc, monitor), withSetting, withPreset,
                          shuffled(doc, rng), combinations(); MOTIONS (motion and
-                         sealGlyph sit beside the edits, outside the sixteen)
+                         sealGlyph sit beside the edits, outside the seventeen)
   InkMath.js             hexToRgb, mix, luminance, contrast, tier, isLight, ramp (TIERS)
   Title.js               appName (NAMES map, reverse-DNS), describe(cls, title) →
                          {app, head, dir, leaf}, findPath, tildify
@@ -298,7 +300,7 @@ core/
   Settings.js            RAIL, CARDS, MOTION_CARD/ROWS, PRESET_BLURBS, GLYPHS, nameOf,
                          changes, status, search
   Scroll.js              SECTIONS, layout, centred, nearest, clampTrack, landing,
-                         position, forCell, sliver (interlude dither)
+                         position, forCell; BAYER/fbm noise for the settings plate
   Time.js                heading, ribbon, isoWeek, Elsewhen zones + date probe rows
   Sound.js / Net.js / Power.js / Display.js   plain rows for those sheets
   Edge.js                dayFraction, hourTicks, at (pixel snap), span (rod/inset
@@ -493,6 +495,12 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - `bar/scroll/WeatherLeaf.qml` (a ScrollSection: Canvas day graph, now-notch, hours, sun line, three day rows). `ScrollView` places it and an Interlude at `xs[0] - interlude - width` (track x is negative; the view clips). `ScrollWindow` feeds `weather` and `weatherShown`. Part `weather` in `Style.PARTS`; a row in the Widgets page's Centre card.
 - Params `weather.json` (1920 wide: rain by day °C, clear night °F, Islet with snow, offline, hidden, panned to Sound) and `weather-light.json`. Unit tests: 72.
 
+### Scroll dividers 間 ✅ (asked for by the user after the weather leaf)
+- The dithered interludes looked busy, so nine divider designs were drawn (docs branch, `docs/revision1/`) and all nine shipped as a seventeenth setting, `interlude`: `ma | hairline | folio | kotoba | tsugime | seal | jiku | fuda | su` (間 罫 柱 詞 継 印 軸 札 数). Default and Hanko `seal`; Sheet and Instrument `folio`; Scroll `kotoba`; Quiet `ma`; Islet `fuda`. 107,495,424 combinations.
+- `bar/scroll/Interlude.qml` draws every style from `style`, `seed`, `next`/`prev` and `s`; `ScrollView.divider` feeds both interludes (and the weather leaf's). `ScrollWindow` passes `style.interlude`. The dither (`Scroll.sliver`) is gone; `Scroll.fbm`/`BAYER` stay for the settings Plate.
+- `core/Settings.js`: `INTERLUDES`, `interludeOf`, `interludeLabels`; the Panels card row "Scroll dividers" shows kanji (`Segmented.labels`). The Scroll 巻 settings page is a gallery of nine live tiles; a click picks one.
+- Params `interludes.json`, `interludes-light.json`, `interlude-settings.json`.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -501,7 +509,7 @@ Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarS
 
 Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 
-1. ~~The Scroll motion spec across the bar: inversion plates slide between items (one indicator, like Ryoku's rail); values crossfade; the now-notch creeps; a new stamp is pressed down oversized and tilted, then settles (140 ms, the only overshoot anywhere); sheets print top-down (~180 ms). A global **reduced motion** switch (Motion 動 page + style key, outside the 16 settings) that cuts every transition to its end frame.~~
+1. ~~The Scroll motion spec across the bar: inversion plates slide between items (one indicator, like Ryoku's rail); values crossfade; the now-notch creeps; a new stamp is pressed down oversized and tilted, then settles (140 ms, the only overshoot anywhere); sheets print top-down (~180 ms). A global **reduced motion** switch (Motion 動 page + style key, outside the 17 settings) that cuts every transition to its end frame.~~
 2. ~~Per-monitor override UI on the settings page (Advanced).~~
 3. README install guide (screenshots from renders), `manifest.json` version `0.1.0` → release version, CHANGELOG entry, listing on omarchyplugins.com (ask the user before publishing anything; the repo is private).
 4. Merge `dev` into `main` **only when the user asks**.
@@ -536,6 +544,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 13. **Phase 10 to verify on hardware:** that nothing slides in at login (Behaviours wait 1.5 s; raise `Motion._wake` if a slow start still shows it), FadeText not flickering while a volume wheel spins (each step restarts the fade), the stamp press on a real notification (and not on every inbox reload: the key is timestamp + app + summary), the notch creep after suspend (a big jump creeps for 1.2 s, by design), `Style.reduceMotion` being the right name in the user's `qs.Commons`, and the per-monitor grid at 1200 px wide.
 14. **Weather leaf to verify on hardware:** `curl` present and Open-Meteo and wttr.in reachable, `weather.json` at `~/.local/state/omarchy/settings/` on the user's Omarchy, the leaf's width on the user's screen (left out under about 1600 px of scroll), and the °F rule matching Omarchy's panel.
 15. **Bluetooth styles to verify on hardware:** the device `icon` names BlueZ reports (they pick the mark; unknown kinds get 器) and the marks' baseline beside the other cells in the user's fonts.
+16. **Scroll dividers to verify on hardware:** each style's spacing at the user's scale, the `su` numerals and `kotoba` lines in the user's Fraunces and Noto CJK, and the gallery tiles at small window widths.
 
 ## 13. QML pitfalls already hit
 

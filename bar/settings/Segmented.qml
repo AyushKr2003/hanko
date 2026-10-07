@@ -10,6 +10,8 @@ Rectangle {
 
   property var options: []
   property string selected: ""
+  // What a segment shows, when not the option itself (value -> label).
+  property var labels: ({})
   // Jp-looking options (seal glyphs) use the CJK face.
   signal picked(string value)
 
@@ -63,10 +65,11 @@ Rectangle {
         Text {
           id: label
           anchors.centerIn: parent
-          text: String(seg.modelData)
+          readonly property bool jp: /[　-鿿]/.test(text)
+          text: root.labels[String(seg.modelData)] || String(seg.modelData)
           color: seg.on ? Ink.boneInk : Ink.inkDim
-          font.family: /[　-鿿]/.test(text) ? Type.jp : Type.mono
-          font.pixelSize: Type.px(9.5)
+          font.family: jp ? Type.jp : Type.mono
+          font.pixelSize: jp ? Type.px(11) : Type.px(9.5)
           font.letterSpacing: 1
         }
         MouseArea {

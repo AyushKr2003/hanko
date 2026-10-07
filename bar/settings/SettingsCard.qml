@@ -91,7 +91,10 @@ Rectangle {
             visible: text !== ""
             width: parent.width
             wrapMode: Text.Wrap
-            text: row.modelData.detail
+            text: row.modelData.key === "interlude"
+              ? Settings.interludeOf(root.style.interlude).name + " " + Settings.interludeOf(root.style.interlude).jp
+                + " · " + Settings.interludeOf(root.style.interlude).detail
+              : row.modelData.detail
             color: Ink.inkMuted
             font.family: Type.text
             font.pixelSize: Type.px(11)
@@ -102,6 +105,7 @@ Rectangle {
           x: row.stacked ? 0 : parent.width - width
           y: row.stacked ? texts.y + texts.height + Type.px(6) : (parent.height - height) / 2
           options: Settings.optionsFor(row.modelData.key, root.options)
+          labels: row.modelData.key === "interlude" ? Settings.interludeLabels() : ({})
           selected: row.modelData.key.indexOf("show:") === 0
             ? (S.shows(root.style, row.modelData.key.slice(5)) ? "shown" : "hidden")
             : Settings.selected(row.modelData.key, root.style, root.style.sealGlyph)

@@ -16,7 +16,7 @@ function load(file, names) {
 const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
-const Se = load("core/Settings.js", ["RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
+const Se = load("core/Settings.js", ["interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
@@ -30,7 +30,7 @@ const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs
 const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", "securityName", "connectHow", "sheet"])
 const Pw = load("core/Power.js", ["keyValues", "profiles", "stateLabel", "blurb", "details", "sheet"])
 const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell", "layout", "centred", "nearest",
-  "clampTrack", "landing", "position", "sliver"])
+  "clampTrack", "landing", "position"])
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
@@ -42,9 +42,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("sixteen settings, 11,943,936 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 16)
-  assert.equal(S.combinations(), 11943936)
+test("seventeen settings, 107,495,424 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 17)
+  assert.equal(S.combinations(), 107495424)
 })
 
 test("bluetooth styles: device, marks, count, off; an older \"on\" reads as device", () => {
@@ -514,14 +514,19 @@ test("scroll: centring a section, and landing a pan on the nearest", () => {
   assert.deepEqual(Sc.position(0), { x: 0, width: 1 / 8 })
 })
 
-test("scroll: interludes are two-tone dither, fading out at the ends", () => {
-  const w = 20, h = 60, px = Sc.sliver(w, h, 1)
-  assert.equal(px.length, w * h)
-  assert.ok(px.every(v => v === 0 || v === 1))
-  const row = y => px.slice(y * w, y * w + w).reduce((a, b) => a + b, 0)
-  assert.equal(row(0), 0)
-  assert.deepEqual(Sc.sliver(w, h, 1), px)
-  assert.notDeepEqual(Sc.sliver(w, h, 2), px)
+test("scroll: nine interludes, each with a kanji, presets pick one", () => {
+  assert.deepEqual(S.OPTIONS.interlude, ["ma", "hairline", "folio", "kotoba", "tsugime", "seal", "jiku", "fuda", "su"])
+  assert.equal(S.resolve({}).interlude, "seal")
+  assert.equal(S.resolve({ preset: "Scroll" }).interlude, "kotoba")
+  assert.equal(S.resolve({ preset: "Islet" }).interlude, "fuda")
+  assert.equal(S.resolve({ preset: "Quiet" }).interlude, "ma")
+  assert.equal(S.resolve({ preset: "Hanko", edits: { interlude: "dither" } }).interlude, "seal")
+  const labels = Se.interludeLabels()
+  assert.deepEqual(Object.keys(labels), S.OPTIONS.interlude)
+  assert.equal(labels.seal, "印")
+  assert.equal(new Set(Object.values(labels)).size, 9)
+  assert.equal(Se.interludeOf("tsugime").name, "Tsugime")
+  assert.equal(Se.interludeOf("nope").key, "ma")
 })
 
 test("spaces carry each window's app and address for the scroll's map", () => {
@@ -547,7 +552,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the sixteen settings once", () => {
+test("settings: six cards hold every one of the seventeen settings once", () => {
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
@@ -575,7 +580,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 6)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 7)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -736,7 +741,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 11943936)
+  assert.equal(S.combinations(), 107495424)
 })
 
 test("hidden parts: shown or hidden per part, kept through presets, shuffles and resets", () => {

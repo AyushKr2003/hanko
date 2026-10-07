@@ -4,6 +4,7 @@ import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
 import ".."
+import "../scroll"
 
 // Hanko's settings (docs/COMPONENTS.md §6), in the Ryoku Hub grammar: a
 // numbered rail on the left, the page on the right, an action bar at the
@@ -853,6 +854,100 @@ Rectangle {
           }
         }
 
+        // ------------------------------------------------ Scroll
+        // What sits between the scroll's sections (the `interlude` setting):
+        // each tile draws the real Interlude between two stub sections.
+        Column {
+          visible: root.page === "scroll"
+          width: parent.width
+          topPadding: Type.px(22)
+          spacing: Type.px(12)
+
+          Row {
+            spacing: Type.px(8)
+            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+            Text { text: "BETWEEN PANELS"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(2) }
+          }
+
+          Grid {
+            id: interludes
+            width: parent.width
+            spacing: Type.px(8)
+            columns: width >= Type.px(760) ? 3 : 2
+            Repeater {
+              model: Settings.INTERLUDES
+              Rectangle {
+                id: tile
+                required property var modelData
+                readonly property bool on: modelData.key === root.style.interlude
+                width: (interludes.width - (interludes.columns - 1) * interludes.spacing) / interludes.columns
+                height: stage.height + caption.height + Type.px(20)
+                radius: 3
+                color: tileHover.containsMouse && !on ? Ink.lineSoft : "transparent"
+                border.width: on ? 2 : 1
+                border.color: on ? Ink.bone : Ink.line
+
+                // Two stub sections either side of the interlude.
+                Item {
+                  id: stage
+                  x: Type.px(8); y: Type.px(8)
+                  width: parent.width - 2 * x
+                  height: Type.px(150)
+                  clip: true
+                  Repeater {
+                    model: [{ jp: "時", no: "01", left: true }, { jp: "音", no: "02", left: false }]
+                    Column {
+                      id: stub
+                      required property var modelData
+                      x: stub.modelData.left ? Type.px(10) : stage.width / 2 + Type.px(30)
+                      y: Type.px(18)
+                      width: stage.width / 2 - Type.px(42)
+                      spacing: Type.px(6)
+                      Text { text: stub.modelData.jp + "  " + stub.modelData.no; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(9) }
+                      Rectangle { width: parent.width * 0.8; height: Type.px(7); radius: 1; color: Ink.inkDim; opacity: 0.55 }
+                      Rectangle { width: parent.width * 0.55; height: Type.px(3); color: Ink.inkFaint; opacity: 0.6 }
+                      Item { width: 1; height: Type.px(6) }
+                      Repeater {
+                        model: 4
+                        Rectangle { required property int index; width: stub.width * (0.9 - index * 0.12); height: 1; color: Ink.line }
+                      }
+                    }
+                  }
+                  Interlude {
+                    x: stage.width / 2 - width / 2
+                    y: Type.px(8)
+                    width: Type.px(46)
+                    height: stage.height - Type.px(16)
+                    s: Type.scale * 0.62
+                    seed: 0
+                    style: tile.modelData.key
+                  }
+                }
+
+                Row {
+                  id: caption
+                  x: Type.px(12)
+                  y: stage.y + stage.height + Type.px(6)
+                  spacing: Type.px(8)
+                  Text { text: tile.modelData.jp; color: tile.on ? Ink.seal : Ink.inkDim; font.family: Type.jp; font.pixelSize: Type.px(13) }
+                  Column {
+                    Text { text: tile.modelData.name.toUpperCase() + (tile.on ? "  · IN USE" : ""); color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
+                    Text { text: tile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(11) }
+                  }
+                }
+
+                MouseArea {
+                  id: tileHover
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.settingPicked("interlude", tile.modelData.key)
+                }
+              }
+            }
+          }
+        }
+
         // ------------------------------------------------ Presets
         Column {
           visible: root.page === "presets"
@@ -957,7 +1052,7 @@ Rectangle {
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
     widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
     sheets: "Sheets drop flush from the cell you click. Choose them under Panels on Typesetting; their own settings come later.",
-    scroll: "The handscroll unrolls from the rod. Choose it under Panels on Typesetting; bind a key with omarchy-shell hanko scroll.",
+    scroll: "The handscroll unrolls from the rod. Choose what sits between its panels; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
     keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+S saves. Rebinding comes later."
   })

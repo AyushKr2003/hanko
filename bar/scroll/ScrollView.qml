@@ -6,7 +6,7 @@ import "../../core/Weather.js" as Wx
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): one
 // long paper held between two rollers, its eight sections side by side with
-// dithered interludes between them; sections curl under the rollers at the
+// an interlude between each two (Interlude.qml); sections curl under the rollers at the
 // edges so the neighbours always show. An index plate names every section
 // (the one in the middle inverted), and a position bar runs along the foot.
 // Pure QtQuick: bar/ScrollWindow.qml drives the motion and feeds live data;
@@ -27,6 +27,8 @@ Item {
   // The sheets' feed (now, zones, timeShift, sound, network, bluetooth,
   // power, display, letters, dnd) plus spaces, weather and weatherShown.
   property var feed: ({})
+  // What sits between sections (Style.js `interlude`).
+  property string divider: "seal"
 
   signal request(string section, string what, var arg)
   // A name on the index plate was clicked.
@@ -119,10 +121,11 @@ Item {
           Interlude {
             visible: root.leafWidth > 0
             seed: 11
+            style: root.divider
             x: root.layout.xs[0] - width
-            y: Type.px(40)
+            y: Type.px(64)
             width: root.interlude
-            height: track.height - Type.px(74)
+            height: track.height - Type.px(98)
           }
 
           TimeSection {
@@ -185,10 +188,11 @@ Item {
               id: sliver
               required property int index
               seed: sliver.index
+              style: root.divider
               x: root.layout.xs[sliver.index] + root.layout.widths[sliver.index]
-              y: Type.px(40)
+              y: Type.px(64)
               width: Math.round(Scroll.INTERLUDE * Type.scale)
-              height: track.height - Type.px(74)
+              height: track.height - Type.px(98)
             }
           }
         }

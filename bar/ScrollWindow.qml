@@ -140,6 +140,7 @@ PanelWindow {
       atBottom: win.atBottom
       current: win.dragging ? Scroll.nearest(win.trackX, viewWidth, Type.scale) : win.bar.scrollSection
       trackX: win.trackX
+      divider: win.barWindow.style.interlude || "seal"
       reveal: 0
       ink: 0
       feed: ({

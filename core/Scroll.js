@@ -1,11 +1,11 @@
 .pragma library
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): six
-// sections side by side on one long paper, with dithered interludes
-// between them, panned sideways under a window held by two rollers. This
+// sections side by side on one long paper, with an interlude between
+// each two (the `interlude` setting), panned sideways under a window held by two rollers. This
 // is the geometry: where each section sits on the track, where the track
 // must be for a section to sit in the middle, which section a pan lands
-// on, and the dither the interludes are painted with.
+// on.
 
 // Index order, which is also the order on the paper.
 var SECTIONS = [
@@ -18,7 +18,7 @@ var SECTIONS = [
   { key: "spaces",  no: "07", jp: "窓", label: "SPACES",  width: 700 },
   { key: "inbox",   no: "08", jp: "報", label: "INBOX",   width: 560 }
 ]
-// A dithered ink-wash sliver between two sections.
+// The gap between two sections, where the interlude sits.
 var INTERLUDE = 70
 
 function indexOf(key) {
@@ -89,6 +89,8 @@ function position(index) {
 
 // ------------------------------------------------------------ dither
 
+// Ordered dither and value noise, for the settings page's sample plate.
+
 var BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
 
 function hash(x, y) {
@@ -107,23 +109,4 @@ function fbm(x, y) {
   var s = 0, a = 0.5
   for (var i = 0; i < 5; i++) { s += a * valueNoise(x, y); x *= 2.03; y *= 2.03; a *= 0.5 }
   return s
-}
-
-// Which pixels of a `w` x `h` interlude are inked: an ink-wash that fades
-// out at the top, the bottom and both sides, ordered-dithered so it stays
-// two colours. `seed` makes each interlude different. Returns a flat array
-// of 0/1, row by row.
-function sliver(w, h, seed) {
-  var out = []
-  for (var y = 0; y < h; y++) {
-    var band = Math.sin(y / h * Math.PI)
-    for (var x = 0; x < w; x++) {
-      var threshold = (BAYER[y % 4][x % 4] + 0.5) / 16
-      var edge = 1 - Math.abs(x / w - 0.5) * 2
-      var n = fbm(x / 26 + seed * 9, y / 60 + seed * 3)
-      var v = Math.max(0, (n - 0.38) * 1.6) * band * Math.pow(edge, 0.6) * 0.8
-      out.push(v > threshold ? 1 : 0)
-    }
-  }
-  return out
 }
