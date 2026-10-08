@@ -289,12 +289,13 @@ Item {
 
   // ------------------------------------------------------------- settings
   //
-  // The settings window edits Typeset's draft; closing it unsaved drops
-  // the draft, so the bar goes back to what style.json holds.
+  // The settings window keeps every change as it is made (no Save); its
+  // undo history is forgotten when it closes.
   property bool settingsOpen: false
   function openSettings() { settingsOpen = true }
   function closeSettings() {
     Typeset.revert()
+    Typeset.forget()
     settingsOpen = false
   }
 

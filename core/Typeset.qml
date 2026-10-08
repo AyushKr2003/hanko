@@ -110,6 +110,32 @@ QtObject {
   }
   function revert() { draft = null }
 
+  // The settings window has no Save: every change it makes is kept at once
+  // (keep() after each draft edit) and remembered here, so Undo (Ctrl+Z)
+  // can put the one before back. Forgotten when the window closes.
+  property var history: []
+  function keep() {
+    if (!draft) return
+    var next = draft
+    draft = null
+    if (JSON.stringify(next) === JSON.stringify(doc)) return
+    var h = history.slice()
+    h.push(doc)
+    if (h.length > 50) h.shift()
+    history = h
+    _commit(next)
+  }
+  function undo() {
+    if (!history.length) return false
+    var h = history.slice()
+    var previous = h.pop()
+    history = h
+    draft = null
+    _commit(previous)
+    return true
+  }
+  function forget() { history = [] }
+
   // One setting for one monitor, saved at once (the CLI's --monitor).
   function setFor(monitor, key, value) {
     var next = S.withMonitorSetting(doc, monitor, key, value)

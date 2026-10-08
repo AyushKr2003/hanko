@@ -6,7 +6,8 @@
 
 var RAIL = [
   { group: "00 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" }] },
-  { group: "01 BAR",    pages: [{ key: "typesetting", label: "Typesetting", jp: "組版" },
+  { group: "01 BAR",    pages: [{ key: "design", label: "Design", jp: "意匠" },
+                                { key: "typesetting", label: "Typesetting", jp: "組版" },
                                 { key: "colour", label: "Colour", jp: "色" },
                                 { key: "widgets", label: "Widgets", jp: "部品" }] },
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
@@ -236,9 +237,11 @@ function changes(savedDoc, draftDoc, resolve) {
 }
 
 // "Edited · live on your bar · 2 changes", or how things stand.
+// The action bar's words. Changes are saved as they are made; `n` is how
+// many this visit made, which Undo walks back.
 function status(n) {
-  if (n === 0) return "Saved · as on your bar"
-  return "Edited · live on your bar · " + n + (n === 1 ? " change" : " changes")
+  if (n === 0) return "Saved · every change is kept as you make it"
+  return "Saved · " + n + (n === 1 ? " change" : " changes") + " · Ctrl+Z undoes"
 }
 
 // "Preset · Hanko + edits", for the page's eyebrow.

@@ -4,10 +4,12 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 
 ![The Typesetting settings page](docs/mockups/typeset/01-settings.webp)
 
+![Settings › Design: four designs, twelve parts to borrow, three touches](docs/kata/images/k7-design.webp)
+
 ## What you get
 
 - **Every part is a setting:** 22 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
-- **Three designs in one engine** (Kata 型, `docs/kata/`, being built): `hanko design margin|leaf|shoji` switches the bar to that design, `hanko borrow slider ruler` takes one part from another design, `hanko touch season english` flips a touch, and `hanko design classic` brings today's look back (still the default). Each design opens its own panels (Time, Sound, Connections, Power, Letters), letters, overview and hold-to-confirm buttons.
+- **Four designs in one engine** (Kata 型, `docs/kata/`): pick Classic, Margin, Leaf or Shōji on Settings › Design 意匠 and borrow any of twelve parts from the others; every pick prints live and is kept at once, with Undo (there is no Save button). From a terminal, `hanko design margin|leaf|shoji` switches the bar to that design, `hanko borrow slider ruler` takes one part from another design, `hanko touch season english` flips a touch, and `hanko design classic` brings today's look back (still the default). Each design opens its own panels (Time, Sound, Connections, Power, Letters), letters, overview and hold-to-confirm buttons.
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
 - **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).

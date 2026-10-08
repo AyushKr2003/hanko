@@ -46,8 +46,15 @@ Rectangle {
   signal settingPicked(string key, string value)
   signal presetPicked(string name)
   signal resetToPreset()
-  signal revert()
-  signal save()
+  // Every change is saved as it is made; Undo walks this visit's back.
+  property int undoCount: 0
+  signal undo()
+  // Settings › Design (DesignPage.qml).
+  signal designPicked(string name)
+  signal borrowPicked(string part, string value)
+  signal touchPicked(string key, string value)
+  signal surprise()
+  signal backToDesign()
   signal pagePicked(string key)
   signal queryEdited(string text)
   signal advancedToggled(bool on)
@@ -388,13 +395,29 @@ Rectangle {
           width: parent.width
           wrapMode: Text.Wrap
           text: root.page === "typesetting"
-            ? "Choose how each part of the bar is set. Every change prints live on your desktop; Save keeps it."
+            ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
+            : root.page === "design"
+              ? "Pick the design that draws your bar, then borrow any part from another. Every change prints live and is kept at once."
             : root.page === "presets"
               ? "A preset is a starting point: pick one, then change any single setting on Typesetting."
               : root.placeholders[root.page] || ""
           color: Ink.inkMuted
           font.family: Type.text
           font.pixelSize: Type.row
+        }
+
+        // ------------------------------------------------ Design
+        DesignPage {
+          visible: root.page === "design"
+          width: parent.width
+          doc: root.draft
+          barData: root.barData
+          compact: root.compact
+          onDesignPicked: function(name) { root.designPicked(name) }
+          onBorrowPicked: function(part, value) { root.borrowPicked(part, value) }
+          onTouchPicked: function(key, value) { root.touchPicked(key, value) }
+          onSurprise: root.surprise()
+          onBackToDesign: root.backToDesign()
         }
 
         // ------------------------------------------------ Typesetting
@@ -706,7 +729,7 @@ Rectangle {
                   }
                 }
 
-                // The document Save would write.
+                // The document as style.json holds it.
                 Text {
                   width: parent.width
                   text: JSON.stringify(root.draft, null, 2)
@@ -1120,8 +1143,8 @@ Rectangle {
     // ------------------------------------------------ action bar
     Item {
       id: actions
-      // On a plate only while there is something to save.
-      visible: !root.onPlate || root.changes > 0
+      // On a plate only while there is something to undo.
+      visible: !root.onPlate || root.undoCount > 0
       anchors.bottom: parent.bottom
       width: parent.width
       height: Type.px(56)
@@ -1130,13 +1153,13 @@ Rectangle {
         x: root.pad
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(12)
-        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(7); height: width; color: root.changes ? Ink.ink : Ink.inkFaint }
+        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(7); height: width; color: root.undoCount ? Ink.ink : Ink.inkFaint }
         Text {
           anchors.verticalCenter: parent.verticalCenter
           // Never under the buttons.
           width: Math.max(0, Math.min(implicitWidth, buttons.x - root.pad - Type.px(7 + 12 + 16)))
           elide: Text.ElideRight
-          text: Settings.status(root.changes).toUpperCase()
+          text: Settings.status(root.undoCount).toUpperCase()
           color: Ink.inkDim
           font.family: Type.mono
           font.pixelSize: Type.px(10)
@@ -1149,9 +1172,8 @@ Rectangle {
         anchors.rightMargin: root.pad
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(root.compact ? 8 : 12)
-        SmallButton { label: root.compact ? "Reset" : "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
-        SmallButton { label: "Revert"; faint: root.changes === 0; onClicked: root.revert() }
-        SmallButton { label: "Save"; plate: true; faint: root.changes === 0; onClicked: root.save() }
+        SmallButton { visible: root.page === "typesetting"; label: root.compact ? "Reset" : "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
+        SmallButton { label: "Undo"; plate: true; faint: root.undoCount === 0; onClicked: if (root.undoCount > 0) root.undo() }
       }
     }
   }
@@ -1163,7 +1185,7 @@ Rectangle {
     sheets: "Sheets drop flush from the cell you click. Choose them under Panels on Typesetting; their own settings come later.",
     scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
-    keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+S saves. Rebinding comes later."
+    keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. Rebinding comes later."
   })
 
   Component {

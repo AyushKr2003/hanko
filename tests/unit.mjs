@@ -593,7 +593,7 @@ test("settings: six cards hold every one of the twenty-two settings once", () =>
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 12)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -620,8 +620,8 @@ test("settings: counting what the draft changes", () => {
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
-  assert.equal(Se.status(0), "Saved · as on your bar")
-  assert.equal(Se.status(2), "Edited · live on your bar · 2 changes")
+  assert.equal(Se.status(0), "Saved · every change is kept as you make it")
+  assert.equal(Se.status(2), "Saved · 2 changes · Ctrl+Z undoes")
   assert.equal(Se.presetLine(two), "Preset · Hanko + edits")
   assert.equal(Se.presetLine(saved), "Preset · Hanko")
 })

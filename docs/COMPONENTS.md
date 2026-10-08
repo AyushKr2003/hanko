@@ -442,7 +442,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
    - *Edge*: Bottom edge, Dividers
    - *Frame*: Height, Surface, Position
    - *Panels*: Panels open as, Seal glyph
-4. **Action bar**: Reset to preset · Revert · Save. Every change prints live on your bar at once (as the sheet says); only Save writes `style.json`, and Revert, or closing the window unsaved, puts the saved style back.
+4. **Action bar**: Reset to preset (on Typesetting) · Undo. There is no Save: every change prints live on your bar and is written to `style.json` at once; Undo (or Ctrl+Z) puts the last one back, as many times as you changed something since the window opened.
 
 The same settings can be changed from a terminal:
 
