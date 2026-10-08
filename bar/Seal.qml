@@ -8,7 +8,7 @@ Item {
   id: root
 
   property string mode: "stamp"
-  property string glyph: "印"
+  property string glyph: "鑑"
   property int workspace: 1
   property int size: Type.px(26)
 

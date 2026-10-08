@@ -139,7 +139,8 @@ var PROJECTS = [
   { name: "ruixen-shell", group: "lineage", by: "gitcoder89431", role: "plugin integration", url: "https://github.com/gitcoder89431/ruixen-shell" },
   { name: "Fraunces", group: "type", by: "Undercase Type", role: "titles, time and bylines", url: "https://github.com/undercasetype/Fraunces" },
   { name: "Space Grotesk", group: "type", by: "Florian Karsten", role: "values and language", url: "https://github.com/floriankarsten/space-grotesk" },
-  { name: "Noto CJK", group: "type", by: "Google · Adobe", role: "every kanji", url: "https://github.com/notofonts/noto-cjk" },
+  { name: "Yuji Boku", group: "type", by: "Kinuta Font Factory", role: "every kanji, brushed", url: "https://github.com/Kinutafontfactory/Yuji" },
+  { name: "Noto CJK", group: "type", by: "Google · Adobe", role: "the kanji the brush doesn't have", url: "https://github.com/notofonts/noto-cjk" },
   { name: "Qt Quick", group: "system", by: "The Qt Company", role: "every pixel", url: "https://www.qt.io" },
   { name: "PipeWire · BlueZ · NetworkManager", group: "system", by: "", role: "sound, Bluetooth, network", url: "" }
 ]

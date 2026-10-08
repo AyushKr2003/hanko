@@ -48,7 +48,9 @@ var PRESET_BLURBS = {
 
 // Seal glyphs offered as one-tap choices; anything else is typed under
 // Advanced (or with the "…" button).
-var GLYPHS = ["印", "力", "侍", "A"]
+// The four Kan: 鑑 (as in 印鑑, the registered seal; a mirror, a model),
+// 漢 (as in 漢字), 観 (to behold) and 寛 (at ease). "…" takes any other.
+var GLYPHS = ["鑑", "漢", "観", "寛"]
 
 var CARDS = [
   { title: "Left · where you are", rows: [
@@ -112,7 +114,7 @@ var INTERLUDES = [
   { key: "folio",    jp: "柱", name: "Folio",    detail: "A ruler with both numbers" },
   { key: "kotoba",   jp: "詞", name: "Kotoba",   detail: "The next name, set vertically" },
   { key: "tsugime",  jp: "継", name: "Tsugime",  detail: "A paper join" },
-  { key: "seal",     jp: "印", name: "Seal",     detail: "A seal pressed across the join" },
+  { key: "seal",     jp: "鑑", name: "Seal",     detail: "A seal pressed across the join" },
   { key: "jiku",     jp: "軸", name: "Jiku",     detail: "A slim inner roller" },
   { key: "fuda",     jp: "札", name: "Fuda",     detail: "An index tab" },
   { key: "su",       jp: "数", name: "Su",       detail: "The next number, large" }

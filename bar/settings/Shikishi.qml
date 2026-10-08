@@ -11,24 +11,44 @@ import "../../core"
 Item {
   id: root
 
-  property string glyph: "印"
+  property string glyph: "鑑"
   property string name: ""
   property string date: ""
 
   readonly property real s: Math.min(width, height)
   readonly property string initial: (name || "?").charAt(0).toUpperCase()
 
-  // The work: the glyph, large, a little right of centre so the signature
-  // has its margin.
-  Text {
+  // The work: the glyph brushed large, a little right of centre so the
+  // signature has its margin, and a touch off the square as a hand leaves
+  // it. Under it a faint bleed, the ink spreading into the fibres where the
+  // brush was wettest.
+  Item {
     id: work
+    readonly property int size: Math.round(root.s * 0.62)
     x: Math.round(root.width * 0.56 - width / 2)
-    y: Math.round(root.height * 0.46 - height / 2)
-    text: root.glyph
-    color: Ink.ink
-    font.family: Type.jpSerif
-    font.weight: Font.Black
-    font.pixelSize: Math.round(root.s * 0.6)
+    y: Math.round(root.height * 0.47 - height / 2)
+    width: workText.implicitWidth
+    height: workText.implicitHeight
+    rotation: -2
+    Repeater {
+      model: [[-1.6, 0.8], [1.4, 1.2], [0.6, -1.4], [-0.8, -0.6]]
+      Text {
+        required property var modelData
+        x: modelData[0] * root.s / 300
+        y: modelData[1] * root.s / 300
+        text: root.glyph
+        color: Ink.alpha(Ink.ink, 0.07)
+        font.family: Type.brush
+        font.pixelSize: work.size
+      }
+    }
+    Text {
+      id: workText
+      text: root.glyph
+      color: Ink.ink
+      font.family: Type.brush
+      font.pixelSize: work.size
+    }
   }
 
   // The rakkan, down the left margin: the signature, then the seals.
@@ -92,8 +112,7 @@ Item {
         anchors.verticalCenterOffset: -parent.width * 0.02
         text: root.glyph
         color: Ink.seal
-        font.family: Type.jpSerif
-        font.weight: Font.Bold
+        font.family: Type.brush
         font.pixelSize: Math.round(parent.width * 0.52)
       }
     }

@@ -67,7 +67,7 @@ var PRESETS = {
 
 var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]
 var DEFAULT_PRESET = "Hanko"
-var DEFAULT_SEAL_GLYPH = "印"
+var DEFAULT_SEAL_GLYPH = "鑑"
 
 // Motion 動 sits outside the twenty-two settings (no preset sets it and it is
 // not counted): paper moves like paper, still cuts every transition to its

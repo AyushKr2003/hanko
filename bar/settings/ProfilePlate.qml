@@ -599,7 +599,7 @@ Item {
 
       Shikishi {
         anchors.fill: parent
-        glyph: root.style.sealGlyph || "印"
+        glyph: root.style.sealGlyph || "鑑"
         name: root.name
         date: root.machine.since || ""
       }

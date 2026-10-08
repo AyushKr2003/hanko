@@ -7,19 +7,26 @@ import "Style.js" as HankoStyle
 //   display  Fraunces: the clock, titles, bylines (bundled, OFL)
 //   text     Space Grotesk: values and language (bundled, OFL)
 //   mono     your Omarchy monospace (`omarchy font set`): labels and keys
-//   jp/jpSerif  Noto CJK, which Omarchy installs (noto-fonts-cjk)
+//   jp/jpSerif  Yuji Boku, a brush face (bundled, OFL), with Noto CJK behind it
 QtObject {
   id: root
 
   readonly property FontLoader _fraunces: FontLoader { source: Qt.resolvedUrl("../assets/fonts/Fraunces.ttf") }
   readonly property FontLoader _frauncesItalic: FontLoader { source: Qt.resolvedUrl("../assets/fonts/Fraunces-Italic.ttf") }
   readonly property FontLoader _grotesk: FontLoader { source: Qt.resolvedUrl("../assets/fonts/SpaceGrotesk.ttf") }
+  // Yuji Boku (OFL), a brushed face: every kanji Hanko draws is written,
+  // not typeset. Subset to the kanji and kana Hanko uses; anything else (a
+  // glyph you type yourself) falls back to Noto CJK.
+  readonly property FontLoader _brush: FontLoader { source: Qt.resolvedUrl("../assets/fonts/YujiBoku.ttf") }
 
   readonly property string display: _fraunces.status === FontLoader.Ready ? _fraunces.name : "serif"
   readonly property string text: _grotesk.status === FontLoader.Ready ? _grotesk.name : "sans-serif"
   readonly property string mono: Style.font.family || "monospace"
-  readonly property string jp: "Noto Sans CJK JP"
-  readonly property string jpSerif: "Noto Serif CJK JP"
+  readonly property string brush: _brush.status === FontLoader.Ready ? _brush.name : "Noto Serif CJK JP"
+  // Both kanji faces are the brush now, glosses and seals alike, so the
+  // bar's Japanese reads as one hand.
+  readonly property string jp: brush
+  readonly property string jpSerif: brush
 
   // The Typeset mockups were drawn at Omarchy's default 12px base; everything
   // scales with `[font] base-size` like the rest of the shell, times the
@@ -42,8 +49,8 @@ QtObject {
   //   value    text 13   the bar's values
   //   row      text 14   a row's name in sheets, the scroll and settings
   //   byline   display 15, clock 22, title 40, hero 46
-  //   gloss    jp 9      kanji beside a label, kept as small as the label's caps
-  //   glossMid jp 11     kanji on their own (sheet heads, index plate, options)
+  //   gloss    jp 11     kanji beside a label (brush: a step over the caps)
+  //   glossMid jp 12     kanji on their own (sheet heads, index plate, options)
   //   glossBig jp 13     section kanji
   function floored(v, min) {
     return Math.max(min, px(v))
@@ -59,8 +66,10 @@ QtObject {
   readonly property int clock: px(22)
   readonly property int title: px(40)
   readonly property int hero: px(46)
-  readonly property int gloss: floored(9, 8)
-  readonly property int glossMid: floored(11, 10)
+  // The brush's hairlines need a few more pixels than a sans to survive at
+  // 1x, so glosses are set a step larger than the caps they sit beside.
+  readonly property int gloss: floored(11, 10)
+  readonly property int glossMid: floored(12, 11)
   readonly property int glossBig: px(13)
 
   // Tracking for caps, in proportion to the size it spaces.

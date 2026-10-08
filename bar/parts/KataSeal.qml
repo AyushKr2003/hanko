@@ -11,7 +11,7 @@ Item {
   id: root
 
   property var skin: ({})
-  property string glyph: "印"
+  property string glyph: "鑑"
   property bool on: false
   property int size: Type.px(24)
   readonly property string kind: skin.seal || "outline"

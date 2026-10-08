@@ -135,7 +135,7 @@ Item {
       id: seal
       anchors.verticalCenter: parent.verticalCenter
       mode: root.shown("seal") ? root.style.seal || "stamp" : "none"
-      glyph: root.style.sealGlyph || "印"
+      glyph: root.style.sealGlyph || "鑑"
       workspace: root.workspace
       size: root.barHeight <= Type.px(32) ? Type.px(22) : Type.px(26)
 

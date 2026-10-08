@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after the Profile's seal became a signed one-character work (Shikishi), following the Profile, About and Credits redesign.
+Last updated: 2026-10-08, after the four Kan and the brush face (every kanji written, not typeset), following the Profile's signed work.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -251,7 +251,7 @@ Other Omarchy panels that exist (`shell/plugins/panels/`): audio, bluetooth, clo
 
 ### Fonts
 
-Omarchy installs `noto-fonts-cjk`, so kanji come from the system ("Noto Sans CJK JP", "Noto Serif CJK JP"). Hanko bundles **Fraunces** (+ Italic) and **Space Grotesk** under `assets/fonts/` (SIL OFL, licence files alongside) and loads them with `FontLoader`. The mono face is `Style.font.family` (what `omarchy font set` controls).
+Every kanji is drawn in **Yuji Boku**, a brush face bundled as `assets/fonts/YujiBoku.ttf` (SIL OFL), subset to the kanji and kana in Hanko's sources plus the four Kan (re-subset with `pyftsubset` when new kanji are added; anything missing falls back to the system's `noto-fonts-cjk`, which Omarchy installs). `Type.jp` and `Type.jpSerif` both resolve to it (`Type.brush`). Hanko also bundles **Fraunces** (+ Italic) and **Space Grotesk** under `assets/fonts/` (SIL OFL, licence files alongside) and loads them with `FontLoader`. The mono face is `Style.font.family` (what `omarchy font set` controls).
 
 ## 7. Code map
 
@@ -722,6 +722,13 @@ Research: a work of Japanese calligraphy is signed with a rakkan (落款), the s
 - **`bar/settings/Shikishi.qml`** replaces `SealImpression.qml` (deleted): your seal glyph written large in ink (Noto Serif CJK Black, 60% of the box, a little right of centre) and, down the left margin, the signature (your name and `machine.since`, Fraunces italic, turned 90°) over two vector seals: a square hakubun with your initial cut white, and a round shubun with the glyph in vermilion. No dithering, no tilt; the plate's only red is these two small marks.
 - The `Impression` box, its practice grid, crop marks and eye chips are unchanged; its caption reads `書 · INK ON PAPER · SIGNED WITH TWO SEALS` and `NO. <edition>`.
 - Images `docs/revision2/images/r2-profile.webp`, `r2-profile-light.webp` refreshed.
+
+### Kan 鑑 and a brush for every kanji ✅ (asked for: "印 looks like 'Ep'; use a complex Kan instead; draw the kanji like calligraphy art, across the whole bar")
+Research: seal shops carve in tensho (篆書) or kaisho; no free (OFL) tensho font with kanji exists (the ones found are commercial), so the bar is written with an OFL brush face instead. Yuji Boku, Syuku and Mai share their kanji; Boku was taken.
+- **The seal glyph** defaults to **鑑** (as in 印鑑, the registered seal; also mirror, model). Settings › Typesetting's seal-glyph choice offers the four Kan: 鑑 漢 観 寛 (and `…` for any other). Every `"印"` fallback, the settings window's mark, the Kata seal, the overview and the Profile's work follow it; the Kata part label for the seal is 鑑. Compound words (印影 and the like) are unchanged. The user's `style.json` on dev is set to 鑑.
+- **`Type.brush`** (Yuji Boku, `assets/fonts/YujiBoku.ttf`, 620 KB subset, `YujiBoku-OFL.txt`); `Type.jp` and `Type.jpSerif` resolve to it, so every kanji in the bar, sheets, scroll, overview, settings and plates is brushed. Glosses grew a step (`gloss` 11, `glossMid` 12) because the brush's hairlines vanished at 9 px on a 1x panel.
+- **Profile's work** (`Shikishi`): the glyph brushed at 62% of the box, turned 2°, over four faint offset copies (a bleed into the paper); the round shubun is brushed too.
+- Credits list Yuji Boku (Kinuta Font Factory) under Type; Noto CJK now covers what the brush lacks.
 
 ## 10. Instructions for the remaining phase (10)
 

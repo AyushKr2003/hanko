@@ -165,7 +165,7 @@ PanelWindow {
     allIds: Hypr.workspaces.filter(function(w) { return w.id > 0 }).map(function(w) { return w.id })
     activeId: win.activeId
     aspect: Hypr.aspectFor(win.screenName)
-    glyph: Typeset.current.sealGlyph || "印"
+    glyph: Typeset.current.sealGlyph || "鑑"
     wallpaper: "file://" + Quickshell.env("HOME") + "/.local/state/omarchy/current/background"
     snapshot: win.open && win.dynamic ? snapshotComponent : null
     iconFor: function(cls) {

@@ -147,7 +147,7 @@ Rectangle {
             color: Ink.seal
             Text {
               anchors.centerIn: parent
-              text: root.draft.sealGlyph || "印"
+              text: root.draft.sealGlyph || "鑑"
               color: Ink.paper
               font.family: Type.jpSerif
               font.pixelSize: Type.px(19)
@@ -347,7 +347,7 @@ Rectangle {
             id: eyebrow
             anchors.verticalCenter: parent.verticalCenter
             spacing: Type.px(10)
-            Text { anchors.verticalCenter: parent.verticalCenter; text: "印"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(13) }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: Typeset.current.sealGlyph || "鑑"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(13) }
             Text {
               anchors.verticalCenter: parent.verticalCenter
               width: Math.min(implicitWidth, pageColumn.width - Type.px(24))

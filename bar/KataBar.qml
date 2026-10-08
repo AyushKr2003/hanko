@@ -131,7 +131,7 @@ Item {
         KataSeal {
           anchors.verticalCenter: parent.verticalCenter
           skin: root.skin
-          glyph: root.style.sealGlyph || "印"
+          glyph: root.style.sealGlyph || "鑑"
           on: root.unread > 0 && !root.dnd
           size: Type.px(24)
         }

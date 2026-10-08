@@ -88,7 +88,7 @@ test("an empty or broken document resolves to the Hanko preset", () => {
     const s = S.resolve(doc)
     assert.equal(s.preset, "Hanko")
     for (const k of S.KEYS) assert.equal(s[k], S.PRESETS.Hanko[k])
-    assert.equal(s.sealGlyph, "印")
+    assert.equal(s.sealGlyph, "鑑")
     assert.equal(s.edited, false)
   }
 })
@@ -134,7 +134,7 @@ test("applying a preset clears edits but keeps monitors and glyph", () => {
 test("seal glyph keeps one character, surrogate pairs included", () => {
   assert.equal(S.resolve({ sealGlyph: "侍たち" }).sealGlyph, "侍")
   assert.equal(S.resolve({ sealGlyph: "𠮷x" }).sealGlyph, "𠮷")
-  assert.equal(S.resolve({ sealGlyph: "  " }).sealGlyph, "印")
+  assert.equal(S.resolve({ sealGlyph: "  " }).sealGlyph, "鑑")
 })
 
 test("shuffle never moves the bar or changes how panels open", () => {
@@ -559,7 +559,7 @@ test("scroll: nine interludes, each with a kanji, presets pick one", () => {
   assert.equal(S.resolve({ preset: "Hanko", edits: { interlude: "dither" } }).interlude, "seal")
   const labels = Se.interludeLabels()
   assert.deepEqual(Object.keys(labels), S.OPTIONS.interlude)
-  assert.equal(labels.seal, "印")
+  assert.equal(labels.seal, "鑑")
   assert.equal(new Set(Object.values(labels)).size, 9)
   assert.equal(Se.interludeOf("tsugime").name, "Tsugime")
   assert.equal(Se.interludeOf("nope").key, "ma")
@@ -598,15 +598,16 @@ test("settings: six cards hold every one of the twenty-two settings once", () =>
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.deepEqual(Se.optionsFor("height", S.OPTIONS), ["32", "36", "40", "44"])
-  assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["印", "力", "侍", "A", "…"])
+  assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["鑑", "漢", "観", "寛", "…"])
   assert.deepEqual(Se.optionsFor("motion", S.OPTIONS), S.MOTIONS)
   assert.equal(Se.MOTION_ROWS.length, 8)
   assert.equal(Se.nameOf("clockAt"), "Clock position")
   assert.equal(Se.nameOf("bluetooth"), "Bluetooth")
   assert.ok(S.KEYS.every((k) => Se.nameOf(k) !== k))
   const st = S.resolve({})
-  assert.equal(Se.selected("height", st, "印"), "40")
-  assert.equal(Se.selected("sealGlyph", st, "侍"), "侍")
+  assert.equal(Se.selected("height", st, "鑑"), "40")
+  assert.equal(Se.selected("sealGlyph", st, "観"), "観")
+  assert.equal(Se.selected("sealGlyph", st, "侍"), "…")
   assert.equal(Se.selected("sealGlyph", st, "鷹"), "…")
 })
 
