@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-- Profile 印影, About 由来, Credits 謝辞: three poster plates in the settings window. Profile presses your seal beside your name, the bar's live readings and your machine's small print, and can be edited and saved as an image (`~/.config/hanko/profile.json`).
+- Overview: a second layout, `dynamic`, after Ryoku's: only the workspaces you use and a + for a new one, desktops along the top, a selection you move with Tab and confirm with Enter. Pick it under Panels on Typesetting, or `hanko style set overview dynamic`.
+- Overview 一覧: a workspace overview laid on the theme's paper, each workspace a page with its windows live where they sit, lying on the sheet with the window style's paper shadow; arrows switch, click goes, drag moves a window, middle-click closes one. Right-click the workspaces, or `omarchy-shell hanko overview`.
+- `style.lua`: Hyprland windows in the bar's grammar (hairline frames in ink and Ink.line, square or inset corners, a hard seal-red print under the focused window, flat mono group tabs, Motion's timings), from the theme's colors.toml and style.json. Load it from `~/.config/hypr/looknfeel.lua`.
+- Profile 印影, About 由来, Credits 謝辞: three poster plates in the settings window. Profile presses your seal beside your name, the bar's live readings and your machine's small print, and can be edited and saved as an image (`~/.config/hanko/profile.json`). The three plates fit any window: the art moves beside the title or into its own room instead of fading behind the text, and short windows scroll.
 - Display 明: the LUM cell's panel, as a sheet and a scroll section (brightness per monitor, monitors, night light).
 - Motion 動: Scroll's motion across the bar (sliding plates, fading values, a creeping now-notch, the stamp press, sheets that print) and a paper/still switch on a new Motion page.
 - Per-monitor overrides can be set in the settings window under Advanced.

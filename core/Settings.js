@@ -61,6 +61,7 @@ var CARDS = [
     { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
     { key: "sides", name: "Scroll sides", detail: "Bare paper, or paper curling under" },
     { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both or none" },
+    { key: "overview", name: "Overview", detail: "Printed pages in a grid, or Ryoku's: only busy spaces and a +" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
@@ -70,6 +71,7 @@ var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
+var OVERVIEW_OPTIONS = ["grid", "dynamic"]
 
 // [name, what moves, Motion.qml property for its time]
 var MOTION_ROWS = [
@@ -207,6 +209,7 @@ function optionsFor(key, OPTIONS) {
   if (key === "sealGlyph") return GLYPHS.concat(["…"])
   if (key === "motion") return MOTION_OPTIONS.slice()
   if (key === "typeSize") return TYPE_SIZE_OPTIONS.slice()
+  if (key === "overview") return OVERVIEW_OPTIONS.slice()
   return (OPTIONS[key] || []).map(String)
 }
 

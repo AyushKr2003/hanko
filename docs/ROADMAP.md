@@ -97,7 +97,14 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 - ✅ Visibility (asked for after Phase 10): every part of the bar, each mark and tray app, and every hosted Omarchy or third-party widget can be shown or hidden on the Widgets 部品 page or with `hanko hide|show <part>` (style.json `hidden`).
 - ✅ The settings window reflows to any window size.
 - ✅ Type scale (asked for after the indicator stamps, from screenshots of the real bar at 1x): one scale for every size, weight and tracking in `core/Type.qml`, readable floors, Medium labels and values, the bold byline fixed, a `typeSize` setting (small, regular, large), and a 1x render pass in `tests/run`.
-- ✅ Profile 印影, About 由来 and Credits 謝辞 (asked for after the scroll guides): poster plates in the settings window in the grammar of Ryoku's Profile and Credits pages, with Hanko's own art; the profile's name, line and hidden blocks in `~/.config/hanko/profile.json`, and Save image.
+- ✅ Profile 印影, About 由来 and Credits 謝辞 (asked for after the scroll guides): poster plates in the settings window in the grammar of Ryoku's Profile and Credits pages, with Hanko's own art; the profile's name, line and hidden blocks in `~/.config/hanko/profile.json`, and Save image. Made responsive afterwards: a poster and a stacked layout for each, the art never under the type, scrolling when short.
+<<<<<<< HEAD
+- ✅ Window style 窓 (asked for after the plates): `style.lua`, Hyprland windows in the bar's grammar (hairline frames, square or inset corners, a short black paper shadow, with hard print, seal and none as alternatives, flat group tabs, Motion's timings), loaded from `~/.config/hypr/looknfeel.lua`.
+=======
+- ✅ Dynamic overview (asked for after the overview): Ryoku's layout, only busy workspaces and a +, desktops on top, chosen with `overview: grid | dynamic` on Typesetting's Panels card.
+- ✅ Workspace overview 一覧 (asked for after the window style): every workspace as a printed page with its windows live where they sit, on every screen; arrows switch, click goes, drag moves, middle-click closes; right-click the workspaces or `omarchy-shell hanko overview`. Working principle from the user's omarchy-overview plugin.
+- ✅ Window style 窓 (asked for after the plates): `style.lua`, Hyprland windows in the bar's grammar (hairline frames, square or inset corners, a hard seal-red print under the focused window, flat group tabs, Motion's timings), loaded from `~/.config/hypr/looknfeel.lua`.
+>>>>>>> claude/hanko-plugin-zzm827
 - ⬜ Release, left to the user after testing on hardware: a README install guide, the manifest version, a CHANGELOG entry, a listing on omarchyplugins.com, and merging into `main`.
 
 ## Dev loop

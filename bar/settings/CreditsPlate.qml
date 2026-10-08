@@ -11,21 +11,30 @@ import "../../core/Profile.js" as P
 Item {
   id: root
 
-  readonly property bool wide: width >= Type.px(1000)
-  readonly property int margin: Type.px(wide ? 56 : 28)
-  readonly property real columnWidth: wide ? Math.min(Type.px(620), width * 0.58 - margin) : width - 2 * margin
+  // Two layouts, and the scroll never hangs under the type: beside the
+  // column when it has room there, else small beside the title, the page in
+  // one column. The column scrolls when the window is short.
+  readonly property real sideColumn: Math.min(Type.px(620), width * 0.58 - Type.px(56))
+  readonly property real scrollRoom: width - Type.px(56) - sideColumn - Type.px(48) - Type.px(56)
+  readonly property bool side: sideColumn >= Type.px(420) && scrollRoom >= Type.px(240)
+  readonly property int margin: side ? Type.px(56) : width < Type.px(560) ? Type.px(20) : Type.px(32)
+  readonly property real columnWidth: side ? sideColumn : width - 2 * margin
+  // Stacked: the scroll's width beside the title, or none on a narrow page.
+  readonly property real smallScroll: side || columnWidth < Type.px(420) ? 0 : Math.min(Type.px(150), columnWidth * 0.3)
 
   Rectangle { anchors.fill: parent; color: Ink.paper }
 
   HangingScroll {
+    visible: root.side
     anchors.right: parent.right
-    anchors.rightMargin: root.wide ? root.margin : 0
-    width: Math.min(parent.height * 0.62, root.width * (root.wide ? 0.4 : 0.9))
-    height: parent.height
-    opacity: root.wide ? 1 : 0.25
+    anchors.rightMargin: root.margin
+    anchors.verticalCenter: parent.verticalCenter
+    width: Math.min(parent.height * 0.62, root.scrollRoom)
+    height: Math.min(parent.height, width / 0.62)
   }
 
   PlateSpine {
+    visible: root.side && length <= root.height - 2 * Type.px(24)
     x: Type.px(22)
     anchors.verticalCenter: parent.verticalCenter
     text: "HANKO  ·  感謝 KANSHA  ·  WITH THANKS  ·  SET IN INK"
@@ -33,21 +42,32 @@ Item {
 
   Flickable {
     id: flick
-    x: root.margin
-    y: root.margin
-    width: root.columnWidth
-    height: parent.height - 2 * root.margin
-    contentHeight: column.height
+    width: root.side ? root.margin + root.columnWidth + Type.px(24) : parent.width
+    height: parent.height
+    contentHeight: column.height + 2 * root.margin
+    interactive: contentHeight > height
     clip: true
     boundsBehavior: Flickable.StopAtBounds
 
     Column {
       id: column
-      width: flick.width
+      x: root.margin
+      y: root.margin
+      width: root.columnWidth
       spacing: Type.px(24)
 
-      Column {
+      Item {
         width: parent.width
+        height: Math.max(heading.height, root.smallScroll / 0.62)
+        HangingScroll {
+          visible: root.smallScroll > 0
+          x: parent.width - width
+          width: root.smallScroll
+          height: root.smallScroll / 0.62
+        }
+      Column {
+        id: heading
+        width: parent.width - (root.smallScroll > 0 ? root.smallScroll + Type.px(24) : 0)
         spacing: Type.px(16)
         PlateEyebrow { jp: "謝辞"; label: "Kansha" }
         Column {
@@ -70,6 +90,7 @@ Item {
           font.pixelSize: Type.px(17)
           font.variableAxes: Type.axes(Type.px(17))
         }
+      }
       }
 
       Column {

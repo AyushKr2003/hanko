@@ -294,6 +294,12 @@ What helps you find your way on the scroll: the index plate of tabs (on top; bel
 
 Added after the Typeset mockups were drawn.
 
+### Workspace overview 一覧 (not a setting)
+
+Right-click the workspaces (or `omarchy-shell hanko overview`) and every screen lays out its workspaces on a sheet of the theme's paper, under the bar. Workspaces 1–10 (the ten the live one is in) sit in two rows of five pages, a row with nothing on it folded away. Each page has a folio band (number, kanji numeral, how many windows, a red dot when urgent; the live page's number inverted with `//`) over its screen: every window where it really sits, framed in hairlines, live, with its name on a tab (bone for the focused one, ◇ for a floating one). A bare page shows its kanji, large and faint. Every page lies on the sheet with the short paper shadow Hanko's window style gives Hyprland's windows, in ink, stronger under the live page. Arrows or hjkl switch the workspace while the overview stays open, 1–9 and 0 jump, the wheel walks them; a click on a page or a window goes there; dragging a window onto another page moves it there without following; middle-click closes a window; Enter, Esc or a click away is done.
+
+`overview: dynamic` (Panels card, or `hanko style set overview dynamic`) opens Ryoku's layout instead: only the workspaces with windows and the live one, as live mini-desktops over the dimmed wallpaper, packed into as many centred rows as fit, then a + cell that opens the next free workspace; desktops (blocks of ten workspaces) along the top with a NEW card; Tab, the arrows and the wheel move a selection, Alt+Tab steps desktops, Enter or a click goes, ✕ on a window closes it, dragging moves a window to a workspace or a desktop. It is not counted in the combinations.
+
 ## 3. How options interact
 
 Most settings are independent. These are the places where one setting changes how another is drawn. None of them forbid a combination; they adapt it.

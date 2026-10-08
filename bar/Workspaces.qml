@@ -19,6 +19,8 @@ Item {
 
   signal activated(int id)
   signal stepped(int delta)
+  // Right-click: the workspace overview 一覧.
+  signal overviewRequested()
 
   readonly property bool compact: barHeight <= Type.px(32)
   // The live workspace's cell; folio and kanji invert it with one plate
@@ -82,7 +84,11 @@ Item {
           anchors.fill: parent
           anchors.margins: -2
           cursorShape: Qt.PointingHandCursor
-          onClicked: root.activated(cell.modelData.id)
+          acceptedButtons: Qt.LeftButton | Qt.RightButton
+          onClicked: function(mouse) {
+            if (mouse.button === Qt.RightButton) root.overviewRequested()
+            else root.activated(cell.modelData.id)
+          }
         }
       }
     }

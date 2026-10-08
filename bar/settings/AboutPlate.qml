@@ -16,9 +16,16 @@ Item {
   property string version: ""
   property string settingCount: String(S.KEYS.length)
 
-  readonly property bool wide: width >= Type.px(1000)
-  readonly property int margin: Type.px(wide ? 56 : 28)
-  readonly property real columnWidth: wide ? Math.min(Type.px(600), width * 0.56 - margin) : width - 2 * margin
+  // Two layouts, and the moon never sits under the type: beside the column
+  // when it has room there, else small beside the title, the page in one
+  // column. The column scrolls when the window is short.
+  readonly property real sideColumn: Math.min(Type.px(600), width * 0.56 - Type.px(56))
+  readonly property real moonRoom: width - Type.px(56) - sideColumn - Type.px(48)
+  readonly property bool side: sideColumn >= Type.px(420) && moonRoom >= Type.px(260)
+  readonly property int margin: side ? Type.px(56) : width < Type.px(560) ? Type.px(20) : Type.px(32)
+  readonly property real columnWidth: side ? sideColumn : width - 2 * margin
+  // Stacked: the moon's square beside the title, or none on a narrow page.
+  readonly property real smallMoon: side || columnWidth < Type.px(420) ? 0 : Math.min(Type.px(220), columnWidth * 0.36)
 
   function hex(c) {
     function o(v) { var s = Math.round(v * 255).toString(16); return s.length < 2 ? "0" + s : s }
@@ -32,17 +39,19 @@ Item {
 
   Rectangle { anchors.fill: parent; color: Ink.paper }
 
+  // The moon in its own room right of the column, whole.
   Plate {
-    anchors.right: parent.right
-    width: root.wide ? root.width * 0.5 : root.width
+    visible: root.side
+    x: root.width - width
+    width: root.moonRoom
     height: parent.height
-    opacity: root.wide ? 1 : 0.3
-    cxw: 0.62
+    cxw: 0.5
     cyh: 0.46
-    rh: 0.34
+    rh: Math.min(0.34, 0.44 * width / Math.max(1, height))
   }
 
   PlateSpine {
+    visible: root.side && length <= root.height - 2 * Type.px(24)
     x: Type.px(22)
     anchors.verticalCenter: parent.verticalCenter
     text: "HANKO  ·  判子 ABOUT  ·  HANKO.BAR " + root.version + "  ·  SET IN INK"
@@ -50,21 +59,35 @@ Item {
 
   Flickable {
     id: flick
-    x: root.margin
-    y: root.margin
-    width: root.columnWidth
-    height: parent.height - 2 * root.margin
-    contentHeight: column.height
+    width: root.side ? root.margin + root.columnWidth + Type.px(24) : parent.width
+    height: parent.height
+    contentHeight: column.height + 2 * root.margin
+    interactive: contentHeight > height
     clip: true
     boundsBehavior: Flickable.StopAtBounds
 
     Column {
       id: column
-      width: flick.width
+      x: root.margin
+      y: root.margin
+      width: root.columnWidth
       spacing: Type.px(36)
 
-      Column {
+      Item {
         width: parent.width
+        height: Math.max(heading.height, root.smallMoon)
+        Plate {
+          visible: root.smallMoon > 0
+          x: parent.width - width
+          width: root.smallMoon
+          height: root.smallMoon
+          cxw: 0.5
+          cyh: 0.5
+          rh: 0.46
+        }
+      Column {
+        id: heading
+        width: parent.width - (root.smallMoon > 0 ? root.smallMoon + Type.px(24) : 0)
         spacing: Type.px(16)
         PlateEyebrow { jp: "由来"; label: "About" }
         Column {
@@ -87,6 +110,7 @@ Item {
           font.pixelSize: Type.px(17)
           font.variableAxes: Type.axes(Type.px(17))
         }
+      }
       }
 
       // How it is put together.
@@ -172,10 +196,11 @@ Item {
         }
         Text { text: "Fraunces 44"; color: Ink.ink; font.family: Type.display; font.pixelSize: Type.px(44); font.variableAxes: Type.axes(Type.px(44)) }
         Text { text: "Space Grotesk 14"; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(14) }
-        Text { text: Type.mono + " 12  ·  your Omarchy font"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.px(12) }
+        Text { width: parent.width; elide: Text.ElideRight; text: Type.mono + " 12  ·  your Omarchy font"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.px(12) }
         Text { text: "Noto Serif CJK 判子 印影 由来 謝辞"; color: Ink.inkMuted; font.family: Type.jpSerif; font.pixelSize: Type.px(14) }
 
-        Row {
+        Flow {
+          width: parent.width
           spacing: Type.px(18)
           topPadding: Type.px(6)
           Repeater {

@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the Profile, About and Credits plates (on `claude/hanko-plugin-zzm827`, fast-forwarded from `dev`). The release steps are left to the user, who is testing on hardware first.
+Last updated: 2026-10-07, after the dynamic (Ryoku) overview and its setting (on `claude/hanko-plugin-zzm827`, fast-forwarded from `dev`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -250,6 +250,7 @@ Everything is plain QML/JS, no build step.
 
 ```
 manifest.json            plugin manifest (hanko.bar, kind bar)
+style.lua                Hyprland look'n'feel for windows (dofile'd from ~/.config/hypr/looknfeel.lua)
 Bar.qml                  entry point: injected props, host contract, per-screen windows,
                          hiding, proxy bindings, `hanko` IPC
 bar/
@@ -272,6 +273,9 @@ bar/
   Inbox.qml              count | stamps (tilted seals, fan on hover), DND state
   SheetWindow.qml        the layer a sheet is printed on (see Phase 6 in §9)
   ScrollWindow.qml       the layer the handscroll unrolls on (see Phase 7 in §9)
+  OverviewWindow.qml     the layer the workspace overview 一覧 is laid on, one per screen
+  overview/              OverviewView, OverviewPage (grid); DynamicView, DynamicCell,
+                         DesktopStrip (dynamic, Ryoku's) — all pure
   SettingsWindow.qml     the settings window (see Phase 8 in §9)
   settings/              SettingsPage, SettingsCard, Segmented, Plate (all pure); the
                          plates ProfilePlate, AboutPlate, CreditsPlate with their art
@@ -565,10 +569,33 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - `services/Machine.qml` runs the probe while the settings window is visible (and each minute). `core/Dossier.qml` keeps `~/.config/hanko/profile.json` (`name`, `tagline`, `hidden` blocks), written at once, not a draft.
 - Canvas `fillText` could not find "Noto Serif CJK JP" by name in the harness, so glyphs on the art are real `Text` items over the canvas.
 - Params: `profile`, `profile-edit` (EDIT, palette hidden), `profile-light`, `about`, `about-light`, `credits`, `credits-light` (Settings scene; `settings.machine`, `settings.profile`, `settings.editing`). Unit tests: 89.
+- **Responsive (asked for after the plates: the art went translucent behind the text on small windows and blocks ran into each other).** Each plate has two layouts and nothing is ever drawn under the type. Profile: *poster* when the plate is at least 1000 px wide and the seal gets at least 280 px in the room right of the readings and their leaders, under EDIT and over the day rule (`posterSeal`); otherwise *stacked*, one column with the seal beside the readings (or above them, readings in two columns, under 520 px). Its blocks are inline components (`Head`, `LiveHead`, `Callout`, `SpecsBlock`, `PaletteBlock`, `EditionLine`, `DayRule`) placed by either layout; EDIT's eye chips sit on a block's top right corner, and the edit strip gets its own band under the page. About and Credits: the moon / hanging scroll sits in its own room right of the column when there is at least 260 / 240 px of it, else small beside the title, or not at all under 420 px of column. Every plate scrolls when the window is too short instead of piling blocks up. `PlateSpine.length` lets a plate drop the spine on a short window. Save image grabs the whole page, also what is scrolled away.
+- The Settings scene takes `settings.width` / `settings.height`; params `profile-narrow`, `profile-short`, `about-narrow`, `credits-narrow`, `credits-mid` render the other layouts.
+
+### Window style 窓 ✅ (asked for by the user: "make the hyprland window look match the bar")
+- `style.lua` at the plugin root, modelled on Omacale's `omacale.lua`: `pcall(dofile, …)` from `~/.config/hypr/looknfeel.lua` (the user's already had the line), so it re-reads on every `hyprctl reload` and loads after the theme's `hyprland.lua` (Omarchy requires `omarchy.current.theme.hyprland` at the end of `default.hypr.omarchy`, before the user's files).
+- Colours: `$XDG_STATE_HOME/omarchy/current/theme/colors.toml` `foreground`, `background`, `red` (else `color1`, as Omarchy's `Color.qml` picks `urgent`). Active border ink, inactive `Ink.line` (foreground at 22%), `border_size` 1.
+- Surface from `~/.config/hanko/style.json` (`edits.surface`, else the preset's; the preset table copies `core/Style.js` and must be kept in step). `inset`: rounding 7 like `BarSurface`'s frame; otherwise 0. Gaps 8 out / 4 in for every surface.
+- Shadow, `shadow_style` at the top of the file. Default `paper`: black, range 14, power 3, offset 3 5, 55% focused and 25% unfocused, so windows read as sheets on a desk and the focused one sits higher. `print`: hard black offset (`sharp`, range 0, offset 4 4, 85%), focused only. `seal`: the same in seal red. `none`: hairlines only. The first version shipped `seal`; the user asked for black, and red under every focused window spent the colour that means "you". Hyprland multiplies the shadow by window opacity. On a dark wallpaper the black shadow mostly disappears. Checked on Hyprland 0.56.2: `hyprctl configerrors` clean, and `paper` and `seal` checked on screen.
+- Groupbar: no gradients, mono 10, 1 px indicator, ink / line / muted text. Animations from `core/Motion.qml` (speed = ms / 100): windows in 180 ms on the unroll curve with `popin 96%`, out 140 ms, moves and workspaces 260 ms on the pan curve (workspaces `slide`), border and fades 140 ms; `motion: still` sets `animations.enabled = false`.
+- Per-monitor overrides are ignored (Hyprland's decoration is global). The shell does not push changes: a style or theme change reaches the windows on the next `hyprctl reload` (`omarchy theme set` runs one).
 
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
+
+### Workspace overview 一覧 ✅ (asked for by the user: "a workspace overview like we have in Ryoku")
+- Studied Ryoku's `shell/quickshell/shell/modules/overview/` (Overview, WorkspaceCell, OverviewSurface) for the idea, and took the **working principle** from the user's own `AyushKr2003/omarchy-overview` (after Shanu-Kumawat/quickshell-overview), which runs on real Omarchy: a full-screen Overlay layer on every screen, the keyboard (Exclusive) on the focused monitor only, a `HyprlandFocusGrab` that closes it on click-away (armed 120 ms after mapping), a fixed rows × columns grid holding the group of ids the live workspace is in with empty rows folded, arrows/hjkl that switch the real workspace while it stays open, digits that jump in the group, the wheel walking the group, live `ScreencopyView` snapshots found through `ToplevelManager.toplevels` and each one's attached `HyprlandToplevel.address`, a click to go, middle-click to close a window, drag to move it with `hl.dsp.window.move({ window = "address:…", workspace = "N", follow = false })`. Ryoku's desktop strip is left out (Omarchy has no desktops).
+- Hanko's look: a sheet of the theme's paper (94 %) under the bar strip (the mask leaves the bar working), a register line `── 一覧 · OVERVIEW · DP-1`, a Fraunces title, the time and `05 SPACES · 10 WINDOWS`; each workspace a page with a folio band (number, kanji numeral, window count, urgent dot; the live page's number on a bone plate with `//`), its windows at their real fractions as hairline frames over an ink fallback (the app name in Fraunces italic), the snapshot over it and a mono name tab (bone for the focused one, ◇ for floating); bare pages show their kanji large and faint; every page lies on the desk with `style.lua`'s "paper" shadow, as Hyprland draws it (offset 3, 5, a dense band then a short fade), cast in ink so it reads on the dark sheet: 55 % under the live page, 25 % under the rest; a drop target is framed in red; the carried window is a paper tab with an ink print. The keys run along the foot. Pages print in with `Motion.unroll`.
+- `core/Overview.js` (+ tests): `ROWS` 2, `COLUMNS` 5, `group`, `pages(spaces, activeId, rows, cols, fold)`, `rowsShown`, `fit` (largest page at the monitor's aspect), `step` (arrows, wrapping in the group), `jump`, `wheel`, `visibleWindows` (fullscreen alone, floats last), `summary`, `KEYS`.
+- `services/Hypr.qml`: each workspace also carries `all` (floating windows too, with `title` and `fullscreen`; `Spaces.layoutOf(…, keepFloating)`), and `refresh()`, `moveWindow`, `closeWindow`, `toplevelFor(address)`, `aspectFor(screen)`. `Bar.qml`: `overviewOpen`, `openOverview` (closes a sheet, the scroll and hosted popouts), `closeOverview`, `toggleOverview`, IPC `hanko overview`; sheets and the scroll close it. Right-click on the bar's workspaces toggles it (`Workspaces.overviewRequested`).
+- Harness: `scenes/Overview.qml` (the bar over the sample plate, the view on top), params `overview`, `overview-light` (rows not folded), `overview-narrow` (1100 × 720, 16:10). `tests/run` lints `bar/overview`; a `ToplevelManager` stub. Unit tests: 94.
+
+### Overview: Ryoku's dynamic layout and a setting ✅ (asked for by the user: "the exact overview UI as in Ryoku, dynamic workspaces and a plus, and in settings a toggle")
+- `overview: grid | dynamic` in style.json, beside the counted settings like `typeSize` (normalize, resolve, `withSetting`; presets, resets and shuffles keep it; Typeset's reset paths carry it). A row "Overview" in the Panels card (`Settings.optionsFor("overview")`). Default `grid`, the printed pages.
+- `dynamic` is Ryoku's `shell/modules/overview` rebuilt in Hanko's QML, same layout, numbers and gestures: the mark top left (the seal glyph on red, OVERVIEW, DESKTOP 01), the desktop strip top centre (122 × 58 cards, a dot per workspace, a NEW card with a +), the viewed desktop's busy workspaces and the live one as mini-desktops over the dimmed wallpaper (`~/.local/state/omarchy/current/background`), packed into centred rows at the largest size that fits (`O.lay`, 132–460 px, steps of 6), then one + cell for the first free id (`O.newWsId`); a mono ordinal chip, the apps' icons (`DesktopEntries.heuristicLookup` + `Quickshell.iconPath`; the app name when there is none), window tiles with live snapshots, ✕ on hover, hard black offset shadows that deepen as a cell lifts, staggered entrance. Keys as Ryoku: Tab/arrows/wheel move a selection without switching, Alt+Tab steps desktops, Enter or a click goes and closes, right-click goes, drag moves a window to a cell or to a desktop (its lowest workspace), Esc dismisses. Colours come from the theme: Ryoku's vermilion is `Ink.seal`, its creams the ink tiers, its cards `Qt.tint(paper, ink 3 %)`; fills are opaque so the hard shadow never shows through on a light theme.
+- `core/Overview.js` (+ tests): `PER_DESKTOP` 10, `deskOf`, `deskList`, `deskDots`, `newWsId`, `slots`, `packRows`, `lay`, `cycle`, `DYNAMIC_HINT`, `LAYOUTS`. Hypr workspaces carry `monitor`, windows `cls`; the dynamic view shows only this screen's workspaces.
+- `OverviewWindow.qml` holds both views and picks by `Typeset.current.overview`; `dynamicKey()` has Ryoku's keys, the grid keeps its live-switching arrows. Params `overview-dynamic`, `-light`, `-narrow` (`overview.layout`, `overview.selected`). Unit tests: 97.
 
 ### Phase 10 · Motion and release
 
@@ -615,10 +642,15 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 
 19. **Type scale to verify:** the bar at 36 px with label over value (about 30 px of type), `typeSize: large` with a 44 px bar (51 px), and the Medium values in another mono face. After a shell restart the window title stayed empty until focus changed (seen once while testing; not caused by the type change, worth a look).
 20. **Scroll sides to verify on hardware:** the curl's shading on the user's theme (light themes may want it fainter), and the scroll's edges against the screen edge on a 1x display.
-21. **Profile plate to verify on hardware:** the probe's facts on the user's machine (theme name, `omarchy-version`, Hyprland tag, install date from `stat -c %W /`), Save image writing to `~/Pictures` (or `$XDG_PICTURES_DIR`; the folder must exist), the inline name field with a long name, and the leaders landing on the seal at the window's real size.
+21. **Profile plate to verify on hardware:** the probe's facts on the user's machine (theme name, `omarchy-version`, Hyprland tag, install date from `stat -c %W /`), Save image writing to `~/Pictures` (or `$XDG_PICTURES_DIR`; the folder must exist), the inline name field with a long name, and the leaders landing on the seal at the window's real size. Also resize the settings window through the sizes the harness renders (600 px to ultrawide, and short) and check nothing overlaps at the user's `typeSize` and font scale.
+22. **Window style:** a change in the settings window does not reach Hyprland until `hyprctl reload`; Hanko could run `hyprctl reload` (or an `hyprctl eval` hook like Omacale's) when `surface` or `motion` changes. Also check the red print on a light theme and next to floating windows, and that `popin 96%` reads as a print rather than a zoom.
+23. **Overview to verify on hardware:** live snapshots (`ToplevelManager` + `HyprlandToplevel.address` matching Hanko's `0x` addresses), the focus grab closing on click-away and not on the first click inside, keyboard on the focused monitor only with two screens, `hl.dsp.window.move` with `window` and `workspace` together, the deferred focus after a click (90 ms; raise it if focus snaps back), and the page fit on a portrait monitor.
+24. **Dynamic overview:** icons resolving for Omarchy's webapps and TUI apps (omarchy-overview has a longer lookup in `OverviewWindow.qml` if `heuristicLookup` misses), the wallpaper path after `omarchy theme bg next`, the + cell creating the workspace on this monitor, and Alt+Tab reaching the layer (Hyprland may take it first).
 
 
 ## 13. QML pitfalls already hit
+
+- Under a Wayland session `QT_QPA_PLATFORM` is already set, so the harness opened a real window that Hyprland tiled to its own size. `render.py` now forces `offscreen`.
 
 - A property named `onSomething` is parsed as a **signal handler** (`onBone` broke; renamed `boneInk`). Never start a property name with `on` + capital.
 - The id `gc` masks a JS global and fails at load (lint missed it, the render caught it). Avoid ids that shadow globals (`gc`, `print`, `console`, `Qt`).

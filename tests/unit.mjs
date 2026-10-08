@@ -584,7 +584,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
 })
 
 test("settings: six cards hold every one of the twenty-two settings once", () => {
-  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph" && k !== "typeSize")
+  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph" && k !== "typeSize" && k !== "overview")
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
@@ -1163,6 +1163,99 @@ test("about and credits: every line is whole, links are https", () => {
   assert.equal(f[f.length - 1][2], "https://github.com/AyushKr2003/hanko")
   assert.equal(Pr.LINEAGE.length, 3)
   assert.ok(Se.RAIL.some(g => g.pages.some(p => p.key === "profile")))
+})
+
+const Ov = load("core/Overview.js", ["ROWS", "COLUMNS", "group", "pages", "rowsShown", "fit", "step", "jump", "wheel", "visibleWindows", "summary", "KEYS",
+  "PER_DESKTOP", "deskOf", "deskList", "deskDots", "newWsId", "slots", "packRows", "lay", "cycle", "LAYOUTS"])
+
+test("overview: the group of ten the live workspace is in", () => {
+  assert.deepEqual(Ov.group(3, 2, 5), [1, 10])
+  assert.deepEqual(Ov.group(10, 2, 5), [1, 10])
+  assert.deepEqual(Ov.group(11, 2, 5), [11, 20])
+})
+
+test("overview: pages in grid order, empty rows folded", () => {
+  const spaces = [{ id: 1, count: 2, all: [{ x: 0 }] }, { id: 3, count: 1, urgent: true }, { id: 99, count: 1 }]
+  const p = Ov.pages(spaces, 3, 2, 5, true)
+  assert.equal(p.length, 5)
+  assert.deepEqual(p.map(x => x.id), [1, 2, 3, 4, 5])
+  assert.equal(p[2].active, true)
+  assert.equal(p[2].urgent, true)
+  assert.equal(p[0].windows.length, 1)
+  assert.equal(Ov.rowsShown(p), 1)
+  assert.equal(Ov.pages(spaces, 3, 2, 5, false).length, 10)
+  // The live workspace keeps its row even when it is empty.
+  const q = Ov.pages(spaces, 7, 2, 5, true)
+  assert.deepEqual(q.map(x => x.row), [0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+  assert.equal(Ov.pages([], 14, 2, 5, true)[0].id, 11)
+})
+
+test("overview: pages fit the room at the monitor's aspect", () => {
+  const f = Ov.fit(2, 5, 1488, 600, 0.5625, 22, 30, 300)
+  assert.ok(f.width <= 1488 + 0.01 && f.height <= 600 + 0.01)
+  assert.ok(Math.abs(f.screenH / f.pageW - 0.5625) < 1e-9)
+  assert.equal(f.pageH, f.screenH + 30)
+  // A wide room is bound by height: one row of pages gets taller ones.
+  assert.ok(Ov.fit(1, 5, 3000, 600, 0.5625, 22, 30, 300).screenH > Ov.fit(2, 5, 3000, 600, 0.5625, 22, 30, 300).screenH)
+})
+
+test("overview: arrows, digits and the wheel stay inside the group", () => {
+  assert.equal(Ov.step(3, "right", 2, 5), 4)
+  assert.equal(Ov.step(5, "right", 2, 5), 1)
+  assert.equal(Ov.step(1, "left", 2, 5), 5)
+  assert.equal(Ov.step(3, "down", 2, 5), 8)
+  assert.equal(Ov.step(8, "down", 2, 5), 3)
+  assert.equal(Ov.step(13, "up", 2, 5), 18)
+  assert.equal(Ov.jump(3, 7, 2, 5), 7)
+  assert.equal(Ov.jump(12, 0, 2, 5), 20)
+  assert.equal(Ov.jump(3, 0, 1, 5), -1)
+  assert.equal(Ov.wheel(10, 1, 2, 5), 1)
+  assert.equal(Ov.wheel(1, -1, 2, 5), 10)
+})
+
+test("overview: fullscreen hides the rest, floats print last, sums", () => {
+  assert.deepEqual(Ov.visibleWindows([{ a: 1 }, { a: 2, fullscreen: true }]).map(w => w.a), [2])
+  assert.deepEqual(Ov.visibleWindows([{ a: 1, floating: true }, { a: 2 }]).map(w => w.a), [2, 1])
+  assert.equal(Ov.summary([{ count: 2 }, { count: 0 }, { count: 1 }]), "02 SPACES  ·  03 WINDOWS")
+  assert.equal(Ov.summary([{ count: 1 }]), "01 SPACE  ·  01 WINDOW")
+  assert.equal(Ov.KEYS.length, 6)
+})
+
+test("dynamic overview: busy spaces and the live one, then a +", () => {
+  const spaces = [{ id: 1, count: 2 }, { id: 2, count: 0 }, { id: 4, count: 1 }, { id: 12, count: 3 }]
+  const all = spaces.map(s => s.id)
+  assert.deepEqual(Ov.slots(spaces, 2, 0, all).map(s => [s.id, s.add]), [[1, false], [2, false], [4, false], [3, true]])
+  assert.deepEqual(Ov.slots(spaces, 1, 0, all).map(s => s.id), [1, 4, 3])
+  assert.deepEqual(Ov.slots(spaces, 12, 1, all).map(s => [s.id, s.pos, s.add]), [[12, 2, false], [11, 2, true]])
+  // The live workspace shows even when Hyprland hasn't listed it yet.
+  assert.deepEqual(Ov.slots([], 5, 0, []).map(s => [s.id, s.active]), [[5, true], [1, false]])
+  const full = Array.from({ length: 10 }, (_, k) => k + 1)
+  assert.equal(Ov.newWsId(full, 0), 11)
+  assert.equal(Ov.newWsId(full.concat([11]), 0), 21)
+})
+
+test("dynamic overview: desktops, dots, packing and the selection", () => {
+  assert.deepEqual(Ov.deskList([1, 2, 12], 2, [1, 2, 12]), [0, 1, 2])
+  assert.deepEqual(Ov.deskList([1, 25], 1, [1, 25]), [0, 2, 3])
+  assert.deepEqual(Ov.deskDots([{ id: 1, count: 1 }, { id: 2, count: 0 }, { id: 13, count: 1 }], 0), [true, false])
+  const l = Ov.lay(5, 1450, 600, 0.5625, 18, 132, 460, 6)
+  assert.equal(l.items.length, 5)
+  for (const b of l.items) assert.ok(b.x >= 0 && b.x + b.w <= 1450.01 && b.y + b.h <= 600.01)
+  assert.equal(Ov.packRows(3, 1000, 0.5625, 500, 18), null)
+  assert.equal(Ov.cycle(4, 1, 5), 0)
+  assert.equal(Ov.cycle(0, -1, 5), 4)
+  assert.deepEqual(Ov.LAYOUTS, ["grid", "dynamic"])
+})
+
+test("overview layout is a setting beside the counted ones", () => {
+  assert.equal(S.resolve({}).overview, "grid")
+  assert.equal(S.resolve({ overview: "dynamic" }).overview, "dynamic")
+  assert.equal(S.resolve({ overview: "bogus" }).overview, "grid")
+  const d = S.withSetting({}, "overview", "dynamic")
+  assert.equal(d.overview, "dynamic")
+  assert.equal(S.withPreset(d, "Quiet").overview, "dynamic")
+  assert.equal(S.withSetting({}, "overview", "tiles"), null)
+  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic"])
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

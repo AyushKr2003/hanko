@@ -115,6 +115,7 @@ PanelWindow {
     }
     onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
     onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
+    onOverviewRequested: win.bar.toggleOverview()
     onMediaAction: function(name) { Media.act(name) }
     onStatusAction: function(name, how) { win.cellClicked(name, how, function() { Status.act(name, how) }) }
     onInboxAction: function(how) { win.cellClicked("notif", how, function() { Status.act("notif", how) }) }
@@ -124,6 +125,11 @@ PanelWindow {
   }
 
   ScrollWindow {
+    bar: win.bar
+    barWindow: win
+  }
+
+  OverviewWindow {
     bar: win.bar
     barWindow: win
   }

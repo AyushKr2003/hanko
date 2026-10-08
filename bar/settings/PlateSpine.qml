@@ -5,9 +5,13 @@ import "../../core"
 Item {
   id: root
   property string text: ""
+  // How long the label runs along the edge, so a plate can drop it when it
+  // would run off a short window.
+  readonly property real length: label.implicitWidth
   width: 1
   height: 1
   Text {
+    id: label
     anchors.centerIn: parent
     rotation: -90
     text: root.text

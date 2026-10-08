@@ -6,14 +6,16 @@ import "../../../bar/settings"
 
 // The settings window's page at its design size. render.py passes `params`:
 //   { theme, now, ...bar data as in Strips.qml...,
-//     settings: { saved, draft, page, query, advanced, monitors, monitor, scrollEnd } }
+//     settings: { saved, draft, page, query, advanced, monitors, monitor, scrollEnd,
+//                 width, height } }
+// settings.width/height size the window (logical px) instead of its design size.
 // saved and draft are style.json documents.
 Rectangle {
   id: sheet
   readonly property var p: JSON.parse(params)
   readonly property var s: p.settings || {}
-  width: page.implicitWidth
-  height: page.implicitHeight
+  width: s.width || page.implicitWidth
+  height: s.height || page.implicitHeight
   color: Ink.paper
 
   Component.onCompleted: {
