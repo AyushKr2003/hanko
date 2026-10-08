@@ -183,3 +183,7 @@ hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.4, bezier = "hankoInk
 hl.animation({ leaf = "fadeShadow", enabled = true, speed = 1.4, bezier = "hankoInk" })
 -- Workspaces pan like the scroll does between sections (260 ms).
 hl.animation({ leaf = "workspaces", enabled = true, speed = 2.6, bezier = "hankoPan", style = "slide" })
+
+-- The overview is already animated by QML; keep Hyprland from sliding its
+-- full-screen layer in as well.
+hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, animation = "none" })
