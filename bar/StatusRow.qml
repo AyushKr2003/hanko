@@ -109,10 +109,10 @@ Item {
           Rectangle {
             visible: root.mode === "cells" && root.ruled
             anchors.horizontalCenter: parent.horizontalCenter
-            y: Type.px(10)
+            anchors.verticalCenter: parent.verticalCenter
             width: 1
-            height: parent.height - Type.px(20)
-            color: Ink.line
+            height: Math.round(parent.height * 0.42)
+            color: Ink.alpha(Ink.bone, Ink.light ? 0.16 : 0.13)
           }
           Text {
             visible: root.mode === "numerals"
@@ -144,8 +144,24 @@ Item {
       : root.mode === "glyphs" ? glyphRow.implicitWidth : numeral.implicitWidth
     implicitHeight: root.barHeight
 
-    MouseArea {
+    // Under the pointer a reading sits on a faint plate, so you see which
+    // cell a click or a scroll will reach before you make it.
+    Rectangle {
       anchors.fill: parent
+      anchors.leftMargin: -Type.px(6)
+      anchors.rightMargin: -Type.px(6)
+      anchors.topMargin: Type.px(5)
+      anchors.bottomMargin: Type.px(5)
+      radius: 3
+      color: Ink.alpha(Ink.bone, Ink.light ? 0.07 : 0.055)
+      opacity: readingHover.containsMouse ? 1 : 0
+      Behavior on opacity { enabled: !Motion.still; NumberAnimation { duration: 120 } }
+    }
+
+    MouseArea {
+      id: readingHover
+      anchors.fill: parent
+      hoverEnabled: true
       acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
       cursorShape: Qt.PointingHandCursor
       onClicked: function(mouse) {
@@ -295,6 +311,8 @@ Item {
       font.pixelSize: Type.value
       font.weight: Type.valueWeight
       font.variableAxes: Type.valueAxes
+      // Tabular figures: 61 → 62 never nudges the cells after it.
+      font.features: { "tnum": 1 }
     }
     Text {
       visible: value.r.unit !== ""

@@ -154,7 +154,7 @@ Omarchy's six indicators (screen recording, dictation, reminder, stay awake, nig
 | `indicatorStyle` | What it does |
 |---|---|
 | **`icon`** (default) | Omarchy's own icon in the stamp (the Nerd Font glyph its bar uses), readable without the kanji. Red only for "now": a recording and live dictation are solid red; transcribing shows an hourglass. |
-| `kanji` | The kanji: 録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light, 静 do not disturb. One that is on is a small seal like the one at the far left (solid red, an inner rule, paper serif kanji); off, a faint outline like an off icon stamp. |
+| `kanji` | The kanji: 録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light, 静 do not disturb. One that is on is a small seal like the one at the far left, carved in ink (a bone plate, an inner rule, serif kanji); only one that means "now" (recording, dictation) is red; off, a faint outline like an off icon stamp. |
 | `iconname` | `icon`, with the name in small caps beside each one that is on. |
 | `kanjiname` | `kanji`, with the name beside each one that is on. |
 

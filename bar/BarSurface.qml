@@ -185,10 +185,10 @@ Item {
     Rectangle {
       visible: divider.ruled
       anchors.horizontalCenter: parent.horizontalCenter
-      y: Type.px(8)
+      anchors.verticalCenter: parent.verticalCenter
       width: 1
-      height: parent.height - Type.px(18)
-      color: Ink.line
+      height: Math.round(parent.height * 0.42)
+      color: Ink.alpha(Ink.bone, Ink.light ? 0.16 : 0.13)
     }
   }
 

@@ -270,11 +270,12 @@ Item {
 
   component UrgentDot: Rectangle {
     property bool ring: false
-    width: Type.px(ring ? 5 : 4)
+    // Sized to be seen at 1x: the ringed dot was 5 px with a 2 px ring, a 1 px red speck.
+    width: Type.px(ring ? 7 : 5)
     height: width
     radius: width / 2
     color: Ink.seal
-    border.width: ring ? 2 : 0
+    border.width: ring ? 1.5 : 0
     border.color: Ink.paper
   }
 }

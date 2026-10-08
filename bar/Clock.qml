@@ -64,6 +64,8 @@ Item {
         font.weight: Font.Normal
         font.variableAxes: Type.axes(Type.px(root.compact ? 18 : root.tall ? 24 : 22))
         font.letterSpacing: 0.2
+        // Tabular figures: the time doesn't shift as its digits change.
+        font.features: { "tnum": 1, "lnum": 1 }
       }
 
       Column {
@@ -119,6 +121,7 @@ Item {
         font.weight: Font.Normal
         font.variableAxes: Type.axes(Type.px(root.compact ? 18 : root.tall ? 24 : 22))
         font.letterSpacing: 0.3
+        font.features: { "tnum": 1, "lnum": 1 }
       }
 
       Text {
