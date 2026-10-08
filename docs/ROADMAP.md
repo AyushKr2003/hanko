@@ -111,10 +111,10 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji become presets over nine parts, three partners and three touches; Classic (today's Typeset bar) stays the default until the Kata bar is complete. Shōji's variants are built first.
 - ✅ **K1 · Kata.js**: the pure resolver (`core/Kata.js`), `design` / `borrow` / `touches` in `style.json` (top level and per monitor; `Style.js` carries them through), `Typeset.kata` / `kataFor()` / `setDesign` / `borrow` / `touch` / `surprise` (and draft twins), IPC `designGet | design | designDescribe | borrow | touch`, CLI `hanko design | borrow | touch`. Nothing on screen changes yet.
 - ✅ **K2 · Skin and tokens**: `core/Skin.js` (a resolved design → radii, divider width and joints, tempo durations and curves, the figure SOFT axis, washi opacity, grain, where a panel hangs, whether it travels), `core/Brush.js` (brush stroke, kasure, ensō as SVG paths), Kata's tones in `InkMath.kata()` and `Ink.qml` (ink2/3/4 by contrast, line, lift, paper2, sunk, and Leaf's cut, edge, shade, score), `Type.axes(size, wght, soft)`. A pure JS skin passed as a prop, not a singleton, so each monitor can wear its own design.
-- ⬜ **K3 · Part facades with Shōji's variants**: `Surface`, `Divider`, `PointerMark`, `Selection`, `Slider`, `Ring`, `Seal`, `UnreadMark`, `Sign` in `bar/parts/`, a harness gallery.
+- ✅ **K3 · The parts, every variant**: `bar/parts/` `Surface` (paper, card, washi), `Fibres`, `Divider` (hairline, score, lattice), `Selection` (tint, plate, wash), `KataSlider` (ruler, block, brush), `Ring` (glyph, ensō), `KataSeal` (outline, deboss, carved), `UnreadMark` (edge, dog-ear, 未), `PointerMark` (thread, crop, brush), `Sign` (heading, tabs, tategaki), `InkShape`; all three designs' variants at once (they were small), not Shōji's alone. Harness `kata-parts.json` and `kata-parts-light.json` (Rosé Pine Dawn, three mixes); renders in `docs/kata/images/k3-*.webp`.
+- ⬜ **K6 · Margin's and Leaf's variants** — mostly done early in K3; what remains are the whole-screen pieces (tickets, contact sheet, booklet).
 - ⬜ **K4 · The Kata bar**: `BarSurface` draws the Kata bar when the design is not Classic.
 - ⬜ **K5 · The one-panel window and its panels**: Sound, Time, Network, Power, Letters on the facades.
-- ⬜ **K6 · Margin's and Leaf's variants**, part by part.
 - ⬜ **K7 · Settings › Design** (four designs, nine borrow rows, touches, Surprise, Undo) and the harness grid of panels × designs.
 
 ## Dev loop

@@ -80,3 +80,28 @@ function enso(v, size, width, seed) {
   for (var k = inn.length - 1; k >= 0; k--) d += " L " + p(inn[k])
   return d + " Z"
 }
+
+// A carved outline: a w × h rectangle whose edges wander by up to `jitter`
+// px, as a seal's do. Corners rounded by r.
+function rough(w, h, r, seed, jitter) {
+  var n = noise(seed === undefined ? 11 : seed)
+  var j = jitter === undefined ? 0.8 : jitter
+  var pts = []
+  var per = 2 * (w + h), steps = Math.max(24, Math.round(per / 2))
+  for (var i = 0; i < steps; i++) {
+    var d = i / steps * per, x, y, nx, ny
+    if (d < w) { x = d; y = 0; nx = 0; ny = -1 }
+    else if (d < w + h) { x = w; y = d - w; nx = 1; ny = 0 }
+    else if (d < 2 * w + h) { x = w - (d - w - h); y = h; nx = 0; ny = 1 }
+    else { x = 0; y = h - (d - 2 * w - h); nx = -1; ny = 0 }
+    // pull the corners in by r so they read round
+    var cx = Math.min(Math.max(x, r), w - r), cy = Math.min(Math.max(y, r), h - r)
+    var dx = x - cx, dy = y - cy, dl = Math.sqrt(dx * dx + dy * dy)
+    if (dl > r && dl > 0) { x = cx + dx / dl * r; y = cy + dy / dl * r }
+    var o = (n(i * 0.35) - 0.5) * 2 * j
+    pts.push([x + nx * o, y + ny * o])
+  }
+  var d2 = "M " + f1(pts[0][0]) + " " + f1(pts[0][1])
+  for (var k = 1; k < pts.length; k++) d2 += " L " + f1(pts[k][0]) + " " + f1(pts[k][1])
+  return d2 + " Z"
+}

@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after Kata K2 (skin tokens and brush geometry; see §9 and `docs/kata/`).
+Last updated: 2026-10-08, after Kata K3 (the parts in QML; see §9 and `docs/kata/`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -283,6 +283,9 @@ bar/
                          plates ProfilePlate, AboutPlate, CreditsPlate with their art
                          (SealImpression, HangingScroll) and parts (PlateEyebrow,
                          PlateSpine, LeaderRow)
+  parts/                 Kata's parts (K3), pure, each takes `skin` (Skin.js): Surface,
+                         Fibres, Divider, Selection, KataSlider, Ring, KataSeal,
+                         UnreadMark, PointerMark, Sign, InkShape
   HostedSlot.qml         one hosted widget from the registry (see Phase 9 in §9)
   HostBar.qml            the `bar` facade hosted widgets see
   Marks.qml              Hanko's own indicators, keyboard, mic and tray marks
@@ -605,6 +608,14 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **`core/Brush.js`**: `stroke`, `kasure`, `enso`, deterministic by seed, paths rounded to 0.1 px.
 - **`core/InkMath.js` `kata(fg, bg)`** and **`Ink.qml`**: `ink2` (7:1 or 80% of the theme's, ≥ 5.6), `ink3` (4.6), `ink4` (2.05), `kLine`, `lift`, `paper2`, `sunk`, `cut`, `edge`, `edgeSide`, `shade`, `shade2`, `shadeIn`, `scoreDark`, `scoreLight`. Existing tokens untouched.
 - **`Type.axes(size, wght, soft)`**: optional SOFT axis. Unit tests: 110.
+
+### Kata 型 K3 · the parts in QML ✅
+- **`bar/parts/`**, every variant of every part (they were small enough to do all three designs at once, so K6 shrinks to the whole-screen pieces). Each takes `skin` (from `Skin.js`) and is pure:
+  - `Surface` (`hangs` squares and opens the top edge for a panel coming out of the bar; `lifted` = Leaf's height 2): paper's soft shadow and card's hard shadows are stacked/offset `Rectangle`s, never blur; washi is `skin.opacity` paper with `Fibres` and a top light. `Fibres` is one `Canvas` per surface, fixed seed, fibre count by area (a tiled `toDataURL` version recursed until the stack overflowed).
+  - `Divider` (`bleed` reaches the frame; lattice draws its two joints), `Selection` (`inverts` for the plate; slides on `y` with the skin's tempo), `KataSlider` (ticks on whole pixels; drag + wheel emit `moved(v)`; brush = `InkShape` of `Brush.stroke` + kasure lines), `Ring` (glyph rounded or cut by `corner`; ensō with a faint ring at bar size so 12% still reads), `KataSeal` (carved edge from `Brush.rough`; the press animation when `on` turns true), `UnreadMark` (fills its card or desk cell; `small` for desks), `PointerMark` (give it `target` and `lineY`; label for crop marks), `Sign` (eyebrow / index tabs with `picked(key)` / tategaki: one `Text` per kanji, Latin rotated 90°), `InkShape` (a `Shape` + `PathSvg`, `CurveRenderer`).
+  - Named `KataSeal`/`KataSlider` so they never shadow `bar/Seal.qml`. Item already has FINAL `baseline`, `right`, `bottom`: don't name properties that (hit here twice).
+- **`core/Brush.js` `rough(w, h, r, seed, jitter)`**: a carved outline.
+- **Harness**: `scenes/Kata.qml` (every part × each design, then a panel built only from parts; `designs` in params takes any style docs, so mixes render too), `params/kata-parts.json`, `kata-parts-light.json`. `tests/run` lints `bar/parts/`. Unit tests: 110.
 
 ## 10. Instructions for the remaining phase (10)
 
