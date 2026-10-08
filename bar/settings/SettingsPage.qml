@@ -402,8 +402,6 @@ Rectangle {
             ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
             : root.page === "design"
               ? "Pick the design that draws your bar, then borrow any part from another. Every change prints live and is kept at once."
-            : root.page === "presets"
-              ? "A preset is a starting point: pick one, then change any single setting on Typesetting."
               : root.placeholders[root.page] || ""
           color: Ink.inkMuted
           font.family: Type.text
@@ -1079,67 +1077,6 @@ Rectangle {
                 }
               }
             }
-          }
-        }
-
-        // ------------------------------------------------ Presets
-        Column {
-          visible: root.page === "presets"
-          width: parent.width
-          topPadding: Type.px(22)
-          spacing: Type.px(24)
-
-          Repeater {
-            model: S.PRESET_NAMES
-            Column {
-              id: strip
-              required property string modelData
-              width: parent.width
-              spacing: Type.px(6)
-              Row {
-                spacing: Type.px(12)
-                Text {
-                  anchors.baseline: blurbText.baseline
-                  text: strip.modelData
-                  color: Ink.ink
-                  font.family: Type.display
-                  font.pixelSize: Type.px(22)
-                  font.weight: Font.Normal
-                  font.variableAxes: Type.axes(Type.px(22))
-                }
-                Text {
-                  id: blurbText
-                  text: Settings.PRESET_BLURBS[strip.modelData].toUpperCase()
-                  color: Ink.inkMuted
-                  font.family: Type.mono
-                  font.pixelSize: Type.label
-                  font.letterSpacing: Type.trackLabel
-                }
-              }
-              Rectangle {
-                width: parent.width
-                height: stripBar.height + 2
-                radius: 3
-                color: "transparent"
-                border.width: 1
-                border.color: strip.modelData === root.draft.preset ? Ink.ink : Ink.line
-                PreviewBar {
-                  id: stripBar
-                  x: 1; y: 1
-                  width: parent.width - 2
-                  style: S.resolve({ preset: strip.modelData, sealGlyph: root.draft.sealGlyph })
-                }
-                MouseArea {
-                  anchors.fill: parent
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.presetPicked(strip.modelData)
-                }
-              }
-            }
-          }
-          SmallButton {
-            label: "Shuffle · one of " + S.combinations().toLocaleString(Qt.locale("en_US"), "f", 0)
-            onClicked: root.shuffle()
           }
         }
       }

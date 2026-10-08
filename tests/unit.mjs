@@ -593,7 +593,7 @@ test("settings: six cards hold every one of the twenty-two settings once", () =>
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 12)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {

@@ -23,7 +23,7 @@ FloatingWindow {
 
   // The Hanko-only pages vanish under another design; fall back to Design.
   readonly property bool hankoDesign: Typeset.kata.classic
-  readonly property var hankoOnly: ["typesetting", "sheets", "scroll", "presets"]
+  readonly property var hankoOnly: ["typesetting", "sheets", "scroll"]
   readonly property string shownPage: (!hankoDesign && hankoOnly.indexOf(page) >= 0) ? "design" : page
 
   title: "Hanko settings"

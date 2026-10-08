@@ -14,14 +14,13 @@ var RAIL = [
                                 { key: "scroll", label: "Scroll", jp: "巻" }] },
   { group: "03 FEEL",   pages: [{ key: "motion", label: "Motion", jp: "動" },
                                 { key: "keys", label: "Keys", jp: "鍵" }] },
-  { group: "04 SHARE",  pages: [{ key: "presets", label: "Presets", jp: "型" }] },
-  { group: "05 HANKO",  pages: [{ key: "about", label: "About", jp: "由来" },
+  { group: "04 HANKO",  pages: [{ key: "about", label: "About", jp: "由来" },
                                 { key: "credits", label: "Credits", jp: "謝辞" }] }
 ]
 
 // Pages that only mean something while the Hanko design draws the bar; the
 // rail drops them (and their group, if it empties) under Margin, Leaf and Shōji.
-var HANKO_ONLY = ["typesetting", "sheets", "scroll", "presets"]
+var HANKO_ONLY = ["typesetting", "sheets", "scroll"]
 
 function rail(hanko) {
   if (hanko) return RAIL
