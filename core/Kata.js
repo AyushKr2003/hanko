@@ -66,9 +66,9 @@ var DESIGNS = {
 }
 var CLASSIC = "classic"
 var DESIGN_NAMES = [CLASSIC, "margin", "leaf", "shoji"]
-// Today's bar stays the default until the Kata bar is complete.
+// Hanko (id "classic", kept so saved files still load) stays the default until the Kata bar is complete.
 var DEFAULT_DESIGN = CLASSIC
-var LABELS = { classic: "Classic", margin: "Margin", leaf: "Leaf", shoji: "Shōji" }
+var LABELS = { classic: "Hanko", margin: "Margin", leaf: "Leaf", shoji: "Shōji" }
 var PART_LABELS = { surface: "surface", arrive: "panels", pointer: "pointer", select: "selection", slider: "slider", ring: "battery",
                     seal: "seal", unread: "unread mark", sign: "panel name",
                     notify: "letters", overview: "overview", hold: "hold to confirm", corner: "corners", divider: "dividers", tempo: "tempo" }
@@ -76,6 +76,7 @@ var PART_LABELS = { surface: "surface", arrive: "panels", pointer: "pointer", se
 function designName(name) {
   var n = String(name === undefined || name === null ? "" : name).toLowerCase()
   if (n === "shōji") n = "shoji"
+  if (n === "hanko") n = CLASSIC   // the main bar is stored as "classic"
   return DESIGN_NAMES.indexOf(n) >= 0 ? n : ""
 }
 

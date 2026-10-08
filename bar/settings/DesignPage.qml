@@ -31,7 +31,7 @@ Column {
 
   readonly property var kata: K.resolve(doc)
   readonly property bool classic: kata.classic
-  readonly property var blurbs: ({ classic: "today's Typeset bar", margin: "paper, soft and calm", leaf: "cards, tabs and tickets", shoji: "washi, ink and the seasons" })
+  readonly property var blurbs: ({ classic: "the main bar, in type and ink", margin: "paper, soft and calm", leaf: "cards, tabs and tickets", shoji: "washi, ink and the seasons" })
   // Classic has no parts to borrow; its rows show Margin's.
   readonly property var base: classic ? ({ design: "margin" }) : doc
 
@@ -170,7 +170,7 @@ Column {
       anchors.right: parent.right
       anchors.verticalCenter: parent.verticalCenter
       spacing: Type.px(10)
-      Button { label: root.classic ? "Back to Classic" : "Back to " + K.LABELS[root.kata.design]; faint: root.classic || root.kata.borrowed.length === 0; onClicked: root.backToDesign() }
+      Button { label: root.classic ? "Back to Hanko" : "Back to " + K.LABELS[root.kata.design]; faint: root.classic || root.kata.borrowed.length === 0; onClicked: root.backToDesign() }
       Button { label: "Surprise me"; onClicked: root.surprise() }
     }
   }
@@ -182,7 +182,7 @@ Column {
     width: parent.width
     wrapMode: Text.Wrap
     text: root.classic
-      ? "Classic is drawn by its own code, so it has no parts to borrow. Pick Margin, Leaf or Shōji above, then borrow any part from the other two here."
+      ? "Hanko is drawn by its own code, so it has no parts to borrow. Pick Margin, Leaf or Shōji above, then borrow any part from the other two here."
       : "Borrow any part from another design. The parts that go with it (corners, dividers, tempo) follow on their own."
     color: Ink.inkMuted
     font.family: Type.text; font.pixelSize: Type.row

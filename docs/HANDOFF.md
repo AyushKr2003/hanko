@@ -50,6 +50,7 @@ These come from the user's own messages and reactions:
 - **Redesigns are explored on their own branches first, built on `dev` only once chosen.** The user asked for a premium redesign "as a simple person would see it" (`design`, Margin), got a second take (`design2`, Leaf), then asked for "a Japanese touch" (`design3`, Shōji), then for "a uniform for all designs so we can twist whatever design we want" (`revision1`, Kata). They liked all three; Kata is what is being built.
 - **Japanese touches must mean something.** Kanji only where they are the thing itself (a season, a panel's sign, the seal), large, with English beside; Mincho only at 18 px and up; each touch switchable off. The old tiny kanji glosses were judged noise in the audits.
 - **When the user leaves a decision open and says "start", pick a sensible default, say so, and keep going.** For Kata: Classic stays the default design; Shōji's variants were to be built first (all three landed together in K3).
+- **Naming:** the main bar is called **Hanko** in the UI, README and CLI (`hanko design hanko`). Its stored id stays `classic` (so saved `style.json` and code still work); `designName` accepts `hanko` as an alias. Older docs below still say "Classic" for the same design.
 - **Pushing straight to `dev` works** in cloud sessions (the user said: push to dev, or make a branch from dev if that is refused).
 - **Settings have no Save button.** Verbatim: *"in setting you don't keep the save button"*. Every change applies and is kept at once, with Undo (Ctrl+Z). Keep it that way for any new setting.
 

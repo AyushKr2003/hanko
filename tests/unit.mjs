@@ -44,7 +44,7 @@ const Sn = load("core/Season.js", ["SEKKI", "KO", "sunLongitude", "koIndex", "at
 const Sk = load("core/Skin.js", ["skin", "TEMPOS", "RADII"])
 const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
 const K = load("core/Kata.js", ["PARTS", "PART_KEYS", "MAIN_PARTS", "AUTO", "TOUCHES", "DESIGNS", "DESIGN_NAMES", "DEFAULT_DESIGN",
-  "resolve", "withDesign", "withBorrow", "withTouch", "surprised", "describe", "clean"])
+  "resolve", "withDesign", "withBorrow", "withTouch", "surprised", "describe", "clean", "designName"])
 
 let passed = 0
 function test(name, fn) {
@@ -1279,6 +1279,7 @@ test("kata: Classic is the default, so today's style.json is unchanged", () => {
   const s = K.resolve({ preset: "Sheet", edits: { clock: "mono" } })
   assert.equal(s.design, "classic"); assert.equal(s.classic, true); assert.deepEqual(s.warnings, [])
   assert.equal(K.DEFAULT_DESIGN, "classic")
+  assert.equal(K.designName("hanko"), "classic"); assert.equal(K.resolve({ design: "Hanko" }).classic, true)
 })
 test("kata: partners follow the part they belong with, unless set", () => {
   assert.equal(K.resolve({ design: "leaf" }).corner, "cut")
@@ -1320,7 +1321,7 @@ test("kata: borrowing a design's own part, or auto, gives it back; bad values re
 test("kata: describe names what was borrowed", () => {
   assert.equal(K.describe(K.resolve({ design: "shoji" })), "Shōji")
   assert.equal(K.describe(K.resolve({ design: "shoji", borrow: { slider: "ruler", seal: "deboss" } })), "Shōji with Margin’s slider, Leaf’s seal")
-  assert.equal(K.describe(K.resolve({})), "Classic")
+  assert.equal(K.describe(K.resolve({})), "Hanko")
 })
 test("kata: a surprise is always a clean mix of two or three borrowed parts", () => {
   let seed = 7
