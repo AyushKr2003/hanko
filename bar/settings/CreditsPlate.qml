@@ -5,9 +5,10 @@ import "../../core/Profile.js" as P
 
 // Credits 謝辞, the thanks plate. A hanging scroll dissolves off the right;
 // the left column carries the bilingual title, a Fraunces deck, everything
-// Hanko stands on as editorial lines (a linked one inverts under the pointer
-// and opens its home), and the one bone placard on the plate, for the
-// people who test every build on real machines.
+// Hanko stands on as editorial lines set under three heads (Foundation 礎,
+// Lineage 系譜, Type 活字; a linked line inverts under the pointer and opens
+// its home), and a ruled card stamped 校 for the people who test every
+// build on real machines.
 Item {
   id: root
 
@@ -70,9 +71,12 @@ Item {
         width: parent.width - (root.smallScroll > 0 ? root.smallScroll + Type.px(24) : 0)
         spacing: Type.px(16)
         PlateEyebrow { jp: "謝辞"; label: "Kansha" }
-        Column {
-          Text { text: "感謝"; color: Ink.ink; font.family: Type.jpSerif; font.pixelSize: Type.px(64); font.weight: Font.Medium }
+        // The kanji and its English on one line, as a title and its reading.
+        Row {
+          spacing: Type.px(18)
+          Text { id: titleJp; text: "感謝"; color: Ink.ink; font.family: Type.jpSerif; font.pixelSize: Type.px(64); font.weight: Font.Medium }
           Text {
+            anchors.baseline: titleJp.baseline
             text: "Gratitude"
             color: Ink.ink
             font.family: Type.display
@@ -93,39 +97,71 @@ Item {
       }
       }
 
-      Column {
-        width: parent.width
-        Repeater {
-          model: P.PROJECTS
-          LeaderRow {
-            required property var modelData
-            width: column.width
-            height: Type.px(31)
-            kind: "credit"
-            name: modelData.name
-            by: modelData.by
-            value: modelData.role
-            url: modelData.url
+      // Everything it stands on, under three heads.
+      Repeater {
+        model: P.CREDIT_GROUPS
+        Column {
+          id: group
+          required property var modelData
+          width: column.width
+          spacing: Type.px(6)
+          SectionLabel { jp: group.modelData.jp; text: group.modelData.label }
+          Column {
+            width: parent.width
+            Repeater {
+              model: P.creditsIn(group.modelData.key)
+              LeaderRow {
+                required property var modelData
+                width: column.width
+                height: Type.px(29)
+                kind: "credit"
+                name: modelData.name
+                by: modelData.by
+                value: modelData.role
+                url: modelData.url
+              }
+            }
           }
         }
       }
 
-      // The one bone plate: the people who test it on real machines.
+      // The proofreaders: a ruled card, stamped 校 (to check) in the corner.
       Rectangle {
         width: parent.width
-        height: crew.height + 2 * Type.px(18)
+        height: crew.height + 2 * Type.px(20)
         radius: 3
-        color: Ink.bone
+        color: Ink.alpha(Ink.bone, Ink.light ? 0.04 : 0.03)
+        border.width: 1
+        border.color: Ink.line
+        Rectangle {
+          id: stamp
+          x: Type.px(20)
+          y: Type.px(20)
+          width: Type.px(40)
+          height: width
+          radius: 3
+          rotation: -4
+          color: "transparent"
+          border.width: 2
+          border.color: Ink.seal
+          Text {
+            anchors.centerIn: parent
+            text: "校"
+            color: Ink.seal
+            font.family: Type.jpSerif
+            font.weight: Font.Bold
+            font.pixelSize: Type.px(22)
+          }
+        }
         Column {
           id: crew
-          x: Type.px(18)
-          anchors.verticalCenter: parent.verticalCenter
-          width: parent.width - 2 * x
-          spacing: Type.px(10)
+          x: stamp.x + stamp.width + Type.px(20)
+          y: Type.px(20)
+          width: parent.width - x - Type.px(20)
+          spacing: Type.px(8)
           Text {
             text: "THE PROOFREADERS  ·  校正"
-            color: Ink.boneInk
-            opacity: 0.65
+            color: Ink.inkMuted
             font.family: Type.mono
             font.pixelSize: Type.tag
             font.letterSpacing: Type.trackEyebrow
@@ -139,21 +175,21 @@ Item {
                 required property var modelData
                 required property int index
                 Text {
-                  text: person.modelData.name.toUpperCase()
-                  color: Ink.boneInk
-                  font.family: Type.mono
-                  font.pixelSize: Type.row
+                  text: person.modelData.name
+                  color: Ink.ink
+                  font.family: Type.display
+                  font.pixelSize: Type.px(22)
+                  font.variableAxes: Type.axes(Type.px(22))
                   font.underline: personHover.hovered
                   HoverHandler { id: personHover; cursorShape: Qt.PointingHandCursor }
                   TapHandler { onTapped: Qt.openUrlExternally(person.modelData.url) }
                 }
                 Text {
                   visible: person.index < P.PROOFREADERS.length - 1
-                  text: "  ◆  "
-                  color: Ink.boneInk
-                  opacity: 0.5
-                  font.family: Type.mono
-                  font.pixelSize: Type.row
+                  text: "  ·  "
+                  color: Ink.inkFaint
+                  font.family: Type.display
+                  font.pixelSize: Type.px(22)
                 }
               }
             }
@@ -162,8 +198,7 @@ Item {
             width: parent.width
             wrapMode: Text.Wrap
             text: "Every build is checked on a real Omarchy desk before it is called done. Found something? Open an issue on the repository."
-            color: Ink.boneInk
-            opacity: 0.7
+            color: Ink.inkDim
             font.family: Type.text
             font.pixelSize: Type.note
           }

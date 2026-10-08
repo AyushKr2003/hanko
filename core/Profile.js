@@ -83,6 +83,7 @@ function grouped(n) {
 
 // The live readings pinned beside the seal: { key, name, jp, big, sub }.
 // Only what the machine has; the bar's own shapes (core/Status.js).
+// Each reading carries `level` (0..1 for a gauge, -1 for none).
 function vitals(d) {
   d = d || {}
   var out = []
@@ -94,17 +95,20 @@ function vitals(d) {
       if (spaces[i].active) live = ("0" + spaces[i].id).slice(-2)
     }
     out.push({ key: "spaces", name: "SPACES", jp: "頁", big: ("0" + spaces.length).slice(-2),
-               sub: windows + (windows === 1 ? " window" : " windows") + (live ? " · on " + live : "") })
+               sub: windows + (windows === 1 ? " window" : " windows") + (live ? " · on " + live : ""), level: -1 })
   }
   if (d.volume) out.push({ key: "sound", name: "SOUND", jp: "音", big: d.volume.muted ? "Muted" : d.volume.percent + "%",
-                           sub: d.volume.muted ? d.volume.percent + "% when on" : "output level" })
+                           sub: d.volume.muted ? d.volume.percent + "% when on" : "output level",
+                           level: d.volume.muted ? 0 : Math.max(0, Math.min(1, d.volume.percent / 100)) })
   if (d.network) out.push({ key: "network", name: "NETWORK", jp: "網", big: fv(d.network.name),
-                            sub: d.network.off ? "offline" : d.network.kind === "wifi" ? "Wi-Fi · " + (d.network.bars || 0) + " of 4 bars" : String(d.network.kind || "wired") })
+                            sub: d.network.off ? "offline" : d.network.kind === "wifi" ? "Wi-Fi · " + (d.network.bars || 0) + " of 4 bars" : String(d.network.kind || "wired"),
+                            level: d.network.off ? 0 : d.network.kind === "wifi" ? Math.max(0, Math.min(1, (d.network.bars || 0) / 4)) : -1 })
   if (d.battery) out.push({ key: "power", name: "POWER", jp: d.battery.charging ? "充" : "電", big: d.battery.percent + "%",
-                            sub: d.battery.charging ? "charging" : "on battery" })
+                            sub: d.battery.charging ? "charging" : "on battery",
+                            level: Math.max(0, Math.min(1, d.battery.percent / 100)) })
   var n = (d.notifications || []).length
   out.push({ key: "inbox", name: "INBOX", jp: "報", big: ("0" + n).slice(-2),
-             sub: d.dnd ? "do not disturb" : n ? (d.notifications[0].app || "a letter") + " last" : "nothing waiting" })
+             sub: d.dnd ? "do not disturb" : n ? (d.notifications[0].app || "a letter") + " last" : "nothing waiting", level: -1 })
   return out
 }
 
@@ -126,19 +130,31 @@ function specs(style, doc, machine, version, OPTIONS, KEYS, total) {
 
 // Credits: what Hanko stands on. An empty url is a quiet, unlinked credit.
 var PROJECTS = [
-  { name: "Omarchy", by: "basecamp", role: "the system this bar belongs to", url: "https://github.com/basecamp/omarchy" },
-  { name: "Quickshell", by: "outfoxxed", role: "the QML shell it runs in", url: "https://quickshell.org" },
-  { name: "Hyprland", by: "hyprwm", role: "the compositor under it", url: "https://github.com/hyprwm/Hyprland" },
-  { name: "Ryoku", by: "Ryoku-dev", role: "the settings grammar: ink tiers, hairlines, inversion", url: "https://github.com/Ryoku-dev/ryoku" },
-  { name: "Omacale", by: "AyushKr2003", role: "how a bar plugin hosts Omarchy's widgets", url: "https://github.com/AyushKr2003/omacale" },
-  { name: "Shibumi-Shell", by: "HANCORE-linux", role: "plugin integration", url: "https://github.com/HANCORE-linux/Shibumi-Shell" },
-  { name: "ruixen-shell", by: "gitcoder89431", role: "plugin integration", url: "https://github.com/gitcoder89431/ruixen-shell" },
-  { name: "Fraunces", by: "Undercase Type", role: "titles, time and bylines", url: "https://github.com/undercasetype/Fraunces" },
-  { name: "Space Grotesk", by: "Florian Karsten", role: "values and language", url: "https://github.com/floriankarsten/space-grotesk" },
-  { name: "Noto CJK", by: "Google · Adobe", role: "every kanji", url: "https://github.com/notofonts/noto-cjk" },
-  { name: "Qt Quick", by: "The Qt Company", role: "every pixel", url: "https://www.qt.io" },
-  { name: "PipeWire · BlueZ · NetworkManager", by: "", role: "sound, Bluetooth, network", url: "" }
+  { name: "Omarchy", group: "system", by: "basecamp", role: "the system this bar belongs to", url: "https://github.com/basecamp/omarchy" },
+  { name: "Quickshell", group: "system", by: "outfoxxed", role: "the QML shell it runs in", url: "https://quickshell.org" },
+  { name: "Hyprland", group: "system", by: "hyprwm", role: "the compositor under it", url: "https://github.com/hyprwm/Hyprland" },
+  { name: "Ryoku", group: "lineage", by: "Ryoku-dev", role: "the settings grammar: ink tiers, hairlines, inversion", url: "https://github.com/Ryoku-dev/ryoku" },
+  { name: "Omacale", group: "lineage", by: "AyushKr2003", role: "how a bar plugin hosts Omarchy's widgets", url: "https://github.com/AyushKr2003/omacale" },
+  { name: "Shibumi-Shell", group: "lineage", by: "HANCORE-linux", role: "plugin integration", url: "https://github.com/HANCORE-linux/Shibumi-Shell" },
+  { name: "ruixen-shell", group: "lineage", by: "gitcoder89431", role: "plugin integration", url: "https://github.com/gitcoder89431/ruixen-shell" },
+  { name: "Fraunces", group: "type", by: "Undercase Type", role: "titles, time and bylines", url: "https://github.com/undercasetype/Fraunces" },
+  { name: "Space Grotesk", group: "type", by: "Florian Karsten", role: "values and language", url: "https://github.com/floriankarsten/space-grotesk" },
+  { name: "Noto CJK", group: "type", by: "Google · Adobe", role: "every kanji", url: "https://github.com/notofonts/noto-cjk" },
+  { name: "Qt Quick", group: "system", by: "The Qt Company", role: "every pixel", url: "https://www.qt.io" },
+  { name: "PipeWire · BlueZ · NetworkManager", group: "system", by: "", role: "sound, Bluetooth, network", url: "" }
 ]
+
+// The groups credits are set under, in order: what Hanko runs on, whose
+// work it learned from, and the type it is set in.
+var CREDIT_GROUPS = [
+  { key: "system",  jp: "礎",   label: "Foundation" },
+  { key: "lineage", jp: "系譜", label: "Lineage" },
+  { key: "type",    jp: "活字", label: "Type" }
+]
+
+function creditsIn(group) {
+  return PROJECTS.filter(function(p) { return p.group === group })
+}
 
 // The people who test every build on real machines.
 var PROOFREADERS = [

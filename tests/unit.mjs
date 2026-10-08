@@ -1109,7 +1109,7 @@ test("scroll guides: the tabs on top, the position bar at the foot, both or none
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "both")
 })
-const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE"])
+const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE", "CREDIT_GROUPS", "creditsIn"])
 
 test("profile: the machine probe's lines become facts", () => {
   const m = Pr.parseMachine("user=ayush\nhost=kumo\nkernel=6.18\nuptime=187420.5\ntheme=Unknown\npackages=1184\nnoise\nbogus=1")
@@ -1153,6 +1153,9 @@ test("profile: live readings and the small print", () => {
   assert.equal(v[2].sub, "Wi-Fi · 3 of 4 bars")
   assert.equal(v[3].sub, "Signal last")
   assert.equal(Pr.vitals({}).length, 1)
+  assert.equal(v[1].level, 0.62)
+  assert.equal(v[2].level, 0.75)
+  assert.equal(v[0].level, -1)
   const rows = Pr.specs(S.resolve({ edits: { clock: "mono" } }), S.normalize({ edits: { clock: "mono" } }), { theme: "Kanagawa", hyprland: "v0.52.1", uptime: 60 }, "0.1.0", S.OPTIONS, S.KEYS, S.combinations())
   assert.deepEqual(rows[0], ["Preset", "Hanko + 1 edit"])
   assert.match(rows[1][1], /^No\. [\d,]+ of [\d,]+$/)
@@ -1163,6 +1166,10 @@ test("profile: live readings and the small print", () => {
 test("about and credits: every line is whole, links are https", () => {
   for (const p of Pr.PROJECTS) { assert.ok(p.name && p.role); assert.ok(p.url === "" || p.url.startsWith("https://")) }
   for (const p of Pr.PROOFREADERS) assert.ok(p.url.startsWith("https://github.com/"))
+  // Every credit sits in one of the groups, and the groups hold them all.
+  const keys = Pr.CREDIT_GROUPS.map(g => g.key)
+  for (const p of Pr.PROJECTS) assert.ok(keys.includes(p.group), p.name)
+  assert.equal(keys.reduce((n, k) => n + Pr.creditsIn(k).length, 0), Pr.PROJECTS.length)
   const f = Pr.facts("0.1.0", 10, "22", 6)
   assert.equal(f.length, 8)
   assert.equal(f[f.length - 1][2], "https://github.com/AyushKr2003/hanko")
