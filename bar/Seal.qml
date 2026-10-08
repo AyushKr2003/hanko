@@ -1,7 +1,7 @@
 import QtQuick
 import "../core"
 
-// The seal 印: a stamped square in the theme's red, the one block of colour
+// The seal 鑑: a stamped square in the theme's red, the one block of colour
 // on the bar. `stamp` shows a fixed glyph; `workspace` shows the active
 // workspace as a kanji numeral; `none` hides it.
 Item {

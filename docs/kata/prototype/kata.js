@@ -181,7 +181,7 @@ export function ring(st, v, size, opts = {}) {
   return `<div style="width:${size}px;height:${size}px;display:grid;place-items:center"><svg width="${size * .78}" height="${size * .42}" viewBox="0 0 70 38"><rect x="1.5" y="1.5" width="61" height="35" rx="${st.corner === 'cut' ? 0 : 8}" fill="none" stroke="var(--ink)" stroke-width="2.5"/><rect x="7" y="7" width="${(50 * v / 100).toFixed(1)}" height="24" rx="${st.corner === 'cut' ? 0 : 4}" fill="var(--ink)"/><rect x="64" y="13" width="4.5" height="12" fill="var(--ink)"/></svg></div>`;
 }
 let sid = 0;
-export function seal(st, glyph = '印', on = false, size = 24) {
+export function seal(st, glyph = '鑑', on = false, size = 24) {
   const id = 'sf' + (++sid), r = st.corner === 'cut' ? 0 : size * .22, rough = st.seal === 'carved';
   const f = rough ? `<defs><filter id="${id}"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="${sid}"/><feDisplacementMap in="SourceGraphic" scale="1.6"/></filter></defs>` : '';
   const flt = rough ? ` filter="url(#${id})"` : '';
@@ -208,7 +208,7 @@ export function slider(st, v, w, { thin = false, muted = false, seed = 4 } = {})
 }
 
 // ── data ────────────────────────────────────────────────────────────────
-export const DATA = { time: '21:44', date: 'Thu 8 Oct', season: ['寒露', 'Cold dew'], spaces: [1, 2, 3, 4, 5], has: [1, 2, 3, 4], on: 3, urgent: 4, app: 'Neovim', doc: 'hanko / core / Kata.js', media: ['Water Copy', 'Hiroshi Yoshimura'], vol: 62, bat: 91, inbox: 3, glyph: '印' };
+export const DATA = { time: '21:44', date: 'Thu 8 Oct', season: ['寒露', 'Cold dew'], spaces: [1, 2, 3, 4, 5], has: [1, 2, 3, 4], on: 3, urgent: 4, app: 'Neovim', doc: 'hanko / core / Kata.js', media: ['Water Copy', 'Hiroshi Yoshimura'], vol: 62, bat: 91, inbox: 3, glyph: '鑑' };
 const KAN = ['〇', '一', '二', '三', '四', '五', '六'];
 
 export function bar(st, d = DATA) {
@@ -321,7 +321,7 @@ export function swatch(part, variant) {
     case 'select': return `<span style="position:relative;width:76px;height:22px;display:flex;align-items:center;padding-left:8px;font-size:11px;${variant === 'tint' ? 'background:color-mix(in srgb,var(--ink) 9%,transparent);border-radius:6px;color:var(--ink)' : variant === 'plate' ? 'background:var(--ink);color:var(--paper)' : 'background:radial-gradient(120% 140% at 12% 50%,color-mix(in srgb,var(--ink) 14%,transparent),transparent 80%);color:var(--ink);box-shadow:inset 2px 0 0 var(--ink)'}">Monitors</span>`;
     case 'slider': return slider(st, 62, 70, { thin: true, seed: 4 });
     case 'ring': return `<span style="display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink)">${ring({ ...st, ring: variant }, 64, 17)}64</span>`;
-    case 'seal': return `<span style="display:flex;gap:6px">${seal({ ...st, seal: variant }, '印', false, 22)}${seal({ ...st, seal: variant }, '印', true, 22)}</span>`;
+    case 'seal': return `<span style="display:flex;gap:6px">${seal({ ...st, seal: variant }, '鑑', false, 22)}${seal({ ...st, seal: variant }, '鑑', true, 22)}</span>`;
     case 'unread': return `<span style="position:relative;width:62px;height:28px;border:1px solid var(--line);display:block;border-radius:${st.corner === 'cut' ? 0 : 6}px">${variant === 'edge' ? '<i style="position:absolute;left:-1px;top:7px;width:3px;height:12px;background:var(--red)"></i>' : variant === 'dogear' ? '<i style="position:absolute;right:0;top:0;border-top:10px solid var(--red);border-left:10px solid transparent"></i>' : `<span style="position:absolute;right:4px;top:4px">${seal({ ...st, seal: 'carved' }, '未', true, 15)}</span>`}</span>`;
     case 'sign': return variant === 'eyebrow' ? `<span style="font-size:11px;color:var(--ink2);display:flex;gap:5px;align-items:center">${icon('speaker')}Sound</span>` : variant === 'tabs' ? `<span style="display:flex;gap:2px;font-size:10px"><i style="font-style:normal;padding:3px 5px;border:1px solid var(--line);border-top:0;color:var(--ink3)">Time</i><i style="font-style:normal;padding:3px 5px;background:var(--ink);color:var(--paper)">Sound</i></span>` : `<span style="display:flex;gap:4px;align-items:center"><span class="jp" style="writing-mode:vertical-rl;font-size:15px;color:var(--ink)">音</span><span style="writing-mode:vertical-rl;font-size:9.5px;color:var(--ink3)">Sound</span></span>`;
     default: return '';
@@ -331,7 +331,7 @@ export function settingsPage(el, st, doc) {
   const w = document.createElement('div'); w.className = 'setw surf';
   const nav = [['brush', 'Design', 1], ['bar', 'Bar'], ['panel', 'Panels'], ['bell', 'Letters'], ['key', 'Keys'], ['info', 'About']];
   const mains = Object.keys(PARTS).filter(k => PARTS[k].main);
-  w.innerHTML = `<aside class="side"><div class="brand">${seal(st, '印', true, 26)}Hanko</div>${nav.map(n => `<div class="nav${n[2] ? ' on' : ''}">${icon(n[0])}${n[1]}</div>`).join('')}</aside>
+  w.innerHTML = `<aside class="side"><div class="brand">${seal(st, '鑑', true, 26)}Hanko</div>${nav.map(n => `<div class="nav${n[2] ? ' on' : ''}">${icon(n[0])}${n[1]}</div>`).join('')}</aside>
   <main class="page"><h1>Design</h1><div class="lede">Pick a design. Then, if you like, borrow any part from another one.</div>
     <div class="designs">${Object.entries(DESIGNS).map(([k, D]) => `<div class="dc${st.design === k ? ' on' : ''}" data-d="${k}"><div class="pv"></div><div class="meta"><div><b>${D.name}</b><span>${D.blurb}</span></div></div></div>`).join('')}<div class="dc" data-d="classic"><div class="pv" style="display:grid;place-items:center;color:var(--ink3);font-size:12px">today’s Typeset bar</div><div class="meta"><div><b>Classic</b><span>Sheet, Scroll, Typeset presets</span></div></div></div></div>
     <div class="borrow"><div class="bt"><b>Borrow</b>each row shows one part as each design draws it · partners (corners, dividers, tempo) follow on their own</div>

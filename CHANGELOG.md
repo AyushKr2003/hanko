@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Kan 鑑 replaces 印 everywhere: the default seal glyph, the settings mark, the Omarchy menu icon (`hanko menu add` updates an older entry in place), the seal's labels and the docs. Settings › Typesetting offers the four Kan, 鑑 漢 観 寛. Every kanji is drawn in a bundled brush face, Yuji Boku.
 - Overview: a second layout, `dynamic`, after Ryoku's: only the workspaces you use and a + for a new one, desktops along the top, a selection you move with Tab and confirm with Enter. Pick it under Panels on Typesetting, or `hanko style set overview dynamic`.
 - Overview 一覧: a workspace overview laid on the theme's paper, each workspace a page with its windows live where they sit, lying on the sheet with the window style's paper shadow; arrows switch, click goes, drag moves a window, middle-click closes one. Right-click the workspaces, or `omarchy-shell hanko overview`.
 - `style.lua`: Hyprland windows in the bar's grammar (hairline frames in ink and Ink.line, square or inset corners, a hard seal-red print under the focused window, flat mono group tabs, Motion's timings), from the theme's colors.toml and style.json. Load it from `~/.config/hypr/looknfeel.lua`.

@@ -339,7 +339,7 @@ Rectangle {
         SearchField { id: pageSearch; visible: root.compact; width: parent.width }
         Item { width: 1; height: Type.px(14); visible: root.compact }
 
-        // Eyebrow: 印 BAR ───── hanko.bar · omarchy
+        // Eyebrow: 鑑 BAR ───── hanko.bar · omarchy
         Item {
           width: parent.width
           height: Type.px(16)

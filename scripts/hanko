@@ -157,14 +157,21 @@ cmd_design() {
 # put right after the opening brace so it never depends on the entry before
 # it having a trailing comma; remove deletes exactly that line.
 MENU_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/extensions/omarchy-menu.jsonc"
-MENU_LINE='  "setup.hanko": {"icon":"印","label":"Hanko","action":"omarchy-shell hanko settings"}, // hanko.bar'
+MENU_LINE='  "setup.hanko": {"icon":"鑑","label":"Hanko","action":"omarchy-shell hanko settings"}, // hanko.bar'
 
 cmd_menu() {
   case "${1:-}" in
     add)
       mkdir -p "$(dirname "$MENU_FILE")"
       [[ -s $MENU_FILE ]] || printf '{\n}\n' > "$MENU_FILE"
-      if grep -q '// hanko.bar$' "$MENU_FILE"; then say "Hanko is already in the menu."; return; fi
+      if grep -qF "$MENU_LINE" "$MENU_FILE"; then say "Hanko is already in the menu."; return; fi
+      # An older entry (the 印 icon before 鑑): swap it for this one in place.
+      if grep -q '// hanko.bar$' "$MENU_FILE"; then
+        cp "$MENU_FILE" "$MENU_FILE.bak"
+        awk -v line="$MENU_LINE" '/\/\/ hanko\.bar$/ { print line; next } { print }' "$MENU_FILE.bak" > "$MENU_FILE"
+        say "Updated Setup › Hanko in the Omarchy menu ($MENU_FILE; the old file is at .bak)."
+        return
+      fi
       grep -q '^[[:space:]]*{' "$MENU_FILE" || fail "$MENU_FILE has no opening brace; add the entry by hand"
       cp "$MENU_FILE" "$MENU_FILE.bak"
       awk -v line="$MENU_LINE" '!done && /^[[:space:]]*\{/ { print; print line; done = 1; next } { print }' "$MENU_FILE.bak" > "$MENU_FILE"

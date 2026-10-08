@@ -4,7 +4,7 @@
   "theme": { "foreground": "#ddd5c7", "background": "#0a0a09", "red": "#d8452f" },
   "strips": [
     { "label": "HANKO PRESET · SEAL WORKSPACE · CLOCK STACKED · 40 PX", "doc": {} },
-    { "label": "SEAL STAMP 印 · 36 PX", "doc": { "preset": "Sheet" } },
+    { "label": "SEAL STAMP 鑑 · 36 PX", "doc": { "preset": "Sheet" } },
     { "label": "SEAL STAMP 侍 · 44 PX", "doc": { "preset": "Instrument", "sealGlyph": "侍", "edits": { "clock": "stacked", "clockAt": "center" } } },
     { "label": "QUIET · 32 PX · GLASS", "doc": { "preset": "Quiet", "edits": { "clock": "stacked" } } },
     { "label": "SEAL NONE", "doc": { "edits": { "seal": "none" } } }

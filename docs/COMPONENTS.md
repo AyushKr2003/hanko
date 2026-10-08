@@ -47,15 +47,15 @@ Each setting has a key (used in the config file), its options, the default (from
 
 ![Seal and workspaces](mockups/typeset/10-seal-workspaces.webp)
 
-#### Seal `seal` 印
+#### Seal `seal` 鑑
 
 | Option | What it does | From |
 |---|---|---|
-| `stamp` | A fixed glyph (印 by default; any character). Click for the Omarchy menu, right-click for a terminal. | Sheet |
+| `stamp` | A fixed glyph (鑑 by default; any character). Click for the Omarchy menu, right-click for a terminal. | Sheet |
 | **`workspace`** (default) | The seal shows the active workspace as a kanji numeral (壱 弐 参 …). Scroll on it to walk workspaces. | Scroll |
 | `none` | No seal. The bar opens with the workspaces. | New |
 
-The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (印 力 侍 A …). It is not counted in the combinations below.
+The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 観 寛 …). It is not counted in the combinations below.
 
 #### Workspaces `spaces` 頁
 
@@ -142,7 +142,7 @@ All six status × meters pairs are drawn on sheet 12.
 
 In every style a click opens the Bluetooth panel and a middle- or right-click turns Bluetooth on or off; machines without an adapter never show the cell. A device at 15 % or less turns its mark, its dot or the count red (it needs you). The old `on` still reads as `device`. Added after the Typeset mockups were drawn, in the same grammar as the other status cells.
 
-#### Indicators `indicators` and indicator marks `indicatorStyle` 印
+#### Indicators `indicators` and indicator marks `indicatorStyle` 鑑
 
 Omarchy's six indicators (screen recording, dictation, reminder, stay awake, night light, do not disturb) as small square stamps in the right zone, before the inbox. One that is on is pressed down slightly askew (the stamp press, like a new notification); hovering the stamps straightens them, and hovering one opens its name in small caps to its left, pushing the zone over (the stamps never move). A click does what Omarchy's indicator does: stops a recording or opens the capture menu, opens dictation's settings, lists reminders (right-click adds one), or switches stay awake, night light or do not disturb.
 
@@ -232,7 +232,7 @@ What sits between two sections of the scroll. Pick it on the Scroll 巻 page (a 
 | `folio` 柱 | A ruler with ticks like the day rule, and both section numbers (`01 — 02`) set sideways. | Sheet, Instrument |
 | `kotoba` 詞 | The next section's red kanji and its number and name set vertically, between two hairlines (a text column, as handscrolls put text between pictures). | Scroll |
 | `tsugime` 継 | A paper join: the next sheet laps over the last, with a soft shadow on the earlier one. | |
-| **`seal`** 印 (default) | The paper join, with a seal of the next section's kanji pressed across it, half on each sheet. | Hanko |
+| **`seal`** 鑑 (default) | The paper join, with a seal of the next section's kanji pressed across it, half on each sheet. | Hanko |
 | `jiku` 軸 | A slim inner roller with caps, echoing the rollers the scroll once had at its edges. | |
 | `fuda` 札 | A bone index tab with the next section's red kanji and number, on a faint line. | Islet |
 | `su` 数 | The next section's number, large in the display face and set sideways, with a red point. | |
@@ -469,7 +469,7 @@ Hanko stores its style alongside the rest of Omarchy's bar settings, so `omarchy
     "clock": "inline",
     "status": "glyphs"
   },
-  "sealGlyph": "印",
+  "sealGlyph": "鑑",
   "motion": "paper",          // or "still": every move cuts to its end frame
   "hidden": ["tray", "hosted:omarchy.weather"],  // parts taken off the bar (Widgets 部品)
   "monitors": {               // optional per-monitor overrides

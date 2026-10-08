@@ -465,7 +465,7 @@ Item {
             anchors.right: parent.right
             anchors.rightMargin: Type.px(4)
             anchors.verticalCenter: parent.verticalCenter
-            text: theme.on ? "印 In use" : theme.modelData.light ? "Light" : ""
+            text: theme.on ? "鑑 In use" : theme.modelData.light ? "Light" : ""
             color: theme.on ? Ink.seal : Ink.inkFaint
           }
           Rectangle { y: parent.height - 1; width: parent.width; height: 1; color: Ink.lineSoft }
