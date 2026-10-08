@@ -266,6 +266,60 @@
     }
    },
    "hover": "network"
+  },
+  {
+   "label": "Shōji · pointing at Bluetooth: the device's name slides out",
+   "doc": {
+    "design": "shoji"
+   },
+   "hover": "bluetooth"
+  },
+  {
+   "label": "Leaf · Bluetooth off, and a headset low on charge on Margin below",
+   "doc": {
+    "design": "leaf"
+   },
+   "bluetooth": {
+    "name": "Off",
+    "enabled": false,
+    "connected": 0,
+    "level": -1,
+    "devices": [],
+    "count": "00",
+    "needsYou": false
+   }
+  },
+  {
+   "label": "Margin · headset at 9%: the rune and its charge go red",
+   "doc": {
+    "design": "margin"
+   },
+   "bluetooth": {
+    "name": "WH-1000XM5",
+    "enabled": true,
+    "connected": 1,
+    "level": 0.09,
+    "devices": [],
+    "count": "01",
+    "needsYou": true
+   }
   }
- ]
+ ],
+ "bluetooth": {
+  "name": "WH-1000XM5",
+  "enabled": true,
+  "connected": 1,
+  "level": 0.8,
+  "devices": [
+   {
+    "name": "WH-1000XM5",
+    "kind": "Headphones",
+    "mark": "耳",
+    "level": 0.8,
+    "low": false
+   }
+  ],
+  "count": "01",
+  "needsYou": false
+ }
 }

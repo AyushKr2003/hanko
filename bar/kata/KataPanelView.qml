@@ -11,8 +11,8 @@ import "../parts"
 //   slide  slides in on its rail; SheetWindow moves the same panel along
 //          the bar when another cell is clicked (skin.travels)
 // Pure like SheetView, and fed the same `feed`; requests name their sheet
-// so Bar.sheetRequest handles them unchanged. Bluetooth and Display have no
-// panel of their own here: they open Connections and Power.
+// so Bar.sheetRequest handles them unchanged. Display has no panel of its
+// own here: it opens Power, where brightness is.
 Item {
   id: root
 
@@ -29,11 +29,11 @@ Item {
   signal cycle(int delta)
   signal pickSheet(string key)
 
-  readonly property string panel: ({ time: "time", sound: "sound", network: "network", bluetooth: "network", power: "power", display: "power", inbox: "inbox" })[sheet] || ""
+  readonly property string panel: ({ time: "time", sound: "sound", network: "network", bluetooth: "bluetooth", power: "power", display: "power", inbox: "inbox" })[sheet] || ""
   readonly property var signs: ({
-    time: ["時", "Time"], sound: ["音", "Sound"], network: ["繋", "Connections"], power: ["電", "Power"], inbox: ["便り", "Letters"]
+    time: ["時", "Time"], sound: ["音", "Sound"], network: ["繋", "Network"], bluetooth: ["藍", "Bluetooth"], power: ["電", "Power"], inbox: ["便り", "Letters"]
   })
-  readonly property var tabs: [{ key: "time", name: "Time" }, { key: "sound", name: "Sound" }, { key: "network", name: "Network" }, { key: "power", name: "Power" }, { key: "inbox", name: "Letters" }]
+  readonly property var tabs: [{ key: "time", name: "Time" }, { key: "sound", name: "Sound" }, { key: "network", name: "Network" }, { key: "bluetooth", name: "Bluetooth" }, { key: "power", name: "Power" }, { key: "inbox", name: "Letters" }]
   readonly property bool tate: skin.sign === "tategaki"
   readonly property bool hangs: skin.arrive === "fold" || skin.arrive === "slip"
   readonly property int contentW: Type.px(panel === "time" ? ((skin.season || "off") !== "off" ? 640 : 420) : panel === "inbox" ? 420 : 400)
@@ -51,6 +51,7 @@ Item {
       return ""
     }
     if (panel === "network" && f.network) return f.network.radio ? "Wi-Fi on" : "Wi-Fi off"
+    if (panel === "bluetooth" && f.bluetooth) return f.bluetooth.enabled ? (f.bluetooth.connected.length ? f.bluetooth.connected.length + " connected" : "on") : "off"
     if (panel === "power" && f.power) return f.power.charging ? "charging" : "on battery"
     if (panel === "inbox") return f.dnd ? "quiet" : ""
     if (panel === "time") return Qt.formatDate(f.now || new Date(), "d MMM yyyy")
@@ -110,7 +111,7 @@ Item {
         Loader {
           id: loader
           width: parent.width
-          sourceComponent: ({ sound: soundPanel, time: timePanel, network: networkPanel, power: powerPanel, inbox: lettersPanel })[root.panel] || null
+          sourceComponent: ({ sound: soundPanel, time: timePanel, network: networkPanel, bluetooth: bluetoothPanel, power: powerPanel, inbox: lettersPanel })[root.panel] || null
           onLoaded: if (root.open) root.focusContents()
         }
       }
@@ -171,6 +172,16 @@ Item {
     NetworkPanel {
       skin: root.skin
       net: root.feed.network || null
+      onRequest: function(s, what, arg) { root.request(s, what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+  Component {
+    id: bluetoothPanel
+    BluetoothPanel {
+      skin: root.skin
       blue: root.feed.bluetooth || null
       onRequest: function(s, what, arg) { root.request(s, what, arg) }
       Keys.onEscapePressed: root.closeRequested()

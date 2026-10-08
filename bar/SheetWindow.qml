@@ -50,12 +50,11 @@ PanelWindow {
     letters: win.bar.lettersShown(Status.notifications),
     dnd: Status.doNotDisturb
   })
-  // Kata has five panels (Bluetooth lives in Connections, Display in Power),
-  // so Tab steps through those only.
-  readonly property var kataOrder: ["time", "sound", "network", "power", "inbox"]
+  // Kata has six panels (Display lives in Power), so Tab steps through those.
+  readonly property var kataOrder: ["time", "sound", "network", "bluetooth", "power", "inbox"]
   function cycle(delta) {
     if (!kata) { bar.cycleSheet(delta); return }
-    var here = ({ bluetooth: "network", display: "power" })[shownSheet] || shownSheet
+    var here = ({ display: "power" })[shownSheet] || shownSheet
     var i = Math.max(0, kataOrder.indexOf(here))
     for (var n = 1; n <= kataOrder.length; n++) {
       var next = kataOrder[(i + delta * n + kataOrder.length * n) % kataOrder.length]

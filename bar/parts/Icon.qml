@@ -2,7 +2,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
 
-// The Kata bar's few line icons, on one 24-unit grid with one stroke, drawn
+// The Kata bar's few line icons (wifi, offline, volume, muted, bolt,
+// bluetooth, bluetoothOff), on one 24-unit grid with one stroke, drawn
 // at `size`. State changes the drawing (Wi-Fi arcs fade, the speaker gains a
 // cross), never adds a badge.
 Item {
@@ -25,14 +26,17 @@ Item {
     waves: "M 15.5 9 A 4 4 0 0 1 15.5 15 M 18.2 6.5 A 7.6 7.6 0 0 1 18.2 17.5",
     cross: "M 16 9.5 L 21 14.5 M 21 9.5 L 16 14.5",
     bolt: "M 13 3 L 5 13.5 L 11 13.5 L 10 21 L 18 10.5 L 12 10.5 Z",
-    off: "M 4 4 L 20 20"
+    off: "M 4 4 L 20 20",
+    rune: "M 6.5 7.8 L 17 16.4 L 12 20.6 L 12 3.4 L 17 7.6 L 6.5 16.2"
   })
 
   readonly property var parts: name === "wifi" ? ["arc3", "arc2", "arc1", "dot"]
     : name === "offline" ? ["arc2", "arc1", "dot", "off"]
     : name === "volume" ? ["speaker", "waves"]
     : name === "muted" ? ["speaker", "cross"]
-    : name === "bolt" ? ["bolt"] : []
+    : name === "bolt" ? ["bolt"]
+    : name === "bluetooth" ? ["rune"]
+    : name === "bluetoothOff" ? ["rune", "off"] : []
 
   Repeater {
     model: root.parts
@@ -46,7 +50,7 @@ Item {
       preferredRendererType: Shape.CurveRenderer
       // unlit arcs, by signal; the offline slash is always full
       opacity: root.name === "wifi" && part.index < 3 && 3 - part.index > root.level ? 0.3
-        : root.name === "offline" && part.modelData !== "off" ? 0.3 : 1
+        : (root.name === "offline" || root.name === "bluetoothOff") && part.modelData !== "off" ? 0.3 : 1
       ShapePath {
         strokeColor: root.color
         strokeWidth: 1.6

@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after Kata K7 (Settings › Design, and the settings window saving as you go). Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
+Last updated: 2026-10-08, after Kata's Bluetooth cell and panel (following K7). Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -654,6 +654,13 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - **`bar/settings/DesignPage.qml`** (rail `design`, first under 01 BAR, and the page the window opens on): four design cards (2 or 1 across) with the bar drawn at 1240 px and scaled in (`BarSurface` for Classic, `KataBar` with that design's skin and your touches), ON YOUR BAR on the current one; the mix in Fraunces italic (`K.describe`), Back to the design (drops borrows; faint when none) and Surprise me; then one row per main part (`K.MAIN_PARTS`, twelve) with a tile per variant, each drawn by **`bar/settings/PartPreview.qml`** with the skin that borrow would give (`K.withBorrow` on the doc, Margin's under Classic, where the rows are dimmed and explained); the touches with `Segmented` (season labels from `Season.at(now)`). Signals `designPicked`, `borrowPicked`, `touchPicked`, `surprise`, `backToDesign`, wired through `SettingsPage` to `Typeset.draftDesign/draftBorrow/draftTouch/draftSurprise` + `keep()`.
 - `core/Settings.js`: `design` in `RAIL`, `status(n)` reworded (tests updated). Harness `design-settings.json` (Shōji with two borrows, 3 changes to undo), `design-settings-light.json` (Classic), `design-settings-narrow.json` (Leaf at 620 px); renders `docs/kata/images/k7-*.webp`, the first also in the README. Unit tests: 112.
 - **To verify on hardware**: Ctrl+Z reaching the window when a text field has focus (the field may take it first), the debounced write keeping up with Surprise clicked quickly, and the design cards' bars at 1x.
+
+### Kata 型 · Bluetooth ✅ (asked for after K7: "in all this 3 design the bluetooth and its panel is not present")
+- **`KataBar`**: `bluetooth` (the `Blue.cell` shape, as BarSurface gets it; `BarWindow` passes `Blue.cell`), a `btCell` between Wi-Fi and volume: `Icon` `bluetooth` / `bluetoothOff` (new `rune` path), the first connected device's charge as a figure, red with `needsYou` (low charge), its name sliding out on reach. Hidden with `style.bluetooth: off` or the part hidden. `rightCells` and `anchorFor` know `bluetooth`, so a click opens the Bluetooth panel (Sheets anchors) and Omarchy's Bluetooth hotkey reaches it.
+- **`bar/kata/BluetoothPanel.qml`**: switch (`("bluetooth", "power", on)`), the hero (connected device's name in Fraunces, `blurb`, its charge on a 48 px `Ring`, red at `Blue.LOW`), Connected / Your devices / Nearby as `KataList`s, a click runs `Blue.action` (disconnect / connect / pair) through `("bluetooth", "device", …)`; P toggles. `Blue.wanted` already follows `sheet === "bluetooth"`, so scanning runs while it is open. `Blue.row()` gains `level` (0..100 or -1).
+- `NetworkPanel` lost its Bluetooth section and is signed Network 繋; `KataPanelView` maps `bluetooth` to its own panel (藍), Leaf's tabs and `SheetWindow.kataOrder` include it (six panels).
+- Harness: `kata-panels*.json` add the Bluetooth row; `kata-bars.json` adds pointing at Bluetooth, Bluetooth off and a headset at 9%. Renders refreshed (`k4-*`, `k5-*`) plus `docs/kata/images/k8-bluetooth.webp`.
+- **To verify on hardware**: the rune at 1x, scanning starting when the panel opens from the Kata cell, and pairing a device that asks for a PIN (none is shown, as with the Classic sheet).
 
 ## 10. Instructions for the remaining phase (10)
 

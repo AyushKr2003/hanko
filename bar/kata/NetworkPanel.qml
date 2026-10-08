@@ -1,26 +1,21 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
-import "../../core/Blue.js" as BlueJs
 import "../parts"
 
-// Connections 繋: "am I connected?" is one question, so Wi-Fi and Bluetooth
-// share a panel. The network's name is the hero; nearby networks below
-// (a click connects); then Bluetooth with its switch and devices.
+// Network 繋: the Wi-Fi switch, the network's name as the hero, nearby
+// networks below (a click connects). Bluetooth has its own panel.
 Column {
   id: root
 
   property var skin: ({})
   property var net: null
-  property var blue: null
   property int maxRows: 5
   signal request(string sheet, string what, var arg)
 
   readonly property bool radio: !net || net.radio
   readonly property bool offline: !!(net && net.offline)
   readonly property var networks: net ? net.networks.slice(0, maxRows) : []
-  readonly property bool btOn: !!(blue && blue.enabled)
-  readonly property var devices: blue && btOn ? blue.connected.concat(blue.known).slice(0, 4) : []
 
   spacing: Type.px(10)
 
@@ -47,20 +42,6 @@ Column {
     skin: root.skin
     rows: root.networks.map(function(n) { return { title: n.ssid, detail: n.detail, note: n.current ? "" : n.note, chosen: n.current } })
     onPicked: function(i) { var n = root.networks[i]; if (!n.current) root.request("network", "connect", { ssid: n.ssid, saved: n.saved, secure: n.secure }) }
-  }
-  Divider { visible: root.blue !== null && root.blue.present !== false; skin: root.skin; width: parent.width; bleed: Type.px(20) }
-  Item {
-    visible: root.blue !== null && root.blue.present !== false
-    width: parent.width; height: Type.px(26)
-    Text { anchors.verticalCenter: parent.verticalCenter; text: "Bluetooth"; color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12.5); font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
-    KataSwitch { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; skin: root.skin; on: root.btOn; onToggled: function(on) { root.request("bluetooth", "power", on) } }
-  }
-  KataList {
-    visible: root.devices.length > 0
-    width: parent.width
-    skin: root.skin
-    rows: root.devices.map(function(d) { return { title: d.name, detail: d.detail, note: d.note, chosen: d.connected } })
-    onPicked: function(i) { var d = root.devices[i]; root.request("bluetooth", "device", { address: d.address, action: BlueJs.action(d) }) }
   }
   Keys.onPressed: function(e) { if (e.key === Qt.Key_R) root.request("network", "rescan", null) }
 }

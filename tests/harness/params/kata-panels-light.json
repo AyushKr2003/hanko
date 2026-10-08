@@ -272,7 +272,8 @@
      "detail": "Headphones · 80%",
      "connected": true,
      "paired": true,
-     "note": "Connected"
+     "note": "Connected",
+     "level": 80
     }
    ],
    "known": [
@@ -282,7 +283,8 @@
      "detail": "Keyboard",
      "connected": false,
      "paired": true,
-     "note": "Paired"
+     "note": "Paired",
+     "level": -1
     },
     {
      "address": "22:33:44:55:66:77",
@@ -290,7 +292,8 @@
      "detail": "Mouse · 55%",
      "connected": false,
      "paired": true,
-     "note": "Paired"
+     "note": "Paired",
+     "level": 55
     }
    ],
    "found": [
@@ -300,7 +303,8 @@
      "detail": "Phone",
      "connected": false,
      "paired": false,
-     "note": ""
+     "note": "",
+     "level": -1
     }
    ]
   }
@@ -339,6 +343,7 @@
   "time",
   "sound",
   "network",
+  "bluetooth",
   "power",
   "inbox"
  ]

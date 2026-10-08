@@ -83,6 +83,7 @@ Rectangle {
             media: sheet.pick(strip.modelData, "media")
             volume: sheet.pick(strip.modelData, "volume")
             network: sheet.pick(strip.modelData, "network")
+            bluetooth: sheet.pick(strip.modelData, "bluetooth")
             battery: sheet.pick(strip.modelData, "battery")
             notifications: sheet.pick(strip.modelData, "notifications") || []
             dnd: !!sheet.pick(strip.modelData, "dnd")

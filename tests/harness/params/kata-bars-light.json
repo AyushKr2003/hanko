@@ -180,7 +180,7 @@
    "doc": {
     "design": "margin"
    },
-   "hover": "volume"
+   "hover": "bluetooth"
   },
   {
    "doc": {
@@ -194,5 +194,22 @@
    },
    "hover": "clock"
   }
- ]
+ ],
+ "bluetooth": {
+  "name": "WH-1000XM5",
+  "enabled": true,
+  "connected": 1,
+  "level": 0.8,
+  "devices": [
+   {
+    "name": "WH-1000XM5",
+    "kind": "Headphones",
+    "mark": "耳",
+    "level": 0.8,
+    "low": false
+   }
+  ],
+  "count": "01",
+  "needsYou": false
+ }
 }

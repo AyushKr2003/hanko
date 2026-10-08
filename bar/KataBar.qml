@@ -24,6 +24,8 @@ Item {
   property string timeFormat: "HH:mm"
   property var volume: null
   property var network: null
+  // core/Blue.js cell(): { name, enabled, connected, level, devices, needsYou }; null without an adapter.
+  property var bluetooth: null
   property var battery: null
   property var notifications: []
   property bool dnd: false
@@ -52,6 +54,7 @@ Item {
   readonly property var rightCells: {
     var out = []
     if (netCell.visible) out.push("network")
+    if (btCell.visible) out.push("bluetooth")
     if (volCell.visible) out.push("volume")
     if (batCell.visible) out.push("battery")
     if (sealCell.visible) out.push("notif")
@@ -59,7 +62,7 @@ Item {
   }
   function cellItem(cell) {
     return cell === "clock" ? clockCell : cell === "notif" ? sealCell
-      : cell === "network" ? netCell : cell === "volume" ? volCell : cell === "battery" ? batCell : null
+      : cell === "network" ? netCell : cell === "bluetooth" ? btCell : cell === "volume" ? volCell : cell === "battery" ? batCell : null
   }
   function anchorFor(cell) {
     var item = cellItem(cell)
@@ -79,7 +82,7 @@ Item {
   // ── the pointer: what you are on, or the harness's hoverCell ─────────
   property var hovered: null
   readonly property var pointed: hovered || cellItem(hoverCell)
-  readonly property var cellNames: ({ notif: "Letters", clock: "Calendar", network: root.network ? root.network.name : "Network", volume: "Sound", battery: "Battery" })
+  readonly property var cellNames: ({ notif: "Letters", clock: "Calendar", network: root.network ? root.network.name : "Network", bluetooth: "Bluetooth", volume: "Sound", battery: "Battery" })
 
   // ── the bar's own paper ──────────────────────────────────────────────
   Rectangle { visible: root.surfaceKind === "card"; y: root.height; width: root.width; height: 1; color: Ink.shade }
@@ -352,6 +355,42 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         onClicked: function(mouse) { root.statusAction("network", mouse.button === Qt.RightButton ? "right" : mouse.button === Qt.MiddleButton ? "middle" : "click") }
+      }
+    }
+
+    // Bluetooth: the rune, faint when off; the connected device's charge
+    // beside it, and its name when you reach for it
+    Cell {
+      id: btCell
+      name: "bluetooth"
+      visible: root.bluetooth !== null && root.shown("bluetooth") && root.style.bluetooth !== "off"
+      readonly property bool reach: root.pointed === btCell
+      readonly property bool on: !!(root.bluetooth && root.bluetooth.enabled)
+      readonly property bool alert: !!(root.bluetooth && root.bluetooth.needsYou)
+      readonly property bool linked: !!(root.bluetooth && root.bluetooth.connected > 0)
+      width: btRow.implicitWidth + Type.px(18)
+      Row {
+        id: btRow
+        anchors.centerIn: parent
+        spacing: Type.px(6)
+        Icon {
+          anchors.verticalCenter: parent.verticalCenter
+          name: btCell.on ? "bluetooth" : "bluetoothOff"
+          color: btCell.alert ? Ink.seal : btCell.reach || btCell.linked ? Ink.ink : Ink.ink3
+          size: Type.px(16)
+        }
+        Label {
+          visible: btCell.linked && root.bluetooth.level >= 0
+          text: btCell.linked ? String(Math.round(root.bluetooth.level * 100)) : ""
+          color: btCell.alert ? Ink.seal : (btCell.reach ? Ink.ink : Ink.ink2)
+          height: root.barHeight; font.features: { "tnum": 1 }
+        }
+        Label { visible: btCell.reach; text: root.bluetooth ? root.bluetooth.name : ""; color: Ink.ink3; font.weight: Font.Normal; height: root.barHeight }
+      }
+      MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        onClicked: function(mouse) { root.statusAction("bluetooth", mouse.button === Qt.RightButton ? "right" : mouse.button === Qt.MiddleButton ? "middle" : "click") }
       }
     }
 

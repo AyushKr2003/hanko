@@ -146,6 +146,7 @@ PanelWindow {
     timeFormat: win.bar.timeFormat
     volume: Status.volume
     network: Status.network
+    bluetooth: Blue.cell
     battery: Status.battery
     notifications: Status.notifications
     dnd: Status.doNotDisturb
