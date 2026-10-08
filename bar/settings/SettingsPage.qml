@@ -86,12 +86,12 @@ Rectangle {
   readonly property int changes: Settings.changes(saved, draft, S.resolve)
   // Typesetting, Sheets, Scroll and Presets belong to the Hanko design alone.
   readonly property bool hanko: K.resolve(draft).classic
-  readonly property var rail: Settings.rail(hanko)
+  readonly property var rail: Settings.rail(hanko) || Settings.RAIL
   readonly property var pageInfo: {
     for (var g = 0; g < rail.length; g++)
       for (var p = 0; p < rail[g].pages.length; p++)
         if (rail[g].pages[p].key === root.page) return { group: rail[g].group, page: rail[g].pages[p] }
-    return { group: "01 BAR", page: rail[0].pages[0] }
+    return { group: Settings.RAIL[1].group, page: Settings.RAIL[1].pages[0] }
   }
 
   color: Ink.paper
@@ -178,7 +178,7 @@ Rectangle {
         Column {
           id: group
           required property var modelData
-          readonly property var pages: modelData.pages.filter(function(p) { return Settings.pageMatches(p, root.query) || root.query === "" })
+          readonly property var pages: !modelData ? [] : modelData.pages.filter(function(p) { return Settings.pageMatches(p, root.query) || root.query === "" })
           width: parent.width
           visible: pages.length > 0
 
@@ -189,8 +189,8 @@ Rectangle {
               id: groupName
               y: Type.px(16)
               // Folded, a group keeps only its number.
-              text: root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
-              color: group.modelData.group === root.pageInfo.group ? Ink.bone : Ink.inkFaint
+              text: !group.modelData ? "" : root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
+              color: group.modelData && group.modelData.group === root.pageInfo.group ? Ink.bone : Ink.inkFaint
               font.family: Type.mono
               font.pixelSize: Type.label
               font.letterSpacing: Type.trackLabel
