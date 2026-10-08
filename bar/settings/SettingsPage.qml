@@ -87,12 +87,9 @@ Rectangle {
   // Typesetting, Sheets, Scroll and Presets belong to the Hanko design alone.
   readonly property bool hanko: K.resolve(draft).classic
   readonly property var rail: Settings.rail(hanko) || Settings.RAIL
-  readonly property var pageInfo: {
-    for (var g = 0; g < rail.length; g++)
-      for (var p = 0; p < rail[g].pages.length; p++)
-        if (rail[g].pages[p].key === root.page) return { group: rail[g].group, page: rail[g].pages[p] }
-    return { group: Settings.RAIL[1].group, page: Settings.RAIL[1].pages[0] }
-  }
+  // Which rail entry the open page is; looked up in the whole rail, so the
+  // title never depends on what the rail currently hides.
+  readonly property var pageInfo: Settings.pageInfo(root.page)
 
   color: Ink.paper
   implicitWidth: Type.px(1600)

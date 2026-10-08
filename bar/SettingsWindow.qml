@@ -24,7 +24,9 @@ FloatingWindow {
   // The Hanko-only pages vanish under another design; fall back to Design.
   readonly property bool hankoDesign: Typeset.kata.classic
   readonly property var hankoOnly: ["typesetting", "sheets", "scroll"]
-  readonly property string shownPage: (!hankoDesign && hankoOnly.indexOf(page) >= 0) ? "design" : page
+  function leaveHankoOnly() { if (!hankoDesign && hankoOnly.indexOf(page) >= 0) page = "design" }
+  onHankoDesignChanged: leaveHankoOnly()
+  onPageChanged: leaveHankoOnly()
 
   title: "Hanko settings"
   visible: bar.settingsOpen
@@ -62,7 +64,7 @@ FloatingWindow {
       draft: Typeset.live
       saved: Typeset.doc
       undoCount: Typeset.history.length
-      page: win.shownPage
+      page: win.page
       query: win.query
       advanced: win.advanced
       monitors: Quickshell.screens.map(function(s) { return s.name })

@@ -29,6 +29,14 @@ function rail(hanko) {
   }).filter(function(g) { return g.pages.length > 0 })
 }
 
+// The group and page a rail key names (Design when the key is unknown).
+function pageInfo(key) {
+  for (var g = 0; g < RAIL.length; g++)
+    for (var p = 0; p < RAIL[g].pages.length; p++)
+      if (RAIL[g].pages[p].key === key) return { group: RAIL[g].group, page: RAIL[g].pages[p] }
+  return { group: RAIL[1].group, page: RAIL[1].pages[0] }
+}
+
 // Rail pages drawn as full plates (no title, no cards): Profile, About,
 // Credits (bar/settings/*Plate.qml).
 var PLATES = ["profile", "about", "credits"]
