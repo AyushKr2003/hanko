@@ -1,0 +1,19 @@
+{
+  "preset": "Hanko",
+  "edits": {
+    "panels": "sheets",
+    "indicators": "active",
+    "indicatorStyle": "kanjiname",
+    "interlude": "fuda"
+  },
+  "sealGlyph": "印",
+  "motion": "paper",
+  "typeSize": "regular",
+  "overview": "dynamic",
+  "hidden": [
+    "hosted:omarchy.agents",
+    "hosted:omarchy.weather"
+  ],
+  "monitors": {},
+  "panelOpacity": 100
+}
