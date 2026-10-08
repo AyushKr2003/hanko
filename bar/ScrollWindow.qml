@@ -130,6 +130,7 @@ PanelWindow {
 
     ScrollView {
       id: view
+      paperOpacity: win.barWindow.shown.panelOpacity > 0 ? win.barWindow.shown.panelOpacity / 100 : 1
       readonly property int margin: Math.max(Type.px(16), Math.round(win.width * 0.069))
       readonly property real viewWidth: width - 2 * Type.px(26)
 

@@ -60,7 +60,7 @@ PanelWindow {
   // same signals and the same anchors, so sheets and the scroll open under
   // its cells unchanged.
   readonly property var kata: Typeset.kataFor(screenName)
-  readonly property var skin: Skin.skin(kata)
+  readonly property var skin: Skin.skin(kata, shown.panelOpacity)
   readonly property Item surface: kata.classic ? classicSurface : kataSurface
 
   Component.onCompleted: bar.registerWindow(screenName, win)

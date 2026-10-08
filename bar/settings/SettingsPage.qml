@@ -418,6 +418,7 @@ Rectangle {
           onTouchPicked: function(key, value) { root.touchPicked(key, value) }
           onSurprise: root.surprise()
           onBackToDesign: root.backToDesign()
+          onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
         }
 
         // ------------------------------------------------ Typesetting

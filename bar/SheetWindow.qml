@@ -161,6 +161,7 @@ PanelWindow {
   SheetView {
     id: classicView
     visible: !win.kata
+    paperOpacity: win.barWindow.shown.panelOpacity > 0 ? win.barWindow.shown.panelOpacity / 100 : 1
     onWidthChanged: Qt.callLater(win.place)
     x: win.placed.x
     y: win.atBottom ? win.height - win.strip - height : win.strip

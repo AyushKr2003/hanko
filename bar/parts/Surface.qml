@@ -17,12 +17,18 @@ Item {
 
   readonly property string kind: skin.surface || "paper"
   readonly property int r: skin.radius === undefined ? 16 : skin.radius
+  // How solid the paper is (skin.opacity: the design's, or the panel opacity
+  // setting). Shadows sit under the whole sheet, so they fade out as the
+  // paper clears, gone by half: glass casts no shadow.
+  readonly property real paperOpacity: skin.opacity === undefined ? (kind === "washi" ? 0.86 : 1) : skin.opacity
+  readonly property real shadowOpacity: Math.max(0, Math.min(1, (paperOpacity - 0.5) / 0.36))
 
   // Margin's soft shadow, stacked rather than blurred.
   Repeater {
     model: root.kind === "paper" ? 4 : 0
     Rectangle {
       id: layer
+      opacity: root.shadowOpacity
       required property int index
       x: -layer.index * 2; y: 6 + layer.index * 5
       width: root.width + layer.index * 4; height: root.height
@@ -33,12 +39,14 @@ Item {
   // Leaf's hard shadows: 0,2 and 2,4 (lifted 0,3 and 4,8).
   Rectangle {
     visible: root.kind === "card"
+    opacity: root.shadowOpacity
     x: root.lifted ? 4 : 2; y: root.lifted ? 8 : 4
     width: root.width; height: root.height
     color: Ink.shade2
   }
   Rectangle {
     visible: root.kind === "card"
+    opacity: root.shadowOpacity
     y: root.lifted ? 3 : 2
     width: root.width; height: root.height
     color: Ink.shade
@@ -48,6 +56,7 @@ Item {
     model: root.kind === "washi" ? 3 : 0
     Rectangle {
       id: fall
+      opacity: root.shadowOpacity
       required property int index
       x: 4 - fall.index * 2; y: 10 + fall.index * 5
       width: root.width - 8 + fall.index * 4; height: root.height - 4
@@ -58,9 +67,11 @@ Item {
   Rectangle {
     id: sheet
     anchors.fill: parent
-    anchors.topMargin: root.hangs && root.kind === "paper" ? -root.r : 0
     radius: root.kind === "paper" ? root.r : 0
-    color: root.kind === "washi" ? Ink.alpha(Ink.paper, root.skin.opacity || 0.86) : Ink.paper
+    // hanging from the bar: square at the top, where it meets the bar's line
+    topLeftRadius: root.hangs ? 0 : radius
+    topRightRadius: root.hangs ? 0 : radius
+    color: Ink.alpha(Ink.paper, root.paperOpacity)
     border.width: root.kind === "card" ? 0 : 1
     border.color: root.kind === "washi" ? Ink.ink4 : Ink.kLine
     clip: true
@@ -81,11 +92,12 @@ Item {
       }
     }
   }
-  // Paper hanging from the bar: the top edge is the bar's own line.
+  // Paper hanging from the bar: the top edge is the bar's own line, so no
+  // hairline across it.
   Rectangle {
     visible: root.hangs && root.kind === "paper"
-    x: 1; width: root.width - 2; height: root.r + 1; y: -root.r
-    color: Ink.paper
+    x: 1; width: root.width - 2; height: 1
+    color: Ink.alpha(Ink.paper, root.paperOpacity)
   }
   // Leaf's cut: light along the top, shade along the bottom and sides.
   Rectangle { visible: root.kind === "card" && !root.hangs; width: root.width; height: 1; color: Ink.cut }

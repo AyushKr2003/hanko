@@ -92,7 +92,8 @@ FloatingWindow {
         // "…" asks for a glyph of your own, under Advanced.
         if (key === "sealGlyph" && value === "…") { win.advanced = true; return }
         Typeset.draftSet(key, value)
-        Typeset.keep()
+        // A dragged slider is one step of Undo, not one per pixel.
+        Typeset.keep(key === "panelOpacity" ? key : "")
       }
       onPresetPicked: function(name) { Typeset.draftPreset(name); Typeset.keep() }
       onResetToPreset: { Typeset.draftReset(); Typeset.keep() }

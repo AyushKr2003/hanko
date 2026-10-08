@@ -114,11 +114,20 @@ QtObject {
   // (keep() after each draft edit) and remembered here, so Undo (Ctrl+Z)
   // can put the one before back. Forgotten when the window closes.
   property var history: []
-  function keep() {
+  // `tag` names a continuous edit (a slider being dragged): repeats of the
+  // same tag within 1.5 s are one step of the history, not one per pixel.
+  property string _lastTag: ""
+  property real _lastAt: 0
+  function keep(tag) {
     if (!draft) return
     var next = draft
     draft = null
     if (JSON.stringify(next) === JSON.stringify(doc)) return
+    var now = Date.now()
+    var merge = !!tag && tag === _lastTag && now - _lastAt < 1500 && history.length > 0
+    _lastTag = tag || ""
+    _lastAt = now
+    if (merge) { _commit(next); return }
     var h = history.slice()
     h.push(doc)
     if (h.length > 50) h.shift()
@@ -165,7 +174,7 @@ QtObject {
   // What a reset keeps: the seal glyph, motion, type size, overview, hidden
   // parts, monitors, and the Kata design (a reset is about Typeset edits).
   function _keep(from, into) {
-    var keys = ["sealGlyph", "motion", "typeSize", "overview", "hidden", "monitors", "design", "borrow", "touches"]
+    var keys = ["sealGlyph", "motion", "typeSize", "overview", "panelOpacity", "hidden", "monitors", "design", "borrow", "touches"]
     for (var i = 0; i < keys.length; i++) if (from[keys[i]] !== undefined) into[keys[i]] = from[keys[i]]
     return into
   }

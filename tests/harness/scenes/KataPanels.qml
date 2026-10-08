@@ -48,7 +48,7 @@ Rectangle {
             id: cell
             required property var modelData
             readonly property var kata: K.resolve(modelData.doc || {})
-            readonly property var skin: Sk.skin(kata)
+            readonly property var skin: Sk.skin(kata, (modelData.doc || {}).panelOpacity || 0)
             spacing: 8
             Text {
               text: (cell.modelData.label || K.describe(cell.kata)) + " · " + row.modelData

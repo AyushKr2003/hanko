@@ -26,6 +26,8 @@ Item {
   // 0..1: how far the paper has unrolled, and how far the ink has come in.
   property real reveal: 1
   property real ink: 1
+  // Panel opacity (Style.js panelOpacity), 0..1.
+  property real paperOpacity: 1
   // The sheets' feed (now, zones, timeShift, sound, network, bluetooth,
   // power, display, letters, dnd) plus spaces, weather and weatherShown,
   // and the end leaf's: leaf (services/Leaf.qml reading), endShown, font,
@@ -79,7 +81,7 @@ Item {
       height: root.height
       y: root.atBottom ? press.height - root.height : 0
 
-      Rectangle { anchors.fill: parent; color: Ink.paper }
+      Rectangle { anchors.fill: parent; color: Ink.alpha(Ink.paper, root.paperOpacity) }
       // A hairline on the free edge, none against the bar; the sides are
       // drawn below (Style.js `sides`).
       Rectangle { y: root.atBottom ? 0 : parent.height - 1; width: parent.width; height: 1; color: Ink.line }
@@ -247,7 +249,7 @@ Item {
           height: parent.height
           gradient: Gradient {
             orientation: Gradient.Horizontal
-            GradientStop { position: 0.08; color: Ink.paper }
+            GradientStop { position: 0.08; color: Ink.alpha(Ink.paper, root.paperOpacity) }
             GradientStop { position: 1; color: Ink.alpha(Ink.paper, 0) }
           }
         }
@@ -258,7 +260,7 @@ Item {
           gradient: Gradient {
             orientation: Gradient.Horizontal
             GradientStop { position: 0; color: Ink.alpha(Ink.paper, 0) }
-            GradientStop { position: 0.92; color: Ink.paper }
+            GradientStop { position: 0.92; color: Ink.alpha(Ink.paper, root.paperOpacity) }
           }
         }
       }

@@ -11,6 +11,8 @@ Item {
   id: root
 
   // The bar sits below the sheet (position: bottom); the sheet rises.
+  // Panel opacity (Style.js panelOpacity): how solid the paper is.
+  property real paperOpacity: 1
   property bool atBottom: false
   // Where the bone tear runs, in sheet coordinates.
   property int tearX: 0
@@ -36,7 +38,7 @@ Item {
       width: root.width
       height: root.height
       y: root.atBottom ? press.height - root.height : 0
-      color: Ink.paper
+      color: Ink.alpha(Ink.paper, root.paperOpacity)
 
       Column {
         id: body

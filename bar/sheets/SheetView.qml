@@ -21,6 +21,8 @@ Item {
   property var feed: ({})
   // Printed (1) or not (0); prints over Motion.sheetPrint (180 ms) when `open` changes.
   property bool open: true
+  // Panel opacity (Style.js panelOpacity), 0..1.
+  property real paperOpacity: 1
   property bool animate: true
 
   // A sheet asked for something (a value, a device, a page of the ribbon).
@@ -45,6 +47,7 @@ Item {
 
   SheetCard {
     id: card
+    paperOpacity: root.paperOpacity
     width: root.width
     atBottom: root.atBottom
     tearX: root.tearX

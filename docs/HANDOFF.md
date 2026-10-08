@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after Kata's Bluetooth cell and panel (following K7). Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
+Last updated: 2026-10-08, after panel opacity (following Kata's Bluetooth panel). Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -661,6 +661,14 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - `NetworkPanel` lost its Bluetooth section and is signed Network 繋; `KataPanelView` maps `bluetooth` to its own panel (藍), Leaf's tabs and `SheetWindow.kataOrder` include it (six panels).
 - Harness: `kata-panels*.json` add the Bluetooth row; `kata-bars.json` adds pointing at Bluetooth, Bluetooth off and a headset at 9%. Renders refreshed (`k4-*`, `k5-*`) plus `docs/kata/images/k8-bluetooth.webp`.
 - **To verify on hardware**: the rune at 1x, scanning starting when the panel opens from the Kata cell, and pairing a device that asks for a PIN (none is shown, as with the Classic sheet).
+
+### Panel opacity 透け ✅ (asked for: "all panel should has the opacity so we can adjust")
+- **`core/Style.js`**: `panelOpacity` beside motion and type size (not one of the twenty-two, no preset sets it, reset and presets keep it; `Typeset._keep` lists it). `normalizeOpacity`: 30..100, anything else (missing, 0, "auto") means the design's own and drops the key. `withSetting(doc, "panelOpacity", "70" | "auto")`, so the CLI's `style set` and IPC work too. `resolve()` gives `panelOpacity` (0 for auto). 1 test (113).
+- **Kata**: `Skin.skin(kata, panelOpacity)` overrides `opacity`; `BarWindow` passes `shown.panelOpacity`, so the panels, the overview's skin and every part get it. `Surface` now draws every kind at `skin.opacity` (paper and card too, not only washi), a hanging paper sheet squares its top corners with `topLeftRadius`/`topRightRadius` instead of an overlapping cover (which doubled up once translucent), and its shadows fade with `shadowOpacity` (full at 86%, gone at 50%), since they sit under the whole sheet.
+- **Classic**: `SheetView.paperOpacity` → `SheetCard`, `ScrollView.paperOpacity` (the paper and its edge fades); `SheetWindow` and `ScrollWindow` set them from `barWindow.shown.panelOpacity`.
+- **Settings › Design**: a Panel opacity row (a `KataSlider` in the current design's slider part mapped onto 30..100, the figure, Auto). `SettingsWindow` calls `Typeset.keep("panelOpacity")`; `keep(tag)` folds repeats of one tag within 1.5 s into one history step, so a drag is one Undo.
+- Inner pieces drawn on `Ink.paper` (Leaf's letter cards and tickets, the scroll's name tab) stay solid, like cards on glass. Hyprland blurs nothing behind `hanko-sheet` yet; a layer rule for it would be the next step if the user wants frosted panels.
+- Harness `kata-panels-opacity.json`, `sheet-opacity.json`; render `docs/kata/images/k9-panel-opacity.webp`.
 
 ## 10. Instructions for the remaining phase (10)
 

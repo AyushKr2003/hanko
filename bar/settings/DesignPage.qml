@@ -6,6 +6,7 @@ import "../../core/Skin.js" as Sk
 import "../../core/Style.js" as S
 import "../../core/Season.js" as Season
 import ".."
+import "../parts"
 
 // Settings › Design 意匠 (docs/kata §6): which design draws the bar, the
 // parts borrowed from the others, and the touches. Four design cards with
@@ -25,6 +26,8 @@ Column {
   signal touchPicked(string key, string value)
   signal surprise()
   signal backToDesign()
+  // Panel opacity: a percent (30..100) as text, or "auto" for the design's own.
+  signal opacityPicked(string value)
 
   readonly property var kata: K.resolve(doc)
   readonly property bool classic: kata.classic
@@ -32,6 +35,8 @@ Column {
   // Classic has no parts to borrow; its rows show Margin's.
   readonly property var base: classic ? ({ design: "margin" }) : doc
 
+  readonly property int panelOpacity: doc.panelOpacity || 0
+  readonly property var skin: Sk.skin(K.resolve(base), panelOpacity)
   readonly property var season: Season.at(barData.now || new Date())
   function skinWith(part, value) { return Sk.skin(K.resolve(K.withBorrow(base, part, value) || base)) }
 
@@ -296,6 +301,50 @@ Column {
         selected: root.kata.touches[touchRow.modelData.key] || ""
         onPicked: function(value) { root.touchPicked(touchRow.modelData.key, value) }
       }
+    }
+  }
+
+  // ------------------------------------------------ panel opacity
+  Rectangle { width: parent.width; height: 1; color: Ink.line }
+  Item {
+    id: opacityRow
+    width: root.width
+    height: opacityLabel.implicitHeight + Type.px(14) + (root.compact ? opacityControls.height + Type.px(10) : 0)
+    Column {
+      id: opacityLabel
+      width: root.compact ? parent.width : parent.width - opacityControls.width - Type.px(24)
+      spacing: Type.px(2)
+      Text { text: "Panel opacity"; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
+      Text {
+        width: parent.width; wrapMode: Text.Wrap
+        text: "How much of your desk shows through every panel: sheets, the scroll and each design's panels. Auto keeps the design's own (solid paper, Shōji's washi at 86%)."
+        color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(12)
+      }
+    }
+    Row {
+      id: opacityControls
+      x: root.compact ? 0 : parent.width - width
+      y: root.compact ? opacityLabel.implicitHeight + Type.px(10) : 0
+      spacing: Type.px(14)
+      KataSlider {
+        anchors.verticalCenter: parent.verticalCenter
+        width: Type.px(240); height: Type.px(26)
+        skin: root.skin
+        // 30..100 drawn across the whole ruler
+        value: (Math.round(root.skin.opacity * 100) - 30) / 70 * 100
+        onMoved: function(v) { root.opacityPicked(String(Math.round(30 + v / 100 * 70))) }
+      }
+      Text {
+        anchors.verticalCenter: parent.verticalCenter
+        width: Type.px(56)
+        horizontalAlignment: Text.AlignRight
+        text: Math.round(root.skin.opacity * 100) + "%"
+        color: Ink.ink
+        font.family: Type.display; font.pixelSize: Type.px(22); font.weight: Font.Normal
+        font.variableAxes: Type.axes(Type.px(22), 360, root.skin.soft || 0)
+        font.features: { "tnum": 1, "lnum": 1 }
+      }
+      Button { anchors.verticalCenter: parent.verticalCenter; label: "Auto"; faint: root.panelOpacity === 0; onClicked: root.opacityPicked("auto") }
     }
   }
 

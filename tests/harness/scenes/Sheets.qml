@@ -136,6 +136,7 @@ Rectangle {
           SheetView {
             id: view
             visible: !desk.scroll
+            paperOpacity: desk.style.panelOpacity > 0 ? desk.style.panelOpacity / 100 : 1
             x: bar.x + desk.placed.x
             y: desk.atBottom ? bar.y - height : bar.y + bar.height
             sheet: desk.scroll ? "" : desk.key

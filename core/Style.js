@@ -90,6 +90,18 @@ function normalizeTypeSize(t) {
   return TYPE_SIZES.indexOf(String(t)) >= 0 ? String(t) : DEFAULT_TYPE_SIZE
 }
 
+// Panel opacity 透け, beside the twenty-two like motion: how much of the
+// desk shows through every panel (sheets, the scroll, Kata's panels), in
+// percent, 30 to 100. 0 (or no key) leaves it to the design: solid paper,
+// Shōji's washi at 86%.
+var OPACITY_MIN = 30
+function normalizeOpacity(o) {
+  if (o === undefined || o === null || o === "" || o === "auto") return 0
+  var n = Math.round(Number(o))
+  if (!isFinite(n) || n <= 0) return 0
+  return Math.max(OPACITY_MIN, Math.min(100, n))
+}
+
 // Which workspace overview 一覧 opens, beside the twenty-two like motion:
 // grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
 // overview (only workspaces with windows, a + for a new one, desktops).
@@ -245,6 +257,8 @@ function normalize(doc, warnings) {
     hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
   }
+  var op = normalizeOpacity(doc.panelOpacity)
+  if (op) out.panelOpacity = op
   var top = kataOf(doc)
   for (var t in top) out[t] = top[t]
   return out
@@ -261,6 +275,7 @@ function resolve(doc, monitor) {
   style.motion = d.motion
   style.typeSize = d.typeSize
   style.overview = d.overview
+  style.panelOpacity = d.panelOpacity || 0
   style.hidden = d.hidden.slice()
   style.preset = d.preset
   style.edited = Object.keys(d.edits).length > 0
@@ -281,6 +296,13 @@ function withSetting(doc, key, value) {
   if (key === "typeSize") {
     if (TYPE_SIZES.indexOf(String(value)) < 0) return null
     d.typeSize = String(value)
+    return d
+  }
+  if (key === "panelOpacity") {
+    if (value !== "auto" && !isFinite(Number(value))) return null
+    var op = normalizeOpacity(value)
+    if (op) d.panelOpacity = op
+    else delete d.panelOpacity
     return d
   }
   if (key === "overview") {

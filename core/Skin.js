@@ -20,7 +20,9 @@ var GRAIN = { smooth: 0, fine: 1, toothy: 2 }
 // Shōji's washi lets the desk show through; paper and card are opaque.
 var OPACITY = { paper: 1, card: 1, washi: 0.86 }
 
-function skin(k) {
+// `panelOpacity` (Style.js, 30..100; 0 = the design's own) overrides the
+// surface's opacity for every panel.
+function skin(k, panelOpacity) {
   k = k || {}
   var t = TEMPOS[k.tempo] || TEMPOS.spring
   var r = RADII[k.corner] || RADII.soft
@@ -39,7 +41,7 @@ function skin(k) {
     settle: SETTLE.duration, settleCurve: SETTLE.curve,
     // Fraunces' SOFT axis: paper's figures are soft, card and washi are cut sharp.
     soft: k.surface === "paper" ? 30 : 0,
-    opacity: OPACITY[k.surface] === undefined ? 1 : OPACITY[k.surface],
+    opacity: panelOpacity > 0 ? panelOpacity / 100 : OPACITY[k.surface] === undefined ? 1 : OPACITY[k.surface],
     grain: GRAIN[touches.grain] === undefined ? 0 : GRAIN[touches.grain],
     season: touches.season || "off",
     kanjiNumerals: touches.numerals === "kanji",
