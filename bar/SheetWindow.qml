@@ -20,7 +20,8 @@ PanelWindow {
 
   required property var bar          // the Bar.qml root
   required property var barWindow    // this screen's BarWindow
-  required property BarSurface surface
+  // The bar drawn on this screen: BarSurface (Classic) or KataBar; both have anchorFor().
+  required property var surface
 
   readonly property string screenName: screen ? screen.name : ""
   readonly property bool open: bar.sheet !== "" && bar.sheetScreen === screenName

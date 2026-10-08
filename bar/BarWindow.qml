@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import "../core"
 import "../core/Sheets.js" as Sheets
 import "../core/Scroll.js" as Scroll
+import "../core/Skin.js" as Skin
 import "../services"
 
 // One layer-shell bar per screen. It reserves its own height and, when the
@@ -54,7 +55,13 @@ PanelWindow {
   }
 
   readonly property string screenName: screen ? screen.name : ""
-  readonly property alias surface: surface
+  // Kata 型: which design draws this screen's bar. Classic is the Typeset
+  // BarSurface; any other design is the KataBar, with the same data, the
+  // same signals and the same anchors, so sheets and the scroll open under
+  // its cells unchanged.
+  readonly property var kata: Typeset.kataFor(screenName)
+  readonly property var skin: Skin.skin(kata)
+  readonly property Item surface: kata.classic ? classicSurface : kataSurface
 
   Component.onCompleted: bar.registerWindow(screenName, win)
   Component.onDestruction: bar.unregisterWindow(screenName, win)
@@ -81,8 +88,9 @@ PanelWindow {
   }
 
   BarSurface {
-    id: surface
+    id: classicSurface
     anchors.fill: parent
+    visible: win.kata.classic
     style: win.shown
     now: win.bar.now
     spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
@@ -124,6 +132,37 @@ PanelWindow {
     onEdgePulled: function(x) { win.rodPulled(x) }
   }
 
+  KataBar {
+    id: kataSurface
+    anchors.fill: parent
+    visible: !win.kata.classic
+    skin: win.skin
+    style: win.shown
+    now: win.bar.now
+    spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
+    activeWindow: Hypr.activeWindow
+    home: Hypr.home
+    media: Media.now
+    timeFormat: win.bar.timeFormat
+    volume: Status.volume
+    network: Status.network
+    battery: Status.battery
+    notifications: Status.notifications
+    dnd: Status.doNotDisturb
+
+    onSealClicked: function(button) {
+      if (button === Qt.RightButton) Hypr.openTerminal()
+      else Hypr.openMenu()
+    }
+    onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
+    onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
+    onOverviewRequested: win.bar.toggleOverview()
+    onMediaAction: function(name) { Media.act(name) }
+    onStatusAction: function(name, how) { win.cellClicked(name, how, function() { Status.act(name, how) }) }
+    onInboxAction: function(how) { win.cellClicked("notif", how, function() { Status.act("notif", how) }) }
+    onClockClicked: win.cellClicked("clock", "click", function() {})
+  }
+
   ScrollWindow {
     bar: win.bar
     barWindow: win
@@ -137,6 +176,6 @@ PanelWindow {
   SheetWindow {
     bar: win.bar
     barWindow: win
-    surface: surface
+    surface: win.surface
   }
 }

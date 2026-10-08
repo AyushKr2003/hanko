@@ -40,6 +40,7 @@ const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "key
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
+const Sn = load("core/Season.js", ["SEKKI", "KO", "sunLongitude", "koIndex", "at", "label"])
 const Sk = load("core/Skin.js", ["skin", "TEMPOS", "RADII"])
 const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
 const K = load("core/Kata.js", ["PARTS", "PART_KEYS", "MAIN_PARTS", "AUTO", "TOUCHES", "DESIGNS", "DESIGN_NAMES", "DEFAULT_DESIGN",
@@ -1374,6 +1375,20 @@ test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () 
   assert.match(e, /^M [\d. -]+( L [\d. -]+)+ Z$/)
   assert.equal(e.split(" L ").length, 242)                 // 121 points out, 121 back
   assert.ok(Br.enso(0, 20).length > 0 && Br.enso(2, 20).length > 0)   // clamped, never empty
+})
+
+test("kata K4: the season comes from the sun, right on the boundaries", () => {
+  assert.equal(Sn.KO.length, 72); assert.equal(Sn.SEKKI.length, 24)
+  const s = Sn.at(new Date("2026-10-08T16:14:00Z"))
+  assert.equal(s.koKanji, "鴻雁来"); assert.equal(s.koName, "Wild geese return"); assert.equal(s.sekkiKanji, "寒露")
+  assert.equal(Sn.at(new Date("2026-02-04T12:00:00Z")).koKanji, "東風解凍")
+  assert.equal(Sn.at(new Date("2026-03-21T12:00:00Z")).koKanji, "雀始巣")
+  // the 2027 June solstice is at 14:11 UTC: noon is still the kō before
+  assert.equal(Sn.at(new Date("2027-06-21T12:00:00Z")).koKanji, "梅子黄")
+  assert.equal(Sn.at(new Date("2027-06-21T16:00:00Z")).koKanji, "乃東枯")
+  assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "kanji"), "寒露")
+  assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "english"), "Cold dew")
+  assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "off"), "")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

@@ -7,7 +7,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 ## What you get
 
 - **Every part is a setting:** 22 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
-- **Coming: three designs in one engine** (Kata 型, `docs/kata/`): pick Margin, Leaf or Shōji, or borrow parts between them. Being built in steps; `hanko design`, `hanko borrow` and `hanko touch` already store the choice, and the bar keeps today's look (Classic) until the Kata bar lands.
+- **Three designs in one engine** (Kata 型, `docs/kata/`, being built): `hanko design margin|leaf|shoji` switches the bar to that design, `hanko borrow slider ruler` takes one part from another design, `hanko touch season english` flips a touch, and `hanko design classic` brings today's look back (still the default). The panels are the Classic sheets until Kata's own arrive.
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
 - **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).

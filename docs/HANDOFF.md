@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after Kata K3 (the parts in QML; see §9 and `docs/kata/`).
+Last updated: 2026-10-08, after Kata K4 (the Kata bar; see §9 and `docs/kata/`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -283,6 +283,8 @@ bar/
                          plates ProfilePlate, AboutPlate, CreditsPlate with their art
                          (SealImpression, HangingScroll) and parts (PlateEyebrow,
                          PlateSpine, LeaderRow)
+  KataBar.qml            the bar a Kata design draws (K4): same data/signals/anchorFor/
+                         cellAt/rightCells as BarSurface; BarWindow swaps them
   parts/                 Kata's parts (K3), pure, each takes `skin` (Skin.js): Surface,
                          Fibres, Divider, Selection, KataSlider, Ring, KataSeal,
                          UnreadMark, PointerMark, Sign, InkShape
@@ -314,6 +316,8 @@ core/
                          dividerWidth, joints, open/openCurve/leave/leaveCurve, settle,
                          soft (Fraunces SOFT), opacity, grain, season, kanjiNumerals, gap,
                          travels; TEMPOS, RADII
+  Season.js              SEKKI (24), KO (72), sunLongitude, koIndex, at(date), label(date,
+                         off|kanji|english): exact, from the sun (Leaf.js's are date tables)
   Brush.js               stroke(w, h, seed), kasure(w, h, seed), enso(v, size, width, seed):
                          SVG paths for PathSvg
   Typeset.qml (singleton) style.json FileView + watch; doc, warnings, current,
@@ -616,6 +620,14 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
   - Named `KataSeal`/`KataSlider` so they never shadow `bar/Seal.qml`. Item already has FINAL `baseline`, `right`, `bottom`: don't name properties that (hit here twice).
 - **`core/Brush.js` `rough(w, h, r, seed, jitter)`**: a carved outline.
 - **Harness**: `scenes/Kata.qml` (every part × each design, then a panel built only from parts; `designs` in params takes any style docs, so mixes render too), `params/kata-parts.json`, `kata-parts-light.json`. `tests/run` lints `bar/parts/`. Unit tests: 110.
+
+### Kata 型 K4 · the Kata bar ✅
+- **`bar/KataBar.qml`**, pure like BarSurface (same props for the data it uses, same signals, `anchorFor`, `cellAt`, `rightCells`), taking `skin` and the Typeset `style` (height, sealGlyph, hidden). Left: the seal (`KataSeal`, on when there are notifications and DND is off; left-click `inboxAction("click")`, middle `inboxAction("middle")`, right the Omarchy menu), desks (an ink plate for tint/plate, a brush mark for wash, both sliding; `UnreadMark small` on urgent; click, right-click overview, wheel steps), an interval, then app + document (`Title.describe`; italic on card). Centre: Fraunces time with the skin's SOFT, the date, the season (`Season.label`, kanji in Gothic). Right: now playing (gives way when there's no room), Wi-Fi (its name on reach), volume (wheel → `statusAction("volume", "up"|"down")`), battery (`Ring`; red with `needsYou`), all with the `PointerMark` over them (`hoverCell` points from the harness).
+- **`BarWindow`**: `kata = Typeset.kataFor(screenName)`, `skin = Skin.skin(kata)`; `classicSurface` (BarSurface) or `kataSurface` (KataBar) by `kata.classic`; `surface` is whichever shows, which `SheetWindow` (now `required property var surface`) and `Bar.panelWidgetIdAt` use. So Kata's cells open the existing sheets and scroll; Kata panels come in K5.
+- **`core/Season.js`** (1 test): exact sekki and kō from the solar longitude, checked on the 2027 solstice boundary. **`bar/parts/Icon.qml`**: wifi (arcs by level), offline, volume, muted, bolt on one grid.
+- **Pitfalls hit**: `mapToItem` is not a binding dependency (the pointer stuck at its first, unlaid-out position; read the positions it uses in the binding); property names can't start upper case (`KAN`); `font.pixelSize` is an int.
+- Harness `scenes/KataBars.qml` + `kata-bars.json` (each design, quiet, alerts, reach, two mixes), `kata-bars-light.json`; renders in `docs/kata/images/k4-*.webp`. Unit tests: 111.
+- **To verify on hardware**: `hanko design shoji` switching the live bar (and back with `hanko design classic`), HoverHandler reaching the cells on a layer-shell surface, sheets dropping under the Kata cells, the seal opening Inbox, and the washi Fibres Canvas cost at 4K.
 
 ## 10. Instructions for the remaining phase (10)
 
