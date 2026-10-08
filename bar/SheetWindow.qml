@@ -6,6 +6,7 @@ import "../core"
 import "../core/Sheets.js" as Sheets
 import "../services"
 import "sheets"
+import "kata"
 
 // The layer a sheet is printed on, one per screen, next to its BarWindow.
 // Built the way Omarchy's own KeyboardPanel is: a full-screen layer-shell
@@ -33,6 +34,34 @@ PanelWindow {
   property string shownSheet: ""
   // Where the open sheet sits: Sheets.place() in screen coordinates.
   property var placed: ({ x: 0, tearX: 0, tearWidth: 0 })
+  // Kata designs print their own panels (docs/kata); Classic keeps SheetView.
+  readonly property bool kata: !!barWindow.kata && !barWindow.kata.classic
+  readonly property var skin: barWindow.skin || ({})
+  readonly property var view: kata ? kataView : classicView
+  readonly property var feed: ({
+    now: win.bar.now,
+    zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
+    timeShift: win.bar.timeShift,
+    sound: Sound.reading,
+    network: Net.reading,
+    bluetooth: Blue.reading,
+    power: Power.reading,
+    display: Display.reading,
+    letters: Status.notifications,
+    dnd: Status.doNotDisturb
+  })
+  // Kata has five panels (Bluetooth lives in Connections, Display in Power),
+  // so Tab steps through those only.
+  readonly property var kataOrder: ["time", "sound", "network", "power", "inbox"]
+  function cycle(delta) {
+    if (!kata) { bar.cycleSheet(delta); return }
+    var here = ({ bluetooth: "network", display: "power" })[shownSheet] || shownSheet
+    var i = Math.max(0, kataOrder.indexOf(here))
+    for (var n = 1; n <= kataOrder.length; n++) {
+      var next = kataOrder[(i + delta * n + kataOrder.length * n) % kataOrder.length]
+      if (bar.sheetReady(next)) { bar.openSheet(next, screenName); return }
+    }
+  }
 
   function place() {
     if (!open) return
@@ -45,6 +74,7 @@ PanelWindow {
     var screenW = barWindow.width + 2 * gap
     var cellX = a ? a.x + gap : screenW - gap - 200
     placed = Sheets.place(shownSheet, cellX, a ? a.width : 100, view.width, screenW)
+    if (kata) kataView.side = cellX + (a ? a.width : 100) / 2 < screenW / 2 ? -1 : 1
   }
   onWidthChanged: Qt.callLater(place)
   Connections {
@@ -101,7 +131,7 @@ PanelWindow {
       if (!win.open) return
       win.shownSheet = win.bar.sheet
       Qt.callLater(win.place)
-      Qt.callLater(view.focusContents)
+      Qt.callLater(win.view.focusContents)
     }
   }
 
@@ -111,7 +141,7 @@ PanelWindow {
     onTriggered: {
       if (!win.open) return
       win.primed = true
-      view.focusContents()
+      win.view.focusContents()
     }
   }
 
@@ -130,31 +160,21 @@ PanelWindow {
   }
 
   SheetView {
-    id: view
+    id: classicView
+    visible: !win.kata
     onWidthChanged: Qt.callLater(win.place)
     x: win.placed.x
     y: win.atBottom ? win.height - win.strip - height : win.strip
-    sheet: win.shownSheet
-    open: win.open
+    sheet: win.kata ? "" : win.shownSheet
+    open: win.open && !win.kata
     atBottom: win.atBottom
     tearX: win.placed.tearX
     tearWidth: win.placed.tearWidth
-    feed: ({
-      now: win.bar.now,
-      zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
-      timeShift: win.bar.timeShift,
-      sound: Sound.reading,
-      network: Net.reading,
-      bluetooth: Blue.reading,
-      power: Power.reading,
-      display: Display.reading,
-      letters: Status.notifications,
-      dnd: Status.doNotDisturb
-    })
+    feed: win.feed
 
     onRequest: function(sheet, what, arg) { win.bar.sheetRequest(sheet, what, arg) }
     onCloseRequested: win.bar.closeSheet()
-    onCycle: function(delta) { win.bar.cycleSheet(delta) }
+    onCycle: function(delta) { win.cycle(delta) }
 
     // Swallow clicks on the paper so they don't reach the closer behind.
     MouseArea {
@@ -162,6 +182,29 @@ PanelWindow {
       anchors.fill: parent
       acceptedButtons: Qt.AllButtons
     }
+  }
+
+  KataPanelView {
+    id: kataView
+    visible: win.kata
+    onWidthChanged: Qt.callLater(win.place)
+    // slide travels along the bar when another cell is picked
+    x: win.placed.x
+    Behavior on x {
+      enabled: win.kata && !!win.skin.travels && win.open && !Motion.still
+      NumberAnimation { duration: win.skin.open || 360; easing.type: Easing.BezierSpline; easing.bezierCurve: win.skin.openCurve || [0.16, 1, 0.3, 1, 1, 1] }
+    }
+    y: win.atBottom ? win.height - win.strip - height - (win.skin.gap || 0) : win.strip + (win.skin.gap || 0)
+    skin: win.skin
+    sheet: win.kata ? win.shownSheet : ""
+    open: win.open && win.kata
+    atBottom: win.atBottom
+    feed: win.feed
+
+    onRequest: function(sheet, what, arg) { win.bar.sheetRequest(sheet, what, arg) }
+    onCloseRequested: win.bar.closeSheet()
+    onCycle: function(delta) { win.cycle(delta) }
+    onPickSheet: function(key) { win.bar.openSheet(key, win.screenName) }
   }
 
   // Other screens get a clear twin while the sheet is open, so a click on

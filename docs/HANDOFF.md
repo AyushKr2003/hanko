@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after Kata K4 (the Kata bar). Next: Kata K5, Kata's own panels (§10 has step-by-step instructions for K5–K7).
+Last updated: 2026-10-08, after Kata K5 (Kata's panels). Next: Kata K6, the whole-screen parts (§10 has step-by-step instructions for K6–K7).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -633,11 +633,18 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Harness `scenes/KataBars.qml` + `kata-bars.json` (each design, quiet, alerts, reach, two mixes), `kata-bars-light.json`; renders in `docs/kata/images/k4-*.webp`. Unit tests: 111.
 - **To verify on hardware**: `hanko design shoji` switching the live bar (and back with `hanko design classic`), HoverHandler reaching the cells on a layer-shell surface, sheets dropping under the Kata cells, the seal opening Inbox, and the washi Fibres Canvas cost at 4K.
 
+### Kata 型 K5 · Kata's panels ✅
+- **`bar/kata/KataPanelView.qml`**: the frame around one panel, pure like `SheetView` and fed the same `feed`; requests name their sheet, so `Bar.sheetRequest` handles them unchanged. Bluetooth opens Connections and Display opens Power (`panel` maps the sheet key). Width from the panel (Time is 640 with the season touch, else 420; Letters 420; the rest 400) plus 52 for a tategaki column. Arrival by `reveal` with the skin's tempo: fold scales from the bar's line (`Joins` draw the concave corners when corners are soft), slip comes out of a clipped well from under the bar, slide comes in from the cell's side. Signs: eyebrow at the top, index tabs hanging from the foot (`pickSheet`), tategaki on the right.
+- **Panels** (`bar/kata/`), each a Column of parts and plain data: `TimePanel` (the day as "Thursday, *the eighth*", month grid with today as an ink plate or in an ensō `Ring`, the kō in tategaki with its sekki when `season` is on, other cities), `SoundPanel` (hero figure, `KataSlider`, Plays on in a `KataList`, app rows with thin sliders, the microphone switch), `NetworkPanel` (Wi-Fi switch, the network's name as the hero, nearby, Bluetooth with its devices through `Blue.js` actions), `PowerPanel` (`Ring`/figure hero, the blurb, brightness, `Choice` power mode, `SessionRow`: lock and sleep at once, restart and shut down held 600 ms with a red soak), `LettersPanel` (Quiet switch, cards with `UnreadMark`, show recent again, clear all). Helpers `KataList` (a `Selection` slides to the chosen row; plate inverts the text), `Figure`, `Heading`. New parts `KataSwitch`, `Choice`, `Joins`.
+- **`SheetWindow`**: `kata` when the screen's design isn't Classic; then `KataPanelView` shows instead of `SheetView` (`view` is whichever), hung by `skin.gap`, `side` from the cell's half of the screen, `Behavior on x` when `skin.travels` so Shōji's panel slides along the bar to the next cell. Tab walks Time, Sound, Network, Power, Letters (`win.cycle`); the tabs open their sheet with `bar.openSheet`. The handscroll and the overview are still Classic's.
+- Harness `scenes/KataPanels.qml` (panels × style docs) + `kata-panels.json` (each design) and `kata-panels-light.json` (three mixes); renders in `docs/kata/images/k5-*.webp`. `tests/run` lints `bar/kata/`. Unit tests: 111.
+- **To verify on hardware**: fold's scale and slip's clipped well on a real layer surface, the slide travelling between cells, the panel's keyboard focus after the prime (Esc, Tab, Up/Down on Sound), session holds, and Bluetooth actions from Connections. Not in yet: weather on Time, Power's quick chips.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
 
-### Kata 型: what is left (K5–K7)
+### Kata 型: what is left (K6–K7)
 
 The spec is `docs/kata/README.md`; the HTML prototype that shows every part and panel in every design is `docs/kata/prototype/` (open `playground.html` or `desk.html?design=shoji&panel=sound`; `kata.js` holds the panel markup to port). The three source designs, with their own prototypes for detail: `design` (`docs/redesign/`, Margin), `design2` (`docs/design2/`, Leaf), `design3` (`docs/design3/`, Shōji). Rules that hold for every Kata phase:
 
@@ -716,6 +723,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 23. **Overview to verify on hardware:** live snapshots (`ToplevelManager` + `HyprlandToplevel.address` matching Hanko's `0x` addresses), the focus grab closing on click-away and not on the first click inside, keyboard on the focused monitor only with two screens, `hl.dsp.window.move` with `window` and `workspace` together, the deferred focus after a click (90 ms; raise it if focus snaps back), and the page fit on a portrait monitor.
 24. **Dynamic overview:** icons resolving for Omarchy's webapps and TUI apps (omarchy-overview has a longer lookup in `OverviewWindow.qml` if `heuristicLookup` misses), the wallpaper path after `omarchy theme bg next`, the + cell creating the workspace on this monitor, and Alt+Tab reaching the layer (Hyprland may take it first).
 
+25. **Kata panels (K5):** Time has no weather yet and Power no quick chips (the Classic sheets have both); the handscroll and the overview stay Classic's under a Kata design until K6.
 
 ## 13. QML pitfalls already hit
 
