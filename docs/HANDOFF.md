@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after Profile, About and Credits were redesigned (certificate, colophon, grouped credits), following the bar's natural pass.
+Last updated: 2026-10-08, after the Profile's seal became a signed one-character work (Shikishi), following the Profile, About and Credits redesign.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -716,6 +716,12 @@ Research behind it: the Japanese seal registration certificate (印鑑登録証�
 - **About**: 判子 and Hanko on one line, `SectionLabel`s (仕組 HOW IT IS MADE, 系譜 DRAWN THREE WAYS), tighter fact rows, the lineage as three columns with hairlines, and a `Colophon` component: a ruled 奥付 box, its title in a notch of the top rule, faces left and inks (hex and contrast) right; under the moon on a wide page, in the column otherwise.
 - **Credits**: 感謝 and Gratitude on one line; credits under `Profile.CREDIT_GROUPS` (Foundation 礎, Lineage 系譜, Type 活字; every project has a `group`, `creditsIn(group)`; a unit test checks they partition); the proofreaders on a ruled card stamped 校 in red with the name in Fraunces, instead of the bone placard.
 - `bar/settings/SectionLabel.qml` is shared by the three. Images `docs/revision2/images/r2-profile.webp`, `r2-profile-light.webp`, `r2-about.webp`, `r2-credits.webp`.
+
+### Profile: the seal becomes a signed work ✅ (asked for: "the red hanko seal does not look good; remove it, something new or a better style")
+Research: a work of Japanese calligraphy is signed with a rakkan (落款), the signature and usually two seals at a margin, a hakubun (白文, characters cut white, the red filling the ground) for the name and a shubun (朱文, characters standing in red) for the pen name; seals are placed so they balance the work rather than compete with it.
+- **`bar/settings/Shikishi.qml`** replaces `SealImpression.qml` (deleted): your seal glyph written large in ink (Noto Serif CJK Black, 60% of the box, a little right of centre) and, down the left margin, the signature (your name and `machine.since`, Fraunces italic, turned 90°) over two vector seals: a square hakubun with your initial cut white, and a round shubun with the glyph in vermilion. No dithering, no tilt; the plate's only red is these two small marks.
+- The `Impression` box, its practice grid, crop marks and eye chips are unchanged; its caption reads `書 · INK ON PAPER · SIGNED WITH TWO SEALS` and `NO. <edition>`.
+- Images `docs/revision2/images/r2-profile.webp`, `r2-profile-light.webp` refreshed.
 
 ## 10. Instructions for the remaining phase (10)
 

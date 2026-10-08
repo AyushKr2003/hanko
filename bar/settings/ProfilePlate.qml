@@ -8,9 +8,10 @@ import "../../core/Profile.js" as P
 // Profile 印影, the seal register: the plate people screenshot to show their
 // desk, laid out like the certificate a seal is registered on (印鑑登録証明書)
 // on a modular grid. Left, the holder: your name monumental in Fraunces, the
-// line under it and the register's small print. Right, the impression: your
-// seal pressed square in a ruled box on a calligraphy practice grid (田字格),
-// with crop marks and its caption. Along the foot, the bar's live readings as
+// line under it and the register's small print. Right, the work: your seal
+// glyph written large in ink on a calligraphy practice grid (田字格) and
+// signed with a rakkan, two small seals under your name (Shikishi.qml), in
+// a ruled box with crop marks and its caption. Along the foot, the bar's live readings as
 // a row of stats (a game's status screen, kept to ink), then the edition and
 // the day as a rule. Ink on paper; the seal is the only red. EDIT lets you
 // rename it, give it a line and hide any block (core/Dossier.qml).
@@ -549,9 +550,9 @@ Item {
     }
   }
 
-  // The impression: the seal pressed in a ruled square on a calligraphy
-  // practice grid (田字格: a frame, its halves dashed), crop marks set off
-  // its corners, a label over it and its caption under.
+  // The work: your glyph written in ink and signed with two small seals,
+  // in a ruled square on a calligraphy practice grid (田字格: a frame, its
+  // halves dashed), crop marks set off its corners, its caption under.
   component Impression: Item {
     id: imp
     property real side: Type.px(400)
@@ -596,13 +597,11 @@ Item {
         }
       }
 
-      SealImpression {
-        anchors.centerIn: parent
-        width: Math.round(imp.side * 0.74)
-        height: width
-        rotation: -3
+      Shikishi {
+        anchors.fill: parent
         glyph: root.style.sealGlyph || "印"
-        seed: Number(root.edition) / 1000
+        name: root.name
+        date: root.machine.since || ""
       }
 
       // Crop marks, set off each corner.
@@ -634,7 +633,7 @@ Item {
       y: imp.side + Type.px(12)
       width: imp.side - impNo.implicitWidth - Type.px(14)
       elide: Text.ElideRight
-      text: "印影  ·  PRESSED " + (root.machine.since || Qt.formatDate(root.now, "yyyy-MM-dd")) + "  ·  VERMILION ON PAPER"
+      text: "書  ·  INK ON PAPER  ·  SIGNED WITH TWO SEALS"
       color: Ink.inkMuted
       font.family: Type.mono
       font.pixelSize: Type.tag
