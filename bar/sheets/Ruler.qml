@@ -39,15 +39,32 @@ Item {
     }
   }
 
-  Rectangle {
-    x: Math.round(root.v * (root.width - 1)) - 1
+  // The needle, capped with a small head like a gauge's pointer, standing
+  // on a short base line so it reads as set into the ruler, not laid on it.
+  Item {
+    id: needle
+    x: Math.round(root.v * (root.width - 1)) - Type.px(3)
     y: root.height - height
-    width: 3
+    width: Type.px(3) * 2 + 1
     height: Type.px(22)
-    color: root.red ? Ink.seal : Ink.ink
+    Behavior on x { enabled: !Motion.still && !drag.pressed; NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+    readonly property color tone: root.red ? Ink.seal : root.muted ? Ink.inkMuted : Ink.ink
+    Rectangle {
+      x: Type.px(3) - 1
+      width: 3
+      height: parent.height
+      color: needle.tone
+    }
+    Rectangle {
+      width: parent.width
+      height: Type.px(3)
+      radius: 1
+      color: needle.tone
+    }
   }
 
   MouseArea {
+    id: drag
     anchors.fill: parent
     cursorShape: Qt.PointingHandCursor
     preventStealing: true

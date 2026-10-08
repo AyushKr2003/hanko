@@ -1,0 +1,360 @@
+{
+  "title": "Revision 2 · Classic sheets, light",
+  "scene": "Sheets",
+  "width": 1600,
+  "theme": {
+    "foreground": "#100F0F",
+    "background": "#FFFCF0",
+    "red": "#D14D41"
+  },
+  "spaces": [
+    {
+      "id": 1,
+      "active": false,
+      "urgent": false,
+      "count": 2,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 0.5,
+          "h": 1,
+          "focused": true
+        },
+        {
+          "x": 0.5,
+          "y": 0,
+          "w": 0.5,
+          "h": 1,
+          "focused": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "active": false,
+      "urgent": false,
+      "count": 1,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "focused": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "active": true,
+      "urgent": false,
+      "count": 3,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 0.5,
+          "h": 1,
+          "focused": true
+        },
+        {
+          "x": 0.5,
+          "y": 0,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        },
+        {
+          "x": 0.5,
+          "y": 0.5,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "active": false,
+      "urgent": true,
+      "count": 4,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": true
+        },
+        {
+          "x": 0.5,
+          "y": 0,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        },
+        {
+          "x": 0,
+          "y": 0.5,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        },
+        {
+          "x": 0.5,
+          "y": 0.5,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "active": false,
+      "urgent": false,
+      "count": 0,
+      "windows": []
+    }
+  ],
+  "window": {
+    "cls": "Alacritty",
+    "title": "nvim /home/ayush/code/hanko/Bar.qml"
+  },
+  "media": {
+    "title": "Water Copy",
+    "artist": "Hiroshi Yoshimura",
+    "progress": 0.38,
+    "playing": true
+  },
+  "volume": {
+    "percent": 62,
+    "level": 0.62,
+    "muted": false,
+    "needsYou": false
+  },
+  "network": {
+    "kind": "wifi",
+    "name": "Kumo",
+    "signal": 68,
+    "bars": 3,
+    "off": false,
+    "needsYou": false
+  },
+  "battery": {
+    "percent": 91,
+    "level": 0.91,
+    "charging": false,
+    "needsYou": false
+  },
+  "brightness": null,
+  "notifications": [
+    {
+      "app": "Signal",
+      "summary": "",
+      "timestamp": 3,
+      "urgent": false,
+      "glyph": "S",
+      "tilt": -3
+    },
+    {
+      "app": "Ghostty",
+      "summary": "",
+      "timestamp": 2,
+      "urgent": false,
+      "glyph": "G",
+      "tilt": 3
+    },
+    {
+      "app": "Firefox",
+      "summary": "",
+      "timestamp": 1,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": -1.5
+    }
+  ],
+  "desks": [
+    {
+      "label": "SOUND · MUTED MASTER, MUTED FIREFOX · HANKO",
+      "doc": {
+        "preset": "Hanko"
+      },
+      "sheet": "sound",
+      "feed": {
+        "sound": {
+          "master": {
+            "percent": 62,
+            "level": 0.62,
+            "muted": true
+          },
+          "outputs": [
+            {
+              "id": 41,
+              "name": "usb",
+              "label": "Studio Monitors",
+              "detail": "USB · Focusrite 2i2 · 48 kHz",
+              "current": true,
+              "note": "Live"
+            },
+            {
+              "id": 52,
+              "name": "bt",
+              "label": "WH-1000XM5",
+              "detail": "Bluetooth · LDAC",
+              "current": false,
+              "note": "Paired"
+            }
+          ],
+          "streams": [
+            {
+              "id": 7,
+              "name": "spotify",
+              "label": "Spotify",
+              "level": 0.8,
+              "percent": 80,
+              "muted": false
+            },
+            {
+              "id": 8,
+              "name": "firefox",
+              "label": "Firefox",
+              "level": 0.45,
+              "percent": 45,
+              "muted": true
+            }
+          ],
+          "input": "Input · muted",
+          "inputMuted": true
+        }
+      },
+      "height": 680
+    },
+    {
+      "label": "TIME · HANKO PRESET · FROM THE CENTRE CLOCK",
+      "doc": {
+        "preset": "Hanko"
+      },
+      "sheet": "time",
+      "feed": {
+        "zones": [
+          {
+            "label": "Tokyo",
+            "id": "Asia/Tokyo",
+            "ready": true,
+            "time": "06:44",
+            "date": "Wed 07 · JST",
+            "rel": "+9"
+          },
+          {
+            "label": "Lisbon",
+            "id": "Europe/Lisbon",
+            "ready": true,
+            "time": "22:44",
+            "date": "Tue 06 · WEST",
+            "rel": "+1"
+          }
+        ]
+      },
+      "height": 440
+    },
+    {
+      "label": "NETWORK · SHEET PRESET · FROM NET",
+      "doc": {
+        "preset": "Sheet"
+      },
+      "sheet": "network",
+      "feed": {
+        "network": {
+          "current": {
+            "kind": "wifi",
+            "label": "Kumo",
+            "detail": "Wi-Fi · WPA2 · 5 GHz · 82%"
+          },
+          "radio": true,
+          "offline": false,
+          "networks": [
+            {
+              "ssid": "Kumo",
+              "detail": "WPA2 · 5 GHz · 82%",
+              "current": true,
+              "saved": true,
+              "secure": true,
+              "signal": 82,
+              "note": "Connected"
+            },
+            {
+              "ssid": "Kumo 2.4",
+              "detail": "WPA2 · 2.4 GHz · 64%",
+              "current": false,
+              "saved": true,
+              "secure": true,
+              "signal": 64,
+              "note": "Saved"
+            },
+            {
+              "ssid": "Neighbour",
+              "detail": "WPA3 · 5 GHz · 41%",
+              "current": false,
+              "saved": false,
+              "secure": true,
+              "signal": 41,
+              "note": ""
+            },
+            {
+              "ssid": "Library",
+              "detail": "2.4 GHz · 22%",
+              "current": false,
+              "saved": false,
+              "secure": false,
+              "signal": 22,
+              "note": "Open"
+            }
+          ]
+        }
+      },
+      "height": 640
+    },
+    {
+      "label": "INBOX · INSTRUMENT · FROM INBOX",
+      "doc": {
+        "preset": "Instrument"
+      },
+      "sheet": "inbox",
+      "feed": {
+        "letters": [
+          {
+            "app": "Signal",
+            "summary": "Mika",
+            "body": "See you at 8 by the station",
+            "timestamp": 1791322920000.0,
+            "urgent": false,
+            "glyph": "信",
+            "tilt": -3
+          },
+          {
+            "app": "Firefox",
+            "summary": "Download complete",
+            "body": "hanko-typeset.zip",
+            "timestamp": 1791322200000.0,
+            "urgent": false,
+            "glyph": "火",
+            "tilt": 4.5
+          },
+          {
+            "app": "System",
+            "summary": "Battery low",
+            "body": "12% left, plug in soon",
+            "timestamp": 1791312240000.0,
+            "urgent": true,
+            "glyph": "S",
+            "tilt": -1.5
+          }
+        ],
+        "dnd": false
+      },
+      "height": 560
+    }
+  ]
+}

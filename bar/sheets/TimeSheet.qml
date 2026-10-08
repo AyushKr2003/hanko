@@ -31,6 +31,7 @@ Item {
     width: root.width - 2 * x
 
     SheetHead {
+      sheet: "time"
       jp: "時"
       label: "Time · Week " + root.head.week
       title: root.head.title
@@ -45,9 +46,8 @@ Item {
       }
     }
 
-    // The ribbon sits 20 px under its head, between two hairlines.
-    Item { width: 1; height: Type.px(20) - 1 }
-    Rectangle { width: parent.width; height: 1; color: Ink.line }
+    // The ribbon hangs straight off its head's rule (one rule, not two),
+    // today a bone plate dropping from it like a tab.
 
     Row {
       id: ribbon
@@ -58,7 +58,7 @@ Item {
           id: day
           required property var modelData
           width: ribbon.width / 14
-          height: Type.px(46)
+          height: Type.px(50)
           color: modelData.today ? Ink.bone : "transparent"
           readonly property color ink: modelData.today ? Ink.boneInk
             : modelData.weekend || modelData.past ? Ink.inkFaint : Ink.inkDim
@@ -70,8 +70,19 @@ Item {
             height: parent.height - Type.px(8)
             color: Ink.line
           }
+          // Today carries the red notch: red means now.
+          Rectangle {
+            visible: !!day.modelData.today
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: Type.px(5)
+            width: Type.px(10)
+            height: 2
+            color: Ink.seal
+          }
           Column {
             anchors.centerIn: parent
+            anchors.verticalCenterOffset: day.modelData.today ? -Type.px(2) : 0
             spacing: Type.px(4)
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
