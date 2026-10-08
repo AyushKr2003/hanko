@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
-const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
+const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
@@ -40,6 +40,8 @@ const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "key
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
+const Sk = load("core/Skin.js", ["skin", "TEMPOS", "RADII"])
+const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
 const K = load("core/Kata.js", ["PARTS", "PART_KEYS", "MAIN_PARTS", "AUTO", "TOUCHES", "DESIGNS", "DESIGN_NAMES", "DEFAULT_DESIGN",
   "resolve", "withDesign", "withBorrow", "withTouch", "surprised", "describe", "clean"])
 
@@ -1341,6 +1343,37 @@ test("kata: Style.js carries design, borrow and touches through normalize and mo
   const p = S.withPreset(n, "Sheet"); assert.equal(p.design, undefined); assert.equal(p.borrow, undefined)
   assert.equal(S.withSetting(n, "clock", "mono").design, "shoji")
   assert.equal(S.withMonitorSetting(n, "DP-2", "height", 32).monitors["DP-2"].design, "margin")
+})
+
+test("kata K2: the inks are solved by contrast in every theme", () => {
+  for (const [fg, bg] of [["#e9e1d2", "#0e0d0b"], ["#c0caf5", "#1a1b26"], ["#d4be98", "#282828"], ["#575279", "#faf4ed"], ["#100f0f", "#fffcf0"]]) {
+    const k = I.kata(fg, bg)
+    assert.ok(Math.abs(I.contrast(k.ink3, bg) - 4.6) < 0.1, `ink3 ${fg} on ${bg}: ${I.contrast(k.ink3, bg)}`)
+    assert.ok(Math.abs(I.contrast(k.ink4, bg) - 2.05) < 0.1)
+    assert.ok(I.contrast(k.ink2, bg) >= 5.5)
+    for (const c of Object.values(k)) assert.match(c, /^#[0-9a-f]{6}$/)
+  }
+})
+test("kata K2: a skin carries each design's tokens", () => {
+  const m = Sk.skin(K.resolve({ design: "margin" })), l = Sk.skin(K.resolve({ design: "leaf" })), s = Sk.skin(K.resolve({ design: "shoji" }))
+  assert.deepEqual([m.radius, l.radius, s.radius], [16, 0, 0])
+  assert.deepEqual([m.dividerWidth, l.dividerWidth, s.dividerWidth], [1, 2, 1])
+  assert.deepEqual([m.open, l.open, s.open], [240, 220, 340])
+  assert.deepEqual([m.soft, l.soft, s.soft], [30, 0, 0])
+  assert.equal(s.opacity, 0.86); assert.equal(s.travels, true); assert.equal(s.joints, true); assert.equal(s.season, "kanji")
+  assert.equal(m.gap, -1); assert.equal(l.gap, 0); assert.equal(s.gap, 6)
+  assert.equal(Sk.skin(K.resolve({ design: "shoji", borrow: { surface: "paper" } })).radius, 16)   // partners follow into the skin
+  assert.equal(Sk.skin({}).design, "classic")
+})
+test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () => {
+  const a = Br.stroke(120, 16, 4), b = Br.stroke(120, 16, 4)
+  assert.equal(a, b); assert.match(a, /^M [\d. -]+ Q [\d. -]+( L [\d. -]+)+ Z$/)
+  assert.notEqual(Br.stroke(120, 16, 5), a)
+  assert.equal(Br.kasure(30, 9, 4).length, 0); assert.equal(Br.kasure(120, 16, 4).length, 4)
+  const e = Br.enso(0.91, 118, 11, 9)
+  assert.match(e, /^M [\d. -]+( L [\d. -]+)+ Z$/)
+  assert.equal(e.split(" L ").length, 242)                 // 121 points out, 121 back
+  assert.ok(Br.enso(0, 20).length > 0 && Br.enso(2, 20).length > 0)   // clamped, never empty
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

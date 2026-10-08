@@ -33,6 +33,27 @@ QtObject {
 
   readonly property bool light: InkMath.isLight(_bg)
 
+  // Kata 型 (core/Kata.js): the tones every design's parts are drawn in.
+  readonly property var _kata: InkMath.kata(_fg, _bg)
+  readonly property color ink2: _kata.ink2
+  readonly property color ink3: _kata.ink3
+  readonly property color ink4: _kata.ink4
+  readonly property color kLine: _kata.line
+  readonly property color lift: _kata.lift
+  readonly property color paper2: _kata.paper2
+  readonly property color sunk: _kata.sunk
+  // Leaf's card: the cut edge catches light, the underside is in shade, and
+  // shadows are hard (offset, never blurred).
+  readonly property color cut: light ? Qt.rgba(1, 1, 1, 0.95) : alpha(Color.foreground, 0.11)
+  readonly property color edge: light ? alpha(Color.foreground, 0.2) : Qt.rgba(0, 0, 0, 0.7)
+  readonly property color edgeSide: alpha(Color.foreground, light ? 0.1 : 0.06)
+  readonly property color shade: light ? alpha(Color.foreground, 0.17) : Qt.rgba(0, 0, 0, 0.6)
+  readonly property color shade2: light ? alpha(Color.foreground, 0.07) : Qt.rgba(0, 0, 0, 0.3)
+  readonly property color shadeIn: light ? alpha(Color.foreground, 0.2) : Qt.rgba(0, 0, 0, 0.65)
+  // A score is a crease: a dark line with a light one under it.
+  readonly property color scoreDark: light ? alpha(Color.foreground, 0.15) : Qt.rgba(0, 0, 0, 0.6)
+  readonly property color scoreLight: light ? Qt.rgba(1, 1, 1, 0.9) : alpha(Color.foreground, 0.07)
+
   function alpha(c, a) {
     return Qt.rgba(c.r, c.g, c.b, a)
   }
