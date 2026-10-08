@@ -190,7 +190,7 @@ Rectangle {
               y: Type.px(16)
               // Folded, a group keeps only its number.
               text: root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
-              color: group.modelData.group === root.pageInfo.group ? Ink.inkDim : Ink.inkFaint
+              color: group.modelData.group === root.pageInfo.group ? Ink.bone : Ink.inkFaint
               font.family: Type.mono
               font.pixelSize: Type.label
               font.letterSpacing: Type.trackLabel
