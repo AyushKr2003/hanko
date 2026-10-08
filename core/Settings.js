@@ -19,6 +19,17 @@ var RAIL = [
                                 { key: "credits", label: "Credits", jp: "謝辞" }] }
 ]
 
+// Pages that only mean something while the Hanko design draws the bar; the
+// rail drops them (and their group, if it empties) under Margin, Leaf and Shōji.
+var HANKO_ONLY = ["typesetting", "sheets", "scroll", "presets"]
+
+function rail(hanko) {
+  if (hanko) return RAIL
+  return RAIL.map(function(g) {
+    return { group: g.group, pages: g.pages.filter(function(p) { return HANKO_ONLY.indexOf(p.key) < 0 }) }
+  }).filter(function(g) { return g.pages.length > 0 })
+}
+
 // Rail pages drawn as full plates (no title, no cards): Profile, About,
 // Credits (bar/settings/*Plate.qml).
 var PLATES = ["profile", "about", "credits"]

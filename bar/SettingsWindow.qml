@@ -21,6 +21,11 @@ FloatingWindow {
   property string query: ""
   property bool advanced: false
 
+  // The Hanko-only pages vanish under another design; fall back to Design.
+  readonly property bool hankoDesign: Typeset.kata.classic
+  readonly property var hankoOnly: ["typesetting", "sheets", "scroll", "presets"]
+  readonly property string shownPage: (!hankoDesign && hankoOnly.indexOf(page) >= 0) ? "design" : page
+
   title: "Hanko settings"
   visible: bar.settingsOpen
   color: Ink.paper
@@ -43,7 +48,7 @@ FloatingWindow {
 
     Keys.onPressed: function(event) {
       if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { Typeset.undo(); event.accepted = true }
-      else if (event.key === Qt.Key_Slash) { win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
+      else if (event.key === Qt.Key_Slash) { if (win.hankoDesign) win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
       else if (event.key === Qt.Key_Escape) {
         if (win.query !== "") win.query = ""
         else win.bar.closeSettings()
@@ -57,7 +62,7 @@ FloatingWindow {
       draft: Typeset.live
       saved: Typeset.doc
       undoCount: Typeset.history.length
-      page: win.page
+      page: win.shownPage
       query: win.query
       advanced: win.advanced
       monitors: Quickshell.screens.map(function(s) { return s.name })
@@ -105,7 +110,7 @@ FloatingWindow {
       onBackToDesign: { Typeset.draftDesign(Typeset.kata.design); Typeset.keep() }
       onPagePicked: function(key) { win.page = key }
       // A search shows Typesetting, unless you are searching the Widgets page.
-      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets") win.page = "typesetting" }
+      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets" && win.hankoDesign) win.page = "typesetting" }
       onAdvancedToggled: function(on) { win.advanced = on }
       onMonitorCleared: function(name) { Typeset.draftClearMonitor(name); Typeset.keep() }
       onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value); Typeset.keep() }

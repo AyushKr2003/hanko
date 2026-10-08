@@ -153,6 +153,7 @@ Column {
 
   // ------------------------------------------------ the mix
   Item {
+    visible: !root.classic
     width: parent.width
     height: Math.max(mix.implicitHeight, mixButtons.height) + Type.px(12)
     Text {
@@ -175,15 +176,14 @@ Column {
     }
   }
 
-  Rectangle { width: parent.width; height: 1; color: Ink.line }
+  Rectangle { visible: !root.classic; width: parent.width; height: 1; color: Ink.line }
 
   // ------------------------------------------------ borrow a part
   Text {
+    visible: !root.classic
     width: parent.width
     wrapMode: Text.Wrap
-    text: root.classic
-      ? "Hanko is drawn by its own code, so it has no parts to borrow. Pick Margin, Leaf or Shōji above, then borrow any part from the other two here."
-      : "Borrow any part from another design. The parts that go with it (corners, dividers, tempo) follow on their own."
+    text: "Borrow any part from another design. The parts that go with it (corners, dividers, tempo) follow on their own."
     color: Ink.inkMuted
     font.family: Type.text; font.pixelSize: Type.row
   }
@@ -196,10 +196,9 @@ Column {
       required property int index
       readonly property var variants: Object.keys(K.PARTS[modelData].v)
       readonly property real labelW: root.compact ? parent.width : Type.px(150)
+      visible: !root.classic
       width: root.width
       height: (root.compact ? label.height + Type.px(8) : 0) + tiles.height + Type.px(8)
-      opacity: root.classic ? 0.45 : 1
-      enabled: !root.classic
 
       Column {
         id: label
@@ -265,10 +264,11 @@ Column {
     }
   }
 
-  Rectangle { width: parent.width; height: 1; color: Ink.line }
+  Rectangle { visible: !root.classic; width: parent.width; height: 1; color: Ink.line }
 
   // ------------------------------------------------ touches
   Text {
+    visible: !root.classic
     text: "Touches"
     color: Ink.ink
     font.family: Type.display; font.pixelSize: Type.px(20); font.weight: Font.Normal
@@ -283,6 +283,7 @@ Column {
     Item {
       id: touchRow
       required property var modelData
+      visible: !root.classic
       width: root.width
       height: Math.max(touchLabel.implicitHeight, seg.height) + Type.px(10)
       Column {

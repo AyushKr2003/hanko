@@ -3,6 +3,7 @@ import QtQuick
 import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
+import "../../core/Kata.js" as K
 import "../../core/Leaf.js" as LeafJs
 import ".."
 import "../scroll"
@@ -83,11 +84,14 @@ Rectangle {
   // `/` from the window: put the cursor in the search field.
   function focusSearch() { (compact ? pageSearch : railSearch).input.forceActiveFocus() }
   readonly property int changes: Settings.changes(saved, draft, S.resolve)
+  // Typesetting, Sheets, Scroll and Presets belong to the Hanko design alone.
+  readonly property bool hanko: K.resolve(draft).classic
+  readonly property var rail: Settings.rail(hanko)
   readonly property var pageInfo: {
-    for (var g = 0; g < Settings.RAIL.length; g++)
-      for (var p = 0; p < Settings.RAIL[g].pages.length; p++)
-        if (Settings.RAIL[g].pages[p].key === root.page) return { group: Settings.RAIL[g].group, page: Settings.RAIL[g].pages[p] }
-    return { group: "01 BAR", page: Settings.RAIL[0].pages[0] }
+    for (var g = 0; g < rail.length; g++)
+      for (var p = 0; p < rail[g].pages.length; p++)
+        if (rail[g].pages[p].key === root.page) return { group: rail[g].group, page: rail[g].pages[p] }
+    return { group: "01 BAR", page: rail[0].pages[0] }
   }
 
   color: Ink.paper
@@ -170,7 +174,7 @@ Rectangle {
       Item { width: 1; height: Type.px(2) }
 
       Repeater {
-        model: Settings.RAIL
+        model: root.rail
         Column {
           id: group
           required property var modelData
