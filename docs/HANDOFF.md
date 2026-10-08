@@ -64,7 +64,7 @@ Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at
 | `docs` | Every design direction in one place: Sheet, Scroll and Typeset, each with its mockups, HTML source, README and changelog. |
 | `design`, `design2`, `design3` | Three redesign proposals asked for by the user: Margin, Leaf and Shōji (docs, images and an HTML prototype each; no QML). |
 | `revision1` | Kata 型: one engine for all three designs (`docs/kata/`). Its spec is copied onto `dev`, where it is being built (K1–K7 in ROADMAP). |
-| `revision2` | Classic polished, not redesigned (asked for: "polish it as a senior would a junior's design"). Branched from `dev`; merge it into `dev` when the user says so. |
+| `revision2` | Classic polished, not redesigned (asked for: "polish it as a senior would a junior's design"). Merged into `dev` (`d565381`); new work goes on `dev`. |
 
 The design directions, in the order they were drawn:
 
@@ -671,7 +671,7 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Inner pieces drawn on `Ink.paper` (Leaf's letter cards and tickets, the scroll's name tab) stay solid, like cards on glass. Hyprland blurs nothing behind `hanko-sheet` yet; a layer rule for it would be the next step if the user wants frosted panels.
 - Harness `kata-panels-opacity.json`, `sheet-opacity.json`; render `docs/kata/images/k9-panel-opacity.webp`.
 
-### Revision 2 · Classic polished ✅ (on `revision2`; asked for: "polish the classic as much as possible, as a senior polishes a junior's design")
+### Revision 2 · Classic polished ✅ (`d565381`, on `dev`; asked for: "polish the classic as much as possible, as a senior polishes a junior's design")
 Same design, same layout and data; only the finish of Classic's sheets changed. Images: `docs/revision2/images/r2-sheets.webp`, `r2-sheets-light.webp`.
 - **`SheetHead`**: the eyebrow's rule now ends in the sheet's folio (`No. 02`, from `Sheets.js` `no`; each sheet passes `sheet: "<key>"`); the sheet's kanji sits large and faint behind the title (Noto Serif CJK Black at 84 px, 5.5% dark / 7% light), the way the scroll already marks its sections; the title elides before it; the blurb is a standfirst in Fraunces italic 15 instead of grotesk.
 - **`GroupHead`**: the hairline under a group thickens to a 2 px `inkMuted` underscore beneath the head's own words.
