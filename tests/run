@@ -38,6 +38,10 @@ LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sh
   | grep -E '^(Error|Warning)' | grep -v -E 'bar/(BarWindow|SheetWindow|ScrollWindow|OverviewWindow).qml' || true
 LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml bar/kata/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
 
+step "motion"
+# The renders are end frames; this drives the counters with motion on.
+timeout 60 python3 tests/motion.py || status=1
+
 [[ ${1:-} == --quick ]] && exit $status
 
 step "renders"

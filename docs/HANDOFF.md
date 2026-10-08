@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after the Classic bar's polish (the user's own style.json), following Revision 2's sheets. Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
+Last updated: 2026-10-08, after the bar's game-HUD feedback (counters, meters, change highlight), following the Classic bar's polish. Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -692,6 +692,16 @@ The user runs Classic on the Hanko preset with `panels: sheets`, `indicators: ac
 - **Urgent workspace dot**: 7 px with a 1.5 px paper ring (was 5 px with a 2 px ring: a 1 px red speck at 1x).
 - **Fix**: `Marks.nameWidth` carried the tray's width since the indicator stamps landed (`c15ddf9`), so the bar kept a permanent blank as wide as the tray left of the marks and pushed what is playing out early. The tray's share is back in `fullWidth`, where folding it is decided.
 
+### Bar feedback, after game HUDs ✅ (asked for: "research how games make this kind of experience and polish it further")
+What was taken from game UI (Ghost of Tsushima's minimal HUD, Persona and Metaphor's menus, HUD practice: show on change, juice, never colour alone) and fitted to Hanko's motion rules (paper, not glow; everything under 320 ms; `Motion.still` cuts it all):
+- **Counters run up** (`bar/RollText.qml`): a whole-number reading rolls through the numbers to its new value (120 ms + 6 ms a step, ≤ 320 ms, OutCubic); anything else fades through as `FadeText` did. Used for the status values in cells mode.
+- **Meters fill tick by tick**: each `Ticks` tick changes 15 ms after its neighbour, starting from where the last fill ended (≤ 150 ms of stagger + 80 ms).
+- **Show on change**: a reading that changes inks its label (VOL 音) up to full ink for 900 ms and settles back; hovering does the same, with the plate.
+- **Press**: the plate deepens and the cell's text sinks a pixel while held.
+- **Needs you, twice**: a red reading (low battery, offline) also breathes slowly (opacity 1 ↔ 0.5, 1.1 s each way), so it isn't told by colour alone.
+- **Fix**: `SignalBars` anchored each bar to a parent a Repeater hadn't given it yet (a warning per bar, on every bar build); they are placed by `y` now.
+- **Test**: `tests/motion.py` drives `tests/harness/scenes/MotionProbe.qml` with motion on (renders are end frames) and checks that 40 → 62 passes through the numbers, lands on 62, a word fades through, and nothing warns. `tests/run` runs it, `--quick` too.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -779,6 +789,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 26. **Kata letters (K6):** a letter swiped or torn away is only set aside for the session (Omarchy's history has no per-letter delete for bars); it returns after a shell restart until Clear all.
 27. **Revision 2 (Classic sheets):** check on hardware that the watermark kanji stays faint enough on a busy theme at 1x, that the sheet's shadow reads on wallpaper without darkening the bar, and the needle's ease on a fast scroll. The Classic bar and the handscroll were left as they were.
 28. **Classic bar polish:** check the hover plate on a touchpad (it follows `containsMouse`, which can stick when the pointer leaves the bar window; see omacale's notes on hover), the ink seals on a light theme, and that Fraunces's `tnum` really applies in the shell's Qt (if not, the clock still renders, just proportional).
+29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
 
 ## 13. QML pitfalls already hit
 

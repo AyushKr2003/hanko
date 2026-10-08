@@ -139,6 +139,15 @@ Item {
     property var r: ({})
     readonly property color valueInk: r.needsYou ? Ink.seal : Ink.ink
     readonly property bool quantity: r.level >= 0
+    // Lit: under the pointer, or just changed. A changed reading's label
+    // inks up for a moment and settles back (show on change, as a game's
+    // HUD does), so a glance tells you what moved.
+    readonly property string val: String(r.value === undefined ? "" : r.value) + "|" + r.level
+    property bool fresh: false
+    onValChanged: if (Motion.live) { fresh = true; settle.restart() }
+    Timer { id: settle; interval: 900; onTriggered: reading.fresh = false }
+    readonly property bool lit: readingHover.containsMouse || fresh
+    readonly property color labelInk: lit ? Ink.ink : Ink.inkMuted
 
     implicitWidth: root.mode === "cells" ? (root.compact ? cellLine.implicitWidth : cell.implicitWidth)
       : root.mode === "glyphs" ? glyphRow.implicitWidth : numeral.implicitWidth
@@ -153,7 +162,7 @@ Item {
       anchors.topMargin: Type.px(5)
       anchors.bottomMargin: Type.px(5)
       radius: 3
-      color: Ink.alpha(Ink.bone, Ink.light ? 0.07 : 0.055)
+      color: Ink.alpha(Ink.bone, readingHover.pressed ? (Ink.light ? 0.12 : 0.1) : (Ink.light ? 0.07 : 0.055))
       opacity: readingHover.containsMouse ? 1 : 0
       Behavior on opacity { enabled: !Motion.still; NumberAnimation { duration: 120 } }
     }
@@ -175,14 +184,15 @@ Item {
       id: cell
       visible: root.mode === "cells" && !root.compact
       anchors.verticalCenter: parent.verticalCenter
-      anchors.verticalCenterOffset: -1
+      anchors.verticalCenterOffset: readingHover.pressed ? 0 : -1
       spacing: 1
 
       Row {
         spacing: Type.px(6)
         Text {
           text: reading.r.label
-          color: Ink.inkMuted
+          color: reading.labelInk
+          Behavior on color { enabled: Motion.live; ColorAnimation { duration: 200 } }
           font.family: Type.mono
           font.pixelSize: Type.label
           font.weight: Type.labelWeight
@@ -190,7 +200,8 @@ Item {
         }
         Text {
           text: reading.r.jp
-          color: Ink.inkMuted
+          color: reading.labelInk
+          Behavior on color { enabled: Motion.live; ColorAnimation { duration: 200 } }
           font.family: Type.jp
           font.pixelSize: Type.gloss
         }
@@ -301,12 +312,22 @@ Item {
     property color ink: Ink.ink
     spacing: Type.px(5)
     BtValue { anchors.verticalCenter: big.verticalCenter; r: value.r }
-    FadeText {
+    RollText {
       id: big
       visible: !value.r.bt
       width: visible ? implicitWidth : 0
-      text: value.r.value
+      figure: String(value.r.value === undefined ? "" : value.r.value)
       color: value.ink
+      // Something that needs you (low battery, offline) breathes slowly, so
+      // it is told by more than its red: a game's low-health pulse, kept to
+      // a slow ebb of the ink, never a flash.
+      SequentialAnimation on opacity {
+        running: !!value.r.needsYou && Motion.live
+        loops: Animation.Infinite
+        onRunningChanged: if (!running) big.opacity = 1
+        NumberAnimation { to: 0.5; duration: 1100; easing.type: Easing.InOutSine }
+        NumberAnimation { to: 1; duration: 1100; easing.type: Easing.InOutSine }
+      }
       font.family: Type.text
       font.pixelSize: Type.value
       font.weight: Type.valueWeight
@@ -461,15 +482,28 @@ Item {
     property int count: 10
     property real level: 0
     readonly property int lit: StatusJs.ticks(level, count)
+    // Where the last fill ended, so the cascade starts from there.
+    property int from: 0
+    onLitChanged: Qt.callLater(function() { ticks.from = ticks.lit })
     spacing: 2
     Repeater {
       model: ticks.count
       Rectangle {
+        id: tick
         required property int index
         width: 2
         height: Type.px(9)
         color: index < ticks.lit ? Ink.ink : Ink.inkFaint
         opacity: index < ticks.lit ? 1 : 0.7
+        // A meter fills (or drains) tick by tick, like a game's gauge,
+        // the nearest tick first; the whole run stays under 240 ms.
+        Behavior on color {
+          enabled: Motion.live
+          SequentialAnimation {
+            PauseAnimation { duration: Math.min(150, 15 * Math.abs(tick.index - ticks.from)) }
+            ColorAnimation { duration: 80 }
+          }
+        }
       }
     }
   }
@@ -483,7 +517,9 @@ Item {
       model: 4
       Rectangle {
         required property int index
-        anchors.bottom: parent.bottom
+        // Bottom-aligned by y, not anchors: a Repeater's delegate has no
+        // parent yet when its anchors are first read (a warning per bar).
+        y: Type.px(9) - height
         width: 3
         height: Type.px(3 + index * 2)
         color: index < sig.lit ? Ink.ink : Ink.inkFaint
