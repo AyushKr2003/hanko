@@ -40,6 +40,8 @@ const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "key
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
+const K = load("core/Kata.js", ["PARTS", "PART_KEYS", "MAIN_PARTS", "AUTO", "TOUCHES", "DESIGNS", "DESIGN_NAMES", "DEFAULT_DESIGN",
+  "resolve", "withDesign", "withBorrow", "withTouch", "surprised", "describe", "clean"])
 
 let passed = 0
 function test(name, fn) {
@@ -1256,6 +1258,89 @@ test("overview layout is a setting beside the counted ones", () => {
   assert.equal(S.withPreset(d, "Quiet").overview, "dynamic")
   assert.equal(S.withSetting({}, "overview", "tiles"), null)
   assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic"])
+})
+
+// ── Kata 型: one engine for every design ──────────────────────────────
+test("kata: nine parts, three partners, three touches; every design resolves cleanly", () => {
+  assert.equal(K.MAIN_PARTS.length, 9)
+  assert.equal(K.PART_KEYS.length, 12)
+  assert.deepEqual(K.DESIGN_NAMES, ["classic", "margin", "leaf", "shoji"])
+  for (const d of ["margin", "leaf", "shoji"]) {
+    const s = K.resolve({ design: d })
+    assert.deepEqual(s.warnings, [])
+    assert.deepEqual(s.borrowed, [])
+    for (const k of K.PART_KEYS) assert.ok(K.PARTS[k].v[s[k]], `${d}.${k} = ${s[k]}`)
+  }
+})
+test("kata: Classic is the default, so today's style.json is unchanged", () => {
+  const s = K.resolve({ preset: "Sheet", edits: { clock: "mono" } })
+  assert.equal(s.design, "classic"); assert.equal(s.classic, true); assert.deepEqual(s.warnings, [])
+  assert.equal(K.DEFAULT_DESIGN, "classic")
+})
+test("kata: partners follow the part they belong with, unless set", () => {
+  assert.equal(K.resolve({ design: "leaf" }).corner, "cut")
+  assert.equal(K.resolve({ design: "shoji" }).tempo, "johakyu")
+  const mix = K.resolve({ design: "shoji", borrow: { surface: "paper", arrive: "fold" } })
+  assert.deepEqual([mix.corner, mix.divider, mix.tempo], ["soft", "hairline", "spring"])
+  const hand = K.resolve({ design: "leaf", borrow: { corner: "soft" } })
+  assert.deepEqual([hand.corner, hand.divider], ["soft", "score"])
+  assert.deepEqual(K.resolve({ design: "leaf", borrow: { corner: "cut" } }).borrowed, [])   // what auto gives anyway
+})
+test("kata: unknown designs, parts and values fall back with a warning", () => {
+  const s = K.resolve({ design: "nope", borrow: { slider: "laser", wings: "on" }, touches: { season: "always" } })
+  assert.equal(s.design, "classic"); assert.equal(s.slider, "ruler"); assert.equal(s.touches.season, "off")
+  assert.equal(s.warnings.length, 4)
+  assert.equal(K.resolve({ design: "Shōji" }).design, "shoji")
+})
+test("kata: a monitor's own design and borrows win on that monitor", () => {
+  const doc = { design: "shoji", borrow: { slider: "ruler" }, monitors: { "DP-2": { design: "margin", borrow: { ring: "enso" } } } }
+  const here = K.resolve(doc), there = K.resolve(doc, "DP-2")
+  assert.equal(here.design, "shoji"); assert.equal(here.slider, "ruler")
+  assert.equal(there.design, "margin"); assert.equal(there.ring, "enso"); assert.equal(there.surface, "paper")
+})
+test("kata: picking a design drops borrows, keeps touches; Classic leaves no key", () => {
+  let d = K.withTouch(K.withBorrow({ design: "shoji" }, "slider", "ruler"), "season", "english")
+  d = K.withDesign(d, "leaf")
+  assert.equal(d.design, "leaf"); assert.equal(d.borrow, undefined); assert.equal(d.touches.season, "english")
+  assert.equal(K.withDesign(d, "classic").design, undefined)
+  assert.equal(K.withDesign(d, "bauhaus"), null)
+})
+test("kata: borrowing a design's own part, or auto, gives it back; bad values refuse", () => {
+  const d = K.withBorrow({ design: "leaf" }, "slider", "brush")
+  assert.equal(d.borrow.slider, "brush")
+  assert.equal(K.withBorrow(d, "slider", "auto").borrow, undefined)
+  assert.equal(K.withBorrow(d, "slider", "block").borrow, undefined)
+  assert.equal(K.withBorrow(d, "slider", "laser"), null)
+  assert.equal(K.withTouch({ design: "shoji" }, "season", "kanji").touches, undefined)   // Shōji's own
+  assert.equal(K.withTouch({}, "grain", "velvet"), null)
+})
+test("kata: describe names what was borrowed", () => {
+  assert.equal(K.describe(K.resolve({ design: "shoji" })), "Shōji")
+  assert.equal(K.describe(K.resolve({ design: "shoji", borrow: { slider: "ruler", seal: "deboss" } })), "Shōji with Margin’s slider, Leaf’s seal")
+  assert.equal(K.describe(K.resolve({})), "Classic")
+})
+test("kata: a surprise is always a clean mix of two or three borrowed parts", () => {
+  let seed = 7
+  const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+  for (let i = 0; i < 400; i++) {
+    const s = K.resolve(K.surprised({ touches: { grain: "toothy" } }, rng))
+    assert.deepEqual(s.warnings, []); assert.notEqual(s.design, "classic")
+    assert.ok(s.borrowed.length >= 2 && s.borrowed.length <= 3, s.borrowed.join())
+    assert.equal(s.touches.grain, "toothy")
+  }
+})
+test("kata: Style.js carries design, borrow and touches through normalize and monitors", () => {
+  const doc = { preset: "Quiet", design: "shoji", borrow: { slider: "ruler" }, touches: { season: "english" },
+    monitors: { "DP-2": { height: 36, design: "margin" } } }
+  const n = S.normalize(doc, [])
+  assert.equal(n.design, "shoji"); assert.deepEqual(n.borrow, { slider: "ruler" }); assert.deepEqual(n.touches, { season: "english" })
+  assert.deepEqual(n.monitors["DP-2"], { height: 36, design: "margin" })
+  const w = []; S.normalize(doc, w); assert.deepEqual(w, [])
+  assert.equal(S.resolve(doc, "DP-2").height, 36); assert.equal(S.resolve(doc, "DP-2").design, undefined)
+  assert.equal(JSON.stringify(S.normalize({})).includes("design"), false)   // nothing new in an untouched file
+  const p = S.withPreset(n, "Sheet"); assert.equal(p.design, undefined); assert.equal(p.borrow, undefined)
+  assert.equal(S.withSetting(n, "clock", "mono").design, "shoji")
+  assert.equal(S.withMonitorSetting(n, "DP-2", "height", 32).monitors["DP-2"].design, "margin")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

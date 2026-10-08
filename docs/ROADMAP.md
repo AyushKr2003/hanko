@@ -107,6 +107,16 @@ The facts below come from the Omarchy repo (`manual/32-shell-plugins.md`, `docs/
 >>>>>>> claude/hanko-plugin-zzm827
 - ⬜ Release, left to the user after testing on hardware: a README install guide, the manifest version, a CHANGELOG entry, a listing on omarchyplugins.com, and merging into `main`.
 
+### Kata 型 · one engine for every design (asked for after the three redesigns)
+Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji become presets over nine parts, three partners and three touches; Classic (today's Typeset bar) stays the default until the Kata bar is complete. Shōji's variants are built first.
+- ✅ **K1 · Kata.js**: the pure resolver (`core/Kata.js`), `design` / `borrow` / `touches` in `style.json` (top level and per monitor; `Style.js` carries them through), `Typeset.kata` / `kataFor()` / `setDesign` / `borrow` / `touch` / `surprise` (and draft twins), IPC `designGet | design | designDescribe | borrow | touch`, CLI `hanko design | borrow | touch`. Nothing on screen changes yet.
+- ⬜ **K2 · Skin and tokens**: `core/Skin.qml` (resolved parts → radii, divider kind, tempo curves, figure axes), Leaf's material and Shōji's washi tokens in `Ink.qml`, grain and washi tiles.
+- ⬜ **K3 · Part facades with Shōji's variants**: `Surface`, `Divider`, `PointerMark`, `Selection`, `Slider`, `Ring`, `Seal`, `UnreadMark`, `Sign` in `bar/parts/`, a harness gallery.
+- ⬜ **K4 · The Kata bar**: `BarSurface` draws the Kata bar when the design is not Classic.
+- ⬜ **K5 · The one-panel window and its panels**: Sound, Time, Network, Power, Letters on the facades.
+- ⬜ **K6 · Margin's and Leaf's variants**, part by part.
+- ⬜ **K7 · Settings › Design** (four designs, nine borrow rows, touches, Surprise, Undo) and the harness grid of panels × designs.
+
 ## Dev loop
 
 ```sh

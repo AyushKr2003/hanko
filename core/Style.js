@@ -194,8 +194,31 @@ function normalizeGlyph(glyph) {
   return Array.from(s)[0]
 }
 
+// Kata's keys (core/Kata.js: design, borrow, touches) ride along untouched,
+// at the top and in each monitor's overrides; Kata.js cleans and resolves them.
+var KATA_KEYS = ["design", "borrow", "touches"]
+
+function kataOf(obj) {
+  var out = {}
+  if (!obj || typeof obj !== "object") return out
+  for (var i = 0; i < KATA_KEYS.length; i++) {
+    var k = KATA_KEYS[i], v = obj[k]
+    if (v === undefined || v === null) continue
+    out[k] = typeof v === "object" ? JSON.parse(JSON.stringify(v)) : String(v)
+  }
+  return out
+}
+
+function withoutKata(obj) {
+  var out = {}
+  if (!obj || typeof obj !== "object") return out
+  for (var k in obj) if (KATA_KEYS.indexOf(k) < 0) out[k] = obj[k]
+  return out
+}
+
 // A style document as stored in style.json:
-//   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, hidden: [...], monitors: { "<name>": {...} } }
+//   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, hidden: [...], monitors: { "<name>": {...} },
+//     design, borrow, touches }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
@@ -206,8 +229,13 @@ function normalize(doc, warnings) {
   }
   var monitors = {}
   if (doc.monitors && typeof doc.monitors === "object")
-    for (var name in doc.monitors) monitors[name] = cleanEdits(doc.monitors[name], warnings)
-  return {
+    for (var name in doc.monitors) {
+      var own = cleanEdits(withoutKata(doc.monitors[name]), warnings)
+      var kata = kataOf(doc.monitors[name])
+      for (var kk in kata) own[kk] = kata[kk]
+      monitors[name] = own
+    }
+  var out = {
     preset: preset,
     edits: cleanEdits(doc.edits, warnings),
     sealGlyph: normalizeGlyph(doc.sealGlyph),
@@ -217,6 +245,9 @@ function normalize(doc, warnings) {
     hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
   }
+  var top = kataOf(doc)
+  for (var t in top) out[t] = top[t]
+  return out
 }
 
 // Preset, then edits, then the named monitor's overrides.
@@ -225,7 +256,7 @@ function resolve(doc, monitor) {
   var style = copyOf(PRESETS[d.preset])
   for (var k in d.edits) style[k] = d.edits[k]
   var m = monitor && d.monitors[monitor]
-  if (m) for (var j in m) style[j] = m[j]
+  if (m) for (var j in m) if (KATA_KEYS.indexOf(j) < 0) style[j] = m[j]
   style.sealGlyph = d.sealGlyph
   style.motion = d.motion
   style.typeSize = d.typeSize
@@ -307,6 +338,9 @@ function withPreset(doc, name) {
   var d = normalize(doc)
   d.preset = preset
   d.edits = {}
+  // A Typeset preset is the Classic design: picking one leaves a Kata design.
+  delete d.design
+  delete d.borrow
   return d
 }
 

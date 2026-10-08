@@ -13,6 +13,12 @@
 #   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
+#   hanko design [NAME]      show the design, or pick one: classic | margin |
+#                            leaf | shoji | surprise (Kata, docs/kata)
+#   hanko borrow PART VALUE  take one part from another design (e.g. slider
+#                            ruler); VALUE auto gives it back
+#   hanko touch KEY VALUE    season off|kanji|english, numerals arabic|kanji,
+#                            grain smooth|fine|toothy
 #   hanko hide PART          take one part off the bar (e.g. tray, volume,
 #                            indicator:night, tray:nm-applet, hosted:omarchy.weather)
 #   hanko show PART          put it back
@@ -135,6 +141,17 @@ cmd_style() {
   esac
 }
 
+cmd_design() {
+  if (( $# == 0 )); then
+    need jq
+    ipc designGet | jq -r '"\(.name)\n", (.parts | to_entries[] | "  \(.key)\t\(.value)"), "  touches\t\(.touches | to_entries | map("\(.key)=\(.value)") | join(" "))"' | column -t -s $'\t'
+    return
+  fi
+  (( $# == 1 )) || fail "usage: hanko design [classic|margin|leaf|shoji|surprise]"
+  [[ $(ipc design "$1") == ok ]] || fail "unknown design '$1' (classic, margin, leaf, shoji or surprise)"
+  ipc designDescribe
+}
+
 # Omarchy reads menu additions from ~/.config/omarchy/extensions/omarchy-menu.jsonc
 # (a JSONC object of entries). Hanko's entry is one line carrying a marker,
 # put right after the opening brace so it never depends on the entry before
@@ -188,12 +205,20 @@ case "${1:-}" in
   uninstall) cmd_uninstall ;;
   style) shift; cmd_style "$@" ;;
   settings) ipc settings >/dev/null ;;
+  design) shift; cmd_design "$@" ;;
+  borrow)
+    (( $# == 3 )) || fail "usage: hanko borrow <part> <variant|auto> (hanko design lists the parts)"
+    [[ $(ipc borrow "$2" "$3") == ok ]] || fail "$2 does not take '$3'"
+    ipc designDescribe ;;
+  touch)
+    (( $# == 3 )) || fail "usage: hanko touch <season|numerals|grain> <value>"
+    [[ $(ipc touch "$2" "$3") == ok ]] || fail "$2 does not take '$3'" ;;
   hide|show)
     (( $# == 2 )) || fail "usage: hanko $1 <part> (see the Widgets page in hanko settings)"
     [[ $(ipc "$1" "$2") == ok ]] || fail "'$2' is not a part Hanko knows" ;;
   scroll) ipc scroll >/dev/null ;;
   menu) shift; cmd_menu "$@" ;;
   doctor) cmd_doctor ;;
-  -h|--help|"") sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+  -h|--help|"") sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;
 esac

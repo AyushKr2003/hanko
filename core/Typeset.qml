@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "Style.js" as S
+import "Kata.js" as K
 
 // The live style. Reads ~/.config/hanko/style.json (watched, so the CLI and
 // hand edits apply at once), resolves it with Style.js, and writes changes
@@ -15,6 +16,10 @@ import "Style.js" as S
 //   Typeset.draft              the settings window's unsaved document: while
 //                              it is set the bar shows it; save() keeps it,
 //                              revert() drops it
+//   Typeset.kata               the Kata design for the default monitor
+//                              (core/Kata.js): { design, classic, <part>, touches }
+//   Typeset.kataFor(name)      with that monitor's overrides
+//   Typeset.setDesign(name), borrow(part, value), touch(key, value), surprise()
 QtObject {
   id: root
 
@@ -33,6 +38,14 @@ QtObject {
   property var draft: null
   readonly property var live: draft || doc
   readonly property var current: S.resolve(live)
+
+  // Kata 型: which design draws the bar. Classic (the default) is the
+  // Typeset bar above; Margin, Leaf and Shōji are presets over Kata's parts.
+  readonly property var designNames: K.DESIGN_NAMES
+  readonly property var kataParts: K.PARTS
+  readonly property var kata: K.resolve(live)
+  function kataFor(screenName) { return K.resolve(live, String(screenName || "")) }
+  function describeDesign(style) { return K.describe(style || kata) }
 
   // True when position comes from Hanko rather than Omarchy's bar.position.
   readonly property bool ownsPosition: live.edits.position !== undefined
@@ -64,7 +77,18 @@ QtObject {
   // Back to the preset the draft is on, edits dropped (monitors, the seal
   // glyph, motion and hidden parts kept, as reset() does).
   function draftReset() {
-    draft = S.normalize({ preset: live.preset, sealGlyph: live.sealGlyph, motion: live.motion, typeSize: live.typeSize, overview: live.overview, hidden: live.hidden, monitors: live.monitors })
+    draft = S.normalize(_keep(live, { preset: live.preset }))
+  }
+  // Kata's edits, in the draft and saved at once. Each returns false when
+  // the value is not one the key takes.
+  function draftDesign(name) { return _draftWith(K.withDesign(live, name)) }
+  function draftBorrow(part, value) { return _draftWith(K.withBorrow(live, part, value)) }
+  function draftTouch(key, value) { return _draftWith(K.withTouch(live, key, value)) }
+  function draftSurprise() { draft = S.normalize(K.surprised(live, Math.random)) }
+  function _draftWith(next) {
+    if (!next) return false
+    draft = S.normalize(next)
+    return true
   }
   function draftClearMonitor(name) {
     var next = S.normalize(live)
@@ -109,7 +133,25 @@ QtObject {
   }
 
   function reset() {
-    _commit(S.normalize({ sealGlyph: doc.sealGlyph, motion: doc.motion, typeSize: doc.typeSize, overview: doc.overview, hidden: doc.hidden, monitors: doc.monitors }))
+    _commit(S.normalize(_keep(doc, {})))
+  }
+
+  // What a reset keeps: the seal glyph, motion, type size, overview, hidden
+  // parts, monitors, and the Kata design (a reset is about Typeset edits).
+  function _keep(from, into) {
+    var keys = ["sealGlyph", "motion", "typeSize", "overview", "hidden", "monitors", "design", "borrow", "touches"]
+    for (var i = 0; i < keys.length; i++) if (from[keys[i]] !== undefined) into[keys[i]] = from[keys[i]]
+    return into
+  }
+
+  function setDesign(name) { return _commitWith(K.withDesign(doc, name)) }
+  function borrow(part, value) { return _commitWith(K.withBorrow(doc, part, value)) }
+  function touch(key, value) { return _commitWith(K.withTouch(doc, key, value)) }
+  function surprise() { _commit(S.normalize(K.surprised(doc, Math.random))) }
+  function _commitWith(next) {
+    if (!next) return false
+    _commit(S.normalize(next))
+    return true
   }
 
   function setSealGlyph(glyph) {
@@ -144,6 +186,7 @@ QtObject {
       }
     }
     var next = S.normalize(parsed, w)
+    w = w.concat(K.resolve(next).warnings)
     warnings = w
     for (var i = 0; i < w.length; i++) console.warn("hanko: " + w[i])
     if (JSON.stringify(next) !== JSON.stringify(doc)) doc = next

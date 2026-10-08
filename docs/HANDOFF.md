@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-07, after the dynamic (Ryoku) overview and its setting (on `claude/hanko-plugin-zzm827`, fast-forwarded from `dev`).
+Last updated: 2026-10-08, after Kata K1 (the design resolver; see §9 and `docs/kata/`).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -57,6 +57,8 @@ Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at
 | `main` | The released state. Updated only when the user asks (by merging `dev`). |
 | **`dev`** | **All current work.** The active branch. |
 | `docs` | Every design direction in one place: Sheet, Scroll and Typeset, each with its mockups, HTML source, README and changelog. |
+| `design`, `design2`, `design3` | Three redesign proposals asked for by the user: Margin, Leaf and Shōji (docs, images and an HTML prototype each; no QML). |
+| `revision1` | Kata 型: one engine for all three designs (`docs/kata/`). Its spec is copied onto `dev`, where it is being built (K1–K7 in ROADMAP). |
 
 The design directions, in the order they were drawn:
 
@@ -301,6 +303,10 @@ core/
                          valueWeight, valueAxes, axes(size, wght) for Fraunces
   Motion.qml (singleton) every timing and curve (Scroll mockup 05); still (motion: still
                          or Omarchy's reduced motion), live (awake and not still), ms()
+  Kata.js                Kata 型 (docs/kata): PARTS (9 main + 3 partners), AUTO, TOUCHES,
+                         DESIGNS (margin, leaf, shoji), DESIGN_NAMES (+ classic, the
+                         default), clean, resolve(doc, monitor), withDesign, withBorrow,
+                         withTouch, surprised(doc, rng), describe(style)
   Typeset.qml (singleton) style.json FileView + watch; doc, warnings, current,
                          ownsPosition; styleFor(monitor), set, applyPreset, reset,
                          setSealGlyph, shuffle, serialized; debounced save (200 ms)
@@ -355,7 +361,7 @@ docs/                    ROADMAP, COMPONENTS (spec), DESIGN, HANDOFF (this), his
                          mockups/{sheet,scroll,typeset}
 ```
 
-**IPC target `hanko`** (Bar.qml): `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings`. All typed, all return strings.
+**IPC target `hanko`** (Bar.qml): `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings`, and Kata's `designGet`, `design(name)` (`classic | margin | leaf | shoji | surprise`), `designDescribe`, `borrow(part, value)`, `touch(key, value)`. All typed, all return strings.
 
 **Data flow:** services (live Quickshell data) → `BarWindow` (per screen, picks `Typeset.styleFor(screen.name)`) → `BarSurface` props (plain JS objects) → components. Components never import services. This is what lets the harness render any state, and it is the pattern to keep for every new part.
 
@@ -579,6 +585,14 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Shadow, `shadow_style` at the top of the file. Default `paper`: black, range 14, power 3, offset 3 5, 55% focused and 25% unfocused, so windows read as sheets on a desk and the focused one sits higher. `print`: hard black offset (`sharp`, range 0, offset 4 4, 85%), focused only. `seal`: the same in seal red. `none`: hairlines only. The first version shipped `seal`; the user asked for black, and red under every focused window spent the colour that means "you". Hyprland multiplies the shadow by window opacity. On a dark wallpaper the black shadow mostly disappears. Checked on Hyprland 0.56.2: `hyprctl configerrors` clean, and `paper` and `seal` checked on screen.
 - Groupbar: no gradients, mono 10, 1 px indicator, ink / line / muted text. Animations from `core/Motion.qml` (speed = ms / 100): windows in 180 ms on the unroll curve with `popin 96%`, out 140 ms, moves and workspaces 260 ms on the pan curve (workspaces `slide`), border and fades 140 ms; `motion: still` sets `animations.enabled = false`.
 - Per-monitor overrides are ignored (Hyprland's decoration is global). The shell does not push changes: a style or theme change reaches the windows on the next `hyprctl reload` (`omarchy theme set` runs one).
+
+### Kata 型 K1 · the design resolver ✅ (asked for by the user after the three redesigns)
+- **The idea** (`docs/kata/README.md`): Margin, Leaf and Shōji share the skeleton and differ in a dozen parts, so a design is a preset over parts. Settings stay three levels: pick a design, borrow a part, or write `style.json`.
+- **`core/Kata.js`** (pure; 10 tests): `PARTS` (`surface arrive pointer select slider ring seal unread sign`, partners `corner divider tempo` with `follows`), `AUTO`, `TOUCHES` (`season numerals grain`), `DESIGNS`, `DESIGN_NAMES` (`classic` first; `DEFAULT_DESIGN = classic`, so nothing changes for existing users), `clean` (drops unknown designs/parts/values with warnings; `Shōji` reads as `shoji`), `resolve(doc, monitor)` → `{ design, classic, <part>, touches, borrowed, warnings }` (monitor's design wins on that monitor; borrows and touches merge), `withDesign` (drops borrows, keeps touches; Classic removes the key), `withBorrow` (own part or `auto` gives it back), `withTouch`, `surprised(doc, rng)`, `describe(style)` ("Shōji with Margin's slider, Leaf's seal", parts in `PART_KEYS` order).
+- **`core/Style.js`**: `KATA_KEYS`; `normalize` carries `design`, `borrow`, `touches` (top level and inside `monitors[name]`, kept out of `cleanEdits`, so no warnings); `resolve` doesn't copy them into the Typeset style; `withPreset` returns to Classic (a Typeset preset is the Classic design).
+- **`core/Typeset.qml`**: `kata`, `kataFor(name)`, `designNames`, `kataParts`, `describeDesign()`, `setDesign / borrow / touch / surprise` and `draftDesign / draftBorrow / draftTouch / draftSurprise`; `reset()` and `draftReset()` keep the Kata keys (`_keep`); `_load` adds Kata's warnings.
+- **IPC / CLI**: see §7; `scripts/hanko design [name]`, `hanko borrow <part> <value|auto>`, `hanko touch <key> <value>`.
+- Nothing on screen changes yet: the bar still draws the Classic Typeset bar for every design until K4. Unit tests: 107.
 
 ## 10. Instructions for the remaining phase (10)
 
