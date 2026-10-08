@@ -175,7 +175,7 @@ Item {
         radius: 2
         color: "transparent"
         border.width: 1
-        border.color: lc.on ? Ink.ink : Ink.line
+        border.color: lc.on ? Ink.ink : Ink.lineSoft
 
         Repeater {
           model: lc.ws ? lc.ws.windows : []
@@ -187,9 +187,10 @@ Item {
             width: Math.max(1, Math.round(modelData.w * (frame.width - 2)) - 2)
             height: Math.max(1, Math.round(modelData.h * (frame.height - 2)) - 2)
             radius: 1
-            color: live && modelData.focused ? Ink.ink : live ? Ink.alpha(Ink.ink, 0.22) : Ink.lineSoft
-            border.width: 1
-            border.color: live && modelData.focused ? Ink.ink : live ? Ink.inkMuted : Ink.line
+            // Windows are solid tiles, not outlined boxes: the page you are
+            // on in ink, the others a faint print of their layout.
+            color: live && modelData.focused ? Ink.ink : live ? Ink.alpha(Ink.ink, 0.38) : Ink.alpha(Ink.ink, 0.16)
+            border.width: 0
           }
         }
       }

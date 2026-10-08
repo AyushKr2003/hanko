@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after the bar's game-HUD feedback (counters, meters, change highlight), following the Classic bar's polish. Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
+Last updated: 2026-10-08, after the bar's natural pass (ink-stroke rodrule, grouped readings, tile workspaces), following its game-HUD feedback. Kata K1–K7 are done; next is testing it all on hardware (§12) and whatever the user asks for.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -701,6 +701,13 @@ What was taken from game UI (Ghost of Tsushima's minimal HUD, Persona and Metaph
 - **Needs you, twice**: a red reading (low battery, offline) also breathes slowly (opacity 1 ↔ 0.5, 1.1 s each way), so it isn't told by colour alone.
 - **Fix**: `SignalBars` anchored each bar to a parent a Repeater hadn't given it yet (a warning per bar, on every bar build); they are placed by `y` now.
 - **Test**: `tests/motion.py` drives `tests/harness/scenes/MotionProbe.qml` with motion on (renders are end frames) and checks that 40 → 62 passes through the numbers, lands on 62, a word fades through, and nothing warns. `tests/run` runs it, `--quick` too.
+
+### Bar, a more natural pass ✅ (asked for: "more research, make it look more natural and premium; position and style may change")
+Research behind it: NN/g on grouping by proximity instead of borders, Japanese *ma* and *kanso* in UI (space as an element, keep only what serves), menu-bar and ricing practice (one accent, reduced chrome), and game HUDs (show on demand). Changes, all Classic:
+- **Rodrule as ink** (`Edge.qml`): the hours to come are a 1 px hairline with 6% fades at both ends (no end caps on the rodrule; `rod` keeps its roller and caps); the spent part is a 2 px stroke going from nothing at midnight to `inkDim` at the now-notch; ticks ahead of now are `line`, behind it `lineStrong`; the grip appears only on hover or drag (still always on `rod`).
+- **Readings as one group** (`StatusRow`): in `cells` mode the hairlines between NET, BT, VOL, BAT are gone and a 22 px gap holds them (the zones' dividers stay, per `rules`). The BT cell's charge meter is half length.
+- **Workspace tiles** (`Workspaces` layout): windows are solid tiles (focused ink, others 38% on the active page, 16% elsewhere) without outlines; an inactive page's frame is `lineSoft`.
+- Harness `my-bar-light.json`; images `docs/revision2/images/r2-bar.webp`, `r2-bar-light.webp`.
 
 ## 10. Instructions for the remaining phase (10)
 

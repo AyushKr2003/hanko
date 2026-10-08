@@ -109,7 +109,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (印 力 
 
 | Option | What it does | From |
 |---|---|---|
-| **`cells`** (default) | `NET 接続 / VOL 音 / BAT 電` label-over-value cells ruled off by hairlines. | Sheet |
+| **`cells`** (default) | `NET 接続 / VOL 音 / BAT 電` label-over-value cells, held together as one group by space alone (the zones keep their rules); a Bluetooth device's charge is a half-length meter. | Sheet |
 | `glyphs` | A boxed kanji is the icon and the number is the state. Solid red when it needs you; dashed when off. | Scroll |
 | `numerals` | Mono labels and numbers on one line (`VOL 62 · NET Kumo · BAT 91%`). | New |
 
@@ -171,7 +171,7 @@ The name is in the same ink as the icon styles (red only for a recording or live
 | `hairline` | A single hairline. | Sheet |
 | `dayrule` | A 24-hour ruler: hour ticks, longer every six hours, the spent part of the day brighter, a red now-notch. | Sheet |
 | `rod` | The scroll's roller with end caps and a centre grip. Hover raises the grip; drag down to unroll. | Scroll |
-| **`rodrule`** (default) | The roller carries the day: rod, ticks, spent part and now-notch together. | New |
+| **`rodrule`** (default) | The roller carries the day: the hours to come a hairline that thins out at both ends, the spent part one stroke of ink darkening toward the red now-notch, ticks lighter ahead of now, and the grip shown only when the pointer reaches for it. | New |
 
 #### Dividers `rules` 罫
 

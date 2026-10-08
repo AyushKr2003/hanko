@@ -104,10 +104,12 @@ Item {
         // Cells are ruled off by hairlines; numerals by a middle dot.
         Item {
           visible: slot.index > 0 && root.mode !== "glyphs"
-          width: root.mode === "numerals" ? Type.px(20) : root.ruled ? Type.px(10) * 2 + 1 : Type.px(14)
+          // Readings are one group, held together by space (proximity), not
+          // fenced by lines: the bar's rules are kept for its zones.
+          width: root.mode === "numerals" ? Type.px(20) : root.mode === "cells" ? Type.px(22) : root.ruled ? Type.px(10) * 2 + 1 : Type.px(14)
           height: parent.height
           Rectangle {
-            visible: root.mode === "cells" && root.ruled
+            visible: false
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             width: 1
@@ -346,7 +348,9 @@ Item {
     Ticks {
       anchors.verticalCenter: big.verticalCenter
       visible: root.ticksOn && value.r.level >= 0
-      count: root.tickCount
+      // A device's charge is a side note to its name: half a meter, so the
+      // BT cell doesn't outweigh the volume and battery it sits with.
+      count: value.r.key === "bluetooth" ? Math.round(root.tickCount / 2) : root.tickCount
       level: value.r.level
     }
     SignalBars {
