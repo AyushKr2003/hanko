@@ -24,6 +24,8 @@ Item {
   property int bottomInset: 0
   // Builds a window's live snapshot (OverviewWindow); null draws ink.
   property Component snapshot: null
+  // A Kata design's skin, handed to each page; empty for Classic.
+  property var skin: ({})
   // 0..1: the sheet and the pages print in.
   property real reveal: 1
 
@@ -167,6 +169,7 @@ Item {
         headH: root.headH
         view: root
         snapshot: root.snapshot
+        skin: root.skin
         hot: root.dragging && root.dragOver === pageItem.modelData.id && root.dragOver !== root.dragFrom
       }
     }

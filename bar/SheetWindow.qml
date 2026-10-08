@@ -47,7 +47,7 @@ PanelWindow {
     bluetooth: Blue.reading,
     power: Power.reading,
     display: Display.reading,
-    letters: Status.notifications,
+    letters: win.bar.lettersShown(Status.notifications),
     dnd: Status.doNotDisturb
   })
   // Kata has five panels (Bluetooth lives in Connections, Display in Power),

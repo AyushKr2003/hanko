@@ -26,6 +26,11 @@ var PARTS = {
   seal:    { main: true, v: { outline: "margin", deboss: "leaf", carved: "shoji" } },
   unread:  { main: true, v: { edge: "margin", dogear: "leaf", stamp: "shoji" } },
   sign:    { main: true, v: { eyebrow: "margin", tabs: "leaf", tategaki: "shoji" } },
+  // The second wave (K6): whole-screen pieces with the same mechanism.
+  // Hold is Leaf's soak, which Margin shares; Shōji draws a brush stroke.
+  notify:   { main: true, v: { cards: "margin", tickets: "leaf", rows: "shoji" } },
+  overview: { main: true, v: { miniatures: "margin", contact: "leaf", framed: "shoji" } },
+  hold:     { main: true, v: { soak: "leaf", stroke: "shoji" } },
   corner:  { main: false, follows: "surface", v: { soft: "margin", cut: "leaf" } },
   divider: { main: false, follows: "surface", v: { hairline: "margin", score: "leaf", lattice: "shoji" } },
   tempo:   { main: false, follows: "arrive", v: { spring: "margin", snap: "leaf", johakyu: "shoji" } }
@@ -49,11 +54,14 @@ var TOUCHES = {
 var TOUCH_KEYS = Object.keys(TOUCHES)
 
 var DESIGNS = {
-  margin: { parts: { surface: "paper", arrive: "fold", pointer: "thread", select: "tint", slider: "ruler", ring: "glyph", seal: "outline", unread: "edge", sign: "eyebrow" },
+  margin: { parts: { surface: "paper", arrive: "fold", pointer: "thread", select: "tint", slider: "ruler", ring: "glyph", seal: "outline", unread: "edge", sign: "eyebrow",
+                    notify: "cards", overview: "miniatures", hold: "soak" },
             touches: { season: "off", numerals: "arabic", grain: "smooth" } },
-  leaf:   { parts: { surface: "card", arrive: "slip", pointer: "crop", select: "plate", slider: "block", ring: "glyph", seal: "deboss", unread: "dogear", sign: "tabs" },
+  leaf:   { parts: { surface: "card", arrive: "slip", pointer: "crop", select: "plate", slider: "block", ring: "glyph", seal: "deboss", unread: "dogear", sign: "tabs",
+                    notify: "tickets", overview: "contact", hold: "soak" },
             touches: { season: "off", numerals: "arabic", grain: "fine" } },
-  shoji:  { parts: { surface: "washi", arrive: "slide", pointer: "brush", select: "wash", slider: "brush", ring: "enso", seal: "carved", unread: "stamp", sign: "tategaki" },
+  shoji:  { parts: { surface: "washi", arrive: "slide", pointer: "brush", select: "wash", slider: "brush", ring: "enso", seal: "carved", unread: "stamp", sign: "tategaki",
+                    notify: "rows", overview: "framed", hold: "stroke" },
             touches: { season: "kanji", numerals: "arabic", grain: "fine" } }
 }
 var CLASSIC = "classic"
@@ -62,7 +70,8 @@ var DESIGN_NAMES = [CLASSIC, "margin", "leaf", "shoji"]
 var DEFAULT_DESIGN = CLASSIC
 var LABELS = { classic: "Classic", margin: "Margin", leaf: "Leaf", shoji: "Shōji" }
 var PART_LABELS = { surface: "surface", arrive: "panels", pointer: "pointer", select: "selection", slider: "slider", ring: "battery",
-                    seal: "seal", unread: "unread mark", sign: "panel name", corner: "corners", divider: "dividers", tempo: "tempo" }
+                    seal: "seal", unread: "unread mark", sign: "panel name",
+                    notify: "letters", overview: "overview", hold: "hold to confirm", corner: "corners", divider: "dividers", tempo: "tempo" }
 
 function designName(name) {
   var n = String(name === undefined || name === null ? "" : name).toLowerCase()

@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after Kata K5 (Kata's panels). Next: Kata K6, the whole-screen parts (§10 has step-by-step instructions for K6–K7).
+Last updated: 2026-10-08, after Kata K6 (the second wave: letters, overview, hold). Next: Kata K7, Settings › Design (§10).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -640,11 +640,19 @@ Status lives in [ROADMAP.md](ROADMAP.md) too (✅ / 🔨 / ⬜); keep both in sy
 - Harness `scenes/KataPanels.qml` (panels × style docs) + `kata-panels.json` (each design) and `kata-panels-light.json` (three mixes); renders in `docs/kata/images/k5-*.webp`. `tests/run` lints `bar/kata/`. Unit tests: 111.
 - **To verify on hardware**: fold's scale and slip's clipped well on a real layer surface, the slide travelling between cells, the panel's keyboard focus after the prime (Esc, Tab, Up/Down on Sound), session holds, and Bluetooth actions from Connections. Not in yet: weather on Time, Power's quick chips.
 
+### Kata 型 K6 · the second wave ✅
+- **`core/Kata.js`**: `notify` (cards · Margin, tickets · Leaf, rows · Shōji), `overview` (miniatures, contact, framed), `hold` (soak · Leaf, stroke · Shōji; Margin uses soak, as the spec says it shares Leaf's). Twelve main parts now; Surprise draws from all twelve. `Skin.skin` passes them through. 1 test (112).
+- **`bar/parts/Letter.qml`**: one notification. Cards follow the pointer sideways and are put away past 35% of their width (clipped to the panel while swiped); tickets have a stub with the age beyond a perforation (holes and two notches), and pulling down 26 px tears it; rows sit between `Divider`s with the `UnreadMark`. Signals `dismissed` and `opened` (replay). `LettersPanel` uses it and asks `("inbox", "dismiss", letter)`; `Bar.qml` keeps `setAside` (timestamp|app|summary) and `lettersShown()` filters the feed; Clear all empties it. Omarchy has no per-letter delete a bar can call, so a put-away letter comes back after a shell restart.
+- **`bar/parts/Hold.qml`**: the hold-to-confirm button (600 ms fill, 200 ms drain; `hold: false` is a plain button; `progress` for the harness). `SessionRow` is four `Hold`s.
+- **Overview**: `OverviewPage.skin` / `variant`; `OverviewView.skin`; `OverviewWindow` passes `barWindow.skin` and always shows the grid under a Kata design (`dynamic` is Classic's). Miniatures: soft corners, the number in Fraunces, "2 windows" in words. Contact: paper2, hard card shadow, sprocket holes down the left, mono `03A` (▸ on the live frame), crop marks round the live frame. Framed: washi at the skin's opacity, a lattice line inside the edge and under the folio, the kanji numeral over the figure.
+- Harness `scenes/KataWave.qml` (letters with one mid-swipe or mid-tear, holds mid-press) + `kata-wave.json` / `kata-wave-light.json`; `scenes/Overview.qml` takes `design` (a style doc) and draws `KataBar` + the design's pages: `overview-margin|leaf|shoji|kata-light.json`. Renders `docs/kata/images/k6-*.webp`.
+- **To verify on hardware**: a swipe and a tear with a real pointer (the MouseArea takes the drag before the panel's own), the hold on a touchpad press, and the contact sheet's sprocket column at small page sizes.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
 
-### Kata 型: what is left (K6–K7)
+### Kata 型: what is left (K7)
 
 The spec is `docs/kata/README.md`; the HTML prototype that shows every part and panel in every design is `docs/kata/prototype/` (open `playground.html` or `desk.html?design=shoji&panel=sound`; `kata.js` holds the panel markup to port). The three source designs, with their own prototypes for detail: `design` (`docs/redesign/`, Margin), `design2` (`docs/design2/`, Leaf), `design3` (`docs/design3/`, Shōji). Rules that hold for every Kata phase:
 
@@ -723,7 +731,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 23. **Overview to verify on hardware:** live snapshots (`ToplevelManager` + `HyprlandToplevel.address` matching Hanko's `0x` addresses), the focus grab closing on click-away and not on the first click inside, keyboard on the focused monitor only with two screens, `hl.dsp.window.move` with `window` and `workspace` together, the deferred focus after a click (90 ms; raise it if focus snaps back), and the page fit on a portrait monitor.
 24. **Dynamic overview:** icons resolving for Omarchy's webapps and TUI apps (omarchy-overview has a longer lookup in `OverviewWindow.qml` if `heuristicLookup` misses), the wallpaper path after `omarchy theme bg next`, the + cell creating the workspace on this monitor, and Alt+Tab reaching the layer (Hyprland may take it first).
 
-25. **Kata panels (K5):** Time has no weather yet and Power no quick chips (the Classic sheets have both); the handscroll and the overview stay Classic's under a Kata design until K6.
+25. **Kata panels (K5):** Time has no weather yet and Power no quick chips (the Classic sheets have both); the handscroll stays Classic's under a Kata design.
+26. **Kata letters (K6):** a letter swiped or torn away is only set aside for the session (Omarchy's history has no per-letter delete for bars); it returns after a shell restart until Clear all.
 
 ## 13. QML pitfalls already hit
 

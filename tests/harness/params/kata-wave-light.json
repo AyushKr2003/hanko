@@ -1,0 +1,69 @@
+{
+ "title": "Kata K6 · Rosé Pine Dawn, mixed",
+ "scene": "KataWave",
+ "width": 1500,
+ "theme": {
+  "foreground": "#575279",
+  "background": "#faf4ed",
+  "red": "#b4637a"
+ },
+ "now": "2026-10-08T21:44:00",
+ "letters": [
+  {
+   "app": "Signal",
+   "summary": "Mika",
+   "body": "See you at 8 by the station",
+   "timestamp": 1791322920000.0,
+   "urgent": false,
+   "glyph": "信",
+   "tilt": -3
+  },
+  {
+   "app": "Firefox",
+   "summary": "Download complete",
+   "body": "hanko-typeset.zip",
+   "timestamp": 1791322200000.0,
+   "urgent": false,
+   "glyph": "火",
+   "tilt": 4.5
+  },
+  {
+   "app": "System",
+   "summary": "Battery low",
+   "body": "12% left, plug in soon",
+   "timestamp": 1791312240000.0,
+   "urgent": true,
+   "glyph": "S",
+   "tilt": -1.5
+  }
+ ],
+ "docs": [
+  {
+   "label": "Margin with Leaf's letters",
+   "doc": {
+    "design": "margin",
+    "borrow": {
+     "notify": "tickets"
+    }
+   }
+  },
+  {
+   "label": "Leaf with Shōji's hold",
+   "doc": {
+    "design": "leaf",
+    "borrow": {
+     "hold": "stroke"
+    }
+   }
+  },
+  {
+   "label": "Shōji with Margin's letters",
+   "doc": {
+    "design": "shoji",
+    "borrow": {
+     "notify": "cards"
+    }
+   }
+  }
+ ]
+}

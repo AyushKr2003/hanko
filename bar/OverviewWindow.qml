@@ -32,7 +32,9 @@ PanelWindow {
   readonly property int activeId: monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : 1
   // Which overview (style.json `overview`): grid, Hanko's pages; dynamic,
   // Ryoku's (bar/overview/DynamicView.qml).
-  readonly property bool dynamic: Typeset.current.overview === "dynamic"
+  // A Kata design prints the grid in its own `overview` part (docs/kata).
+  readonly property bool kata: !!barWindow.kata && !barWindow.kata.classic
+  readonly property bool dynamic: !kata && Typeset.current.overview === "dynamic"
   // This screen's workspaces, for the dynamic overview.
   readonly property var screenSpaces: Hypr.workspaces.filter(function(w) { return w.id > 0 && (!w.monitor || w.monitor === win.screenName) })
 
@@ -129,6 +131,7 @@ PanelWindow {
     now: win.bar.now
     reveal: 0
     snapshot: win.open ? snapshotComponent : null
+    skin: win.kata ? win.barWindow.skin : ({})
 
     Behavior on reveal {
       NumberAnimation {

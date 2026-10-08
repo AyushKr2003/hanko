@@ -1264,9 +1264,9 @@ test("overview layout is a setting beside the counted ones", () => {
 })
 
 // ── Kata 型: one engine for every design ──────────────────────────────
-test("kata: nine parts, three partners, three touches; every design resolves cleanly", () => {
-  assert.equal(K.MAIN_PARTS.length, 9)
-  assert.equal(K.PART_KEYS.length, 12)
+test("kata: twelve parts, three partners, three touches; every design resolves cleanly", () => {
+  assert.equal(K.MAIN_PARTS.length, 12)
+  assert.equal(K.PART_KEYS.length, 15)
   assert.deepEqual(K.DESIGN_NAMES, ["classic", "margin", "leaf", "shoji"])
   for (const d of ["margin", "leaf", "shoji"]) {
     const s = K.resolve({ design: d })
@@ -1377,6 +1377,17 @@ test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () 
   assert.ok(Br.enso(0, 20).length > 0 && Br.enso(2, 20).length > 0)   // clamped, never empty
 })
 
+test("kata K6: the second wave borrows like the first; hold is Leaf's soak, shared by Margin", () => {
+  assert.deepEqual(["margin", "leaf", "shoji"].map(d => K.resolve({ design: d }).notify), ["cards", "tickets", "rows"])
+  assert.deepEqual(["margin", "leaf", "shoji"].map(d => K.resolve({ design: d }).overview), ["miniatures", "contact", "framed"])
+  assert.deepEqual(["margin", "leaf", "shoji"].map(d => K.resolve({ design: d }).hold), ["soak", "soak", "stroke"])
+  const m = K.resolve({ design: "margin", borrow: { hold: "soak" } })
+  assert.deepEqual(m.borrowed, [])
+  const s = K.resolve(K.withBorrow({ design: "shoji" }, "notify", "tickets"))
+  assert.deepEqual(s.borrowed, ["notify"])
+  assert.equal(K.describe(s), "Shōji with Leaf’s letters")
+  assert.equal(K.withBorrow({ design: "leaf" }, "hold", "ring"), null)
+})
 test("kata K4: the season comes from the sun, right on the boundaries", () => {
   assert.equal(Sn.KO.length, 72); assert.equal(Sn.SEKKI.length, 24)
   const s = Sn.at(new Date("2026-10-08T16:14:00Z"))

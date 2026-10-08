@@ -29,6 +29,7 @@ function skin(k) {
     design: k.design || "classic",
     surface: k.surface, arrive: k.arrive, pointer: k.pointer, select: k.select, slider: k.slider,
     ring: k.ring, seal: k.seal, unread: k.unread, sign: k.sign, corner: k.corner, divider: k.divider, tempo: k.tempo,
+    notify: k.notify, overview: k.overview, hold: k.hold,
     radius: r[0], radiusRow: r[1], radiusChip: r[2],
     // A score is two lines (dark over light); hairline and lattice one.
     dividerWidth: k.divider === "score" ? 2 : 1,

@@ -118,6 +118,15 @@ Item {
   function cycleSheet(delta) {
     if (sheet) openSheet(Sheets.step(sheet, delta, sheetsReady), sheetScreen)
   }
+  // Letters put away in a Kata Letters panel (swiped or torn off). Omarchy's
+  // history has no per-letter delete a bar may call, so they are only set
+  // aside for this session; Clear all forgets them all for real.
+  property var setAside: ({})
+  function letterKey(l) { return l.timestamp + "|" + l.app + "|" + l.summary }
+  function lettersShown(list) {
+    var aside = setAside
+    return (list || []).filter(function(l) { return !aside[letterKey(l)] })
+  }
   // Something a sheet asked for: pages, values, devices.
   function sheetRequest(key, what, arg) {
     if (key === "time" && what === "shift") timeShift = Number(arg) || 0
@@ -156,9 +165,17 @@ Item {
       closeScroll()
     } else if (key === "inbox") {
       if (what === "dnd") Status.act("notif", "right")
+      else if (what === "dismiss" && arg) {
+        var aside = Object.assign({}, setAside)
+        aside[letterKey(arg)] = true
+        setAside = aside
+      }
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
       // `clear` forgets the history, `dismissAll` the toasts still on screen.
-      else if (what === "clear") Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
+      else if (what === "clear") {
+        setAside = ({})
+        Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
+      }
     } else if (key === "leaf") leafRequest(what, arg)
   }
 

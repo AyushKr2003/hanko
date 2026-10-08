@@ -6,7 +6,8 @@ import "../parts"
 
 // Letters 便り: what is waiting for you, newest first, each marked by the
 // unread part; Quiet (do not disturb) at the top; replay and clear at the foot.
-// Requests as InboxSheet's: dnd | replay | clear.
+// Requests as InboxSheet's: dnd | replay | clear, and dismiss (a letter put away
+// by the notify part's swipe or tear).
 Column {
   id: root
 
@@ -37,47 +38,16 @@ Column {
   }
   Repeater {
     model: root.shown
-    Item {
-      id: letter
+    Letter {
       required property var modelData
       required property int index
       width: root.width
-      height: body.implicitHeight + Type.px(22)
-      // a card on paper and card; a row between lattice lines on washi
-      Rectangle {
-        anchors.fill: parent
-        visible: root.skin.surface !== "washi"
-        radius: root.skin.radiusRow || 0
-        color: root.skin.surface === "card" ? Ink.paper : "transparent"
-        border.width: root.skin.surface === "card" ? 0 : 1
-        border.color: Ink.kLine
-      }
-      Rectangle { visible: root.skin.surface === "card"; y: parent.height; width: parent.width; height: 2; color: Ink.shade }
-      Divider { visible: root.skin.surface === "washi" && letter.index > 0; skin: root.skin; width: parent.width; bleed: Type.px(20) }
-      Column {
-        id: body
-        x: root.skin.surface === "washi" ? 0 : Type.px(14)
-        y: Type.px(11)
-        width: parent.width - 2 * x - Type.px(24)
-        spacing: Type.px(3)
-        Text {
-          text: letter.modelData.app + " · " + StatusJs.age(letter.modelData.timestamp, root.now)
-          color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(12)
-        }
-        Text {
-          width: parent.width; elide: Text.ElideRight
-          text: letter.modelData.summary || letter.modelData.app
-          color: letter.modelData.urgent ? Ink.seal : Ink.ink
-          font.family: Type.text; font.pixelSize: Type.px(13.5); font.weight: Font.Medium; font.variableAxes: Type.valueAxes
-        }
-        Text {
-          visible: !!letter.modelData.body
-          width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
-          text: letter.modelData.body || ""
-          color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12.5)
-        }
-      }
-      UnreadMark { anchors.fill: parent; skin: root.skin }
+      skin: root.skin
+      letter: modelData
+      now: root.now
+      first: index === 0
+      onDismissed: root.request("inbox", "dismiss", modelData)
+      onOpened: root.request("inbox", "replay", null)
     }
   }
   Item {
