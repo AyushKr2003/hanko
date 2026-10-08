@@ -161,10 +161,11 @@ Item {
         required property int index
         readonly property var box: root.boxOf(pageItem.modelData)
         x: pageItem.box.x
-        y: pageItem.box.y + (1 - root.reveal) * Type.px(10)
+        y: pageItem.box.y
         width: pageItem.box.w
         height: pageItem.box.h
         opacity: Math.max(0, Math.min(1, root.reveal * 1.6 - pageItem.index * 0.05))
+        scale: 0.97 + 0.03 * root.reveal
         page: pageItem.modelData
         headH: root.headH
         view: root
