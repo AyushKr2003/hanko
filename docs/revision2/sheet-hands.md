@@ -14,12 +14,13 @@ Every bar cell's sheet (Time, Sound, Network, Bluetooth, Power, Display, Inbox) 
 | **Soroban 算盤** | Shipped. The figures counted in abacus beads; each choice one bead, slid across for the one in use. |
 | **Odoshi 縅** | Shipped. A crown plate, then a lame of armour scales per level, laced as far as it goes; the one in use knotted red. |
 | **Kasumi 霞** | Shipped. Each level a band of gold-leaf mist, drifting in from alternate sides; the one in use gilded whole and sealed. |
+| **Shōji 障子** | Shipped. Not a study: the Shōji design's own panels, made a hand when Shōji was folded into Hanko (HANDOFF §10). Washi on a rail below the bar, a sign down the right edge; it adds a Display panel. |
 
 The user asked for all four studies to be built, so all four shipped as hands of their own, for all seven sheets.
 
 ![Shōgi, all seven sheets](images/r2-sheets-shogi.webp)
 
-Renders of every sheet in each hand: [Shōgi](images/r2-sheets-shogi.webp), [Soroban](images/r2-sheets-soroban.webp), [Odoshi](images/r2-sheets-odoshi.webp), [Kasumi](images/r2-sheets-kasumi.webp), the four on [light paper](images/r2-sheets-hands-light.webp), and [Settings › Sheets](images/r2-sheets-settings.webp).
+Renders of every sheet in each hand: [Shōgi](images/r2-sheets-shogi.webp), [Soroban](images/r2-sheets-soroban.webp), [Odoshi](images/r2-sheets-odoshi.webp), [Kasumi](images/r2-sheets-kasumi.webp), [Shōji](images/r2-sheets-shoji.webp), the craft hands and Shōji on [light paper](images/r2-sheets-hands-light.webp), and [Settings › Sheets](images/r2-sheets-settings.webp).
 
 What every hand has in common is the design principle the first two set: paper and type, hairlines, a lot of empty room, and red used once, for the thing in use. Anything that reads as an icon grid or a dashboard gauge fails it.
 

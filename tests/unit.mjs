@@ -1427,7 +1427,7 @@ test("kata K4: the season comes from the sun, right on the boundaries", () => {
 })
 
 test("sheet styles: two hands per sheet, stored only where not a ledger", () => {
-  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku", "shogi", "soroban", "odoshi", "kasumi"])
+  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku", "shogi", "soroban", "odoshi", "kasumi", "shoji"])
   assert.equal(S.resolve({}).sheetStyles.sound, "ledger")
   let d = S.withSetting({}, "sheetStyle:sound", "tanzaku")
   assert.deepEqual(d.sheetStyles, { sound: "tanzaku" })
@@ -1451,7 +1451,7 @@ test("sheet styles: two hands per sheet, stored only where not a ledger", () => 
   assert.equal(S.normalize({ sheetStyles: { sound: "mon" } }).sheetStyles, undefined)
   assert.equal(S.withSetting({}, "sheetStyle:sound", "mon"), null)
   // The four craft hands are kept like Tanzaku.
-  for (const h of ["shogi", "soroban", "odoshi", "kasumi"]) {
+  for (const h of ["shogi", "soroban", "odoshi", "kasumi", "shoji"]) {
     const e = S.withSetting({}, "sheetStyle:all", h)
     assert.equal(S.resolve(e).sheetStyles.inbox, h)
     assert.deepEqual(S.normalize(e).sheetStyles, e.sheetStyles)

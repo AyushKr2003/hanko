@@ -3,11 +3,14 @@ import QtQuick
 import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Sheets.js" as Sheets
+import "../../core/Kata.js" as K
+import "../../core/Skin.js" as Sk
 import "../sheets"
 
 // Settings › Sheets 紙: which hand draws each cell's sheet. Cards name
 // the six hands (Ledger 帳, Tanzaku 短冊, Shōgi 将棋, Soroban 算盤,
-// Odoshi 縅, Kasumi 霞; a click sets every sheet), three to a row; then
+// Odoshi 縅, Kasumi 霞, Shōji 障子; a click sets every sheet), three to
+// a row; then
 // one row per sheet with its choice. Beside the rows the sheet you last
 // touched prints live in its hand, in a room as wide as the widest sheet.
 Item {
@@ -29,8 +32,11 @@ Item {
     { key: "soroban", jp: "算盤", name: "Soroban", short: "The abacus: readings counted in beads", line: "The figures counted out in beads pushed to the beam, the sheet's own in red; each choice one bead, slid across for the one in use." },
     { key: "odoshi", jp: "縅", name: "Odoshi", short: "Armour lacing: each level a laced lame", line: "A crown plate, then a lame of small scales for each level, laced as far as it goes; the one in use laced in full and knotted red." },
     { key: "kasumi", jp: "霞", name: "Kasumi", short: "Mist bands: each level a band of gold leaf", line: "Each level a band of gold-leaf mist drawn as far as it goes, drifting in from alternate sides; the one in use gilded whole and sealed." },
+    { key: "shoji", jp: "障子", name: "Shōji", short: "Washi panels that slide along a rail", line: "One washi panel on a rail under the bar, sliding to the cell you pick; its name down the right edge, brush sliders and the ensō." },
   ]
-  readonly property var labels: ({ ledger: "Ledger", tanzaku: "Tanzaku", shogi: "Shōgi", soroban: "Soroban", odoshi: "Odoshi", kasumi: "Kasumi" })
+  readonly property var labels: ({ ledger: "Ledger", tanzaku: "Tanzaku", shogi: "Shōgi", soroban: "Soroban", odoshi: "Odoshi", kasumi: "Kasumi", shoji: "Shōji" })
+  // Shōji's panels are drawn in Shōji's skin, with your touches and opacity.
+  readonly property var skin: Sk.skin(K.resolve(doc), S.resolve(doc).panelOpacity)
   readonly property string allStyle: {
     var first = styles[S.SHEET_KEYS[0]]
     for (var i = 1; i < S.SHEET_KEYS.length; i++) if (styles[S.SHEET_KEYS[i]] !== first) return ""
@@ -132,7 +138,7 @@ Item {
       x: root.twoUp ? root.width - root.previewRoom : 0
       y: root.twoUp ? 0 : list.height + Type.px(24)
       width: root.previewRoom
-      height: previewLabel.height + Type.px(10) + preview.height
+      height: previewLabel.height + Type.px(10) + preview.height * preview.scale
       Text {
         id: previewLabel
         text: ("Preview · " + root.focusSheet + " · " + (root.labels[root.styles[root.focusSheet]] || "")).toUpperCase()
@@ -146,6 +152,10 @@ Item {
         y: previewLabel.height + Type.px(10)
         sheet: root.focusSheet
         styles: root.styles
+        skin: root.skin
+        // A Shōji panel can be wider than the room (Time with the season): fit it.
+        scale: Math.min(1, root.previewRoom / Math.max(1, width))
+        transformOrigin: Item.TopLeft
         feed: root.feed
         animate: false
         tearX: Type.px(30)

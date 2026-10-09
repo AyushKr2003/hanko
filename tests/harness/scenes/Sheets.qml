@@ -3,6 +3,8 @@ import qs.Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../core/Sheets.js" as Sheets
+import "../../../core/Kata.js" as K
+import "../../../core/Skin.js" as Sk
 import "../../../bar"
 import "../../../bar/sheets"
 import "../../../bar/scroll"
@@ -138,8 +140,10 @@ Rectangle {
             visible: !desk.scroll
             paperOpacity: desk.style.panelOpacity > 0 ? desk.style.panelOpacity / 100 : 1
             styles: desk.style.sheetStyles || ({})
+            // As SheetWindow: Shōji's skin, and a Shōji sheet hangs on its rail.
+            skin: Sk.skin(K.resolve(deskColumn.modelData.doc || {}), desk.style.panelOpacity)
             x: bar.x + desk.placed.x
-            y: desk.atBottom ? bar.y - height : bar.y + bar.height
+            y: desk.atBottom ? bar.y - height - (rail ? skin.gap : 0) : bar.y + bar.height + (rail ? skin.gap : 0)
             sheet: desk.scroll ? "" : desk.key
             atBottom: desk.atBottom
             tearX: desk.placed.tearX

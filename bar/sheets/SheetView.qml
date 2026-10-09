@@ -29,9 +29,16 @@ Item {
   property real paperOpacity: 1
   property bool animate: true
   // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku |
-  // shogi | soroban | odoshi | kasumi.
+  // shogi | soroban | odoshi | kasumi | shoji.
   property var styles: ({})
   readonly property string hand: styles[sheet] || "ledger"
+  // Shōji 障子 sheets are a Shōji panel (ShojiPanel), not a printed card:
+  // washi in Shōji's skin (core/Skin.js), on a rail a little below the bar
+  // (`rail`, so SheetWindow leaves the gap and slides it along), arriving
+  // from `side`.
+  property var skin: ({})
+  property int side: 1
+  readonly property bool rail: hand === "shoji"
   // The craft hands (Shōgi, Soroban, Odoshi, Kasumi) draw one model of
   // whichever sheet is open (core/Hands.js).
   readonly property var handModel: Hands.HANDS.indexOf(hand) >= 0
@@ -44,21 +51,37 @@ Item {
   signal cycle(int delta)
 
   readonly property var info: Sheets.byKey(sheet)
-  readonly property int sheetWidth: Type.px(info ? info.width : 430)
+  readonly property int sheetWidth: rail ? panel.width : Type.px(info ? info.width : 430)
 
   width: sheetWidth
   implicitWidth: sheetWidth
-  implicitHeight: card.implicitHeight
+  implicitHeight: rail ? panel.implicitHeight : card.implicitHeight
 
   // Hand the keyboard to the contents (arrows act inside a sheet).
   function focusContents() {
+    if (rail) { panel.focusContents(); return }
     var contents = body.item as Item
     if (contents) contents.forceActiveFocus()
     else root.forceActiveFocus()
   }
 
+  ShojiPanel {
+    id: panel
+    visible: root.rail
+    skin: root.skin
+    side: root.side
+    ownDisplay: true
+    sheet: root.rail ? root.sheet : ""
+    open: root.open && root.rail
+    feed: root.feed
+    onRequest: function(sheet, what, arg) { root.request(sheet, what, arg) }
+    onCloseRequested: root.closeRequested()
+    onCycle: function(delta) { root.cycle(delta) }
+  }
+
   SheetCard {
     id: card
+    visible: !root.rail
     paperOpacity: root.paperOpacity
     width: root.width
     atBottom: root.atBottom
@@ -73,7 +96,7 @@ Item {
     Loader {
       id: body
       width: card.width
-      sourceComponent: root.handModel
+      sourceComponent: root.rail ? null : root.handModel
         ? ({ shogi: shogiHand, soroban: sorobanHand, odoshi: odoshiHand, kasumi: kasumiHand })[root.hand]
         : (root.hand === "tanzaku"
           ? { time: timeTanzaku, sound: soundTanzaku, network: networkTanzaku, bluetooth: bluetoothTanzaku,

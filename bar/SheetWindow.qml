@@ -6,7 +6,6 @@ import "../core"
 import "../core/Sheets.js" as Sheets
 import "../services"
 import "sheets"
-import "kata"
 
 // The layer a sheet is printed on, one per screen, next to its BarWindow.
 // Built the way Omarchy's own KeyboardPanel is: a full-screen layer-shell
@@ -73,7 +72,9 @@ PanelWindow {
     var screenW = barWindow.width + 2 * gap
     var cellX = a ? a.x + gap : screenW - gap - 200
     placed = Sheets.place(shownSheet, cellX, a ? a.width : 100, view.width, screenW)
-    if (kata) kataView.side = cellX + (a ? a.width : 100) / 2 < screenW / 2 ? -1 : 1
+    var side = cellX + (a ? a.width : 100) / 2 < screenW / 2 ? -1 : 1
+    if (kata) kataView.side = side
+    else classicView.side = side
   }
   onWidthChanged: Qt.callLater(place)
   Connections {
@@ -163,9 +164,17 @@ PanelWindow {
     visible: !win.kata
     paperOpacity: win.barWindow.shown.panelOpacity > 0 ? win.barWindow.shown.panelOpacity / 100 : 1
     styles: win.barWindow.shown.sheetStyles || ({})
+    skin: win.skin
     onWidthChanged: Qt.callLater(win.place)
+    // A Shōji sheet hangs on its rail a little below the bar and slides
+    // along it to the next cell; the other hands print flush and jump.
+    readonly property int railGap: rail ? (win.skin.gap || 0) : 0
     x: win.placed.x
-    y: win.atBottom ? win.height - win.strip - height : win.strip
+    Behavior on x {
+      enabled: classicView.rail && !!win.skin.travels && win.open && !Motion.still
+      NumberAnimation { duration: win.skin.open || 360; easing.type: Easing.BezierSpline; easing.bezierCurve: win.skin.openCurve || [0.16, 1, 0.3, 1, 1, 1] }
+    }
+    y: win.atBottom ? win.height - win.strip - height - railGap : win.strip + railGap
     sheet: win.kata ? "" : win.shownSheet
     open: win.open && !win.kata
     atBottom: win.atBottom
@@ -185,7 +194,7 @@ PanelWindow {
     }
   }
 
-  KataPanelView {
+  ShojiPanel {
     id: kataView
     visible: win.kata
     onWidthChanged: Qt.callLater(win.place)

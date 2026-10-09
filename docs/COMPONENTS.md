@@ -221,9 +221,9 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 Sheets 20–25 show both on full desktops.
 
-#### Sheet hands `sheetStyles` 帳/短冊/将棋/算盤/縅/霞
+#### Sheet hands `sheetStyles` 帳/短冊/将棋/算盤/縅/霞/障子
 
-Each cell's sheet can be drawn in one of six hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+Each cell's sheet can be drawn in one of seven hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
 
 | Hand | What it does | After |
 |---|---|---|
@@ -262,6 +262,18 @@ What the craft hands show per sheet:
 | Power | the battery | — (the abacus counts charge and the numeric details) | the profiles |
 | Display | the brightness (set it, never under 1%) | — | the monitors, one switched off faint |
 | Inbox | the count | each letter, reaching as far as it is fresh, urgent ones red | — |
+
+`shoji` 障子 is the Shōji panels (`bar/sheets/ShojiPanel.qml`), drawn in Shōji's skin (`core/Skin.js`: washi at 86% unless Panel opacity is set, cut corners, the lattice, jo-ha-kyū timing, and your season, numerals and grain touches). Unlike the other hands it is not printed flush from the cell: it hangs on a rail 6 px below the bar, slides in from the side of the screen its cell is on, and when another cell is clicked the same panel slides along the bar to it. Its name is written down the right edge (時 Time, 音 Sound, 繋 Network, 藍 Bluetooth, 電 Power, 明 Display, 便り Letters).
+
+| Sheet | Shōji |
+|---|---|
+| Time | the day as a sentence, the month with today in an ensō, the micro-season (kō) in tategaki when the season touch is on, other cities |
+| Sound | the master as a figure you scroll, the brush slider, Plays on with the ink-wash selection, a brush slider per app, the microphone switch |
+| Network | the Wi-Fi switch, the network's name as the hero, nearby networks (a click joins; R rescans) |
+| Bluetooth | the switch, the connected device with its charge on an ensō, connected, your devices and nearby (a click connects, disconnects or pairs) |
+| Power | the battery as an ensō, how long it lasts, power mode as sliding doors, lock, sleep, and restart and shut down held to confirm |
+| Display | the brightness as a figure you scroll and a brush slider (never under 1%), night light, the monitors (a click chooses; Arrange › opens monitors.lua) |
+| Inbox | Letters: the Quiet switch, each letter with its 未 unread seal, show recent again, clear all |
 
 #### Scroll dividers `interlude` 間
 

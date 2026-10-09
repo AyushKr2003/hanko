@@ -4,7 +4,7 @@ import qs.Commons
 import "../../../core"
 import "../../../core/Kata.js" as K
 import "../../../core/Skin.js" as Sk
-import "../../../bar/kata"
+import "../../../bar/sheets"
 
 // Kata panels (K5): one row per panel, one column per style document, each
 // panel hanging from a strip of bar line as SheetWindow hangs it.
@@ -72,7 +72,7 @@ Rectangle {
               // the bar's line the panel hangs from
               Rectangle { width: parent.width; height: 14; color: Ink.paper }
               Rectangle { y: 14; width: parent.width; height: 1; color: Ink.kLine }
-              KataPanelView {
+              ShojiPanel {
                 id: panel
                 x: 24
                 y: 15 + (cell.skin.gap || 0)

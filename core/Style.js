@@ -123,9 +123,12 @@ function normalizeOverview(o) {
 //   soroban 算盤 the abacus: readings counted in beads pushed to the beam
 //   odoshi  縅  armour lacing: each level a lame of scales laced to it
 //   kasumi  霞  mist bands: each level a band of gold leaf drawn as far
-// The last four draw one model per sheet (core/Hands.js).
+//   shoji   障子 Shōji's panels: washi on a rail below the bar, a vertical
+//               sign down the right edge, brush sliders and the ensō
+// shogi..kasumi draw one model per sheet (core/Hands.js); shoji is the
+// Shōji panels (bar/sheets/ShojiPanel.qml) in Shōji's skin.
 // Stored only where a sheet is not a ledger; resolve() gives the full map.
-var SHEET_STYLES = ["ledger", "tanzaku", "shogi", "soroban", "odoshi", "kasumi"]
+var SHEET_STYLES = ["ledger", "tanzaku", "shogi", "soroban", "odoshi", "kasumi", "shoji"]
 var SHEET_KEYS = ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
 
 function normalizeSheetStyles(o) {

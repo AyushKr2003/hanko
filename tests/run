@@ -34,9 +34,9 @@ fi
 step "qmllint"
 # Errors fail the run. Warnings are printed: the stubs in tests/harness/stubs
 # do not model layer-shell attached properties, so BarWindow.qml shows a few.
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml bar/kata/*.qml core/*.qml services/*.qml 2>&1 \
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml core/*.qml services/*.qml 2>&1 \
   | grep -E '^(Error|Warning)' | grep -v -E 'bar/(BarWindow|SheetWindow|ScrollWindow|OverviewWindow).qml' || true
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml bar/kata/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
 
 step "motion"
 # The renders are end frames; this drives the counters with motion on.

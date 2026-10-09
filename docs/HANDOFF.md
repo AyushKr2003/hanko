@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after the four sheet-hand studies (Shōgi, Soroban, Odoshi, Kasumi) were built as hands for all seven sheets and added to Settings › Sheets.
+Last updated: 2026-10-09, after S1 of folding Shōji into Hanko: Shōji's panels are a seventh sheet hand, with a Display panel of their own (plan and remaining steps in §10, "Shōji into Hanko").
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -305,7 +305,10 @@ bar/
                          SheetButton, ActionBar; TimeSheet, SoundSheet, NetworkSheet,
                          PowerSheet, DisplaySheet, InboxSheet (all pure); the Tanzaku
                          sheets; HandSheet + ShogiHand, SorobanHand, OdoshiHand,
-                         KasumiHand (one per craft hand, drawing core/Hands.js's model)
+                         KasumiHand (one per craft hand, drawing core/Hands.js's model);
+                         ShojiPanel (the Shōji hand's frame: washi, rail, sign) and its
+                         Time/Sound/Network/Bluetooth/Power/Display/LettersPanel, with
+                         KataList, Figure, Heading, SessionRow (moved from bar/kata/)
   Edge.qml               hairline | dayrule | rod | rodrule, mirrored at the bottom,
                          inset-aware; rod grip lifts on hover, drag emits pulled()
 core/
@@ -797,7 +800,46 @@ Below is the study write-up as it was before the pick:
 The research, each study's strengths and weaknesses, the rejected hands and sources are in [revision2/sheet-hands.md](revision2/sheet-hands.md).
 (All four were built; see the entry above.)
 
+### Shōji into Hanko · S1, Shōji as a sheet hand ✅
+The first of five steps (plan below, in §10). Shōji's panels are a seventh sheet hand, `shoji` 障子, on the Hanko bar.
+- **Moved** (`git mv`, no edits): `bar/kata/{Time,Sound,Network,Bluetooth,Power,Letters}Panel`, `KataList`, `Figure`, `Heading`, `SessionRow` into `bar/sheets/`; `KataPanelView` became `bar/sheets/ShojiPanel.qml`. `bar/kata/` is gone (and from `tests/run`'s lint list). The old Shōji design still prints the same panels through `SheetWindow.kataView`: `kata-panels.png` is pixel-identical before and after.
+- **`ShojiPanel.ownDisplay`**: Display opens its own panel (明 Display); without it (the Shōji design, whose bar has no LUM cell) Display still opens Power, which then shows brightness. As a sheet hand it is always on, so Power there is battery, mode and session only.
+- **`bar/sheets/DisplayPanel.qml`** (new): the brightness figure (scroll it), `KataSlider` (never under 1%), night light on `KataSwitch`, Monitors with "Arrange ›" (`edit`), a `KataList` of monitors (a click picks an enabled one); Up/Down, N. Same requests as `DisplaySheet`.
+- **`SheetView`**: `skin`, `side`, `rail` (`hand === "shoji"`). A Shōji sheet shows a `ShojiPanel` instead of the `SheetCard`; width and height follow the panel.
+- **`SheetWindow`**: passes `barWindow.skin` (Kata resolves Shōji's parts and touches even under the Hanko design, so the hand wears Shōji's skin, your touches and Panel opacity); `railGap` hangs a Shōji sheet `skin.gap` below the bar; `Behavior on x` slides it along the rail when another cell is clicked; `place()` sets its `side`. Tab walks every sheet, Display included.
+- **`Style.js`**: `SHEET_STYLES` has `shoji`. **Settings › Sheets**: a seventh card; the preview scales a panel wider than its room (Time with the season is 732 px) and gets the skin from the draft (`Sk.skin(K.resolve(doc), panelOpacity)`).
+- Harness: `Sheets` scene passes the skin and the rail gap; `sheets-shoji.json` (all seven), `sheets-hands-light.json` adds Shōji Display and Time, `sheets-settings.json` has Inbox in Shōji. Images `docs/revision2/images/r2-sheets-shoji.webp`, light and settings refreshed. Unit test updated (117).
+
 ## 10. Instructions for the remaining phase (10)
+
+### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
+
+The user asked for Shōji to stop being a separate design: "Shōji should be part of Hanko … we can tweak Hanko to get the Shōji design, and all its sheets move to the sheets in Hanko". There will be one design, Hanko. Shōji becomes (1) a sheet hand, (2) new option values on Hanko's settings, so each Shōji part can be mixed in alone, and (3) a preset that sets them all. Picking the Shōji preset must reproduce today's Shōji, which then also gains what `KataBar` never had: indicators, tray, hosted widgets, keyboard and mic marks, the brightness cell, the edge, the scroll, every setting and per-monitor overrides.
+
+**The user's decisions** (2026-10-09): build a new Shōji Display panel (done in S1); keep Shōji's rail (done in S1); remove `hanko design` (no alias); go step by step, one commit per step, showing renders before the next.
+
+**Mapping of Shōji's bar parts** (S3), all drawn from the existing `bar/parts/` with the skin `BarWindow` already resolves:
+
+| Shōji part | Hanko setting |
+|---|---|
+| washi surface, fibres | `surface: washi` (new; panel opacity 86% unless set) + global `grain: smooth \| fine \| toothy` |
+| carved seal, pressed red with the letter count | `seal: carved` |
+| the seal is the inbox | `notif: seal` (the count on the seal; the inbox cell goes) |
+| desks with a brush mark under the current, 未 on unread | `spaces: brush` + global `numerals: arabic \| kanji` |
+| time, date and the season | `clock: season` + global `season: off \| kanji \| english` (the Shōji Time panel reads it too) |
+| icon and figure, name on reach, battery as an ensō | `status: ink` (meters do not apply) |
+| brush mark under the hovered cell | new setting `pointer: plate \| brush` |
+| window title, now playing | the closest existing values; add `ink` to each if they differ on screen |
+| framed overview | `overview: framed` (S2) |
+| no edge | the preset sets `edge: hairline`, `rules: off` |
+
+`season`, `numerals`, `grain` sit beside `motion` and `typeSize` (global, kept by presets, resets and shuffles, counted by `Settings.changes`), replacing Kata's `touches`. New options change `combinations()` and `Profile.combination`.
+
+**Steps**, each a commit pushed to `dev`, with renders dark and light:
+- **S2 · overview**: `overview: framed` beside grid and dynamic (`OverviewPage.framed` today reads `skin.overview`; read the setting instead), a row in the Panels card, harness from `overview-shoji.json`.
+- **S3 · bar parts**: the table above, in `BarSurface` and its components (each new value a branch in the existing component, as `bluetooth` styles were), parts taking `skin` from `BarWindow`. The hard ones: the ensō battery and names that slide out on reach, inside Hanko's one-baseline layout and its giving-way order for hosted widgets. Show renders of the bar with each value before going on.
+- **S4 · preset and migration**: `Shōji` in `PRESETS` and `PRESET_NAMES` (and `PRESET_BLURBS`), `sheetStyles` all `shoji` and `overview: framed` with it. A saved `design: "shoji"` normalizes to that preset (keeping edits; `touches` become the global keys; a monitor whose `design` is Shōji gets the preset's values as overrides). Render today's Shōji design (`kata-bars.json`) beside the preset and match by eye; pixel identity is impossible (different layout code), so list each difference.
+- **S5 · removal**: `KataBar.qml`, Settings › Design (`DesignPage.qml`, its rail entry, `designPicked`/`touchPicked`), `SheetWindow.kataView` and `kataOrder`, `OverviewWindow.kata`, the Kata `design`/`touches` resolution (keep a small skin-from-style helper), IPC `designGet`/`design`/`designDescribe`/`touch`, `scripts/hanko design` and `touch` (removed, no alias), `Typeset.setDesign`/`touch`/`kata`, Kata harness scenes (`KataBars`, `KataPanels`, `KataWave`, `design-settings*`), and `ShojiPanel.ownDisplay` (always on). Panel opacity moves to Settings › Sheets. Docs: README (the "Two designs" line and its image), ROADMAP, COMPONENTS, CHANGELOG, this file; `docs/kata/` stays as history.
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
 
@@ -889,6 +931,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
 30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), and each hand at the user's `typeSize` large (the sheets grow, they don't scroll).
 31. **Craft hands to verify on hardware:** Shōgi's square click and wheel on the master and an app (the wheel steps one file, 12.5%), Soroban's bead flick (a hundreds rod appears at 100%; clicking the units' first earth bead when one is counted takes it back to zero), Odoshi's scale click, Kasumi's drag along a band that drifts in from the right (it measures from the right edge), the 24-scale day lame at 1x, and each hand on the user's theme (light themes draw Kasumi's bands as ink and Shōgi's pieces as pale wood). The harness letter timestamps are UTC: render with `TZ=UTC` or the inbox reads "now" for every letter.
+32. **Shōji sheet hand to verify on hardware:** the rail slide between two cells on a Hanko bar (`Behavior on x` only runs while both are Shōji sheets; from another hand it jumps), the panel's side when the cell is near the middle, the Display panel's monitor pick and Arrange › (`omarchy-launch-editor`), the brush slider dragged on a real brightness (DDC can lag), and Tab from Power to Display.
 
 ## 13. QML pitfalls already hit
 
