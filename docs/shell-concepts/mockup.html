@@ -1,0 +1,262 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: Fraunces; src: url(../../assets/fonts/Fraunces.ttf); }
+@font-face { font-family: Fraunces; font-style: italic; src: url(../../assets/fonts/Fraunces-Italic.ttf); }
+@font-face { font-family: Grotesk; src: url(../../assets/fonts/SpaceGrotesk.ttf); }
+@font-face { font-family: Brush; src: url(../../assets/fonts/YujiBoku.ttf); }
+@font-face { font-family: Mono; src: url(/home/user/hfonts/JetBrainsMono.ttf); }
+@font-face { font-family: SerifJP; src: url(/home/user/hfonts/NotoSerifJP.ttf); }
+:root { --paper:#0a0a09; --ink:#ddd5c7; --dim:#a9a297; --muted:#7a746b; --faint:#4a4640; --line:rgba(221,213,199,.22); --soft:rgba(221,213,199,.10); --strong:rgba(221,213,199,.4); --seal:#d8452f; }
+* { margin:0; box-sizing:border-box; }
+body { width:1600px; height:1130px; background:#050505; color:var(--ink); font-family:Grotesk; overflow:hidden; }
+#desk { position:absolute; left:0; top:0; width:1600px; height:1000px; overflow:hidden; background:var(--paper); }
+#wall { position:absolute; inset:0; }
+.jp { font-family: Brush, SerifJP; }
+.mono { font-family: Mono; text-transform: uppercase; letter-spacing:.14em; }
+.win { position:absolute; background:rgba(14,14,13,.97); border:1px solid rgba(221,213,199,.16); overflow:hidden; }
+.win.focus { border-color: rgba(221,213,199,.55); }
+.win pre { font-family:Mono; font-size:11.5px; line-height:1.62; color:#8f897f; padding:14px 16px; white-space:pre; }
+.win pre b { color:#ddd5c7; font-weight:400; } .win pre i { color:#c9a26a; font-style:normal; } .win pre u { color:#7f9a8a; text-decoration:none; } .win pre s { color:#d8452f; text-decoration:none; }
+.note { position:absolute; font-family:Mono; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#9a9387; white-space:nowrap; }
+.note::before { content:""; display:inline-block; width:5px; height:5px; background:var(--seal); margin-right:8px; vertical-align:1px; }
+.lead { position:absolute; border-top:1px dashed rgba(216,69,47,.55); transform-origin:0 0; }
+#cap { position:absolute; left:0; top:1000px; width:1600px; height:130px; border-top:1px solid var(--line); padding:26px 40px; display:flex; gap:28px; align-items:flex-start; }
+#cap .k { font-family:Brush,SerifJP; color:var(--seal); font-size:46px; line-height:1; }
+#cap h1 { font-family:Fraunces; font-weight:400; font-size:30px; line-height:1.1; }
+#cap h1 em { font-style:italic; color:var(--dim); }
+#cap p { margin-top:8px; color:var(--muted); font-size:13.5px; line-height:1.5; max-width:1250px; }
+#cap .no { margin-left:auto; font-family:Mono; color:var(--faint); font-size:12px; letter-spacing:.2em; }
+.vert { writing-mode: vertical-rl; text-orientation: mixed; }
+.tcy { text-combine-upright: all; }
+</style></head>
+<body>
+<div id="desk"><svg id="wall" width="1600" height="1000"></svg><div id="layer"></div></div>
+<div id="cap"></div>
+<script>
+const C = location.hash.slice(1) || "rakkan"
+// ---- the wallpaper: an ink-wash landscape, the sky to the right left empty
+const svg = document.getElementById("wall")
+let seed = 7
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+function ridge(base, amp, rough, x0, x1) {
+  const pts = []; let y = 0, v = 0
+  for (let x = x0; x <= x1; x += 8) { v += (rnd() - .5) * rough; v *= .92; y += v; y *= .985; pts.push([x, base + y * amp - Math.max(0, (900 - x)) * (amp * .0)]) }
+  return pts
+}
+function mountain(peakX, peakY, width, base, jag) {
+  const pts = []
+  for (let x = peakX - width; x <= peakX + width; x += 6) {
+    const d = Math.abs(x - peakX) / width
+    const h = (1 - Math.pow(d, 1.4)) * (base - peakY)
+    pts.push([x, base - h + (rnd() - .5) * jag * (1 - d)])
+  }
+  return pts
+}
+let defs = `<defs>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .87  0 0 0 0 .84  0 0 0 0 .78  0 0 0 .05 0"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="2.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="18"/></filter>
+ <radialGradient id="moon" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ddd5c7" stop-opacity=".95"/><stop offset=".85" stop-color="#ddd5c7" stop-opacity=".88"/><stop offset="1" stop-color="#ddd5c7" stop-opacity="0"/></radialGradient>
+ <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ddd5c7" stop-opacity=".10"/><stop offset="1" stop-color="#ddd5c7" stop-opacity="0"/></radialGradient>`
+defs += `</defs>`
+let body = `<rect width="1600" height="1000" fill="#0b0b0a"/>`
+body += `<circle cx="1030" cy="190" r="260" fill="url(#glow)"/><circle cx="1030" cy="190" r="64" fill="url(#moon)" opacity=".9"/>`
+// Ridges by midpoint displacement: a far range, a middle one, a near hill.
+function md(n, rough, h0, h1) {
+  let p = [h0, h1]
+  let amp = 1
+  for (let k = 0; k < n; k++) {
+    const q = []
+    for (let i = 0; i < p.length - 1; i++) { q.push(p[i]); q.push((p[i] + p[i + 1]) / 2 + (rnd() - .5) * amp) }
+    q.push(p[p.length - 1]); p = q; amp *= rough
+  }
+  return p
+}
+const ranges = [
+  { y0: 470, y1: 940, amp: 240, rough: .56, col: [46, 44, 40], x1: 1600 },
+  { y0: 600, y1: 860, amp: 170, rough: .55, col: [33, 31, 28], x1: 1600 },
+  { y0: 760, y1: 930, amp: 90, rough: .52, col: [19, 18, 16], x1: 1600 },
+]
+ranges.forEach((r, i) => {
+  const ys = md(8, r.rough, 0, 0)
+  const n = ys.length
+  defs += ""
+  let d = "M0,1000"
+  for (let k = 0; k < n; k++) {
+    const x = k / (n - 1) * r.x1
+    const t = k / (n - 1)
+    const y = r.y0 + (r.y1 - r.y0) * t * t + ys[k] * r.amp
+    d += ` L${x.toFixed(1)},${y.toFixed(1)}`
+  }
+  d += ` L${r.x1},1000 Z`
+  const c = `rgb(${r.col.join(",")})`
+  body += `<linearGradient id="r${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="${[.35, .5, .6][i]}" stop-color="${c}"/><stop offset="1" stop-color="#0b0b0a"/></linearGradient>`
+  body += `<path d="${d}" fill="url(#r${i})" filter="url(#soft)"/>`
+  // mist pooling at the foot of each range
+  body += `<rect x="-100" y="${[760, 860, 940][i]}" width="1800" height="70" fill="#ddd5c7" opacity=".045" filter="url(#mist)"/>`
+})
+// a lone pine on the near ridge
+body += `<g transform="translate(260,150)"><g stroke="#0c0c0b" stroke-width="5" fill="none" stroke-linecap="round"><path d="M980 830 C 975 770 990 720 978 660"/><path d="M978 700 C 940 690 920 700 900 690"/><path d="M982 735 C 1020 725 1045 735 1070 725"/><path d="M979 670 C 955 655 940 660 925 650"/></g>`
+body += `<g fill="#0c0c0b"><ellipse cx="905" cy="684" rx="40" ry="9"/><ellipse cx="1062" cy="719" rx="44" ry="10"/><ellipse cx="930" cy="644" rx="34" ry="8"/><ellipse cx="978" cy="652" rx="26" ry="8"/></g></g>`
+body += `<rect width="1600" height="1000" filter="url(#grain)"/>`
+svg.innerHTML = defs + body
+
+const L = document.getElementById("layer")
+const add = h => L.insertAdjacentHTML("beforeend", h)
+function note(x, y, text, lx, ly) {
+  add(`<div class="note" style="left:${x}px;top:${y}px">${text}</div>`)
+  if (lx !== undefined) {
+    const dx = lx - x, dy = ly - (y + 6), len = Math.hypot(dx, dy), a = Math.atan2(dy, dx) * 180 / Math.PI
+    add(`<div class="lead" style="left:${x}px;top:${y + 6}px;width:${len}px;transform:rotate(${a}deg)"></div>`)
+    add(`<div style="position:absolute;left:${lx - 3}px;top:${ly - 3}px;width:6px;height:6px;border:1px solid var(--seal);border-radius:50%"></div>`)
+  }
+}
+const code = `<b>import</b> QtQuick
+<b>import</b> <u>"../../core"</u>
+
+<i>// The seal: pressed, the shell prints.</i>
+<b>Item</b> {
+  <b>id</b>: root
+  <b>property</b> <i>bool</i> pressed: <s>false</s>
+  <b>signal</b> printed()
+
+  <b>Rectangle</b> {
+    width: Type.px(<s>28</s>); height: width
+    color: Ink.seal
+  }
+}`
+const term = `<b>ayush@kumo</b> <u>~/code/hanko</u> (dev)
+<b>$</b> tests/run --quick
+== unit   <u>113 passed</u>
+== qmllint ok
+== motion
+PROBE mid:53 end:62 faded:1.00:Kumo
+<u>motion ok</u>
+<b>$</b> git log --oneline -3
+<i>066d8f2</i> docs: sheet hands, the research
+<i>926acac</i> Sheets: four studies for the third
+<i>2096707</i> Sheets: take the Mon hand out
+<b>$</b> <span style="background:#ddd5c7">&nbsp;</span>`
+const win = (x, y, w, h, txt, focus) => add(`<div class="win${focus ? " focus" : ""}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px"><pre>${txt}</pre></div>`)
+const seal = (x, y, s, glyph) => add(`<div style="position:absolute;left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:var(--seal);border-radius:2px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 ${Math.max(1, s * .06)}px rgba(10,10,9,.18)"><span class="jp" style="color:#0a0a09;font-size:${s * .66}px;line-height:1">${glyph || "鑑"}</span></div>`)
+function cap(k, name, en, text, no) {
+  document.getElementById("cap").innerHTML = `<div class="k">${k}</div><div><h1>${name} <em>${en}</em></h1><p>${text}</p></div><div class="no">${no} / 05</div>`
+}
+
+if (C === "rakkan") {
+  win(40, 40, 700, 560, code, true)
+  // The signature column in the calm sky.
+  const x = 1300, y = 120
+  add(`<div class="vert" style="position:absolute;left:${x}px;top:${y}px;height:600px;font-family:Brush,SerifJP;font-size:30px;line-height:1.35;color:var(--ink);letter-spacing:.12em">
+    <span class="tcy" style="font-family:Fraunces">21</span>時<span class="tcy" style="font-family:Fraunces">44</span>分</div>`)
+  add(`<div class="vert" style="position:absolute;left:${x - 44}px;top:${y + 4}px;height:600px;font-family:Brush,SerifJP;font-size:18px;line-height:1.5;color:var(--dim);letter-spacing:.2em">
+    火曜　十月六日　寒露</div>`)
+  add(`<div class="vert" style="position:absolute;left:${x - 82}px;top:${y + 4}px;height:600px;font-family:Brush,SerifJP;font-size:16px;line-height:1.5;color:var(--muted);letter-spacing:.2em">
+    波　<span style="font-family:Fraunces;font-style:italic">Kumo</span>　音<span class="tcy" style="font-family:Fraunces">62</span>　<span style="color:var(--seal)">力<span class="tcy" style="font-family:Fraunces">14</span></span></div>`)
+  // Workspaces as numerals, the current inked.
+  add(`<div class="vert" style="position:absolute;left:${x + 6}px;top:${y + 330}px;font-family:Brush,SerifJP;font-size:20px;letter-spacing:.5em;color:var(--faint)">一二<span style="color:var(--ink)">三</span>四</div>`)
+  seal(x + 2, y + 470, 40)
+  note(1430, 140, "The time, brushed", x + 40, y + 60)
+  note(960, 190, "Day · date · season", x - 30, y + 60)
+  note(940, 300, "Network · volume · battery low (red)", x - 70, y + 230)
+  note(1400, 470, "Workspaces 一 二 三 四", x + 26, y + 400)
+  note(1390, 610, "Your seal · press to open", x + 22, y + 490)
+  note(1040, 820, "Placed in the calmest part of the wallpaper", 1240, 700)
+  cap("落款", "Rakkan", "the signature", "The shell is the signature on a painting: one column of brushed text and your red seal, placed by the shell in the quietest part of your wallpaper. Nothing touches the screen's edges. Change the wallpaper and the signature finds a new place. Press the seal and the sheets unroll from it; a warning is one character turning red.", "01")
+}
+
+if (C === "yohaku") {
+  const g = 26
+  win(g + 24, 2 * g + 6, 900, 1000 - 4 * g - 12, code, true)
+  win(g + 24 + 900 + g, 2 * g + 6, 1600 - 2 * g - 48 - 900 - g, 440, term)
+  win(g + 24 + 900 + g, 2 * g + 6 + 440 + g, 1600 - 2 * g - 48 - 900 - g, 1000 - 4 * g - 12 - 440 - g, `<b>~/notes</b>\n\n<i>shell concepts</i>\n· rakkan\n· yohaku\n· hanshin\n· inkan\n· sumi`)
+  // Running head in the top margin, over the focused window.
+  add(`<div style="position:absolute;left:${g + 24}px;top:22px;width:900px;display:flex;justify-content:space-between;align-items:center" class="mono"><span style="font-size:10px;color:var(--dim)">NVIM · ~/code/hanko/Bar.qml</span><span style="font-family:Fraunces;font-size:15px;letter-spacing:0;text-transform:none;color:var(--ink)">21:44 <em style="color:var(--muted)">Tuesday</em></span></div>`)
+  add(`<div style="position:absolute;left:${g + 24 + 900 + g}px;top:24px;right:${g + 24}px;display:flex;justify-content:space-between" class="mono"><span style="font-size:9px;color:var(--faint)">ALACRITTY</span><span style="font-size:9px;color:var(--faint)">NOTES</span></div>`)
+  // A margin note set vertically in the gap between the columns.
+  add(`<div class="vert" style="position:absolute;left:${g + 24 + 900 + 7}px;top:200px;font-family:Mono;font-size:10px;letter-spacing:.24em;color:var(--muted)">KUMO · VOL 62 · BAT 91 · <span style="color:var(--seal)">✳ 2 LETTERS</span></div>`)
+  // Folio in the outer corner; the other workspaces as faint numerals.
+  add(`<div style="position:absolute;right:${g + 24}px;bottom:16px;display:flex;gap:18px;align-items:baseline"><span class="mono" style="font-size:9px;color:var(--faint)">一 二 四</span><span style="font-family:Fraunces;font-size:22px">三</span></div>`)
+  add(`<div class="mono" style="position:absolute;left:${g + 24}px;bottom:18px;font-size:9px;color:var(--faint)">寒露 · COLD DEW · WEEK 41</div>`)
+  // Callouts, set on the wallpaper strip so they stay readable.
+  note(330, 470, "Running head: the focused window", 300, 30)
+  note(980, 300, "Margin note in the gap", 937, 300)
+  note(1180, 860, "Folio: the workspace", 1530, 975)
+  note(330, 860, "Foot margin: the season", 200, 975)
+  cap("余白", "Yohaku", "the margin", "No bar. The shell lives in the gaps you already have between windows, set like a book's margins: a running head over the focused window, the clock in the top margin, a vertical note in the gutter between columns, the workspace as a folio in the outer corner. Your gaps become a typographic grid.", "02")
+}
+
+if (C === "hanshin") {
+  const g = 12, fold = 54, split = 860
+  win(g, g, split - g - fold / 2, 1000 - 2 * g, code, true)
+  win(split + fold / 2, g, 1600 - split - fold / 2 - g, 470, term)
+  win(split + fold / 2, g + 470 + g, 1600 - split - fold / 2 - g, 1000 - 3 * g - 470, `<b>~/notes</b>\n\n<i>the fold follows the split</i>`)
+  const fx = split - fold / 2
+  add(`<div style="position:absolute;left:${fx}px;top:${g}px;width:${fold}px;height:${1000 - 2 * g}px;border-left:1px solid var(--line);border-right:1px solid var(--line);background:rgba(10,10,9,.82)"></div>`)
+  // Top: the volume (workspace) in brush.
+  add(`<div class="vert jp" style="position:absolute;left:${fx + 14}px;top:40px;font-size:22px;letter-spacing:.1em">巻三</div>`)
+  // Fishtail mark (gyobi).
+  add(`<svg style="position:absolute;left:${fx + 9}px;top:110px" width="36" height="22"><path d="M0 0 H36 V22 L18 10 L0 22Z" fill="#ddd5c7"/></svg>`)
+  add(`<div class="vert" style="position:absolute;left:${fx + 17}px;top:150px;font-family:Fraunces;font-style:italic;font-size:17px;letter-spacing:.04em;color:var(--ink)">nvim — Bar.qml</div>`)
+  add(`<svg style="position:absolute;left:${fx + 9}px;top:330px" width="36" height="22"><path d="M0 22 H36 V0 L18 12 L0 0Z" fill="#ddd5c7" opacity=".5"/></svg>`)
+  add(`<div class="vert mono" style="position:absolute;left:${fx + 20}px;top:380px;font-size:10px;color:var(--muted)">KUMO · VOL 62 · BAT 91</div>`)
+  add(`<div style="position:absolute;left:${fx}px;top:${1000 - 170}px;width:${fold}px;text-align:center;font-family:Fraunces;font-size:16px;line-height:1.1">21<br>44</div>`)
+  add(`<div style="position:absolute;left:${fx}px;top:${1000 - 106}px;width:${fold}px;display:flex;justify-content:center">${""}</div>`)
+  seal(fx + 13, 1000 - 96, 28)
+  add(`<div class="mono" style="position:absolute;left:${fx}px;top:${1000 - 56}px;width:${fold}px;text-align:center;font-size:9px;color:var(--faint)">一二三四</div>`)
+  // Arrows: the fold moves with the split.
+  add(`<div class="mono" style="position:absolute;left:${fx - 60}px;top:600px;font-size:30px;color:var(--seal)">◂</div><div class="mono" style="position:absolute;left:${fx + fold + 46}px;top:600px;font-size:30px;color:var(--seal)">▸</div>`)
+  note(560, 50, "Volume: the workspace", fx + 14, 60)
+  note(560, 124, "Fishtail mark", fx + 10, 120)
+  note(1000, 250, "Window title, set down the fold", fx + 44, 250)
+  note(1000, 405, "Network · volume · battery", fx + 40, 420)
+  note(560, 840, "Time · seal · workspaces", fx + 6, 860)
+  note(470, 628, "Moves with your tiling split", fx - 64, 620)
+  cap("版心", "Hanshin", "the fold", "An old printed book is a sheet folded down the middle, and the fold carries the title, the volume and the page. Here the shell is a slim fold on your tiling split, between the main window and the stack, not on any edge of the screen. Resize the split and the fold moves with it; with one window it steps out to the margin.", "03")
+}
+
+if (C === "inkan") {
+  win(40, 40, 820, 920, code, true)
+  // The sheet printing out of the seal.
+  add(`<div style="position:absolute;left:1090px;top:330px;width:440px;height:540px;background:#0d0d0c;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.6)">
+    <div class="mono" style="display:flex;gap:10px;align-items:center;padding:22px 24px 0;font-size:10px;color:var(--muted)"><span style="width:18px;height:1px;background:var(--muted)"></span><span class="jp" style="font-size:13px;color:var(--ink);letter-spacing:0">鑑</span>HANKO · ALL SHEETS<span style="flex:1;height:1px;background:var(--line)"></span>NO. 00</div>
+    <div style="padding:20px 24px 0;font-family:Fraunces;font-size:52px;line-height:1">21:44 <span style="font-size:18px;font-style:italic;color:var(--dim)">Tuesday, 6 October</span></div>
+    ${[["音", "Sound", "62% · Studio Monitors"], ["波", "Network", "Kumo · 82%"], ["藍", "Bluetooth", "WH-1000XM5"], ["力", "Power", "14% · 38 min"], ["報", "Inbox", "2 letters"]].map((r, i) => `<div style="display:flex;align-items:center;gap:14px;margin:0 24px;padding:13px 0;border-bottom:1px solid var(--soft);${i == 0 ? "margin-top:22px;border-top:1px solid var(--soft)" : ""}"><span class="jp" style="font-size:17px;color:${r[0] == "力" ? "var(--seal)" : "var(--dim)"}">${r[0]}</span><span style="font-size:14px">${r[1]}</span><span class="mono" style="margin-left:auto;font-size:10px;color:${r[0] == "力" ? "var(--seal)" : "var(--muted)"}">${r[2]}</span></div>`).join("")}
+  </div>`)
+  // The ink spreading under the seal as it presses.
+  add(`<div style="position:absolute;left:1488px;top:880px;width:110px;height:110px;border-radius:50%;background:radial-gradient(rgba(216,69,47,.25),rgba(216,69,47,0) 70%)"></div>`)
+  seal(1520, 912, 46)
+  // Close-up: the seal at rest, as status.
+  add(`<div style="position:absolute;left:940px;top:60px;width:560px;height:200px;border:1px solid var(--line);background:rgba(10,10,9,.9);padding:20px 24px">
+    <div class="mono" style="font-size:10px;color:var(--muted)">The seal at rest, read like a stamp</div>
+    <div style="display:flex;gap:56px;margin-top:22px">
+      ${[["鑑", "All well", ""], ["鑑", "Battery low", "thin"], ["鑑", "Two letters", "chip"]].map(s => `<div style="text-align:center"><div style="position:relative;width:70px;height:70px;background:var(--seal);border-radius:3px;display:flex;align-items:center;justify-content:center;${s[2] == "chip" ? "clip-path:polygon(0 0,78% 0,100% 22%,100% 100%,0 100%)" : ""}"><span class="jp" style="color:#0a0a09;font-size:46px;${s[2] == "thin" ? "opacity:.45;-webkit-text-stroke:0" : ""}">${s[0]}</span></div><div class="mono" style="font-size:9px;margin-top:12px;color:var(--dim)">${s[1]}</div></div>`).join("")}
+    </div></div>`)
+  note(1150, 300, "Pressed: the shell prints out, then lifts off", 1150, 330)
+  note(1180, 975, "At rest, the only thing on screen", 1515, 930)
+  cap("印", "Inkan", "the seal only", "The most extreme: nothing on screen but one seal in a corner of your choosing. Its carving is the status: strokes fade as the battery falls, a chipped corner is an unread letter. Press it or hit a key and the whole shell prints onto the desk as a sheet, with an ink-press, and lifts off when you're done.", "04")
+}
+
+if (C === "sumi") {
+  win(40, 40, 760, 920, term, true)
+  const notes = [
+    { x: 1460, a: 1, k: "信", who: "Signal · Mira", t: "Are we still on for tonight?", age: "just now", blur: 0.6 },
+    { x: 1360, a: .62, k: "郵", who: "Mail · GitHub", t: "CI passed on dev", age: "12 min", blur: 0 },
+    { x: 1270, a: .34, k: "知", who: "Battery", t: "Charger connected", age: "40 min", blur: 0 },
+    { x: 1190, a: .14, k: "知", who: "Update", t: "Omarchy 3.1.5 is ready", age: "2 h", blur: 0 },
+  ]
+  notes.forEach((n, i) => {
+    add(`<div class="vert" style="position:absolute;left:${n.x}px;top:${110 + i * 20}px;opacity:${n.a};filter:${n.blur ? `drop-shadow(0 0 ${n.blur * 4}px rgba(221,213,199,.35))` : "none"}">
+      <span class="jp" style="font-size:30px;color:${i == 0 ? "var(--seal)" : "var(--ink)"}">${n.k}</span>
+      <span style="display:inline-block;height:14px"></span>
+      <span style="font-family:Fraunces;font-style:italic;font-size:22px;color:var(--ink)">${n.t}</span>
+      <span style="display:inline-block;height:14px"></span>
+      <span class="mono" style="font-size:10px;color:var(--dim)">${n.who}</span></div>`)
+  })
+  ;[["Just now", 1460], ["12 min", 1360], ["40 min", 1270], ["2 h", 1190]].forEach((t, i) => add(`<div class="mono" style="position:absolute;left:${t[1] - 8}px;top:560px;width:50px;text-align:center;font-size:9px;color:${i ? "var(--muted)" : "var(--seal)"}">${t[0]}</div>`))
+  note(1150, 610, "Fresh ink is dark; it dries pale, then goes")
+  note(1150, 640, "Clear all: wash the stone")
+  cap("墨", "Sumi", "drying ink", "A layer for notifications that pairs with any shell: each letter is brushed onto the desk in the empty space and dries as it ages. Fresh ink is dark and wet; an hour later it's pale; after a while it's gone. You read how old something is from the ink, not from a timestamp.", "05")
+}
+</script></body></html>
