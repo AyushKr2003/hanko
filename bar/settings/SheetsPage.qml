@@ -10,9 +10,9 @@ import "../parts" as Parts
 // Settings › Sheets 紙: which hand draws each cell's sheet. Cards name
 // the six hands (Ledger 帳, Tanzaku 短冊, Shōgi 将棋, Soroban 算盤,
 // Odoshi 縅, Kasumi 霞, Shōji 障子; a click sets every sheet), three to
-// a row; then
-// one row per sheet with its choice. Beside the rows the sheet you last
-// touched prints live in its hand, in a room as wide as the widest sheet.
+// a row; then one row per sheet: its name, what its hand is, and under
+// them the choice. Beside the rows the sheet you last touched prints live
+// in its hand, in a room as wide as the widest sheet.
 Item {
   id: root
 
@@ -253,7 +253,8 @@ Item {
     signal picked(string value)
     signal touched()
     width: parent ? parent.width : 0
-    height: Type.px(54)
+    // Three lines: the name, the hand's line, the seven-way choice across.
+    height: seg.y + seg.height + Type.px(12)
     Rectangle {
       anchors.fill: parent
       color: row.focused ? Ink.alpha(Ink.bone, 0.05) : "transparent"
@@ -263,7 +264,7 @@ Item {
     MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: row.touched(); onClicked: row.touched() }
     Text {
       x: Type.px(12)
-      anchors.verticalCenter: parent.verticalCenter
+      y: label.y
       width: Type.px(26)
       text: row.jp
       color: Ink.inkMuted
@@ -271,18 +272,19 @@ Item {
       font.pixelSize: Type.px(18)
     }
     Column {
+      id: label
       x: Type.px(46)
-      anchors.verticalCenter: parent.verticalCenter
-      width: parent.width - x - seg.width - Type.px(20)
+      y: Type.px(12)
+      width: parent.width - x - Type.px(12)
       spacing: Type.px(2)
       Text { text: row.name; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row }
       Text { width: parent.width; elide: Text.ElideRight; text: row.line; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
     }
     Segmented {
       id: seg
-      anchors.right: parent.right
-      anchors.rightMargin: Type.px(8)
-      anchors.verticalCenter: parent.verticalCenter
+      x: Type.px(12)
+      y: label.y + label.implicitHeight + Type.px(10)
+      fill: row.width - 2 * x
       options: S.SHEET_STYLES
       labels: root.labels
       selected: row.selected
