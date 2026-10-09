@@ -124,7 +124,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 - ✅ **Sheet hands**: every cell's sheet in six hands, Ledger 帳 (the page), Tanzaku 短冊 (poem slips hung from a rail, as long as their level; replaced a first Dial hand), and four after old Japan's crafts, built from the design studies: Shōgi 将棋 (the board), Soroban 算盤 (the abacus), Odoshi 縅 (armour lacing) and Kasumi 霞 (gold-leaf mist bands), drawn from one model per sheet (`core/Hands.js`) ([revision2/sheet-hands.md](revision2/sheet-hands.md); Prose and Mon were tried and taken out), chosen per sheet on Settings › Sheets with a live preview; `hanko style set sheetStyle:<sheet> <hand>`. A seventh hand, Shōji 障子 (the Shōji design's panels, with a new Display panel), is S1 of folding Shōji into Hanko.
 - 🔨 **Shōji into Hanko** (asked for: "Shōji should be part of Hanko, not a separate design; tweak Hanko to get the Shōji design, and all its sheets move to the sheets in Hanko"). One design, Hanko; Shōji becomes a sheet hand, new option values and a preset. Steps, each its own commit (plan in HANDOFF §10):
   - ✅ **S1 · Shōji as a sheet hand**: the panels move to `bar/sheets/`, a new Shōji Display panel, the rail kept, a seventh card on Settings › Sheets.
-  - ⬜ **S2 · The framed overview** as `overview: framed`.
+  - ✅ **S2 · The framed overview** as `overview: framed`, on any bar.
   - ⬜ **S3 · Shōji's bar parts as Hanko options** (`surface: washi`, `seal: carved`, `notif: seal`, `spaces: brush`, `clock: season`, `status: ink`, `pointer`, and global `season`, `numerals`, `grain`).
   - ⬜ **S4 · The Shōji preset and migration** (a saved `design: shoji` loads as the preset).
   - ⬜ **S5 · Removal**: the design switch, `KataBar`, Settings › Design, `hanko design`.

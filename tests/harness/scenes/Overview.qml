@@ -13,12 +13,13 @@ import "../../../bar/overview"
 // `params`: { theme, now, spaces (Hypr.spacesFor() rows with `all`),
 //   overview: { layout, active, selected, aspect, screen, width, height, rows, columns, fold },
 //   design: a Kata style doc ({ design: "shoji" }) to print the bar and pages in that design }
+// overview.layout "framed" prints Shōji's framed pages under the Hanko bar.
 Rectangle {
   id: sheet
   readonly property var p: JSON.parse(params)
   readonly property var o: p.overview || {}
   readonly property var kata: K.resolve(p.design || {})
-  readonly property var skin: kata.classic ? ({}) : Sk.skin(kata)
+  readonly property var skin: kata.classic && o.layout !== "framed" ? ({}) : Sk.skin(kata)
   readonly property Item bar: kata.classic ? classicBar : kataBar
   width: o.width || 1600
   height: o.height || 900

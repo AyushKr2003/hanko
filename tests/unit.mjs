@@ -1268,7 +1268,9 @@ test("overview layout is a setting beside the counted ones", () => {
   assert.equal(d.overview, "dynamic")
   assert.equal(S.withPreset(d, "Quiet").overview, "dynamic")
   assert.equal(S.withSetting({}, "overview", "tiles"), null)
-  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic"])
+  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic", "framed"])
+  // Shōji's framed pages are a choice on any bar.
+  assert.equal(S.resolve(S.withSetting({}, "overview", "framed")).overview, "framed")
 })
 
 // ── Kata 型: one engine for every design ──────────────────────────────

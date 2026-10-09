@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after S1 of folding Shōji into Hanko: Shōji's panels are a seventh sheet hand, with a Display panel of their own (plan and remaining steps in §10, "Shōji into Hanko").
+Last updated: 2026-10-09, after S2 of folding Shōji into Hanko: Shōji's panels are a seventh sheet hand (S1) and its framed overview is `overview: framed` (S2); plan and remaining steps in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -810,6 +810,11 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - **`Style.js`**: `SHEET_STYLES` has `shoji`. **Settings › Sheets**: a seventh card; the preview scales a panel wider than its room (Time with the season is 732 px) and gets the skin from the draft (`Sk.skin(K.resolve(doc), panelOpacity)`).
 - Harness: `Sheets` scene passes the skin and the rail gap; `sheets-shoji.json` (all seven), `sheets-hands-light.json` adds Shōji Display and Time, `sheets-settings.json` has Inbox in Shōji. Images `docs/revision2/images/r2-sheets-shoji.webp`, light and settings refreshed. Unit test updated (117).
 
+### Shōji into Hanko · S2, the framed overview ✅
+- `Style.js` `OVERVIEWS` and `Settings.js` `OVERVIEW_OPTIONS` gain `framed` (the Panels card row offers grid · dynamic · framed; `hanko style set overview framed`). `Overview.js` `LAYOUTS` stays grid/dynamic: framed is the grid, printed another way.
+- `OverviewWindow.framed` = the Shōji design or `overview: framed`; `dynamic` only when not framed; the view gets `barWindow.skin` when framed. Kata resolves Shōji's parts under the Hanko design too, so the skin's `overview` is `framed` and `OverviewPage` prints washi pages in lattice frames unchanged (the pages match the Shōji design's render; only the bar above differs).
+- Harness: the `Overview` scene prints framed pages under the Hanko bar for `overview.layout: "framed"`; params `overview-framed.json` (dark) and `overview-framed-light.json` (Rosé Pine Dawn); image `docs/revision2/images/r2-overview-framed.webp`. Unit test extended (117).
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
@@ -836,7 +841,7 @@ The user asked for Shōji to stop being a separate design: "Shōji should be par
 `season`, `numerals`, `grain` sit beside `motion` and `typeSize` (global, kept by presets, resets and shuffles, counted by `Settings.changes`), replacing Kata's `touches`. New options change `combinations()` and `Profile.combination`.
 
 **Steps**, each a commit pushed to `dev`, with renders dark and light:
-- **S2 · overview**: `overview: framed` beside grid and dynamic (`OverviewPage.framed` today reads `skin.overview`; read the setting instead), a row in the Panels card, harness from `overview-shoji.json`.
+- **S2 · overview** ✅ (see §9).
 - **S3 · bar parts**: the table above, in `BarSurface` and its components (each new value a branch in the existing component, as `bluetooth` styles were), parts taking `skin` from `BarWindow`. The hard ones: the ensō battery and names that slide out on reach, inside Hanko's one-baseline layout and its giving-way order for hosted widgets. Show renders of the bar with each value before going on.
 - **S4 · preset and migration**: `Shōji` in `PRESETS` and `PRESET_NAMES` (and `PRESET_BLURBS`), `sheetStyles` all `shoji` and `overview: framed` with it. A saved `design: "shoji"` normalizes to that preset (keeping edits; `touches` become the global keys; a monitor whose `design` is Shōji gets the preset's values as overrides). Render today's Shōji design (`kata-bars.json`) beside the preset and match by eye; pixel identity is impossible (different layout code), so list each difference.
 - **S5 · removal**: `KataBar.qml`, Settings › Design (`DesignPage.qml`, its rail entry, `designPicked`/`touchPicked`), `SheetWindow.kataView` and `kataOrder`, `OverviewWindow.kata`, the Kata `design`/`touches` resolution (keep a small skin-from-style helper), IPC `designGet`/`design`/`designDescribe`/`touch`, `scripts/hanko design` and `touch` (removed, no alias), `Typeset.setDesign`/`touch`/`kata`, Kata harness scenes (`KataBars`, `KataPanels`, `KataWave`, `design-settings*`), and `ShojiPanel.ownDisplay` (always on). Panel opacity moves to Settings › Sheets. Docs: README (the "Two designs" line and its image), ROADMAP, COMPONENTS, CHANGELOG, this file; `docs/kata/` stays as history.
@@ -931,7 +936,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
 30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), and each hand at the user's `typeSize` large (the sheets grow, they don't scroll).
 31. **Craft hands to verify on hardware:** Shōgi's square click and wheel on the master and an app (the wheel steps one file, 12.5%), Soroban's bead flick (a hundreds rod appears at 100%; clicking the units' first earth bead when one is counted takes it back to zero), Odoshi's scale click, Kasumi's drag along a band that drifts in from the right (it measures from the right edge), the 24-scale day lame at 1x, and each hand on the user's theme (light themes draw Kasumi's bands as ink and Shōgi's pieces as pale wood). The harness letter timestamps are UTC: render with `TZ=UTC` or the inbox reads "now" for every letter.
-32. **Shōji sheet hand to verify on hardware:** the rail slide between two cells on a Hanko bar (`Behavior on x` only runs while both are Shōji sheets; from another hand it jumps), the panel's side when the cell is near the middle, the Display panel's monitor pick and Arrange › (`omarchy-launch-editor`), the brush slider dragged on a real brightness (DDC can lag), and Tab from Power to Display.
+32. **Shōji sheet hand to verify on hardware:** the rail slide between two cells on a Hanko bar (`Behavior on x` only runs while both are Shōji sheets; from another hand it jumps), the panel's side when the cell is near the middle, the Display panel's monitor pick and Arrange › (`omarchy-launch-editor`), the brush slider dragged on a real brightness (DDC can lag), and Tab from Power to Display. `overview: framed` on a Hanko bar: the washi pages' opacity follows Panel opacity (Auto is the washi's 86%), keys and drag as on the grid.
 
 ## 13. QML pitfalls already hit
 

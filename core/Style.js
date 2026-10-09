@@ -104,8 +104,10 @@ function normalizeOpacity(o) {
 
 // Which workspace overview 一覧 opens, beside the twenty-two like motion:
 // grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
-// overview (only workspaces with windows, a + for a new one, desktops).
-var OVERVIEWS = ["grid", "dynamic"]
+// overview (only workspaces with windows, a + for a new one, desktops);
+// framed, the same grid as Shōji prints it: each page washi in a lattice
+// frame, its kanji numeral in the head (the `overview` part, bar/parts).
+var OVERVIEWS = ["grid", "dynamic", "framed"]
 var DEFAULT_OVERVIEW = "grid"
 
 function normalizeOverview(o) {
