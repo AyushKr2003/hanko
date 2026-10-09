@@ -1,7 +1,7 @@
 {
  "title": "Kata K5 · the panels",
  "scene": "KataPanels",
- "width": 2440,
+ "width": 1000,
  "theme": {
   "foreground": "#ddd5c7",
   "background": "#0a0a09",
@@ -310,18 +310,6 @@
   }
  },
  "docs": [
-  {
-   "label": "Margin",
-   "doc": {
-    "design": "margin"
-   }
-  },
-  {
-   "label": "Leaf",
-   "doc": {
-    "design": "leaf"
-   }
-  },
   {
    "label": "Shōji",
    "doc": {

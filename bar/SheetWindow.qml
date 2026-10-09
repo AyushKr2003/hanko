@@ -47,7 +47,7 @@ PanelWindow {
     bluetooth: Blue.reading,
     power: Power.reading,
     display: Display.reading,
-    letters: win.bar.lettersShown(Status.notifications),
+    letters: Status.notifications,
     dnd: Status.doNotDisturb
   })
   // Kata has six panels (Display lives in Power), so Tab steps through those.
@@ -189,7 +189,7 @@ PanelWindow {
     id: kataView
     visible: win.kata
     onWidthChanged: Qt.callLater(win.place)
-    // slide travels along the bar when another cell is picked
+    // the panel travels along the bar when another cell is picked
     x: win.placed.x
     Behavior on x {
       enabled: win.kata && !!win.skin.travels && win.open && !Motion.still
@@ -199,13 +199,11 @@ PanelWindow {
     skin: win.skin
     sheet: win.kata ? win.shownSheet : ""
     open: win.open && win.kata
-    atBottom: win.atBottom
     feed: win.feed
 
     onRequest: function(sheet, what, arg) { win.bar.sheetRequest(sheet, what, arg) }
     onCloseRequested: win.bar.closeSheet()
     onCycle: function(delta) { win.cycle(delta) }
-    onPickSheet: function(key) { win.bar.openSheet(key, win.screenName) }
   }
 
   // Other screens get a clear twin while the sheet is open, so a click on

@@ -178,13 +178,13 @@
  "strips": [
   {
    "doc": {
-    "design": "margin"
+    "design": "shoji"
    },
    "hover": "bluetooth"
   },
   {
    "doc": {
-    "design": "leaf"
+    "design": "shoji"
    },
    "hover": "battery"
   },

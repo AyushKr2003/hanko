@@ -3,13 +3,10 @@ import QtQuick
 import "../../core"
 import "../parts"
 
-// One open Kata panel (docs/kata): the frame (the surface part, the
-// concave joins of a fold, the sign: a heading, index tabs or a vertical
-// name) around one of the five panels, arriving the way the skin says:
-//   fold   hangs from the bar's line and unfolds downward
-//   slip   comes out from under the bar
-//   slide  slides in on its rail; SheetWindow moves the same panel along
-//          the bar when another cell is clicked (skin.travels)
+// One open Kata panel (docs/kata): the frame (the surface part and the
+// sign, a vertical name down the right edge) around one of the five
+// panels. It slides in on its rail; SheetWindow moves the same panel along
+// the bar when another cell is clicked (skin.travels).
 // Pure like SheetView, and fed the same `feed`; requests name their sheet
 // so Bar.sheetRequest handles them unchanged. Display has no panel of its
 // own here: it opens Power, where brightness is.
@@ -20,43 +17,25 @@ Item {
   property string sheet: ""
   property var feed: ({})
   property bool open: true
-  property bool atBottom: false
-  // Which side of the screen the panel's cell is on, for slide (-1 left, 1 right).
+  // Which side of the screen the panel's cell is on, for the slide (-1 left, 1 right).
   property int side: 1
 
   signal request(string sheet, string what, var arg)
   signal closeRequested()
   signal cycle(int delta)
-  signal pickSheet(string key)
 
   readonly property string panel: ({ time: "time", sound: "sound", network: "network", bluetooth: "bluetooth", power: "power", display: "power", inbox: "inbox" })[sheet] || ""
   readonly property var signs: ({
     time: ["時", "Time"], sound: ["音", "Sound"], network: ["繋", "Network"], bluetooth: ["藍", "Bluetooth"], power: ["電", "Power"], inbox: ["便り", "Letters"]
   })
-  readonly property var tabs: [{ key: "time", name: "Time" }, { key: "sound", name: "Sound" }, { key: "network", name: "Network" }, { key: "bluetooth", name: "Bluetooth" }, { key: "power", name: "Power" }, { key: "inbox", name: "Letters" }]
-  readonly property bool tate: skin.sign === "tategaki"
-  readonly property bool hangs: skin.arrive === "fold" || skin.arrive === "slip"
+  readonly property int signW: Type.px(52)
   readonly property int contentW: Type.px(panel === "time" ? ((skin.season || "off") !== "off" ? 640 : 420) : panel === "inbox" ? 420 : 400)
   readonly property int pad: Type.px(20)
 
-  width: contentW + 2 * pad + (tate ? Type.px(52) : 0)
+  width: contentW + 2 * pad + signW
   implicitWidth: width
   implicitHeight: body.implicitHeight + 2 * Type.px(18)
   height: implicitHeight
-
-  readonly property string detail: {
-    var f = feed || {}
-    if (panel === "sound" && f.sound) {
-      for (var i = 0; i < f.sound.outputs.length; i++) if (f.sound.outputs[i].current) return f.sound.outputs[i].label
-      return ""
-    }
-    if (panel === "network" && f.network) return f.network.radio ? "Wi-Fi on" : "Wi-Fi off"
-    if (panel === "bluetooth" && f.bluetooth) return f.bluetooth.enabled ? (f.bluetooth.connected.length ? f.bluetooth.connected.length + " connected" : "on") : "off"
-    if (panel === "power" && f.power) return f.power.charging ? "charging" : "on battery"
-    if (panel === "inbox") return f.dnd ? "quiet" : ""
-    if (panel === "time") return Qt.formatDate(f.now || new Date(), "d MMM yyyy")
-    return ""
-  }
 
   function focusContents() {
     var c = loader.item as Item
@@ -75,63 +54,33 @@ Item {
     }
   }
 
-  // slip is clipped at the bar's edge, so it comes out from under it
   Item {
-    id: well
-    x: -Type.px(12); y: 0
-    width: root.width + Type.px(24); height: root.height + Type.px(60)
-    clip: root.skin.arrive === "slip"
+    id: frame
+    x: root.side * Type.px(48) * (1 - root.reveal)
+    width: root.width; height: root.height
+    opacity: Math.min(1, root.reveal * 2.5)
 
-    Item {
-      id: frame
-      x: Type.px(12) + (root.skin.arrive === "slide" ? root.side * Type.px(48) * (1 - root.reveal) : 0)
-      y: root.skin.arrive === "slip" ? -(root.height + Type.px(40)) * (1 - root.reveal) * (root.atBottom ? -1 : 1)
-        : root.skin.arrive === "fold" ? -Type.px(14) * (1 - root.reveal) : 0
-      width: root.width; height: root.height
-      opacity: root.skin.arrive === "slip" ? 1 : Math.min(1, root.reveal * 2.5)
-      transform: Scale {
-        origin.y: root.atBottom ? root.height : 0
-        yScale: root.skin.arrive === "fold" ? 0.82 + 0.18 * root.reveal : 1
-      }
+    Surface { anchors.fill: parent; skin: root.skin }
 
-      Surface { anchors.fill: parent; skin: root.skin; hangs: root.hangs }
-      Joins { visible: root.skin.arrive === "fold" && root.skin.corner !== "cut" && !root.atBottom; width: root.width }
+    Column {
+      id: body
+      x: root.pad; y: Type.px(18)
+      width: root.contentW
+      spacing: Type.px(10)
+      Loader {
+        id: loader
+        width: parent.width
+        sourceComponent: ({ sound: soundPanel, time: timePanel, network: networkPanel, bluetooth: bluetoothPanel, power: powerPanel, inbox: lettersPanel })[root.panel] || null
+        onLoaded: if (root.open) root.focusContents()
+      }
+    }
 
-      Column {
-        id: body
-        x: root.pad; y: Type.px(18)
-        width: root.contentW
-        spacing: Type.px(10)
-        Sign {
-          visible: root.skin.sign === "eyebrow"
-          skin: root.skin
-          name: root.signs[root.panel] ? root.signs[root.panel][1] : ""
-          detail: root.detail
-        }
-        Loader {
-          id: loader
-          width: parent.width
-          sourceComponent: ({ sound: soundPanel, time: timePanel, network: networkPanel, bluetooth: bluetoothPanel, power: powerPanel, inbox: lettersPanel })[root.panel] || null
-          onLoaded: if (root.open) root.focusContents()
-        }
-      }
-
-      Rectangle { visible: root.tate; x: root.width - Type.px(52); width: 1; height: root.height; color: Ink.kLine }
-      Sign {
-        visible: root.tate
-        x: root.width - Type.px(52); width: Type.px(52); height: root.height
-        skin: root.skin
-        kanji: root.signs[root.panel] ? root.signs[root.panel][0] : ""
-        name: root.signs[root.panel] ? root.signs[root.panel][1] : ""
-      }
-      Sign {
-        visible: root.skin.sign === "tabs" && !root.atBottom
-        x: Type.px(14); y: root.height
-        skin: root.skin
-        tabs: root.tabs
-        current: root.panel
-        onPicked: function(key) { root.pickSheet(key) }
-      }
+    Rectangle { x: root.width - root.signW; width: 1; height: root.height; color: Ink.kLine }
+    Sign {
+      x: root.width - root.signW; width: root.signW; height: root.height
+      skin: root.skin
+      kanji: root.signs[root.panel] ? root.signs[root.panel][0] : ""
+      name: root.signs[root.panel] ? root.signs[root.panel][1] : ""
     }
   }
 

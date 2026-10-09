@@ -1,5 +1,5 @@
 {
- "title": "Panel opacity · Margin and Leaf at 60%, Shōji at 45%",
+ "title": "Panel opacity · Shōji at its own 86%, at 60% and at 45%",
  "scene": "KataPanels",
  "width": 2440,
  "theme": {
@@ -311,16 +311,15 @@
  },
  "docs": [
   {
-   "label": "Margin · 60%",
+   "label": "Shōji",
    "doc": {
-    "design": "margin",
-    "panelOpacity": 60
+    "design": "shoji"
    }
   },
   {
-   "label": "Leaf · 60%",
+   "label": "Shōji · 60%",
    "doc": {
-    "design": "leaf",
+    "design": "shoji",
     "panelOpacity": 60
    }
   },

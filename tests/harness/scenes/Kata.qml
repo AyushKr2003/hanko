@@ -6,14 +6,14 @@ import "../../../core/Kata.js" as K
 import "../../../core/Skin.js" as Sk
 import "../../../bar/parts"
 
-// Kata's parts in QML: every part as each design draws it, then a small
-// panel per design built from nothing but parts. params:
+// Kata's parts in QML: every part as Shōji draws it, then a small panel
+// built from nothing but parts. params:
 //   { theme: { foreground, background, red }, width, title, designs?: [doc, ...] }
 Rectangle {
   id: sheet
 
   readonly property var p: JSON.parse(params)
-  readonly property var docs: p.designs || [{ design: "margin" }, { design: "leaf" }, { design: "shoji" }]
+  readonly property var docs: p.designs || [{ design: "shoji" }]
   readonly property var skins: docs.map(function(d) { return Sk.skin(K.resolve(d)) })
   readonly property var names: docs.map(function(d) { return K.describe(K.resolve(d)) })
   readonly property real col: (width - 80 - 170) / docs.length
@@ -90,7 +90,7 @@ Rectangle {
               visible: rowBox.modelData === "select"
               x: 8; y: 15; width: 260; height: 46
               Selection { id: sel; skin: cell.skin; width: parent.width; height: 46 }
-              Text { x: 14; anchors.verticalCenter: parent.verticalCenter; text: "Studio Monitors"; color: sel.inverts ? Ink.paper : Ink.ink; font.family: Type.text; font.pixelSize: 14; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
+              Text { x: 14; anchors.verticalCenter: parent.verticalCenter; text: "Studio Monitors"; color: Ink.ink; font.family: Type.text; font.pixelSize: 14; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
             }
 
             KataSlider { visible: rowBox.modelData === "slider"; skin: cell.skin; x: 8; y: 23; width: 260; height: 30; value: 62 }
@@ -140,15 +140,13 @@ Rectangle {
                   Text { required property string modelData; width: 60; height: 40; text: modelData; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; color: modelData === "62" ? Ink.ink : Ink.ink2; font.family: Type.text; font.pixelSize: 13 }
                 }
               }
-              PointerMark { anchors.fill: parent; skin: cell.skin; target: Qt.rect(60, 0, 60, 40); lineY: 40; label: "Sound" }
+              PointerMark { anchors.fill: parent; skin: cell.skin; target: Qt.rect(60, 0, 60, 40); lineY: 40 }
             }
 
             Item {
               visible: rowBox.modelData === "sign"
               x: 8; y: 10; width: parent.width - 16; height: 100
-              Sign { visible: cell.skin.sign === "eyebrow"; skin: cell.skin; y: 6; name: "Sound"; detail: "Studio Monitors" }
-              Sign { visible: cell.skin.sign === "tabs"; skin: cell.skin; y: 30; current: "sound"; tabs: [{ key: "time", name: "Time" }, { key: "sound", name: "Sound" }, { key: "net", name: "Network" }, { key: "power", name: "Power" }] }
-              Sign { visible: cell.skin.sign === "tategaki"; skin: cell.skin; width: 52; height: 100; kanji: "音"; name: "Sound" }
+              Sign { skin: cell.skin; width: 52; height: 100; kanji: "音"; name: "Sound" }
             }
           }
         }
@@ -166,17 +164,15 @@ Rectangle {
           id: mini
           required property var modelData
           readonly property var skin: modelData
-          readonly property bool tate: skin.sign === "tategaki"
           width: (content.width - 48) / 3; height: 360
 
           Surface { id: surf; skin: mini.skin; x: 0; y: 0; width: parent.width; height: 300 }
           Column {
-            x: 20; y: 18; width: parent.width - 40 - (mini.tate ? 52 : 0); spacing: 10
-            Sign { visible: mini.skin.sign === "eyebrow"; skin: mini.skin; name: "Sound"; detail: "Studio Monitors" }
-            Label { visible: mini.skin.sign !== "eyebrow"; text: "Studio Monitors"; color: Ink.ink2 }
+            x: 20; y: 18; width: parent.width - 40 - 52; spacing: 10
+            Label { text: "Studio Monitors"; color: Ink.ink2 }
             Row {
               spacing: 6
-              Text { text: "62"; color: Ink.ink; font.family: Type.display; font.pixelSize: 60; font.weight: Font.Normal; font.variableAxes: Type.axes(60, 330, mini.skin.soft) }
+              Text { text: "62"; color: Ink.ink; font.family: Type.display; font.pixelSize: 60; font.weight: Font.Normal; font.variableAxes: Type.axes(60, 330) }
               Text { text: "%"; anchors.baseline: parent.children[0].baseline; color: Ink.ink3; font.family: Type.display; font.pixelSize: 20 }
             }
             KataSlider { skin: mini.skin; width: parent.width; height: 30; value: 62 }
@@ -186,13 +182,12 @@ Rectangle {
               Selection { id: ms; skin: mini.skin; x: -10; width: parent.width + 20; height: 46 }
               Repeater {
                 model: ["Studio Monitors", "WH-1000XM5"]
-                Text { required property string modelData; required property int index; x: 4; y: index * 46 + 14; text: modelData; color: index === 0 ? (ms.inverts ? Ink.paper : Ink.ink) : Ink.ink2; font.family: Type.text; font.pixelSize: 14; font.weight: index === 0 ? Font.Medium : Font.Normal; font.variableAxes: Type.valueAxes }
+                Text { required property string modelData; required property int index; x: 4; y: index * 46 + 14; text: modelData; color: index === 0 ? Ink.ink : Ink.ink2; font.family: Type.text; font.pixelSize: 14; font.weight: index === 0 ? Font.Medium : Font.Normal; font.variableAxes: Type.valueAxes }
               }
             }
           }
-          Sign { visible: mini.tate; skin: mini.skin; x: parent.width - 52; width: 52; height: 300; kanji: "音"; name: "Sound" }
-          Rectangle { visible: mini.tate; x: parent.width - 53; width: 1; height: 300; color: Ink.kLine }
-          Sign { visible: mini.skin.sign === "tabs"; skin: mini.skin; x: 14; y: 300; current: "sound"; tabs: [{ key: "time", name: "Time" }, { key: "sound", name: "Sound" }, { key: "power", name: "Power" }] }
+          Sign { skin: mini.skin; x: parent.width - 52; width: 52; height: 300; kanji: "音"; name: "Sound" }
+          Rectangle { x: parent.width - 53; width: 1; height: 300; color: Ink.kLine }
         }
       }
     }

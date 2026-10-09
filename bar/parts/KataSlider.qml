@@ -3,12 +3,9 @@ import QtQuick
 import "../../core"
 import "../../core/Brush.js" as Brush
 
-// A value from 0 to 100 you drag or scroll (Kata part `slider`). One API,
-// three drawings:
-//   ruler  Margin: fine ticks; the value is the long tick
-//   block  Leaf: ticks inked up to the value, an ink block for a handle
-//   brush  Shōji: one sumi stroke whose length is the value, over a ruler
-// Ticks sit on whole pixels so the ruler never shimmers.
+// A value from 0 to 100 you drag or scroll (Kata part `slider`): Shōji's
+// one sumi stroke whose length is the value, over a ruler. Ticks sit on
+// whole pixels so the ruler never shimmers.
 Item {
   id: root
 
@@ -19,10 +16,8 @@ Item {
   property int seed: 4
   signal moved(real value)
 
-  readonly property string kind: skin.slider || "ruler"
-  readonly property int ticks: kind === "brush" ? (thin ? 11 : 21) : (thin ? 25 : 49)
+  readonly property int ticks: thin ? 11 : 21
   readonly property real step: (width - 2) / (ticks - 1)
-  readonly property int at: Math.round(Math.max(0, Math.min(100, value)) / 100 * (ticks - 1))
   readonly property color on: muted ? Ink.seal : Ink.ink
 
   implicitWidth: Type.px(thin ? 120 : 336)
@@ -32,29 +27,16 @@ Item {
     model: root.ticks
     Rectangle {
       required property int index
-      readonly property bool major: root.kind === "brush" ? index % 5 === 0 : index % 4 === 0
-      readonly property bool isValue: root.kind === "ruler" && index === root.at
+      readonly property bool major: index % 5 === 0
       x: Math.round(index * root.step)
-      width: root.kind === "block" ? 1 : (isValue ? 2 : 1.5)
-      height: isValue ? root.height
-        : root.kind === "brush" ? Type.px(major ? (root.thin ? 4 : 7) : (root.thin ? 2 : 4))
-        : Type.px(major ? (root.thin ? 9 : 16) : (root.thin ? 6 : 10))
-      y: root.height - height - (isValue ? 0 : 2)
-      radius: root.kind === "block" ? 0 : 0.75
-      color: isValue ? root.on
-        : root.kind === "brush" ? (major ? Ink.ink3 : Ink.ink4)
-        : index < root.at ? (root.kind === "block" ? root.on : Ink.ink2) : Ink.ink4
+      width: 1.5
+      height: Type.px(major ? (root.thin ? 4 : 7) : (root.thin ? 2 : 4))
+      y: root.height - height - 2
+      radius: 0.75
+      color: major ? Ink.ink3 : Ink.ink4
     }
   }
-  Rectangle {
-    visible: root.kind === "block"
-    x: Math.round(root.at * root.step) - 2
-    y: root.height - height
-    width: Type.px(6); height: Type.px(root.thin ? 13 : 22)
-    color: root.on
-  }
   Item {
-    visible: root.kind === "brush"
     readonly property real h: Type.px(root.thin ? 9 : 16)
     readonly property real len: Math.max(4, Math.round(root.value / 100 * root.width))
     x: -2; y: Type.px(root.thin ? 1 : 3)

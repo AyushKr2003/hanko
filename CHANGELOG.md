@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Sheet hands: every cell's sheet (Time, Sound, Network, Bluetooth, Power, Display, Inbox) can be drawn as a Ledger, as Tanzaku (poem slips hung from a rail) or as Prose, chosen per sheet on Settings › Sheets with a live preview, or `hanko style set sheetStyle:sound tanzaku`.
+- Margin and Leaf are removed: Settings › Design offers Hanko and Shōji, without the borrow rows or Surprise me, and `hanko borrow` is gone. A style.json that names Margin or Leaf loads as Hanko; a saved `borrow` is ignored.
+- Sheet hands: every cell's sheet (Time, Sound, Network, Bluetooth, Power, Display, Inbox) can be drawn as a Ledger, as Tanzaku (poem slips hung from a rail) or as Mon (a crest book, each choice a kamon), chosen per sheet on Settings › Sheets with a live preview, or `hanko style set sheetStyle:sound tanzaku`.
 - The bar's kanji are plainer, so they stay clean at small sizes: cells 波 双 耳 光 力, indicator stamps 写 言 予 目 月 休, the inbox 文.
 - Kan 鑑 replaces 印 everywhere: the default seal glyph, the settings mark, the Omarchy menu icon (`hanko menu add` updates an older entry in place), the seal's labels and the docs. Settings › Typesetting offers the four Kan, 鑑 漢 観 寛. Every kanji is drawn in a bundled brush face, Yuji Boku.
 - Overview: a second layout, `dynamic`, after Ryoku's: only the workspaces you use and a + for a new one, desktops along the top, a selection you move with Tab and confirm with Enter. Pick it under Panels on Typesetting, or `hanko style set overview dynamic`.

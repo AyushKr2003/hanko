@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after the Tanzaku hand replaced Dial (sheets as poem slips hung from a rail), following the sheet hands.
+Last updated: 2026-10-09, after the Mon 紋 hand replaced Prose (each sheet a page of a crest book) and Margin and Leaf were removed.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -47,7 +47,7 @@ These come from the user's own messages and reactions:
 - **"good" / "go on" means keep going** to the next phase without asking.
 - **Show renders.** Every phase reply carries a render of what was built (the harness PNG), since there is no Omarchy machine in the cloud session.
 - **Before writing a lot of new code after a long stretch, the user may ask for a write-up like this one.** Keep it updated.
-- **Redesigns are explored on their own branches first, built on `dev` only once chosen.** The user asked for a premium redesign "as a simple person would see it" (`design`, Margin), got a second take (`design2`, Leaf), then asked for "a Japanese touch" (`design3`, Shōji), then for "a uniform for all designs so we can twist whatever design we want" (`revision1`, Kata). They liked all three; Kata is what is being built.
+- **Redesigns are explored on their own branches first, built on `dev` only once chosen.** The user asked for a premium redesign "as a simple person would see it" (`design`, Margin), got a second take (`design2`, Leaf), then asked for "a Japanese touch" (`design3`, Shōji), then for "a uniform for all designs so we can twist whatever design we want" (`revision1`, Kata). They liked all three; Kata was built, and later Margin and Leaf were removed, leaving Hanko and Shōji.
 - **Japanese touches must mean something.** Kanji only where they are the thing itself (a season, a panel's sign, the seal), large, with English beside; Mincho only at 18 px and up; each touch switchable off. The old tiny kanji glosses were judged noise in the audits.
 - **When the user leaves a decision open and says "start", pick a sensible default, say so, and keep going.** For Kata: Classic stays the default design; Shōji's variants were to be built first (all three landed together in K3).
 - **Naming:** the main bar is called **Hanko** in the UI, README and CLI (`hanko design hanko`). Its stored id stays `classic` (so saved `style.json` and code still work); `designName` accepts `hanko` as an alias. Older docs below still say "Classic" for the same design.
@@ -292,9 +292,10 @@ bar/
                          PlateSpine, LeaderRow)
   KataBar.qml            the bar a Kata design draws (K4): same data/signals/anchorFor/
                          cellAt/rightCells as BarSurface; BarWindow swaps them
-  parts/                 Kata's parts (K3), pure, each takes `skin` (Skin.js): Surface,
-                         Fibres, Divider, Selection, KataSlider, Ring, KataSeal,
-                         UnreadMark, PointerMark, Sign, InkShape
+  parts/                 Kata's parts (K3), pure, each takes `skin` (Skin.js) and draws
+                         Shōji's variant: Surface, Fibres, Divider, Selection,
+                         KataSlider, Ring, KataSeal, UnreadMark, PointerMark, Sign,
+                         Letter, Hold, Choice, KataSwitch, Icon, InkShape
   HostedSlot.qml         one hosted widget from the registry (see Phase 9 in §9)
   HostBar.qml            the `bar` facade hosted widgets see
   Marks.qml              Hanko's own indicators, keyboard, mic and tray marks
@@ -315,14 +316,14 @@ core/
                          valueWeight, valueAxes, axes(size, wght) for Fraunces
   Motion.qml (singleton) every timing and curve (Scroll mockup 05); still (motion: still
                          or Omarchy's reduced motion), live (awake and not still), ms()
-  Kata.js                Kata 型 (docs/kata): PARTS (9 main + 3 partners), AUTO, TOUCHES,
-                         DESIGNS (margin, leaf, shoji), DESIGN_NAMES (+ classic, the
-                         default), clean, resolve(doc, monitor), withDesign, withBorrow,
-                         withTouch, surprised(doc, rng), describe(style)
+  Kata.js                Kata 型 (docs/kata): PARTS (12 main + 3 partners, one variant
+                         each, Shōji's), AUTO, TOUCHES, DESIGNS (shoji), DESIGN_NAMES
+                         (classic, the default, and shoji), RETIRED (margin, leaf load as
+                         classic), clean, resolve(doc, monitor), withDesign, withTouch,
+                         describe(style)
   Skin.js                skin(kata) → tokens for the parts: radius/radiusRow/radiusChip,
-                         dividerWidth, joints, open/openCurve/leave/leaveCurve, settle,
-                         soft (Fraunces SOFT), opacity, grain, season, kanjiNumerals, gap,
-                         travels; TEMPOS, RADII
+                         joints, open/openCurve/leave/leaveCurve, settle, opacity, grain,
+                         season, kanjiNumerals, gap, travels; TEMPOS, RADII, OPACITY
   Season.js              SEKKI (24), KO (72), sunLongitude, koIndex, at(date), label(date,
                          off|kanji|english): exact, from the sun (Leaf.js's are date tables)
   Brush.js               stroke(w, h, seed), kasure(w, h, seed), enso(v, size, width, seed):
@@ -381,7 +382,7 @@ docs/                    ROADMAP, COMPONENTS (spec), DESIGN, HANDOFF (this), his
                          mockups/{sheet,scroll,typeset}
 ```
 
-**IPC target `hanko`** (Bar.qml): `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings`, and Kata's `designGet`, `design(name)` (`classic | margin | leaf | shoji | surprise`), `designDescribe`, `borrow(part, value)`, `touch(key, value)`. All typed, all return strings.
+**IPC target `hanko`** (Bar.qml): `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings`, and Kata's `designGet`, `design(name)` (`classic | hanko | shoji`), `designDescribe`, `touch(key, value)`. All typed, all return strings.
 
 **Data flow:** services (live Quickshell data) → `BarWindow` (per screen, picks `Typeset.styleFor(screen.name)`) → `BarSurface` props (plain JS objects) → components. Components never import services. This is what lets the harness render any state, and it is the pattern to keep for every new part.
 
@@ -754,19 +755,39 @@ Why: an arc gauge and a tile grid are what every dashboard has; nothing about th
 - **Style.js**: the hands are `ledger | tanzaku | prose`; a saved `dial` (or `sheetStyle:x dial` from a script) is read as `tanzaku`. Test updated (114).
 - Settings › Sheets names the hand 短冊 Tanzaku. Harness `sheets-tanzaku.json` (was `sheets-dial.json`); image `docs/revision2/images/r2-sheets-tanzaku.webp`.
 
+### Margin and Leaf removed ✅ (asked for: "remove the Margin and Leaf designs completely")
+Two designs are left: Hanko (Classic, the Typeset bar, still the default) and Shōji. With one Kata design there is nothing to borrow from, so borrowing went too. Shōji renders exactly as before: every Shōji harness render (`kata-*`, `overview-shoji`, `overview-kata-light`) and the Classic overview were compared pixel by pixel with the previous code and are identical.
+- **`core/Kata.js`**: `DESIGNS` and `DESIGN_NAMES` are `classic` and `shoji`; `PARTS` keeps one variant per part, Shōji's (washi, slide, brush, wash, brush, enso, carved, stamp, tategaki, rows, framed, stroke; partners cut, lattice, johakyu), and `AUTO` follows. Classic resolves Shōji's parts (it used Margin's), still unused. `RETIRED` maps `margin` and `leaf` to `classic`, so a style.json (or a monitor's override) naming them loads as Hanko with no warning; `withDesign` refuses them, so `hanko design margin` says unknown. `withBorrow`, `surprised` and `MAIN_PARTS`-driven mixing are gone; `resolve()` no longer returns `borrowed`; a saved `borrow` is dropped quietly by `clean()` (it was valid when written) and by every Kata edit; `describe()` is the design's label.
+- **`core/Skin.js`**: only `johakyu`, `cut` and washi's 0.86 are left; `dividerWidth` and `soft` (the SOFT axis, 0 for Shōji, Fraunces' default anyway) are gone; `gap` is 6 for slide, else 0.
+- **QML**: every part in `bar/parts/` draws Shōji's variant only (`Surface` lost `hangs`/`lifted`, `Sign` its eyebrow and tabs, `Letter` the swipe and the tear, `PointerMark` its `label`, `Fibres` the card grain); `Joins.qml` (Margin's fold) is deleted. `KataPanelView` slides only (no fold, slip, tabs, eyebrow, `atBottom` or `pickSheet`); `PowerPanel` and `TimePanel` always use the ensō; `Heading`, `SessionRow`, `KataList` and `KataBar` lost Leaf's caps, gaps, plate and card edges; `OverviewPage` keeps Classic and `framed` (miniatures and contact sheets gone). `Bar.setAside` / `lettersShown` and the `dismiss` request are gone: only a swiped card or torn ticket set a letter aside. `Ink.qml` lost Leaf's `cut`, `edge`, `edgeSide`, `shade`, `shade2`, `shadeIn` and the score's two tones.
+- **Settings › Design**: two cards, Hanko and Shōji; the mix line, Back to …, Surprise me and the twelve borrow rows are gone, and with them `bar/settings/PartPreview.qml` and the `borrowPicked` / `surprise` / `backToDesign` signals. The touches and Panel opacity stay; the opacity slider is Shōji's brush on either design and reads 100% on Hanko's Auto. `Typeset` lost `borrow`, `surprise` and their draft twins (`_keep` no longer keeps `borrow`); IPC lost `borrow` and `design surprise`, the CLI `hanko borrow`.
+- **Left in place**: `core/Style.js` still lists `borrow` in `KATA_KEYS` and carries it through `normalize` (another change was in that file at the time); harmless, since Kata ignores it, and a cleanup for later. `docs/kata/README.md` and its prototype stay as the revision-1 proposal, with a note on top.
+- Harness: `overview-margin.json` and `overview-leaf.json` deleted; `kata-bars`, `kata-panels`, `kata-panels-light`, `kata-panels-opacity`, `kata-parts`, `kata-parts-light`, `kata-wave`, `kata-wave-light`, `overview-kata-light`, `design-settings`, `design-settings-narrow` show Shōji (and Hanko) only. Images: `docs/kata/images/04-margin`, `05-leaf`, `07-mixes`, `08-mix-light` deleted; `k3`–`k9` re-rendered.
+- Unit tests rewritten for two designs, plus one that a saved Margin or Leaf loads as Hanko and a saved `borrow` is ignored (113 tests).
+
+### Mon 紋 replaces Prose ✅ (asked for: "remove the prose; research ancient Japanese culture, rōnin, samurai, ninja, and come up with something unique, stylish and premium")
+Why a crest book: what a samurai carried into the field was his house's mark. The sashimono banner on his back and the crest on his kimono said whom he served, and a rōnin was a samurai with no lord's crest left to bear, so "the one you bear" is the selected choice. Research: kamon are drawn with compass and ruler only (Bridges 2018 on their geometric construction; the kuyō 九曜 nine-star crest of the Hosokawa and others; 引両 bars, 菱, 井桁, 輪違い); monchō, the crest books that listed them a page at a time; sashimono and battle banners; rakkan (the artist's seal) for the red; ninja manuals (Bansenshukai) were considered for a scroll-of-secrets hand and set aside, since a hidden-ink look would hide what a sheet must show; gunbai and tsuba were studied as shapes and found too close to a dial.
+- **`core/Mon.js`**: `ORDER` (the six plain crests: bars 1/2/3, hishi, igeta, wa), `at(i)` (wraps, negative too, so neighbours never repeat), `WEEKDAYS`. 1 test (114).
+- **Parts**: `Crest` (a Canvas kamon: `kind` kuyo/hours/bars/hishi/igeta/wa/moji, `level`, `count`, `glyph`, `inked` (a seal-red disc with the crest cut out in paper), `urgent`, `faint`, `turn`), `CrestCell` (a crest of at most 54 px with its name and a mono note, turns 30° on hover), `MonHero` (a 132 px crest, set by a click on a star or the wheel in eight steps; Fraunces figure, italic title, mono lines, buttons), `MonPage` (brush kanji, label, rule and summary over a grid of crests).
+- **Sheets**: `TimeMon`, `SoundMon`, `NetworkMon`, `BluetoothMon`, `PowerMon`, `DisplayMon`, `InboxMon`. Prose's files are deleted (the seven `*Prose`, `ProseText`, `ProseIndex`, `IndexRow`).
+- **Style.js**: the hands are `ledger | tanzaku | mon`; a saved `prose` is read as `ledger` (and `dial` still as `tanzaku`).
+- Settings › Sheets names the hand 紋 Mon. Yuji Boku re-subset for the new kanji. Harness `sheets-mon.json` (`sheets-prose.json` deleted); image `docs/revision2/images/r2-sheets-mon.webp` (`r2-sheets-prose.webp` deleted).
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
 
 ### Kata 型: what is left
 
-The spec is `docs/kata/README.md`; the HTML prototype that shows every part and panel in every design is `docs/kata/prototype/` (open `playground.html` or `desk.html?design=shoji&panel=sound`; `kata.js` holds the panel markup to port). The three source designs, with their own prototypes for detail: `design` (`docs/redesign/`, Margin), `design2` (`docs/design2/`, Leaf), `design3` (`docs/design3/`, Shōji). Rules that hold for every Kata phase:
+The spec is `docs/kata/README.md`; the HTML prototype that shows every part and panel in every design is `docs/kata/prototype/` (open `playground.html` or `desk.html?design=shoji&panel=sound`; `kata.js` holds the panel markup to port). The prototype still shows Margin and Leaf, which were removed (see §9, "Margin and Leaf removed"); only Shōji is built. Shōji's own prototype is on `design3` (`docs/design3/`). Rules that hold for every Kata phase:
 
-- Content is written **once**, against `bar/parts/` and plain data; it never asks which design is active. If it needs to, a part is missing: add it to `core/Kata.js` `PARTS` (with a variant per design and unit tests), to `Skin.js` if it needs tokens, and a component in `bar/parts/`.
-- Every part takes `skin` (from `Skin.skin(kata)`); BarWindow builds one per screen (`win.skin`). Use `Ink.ink2/ink3/ink4/kLine/lift/paper2/sunk` and Leaf's material colours; never pick a colour.
-- Red means "for you" only. Figures in Fraunces with `Type.axes(size, wght, skin.soft)` and `tnum`; words in Space Grotesk; kanji `Type.jpSerif` at ≥ 18 px, `Type.jp` below.
+- Content is written **once**, against `bar/parts/` and plain data; it never asks which design is active. If it needs to, a part is missing: add it to `core/Kata.js` `PARTS` (with Shōji's variant and unit tests), to `Skin.js` if it needs tokens, and a component in `bar/parts/`.
+- Every part takes `skin` (from `Skin.skin(kata)`); BarWindow builds one per screen (`win.skin`). Use `Ink.ink2/ink3/ink4/kLine/lift/paper2/sunk`; never pick a colour.
+- Red means "for you" only. Figures in Fraunces with `Type.axes(size, wght)` and `tnum`; words in Space Grotesk; kanji `Type.jpSerif` at ≥ 18 px, `Type.jp` below.
 - Motion through the skin: `skin.open/openCurve` to arrive, `leave/leaveCurve` to go, `settle` inside; `Motion.ms()` and `Motion.live` as everywhere (the harness forces still).
 - Add a harness scene or params per phase, render dark and light, and save the renders to `docs/kata/images/k<N>-*.webp`.
+
+*(K5 and K6 below are the original instructions, both done; the Margin and Leaf variants they name were removed later.)*
 
 **K5 · Kata's panels.** One `bar/KataPanelWindow.qml` (a layer surface per screen, `hanko-panel` namespace, the `SheetWindow` pattern for input mask, focus prime and click-away) that BarWindow uses instead of `SheetWindow`/`ScrollWindow` when `!kata.classic` (keep Classic on the old ones). Placement from `surface.anchorFor(cell)`; hanging by `skin.gap` (fold −1 overlaps the bar's line and draws the concave joins when corners are soft; slip 0, clipped so it comes from under the bar; slide 6 px below). Arrival by `skin.arrive`: fold = scale-y from the top plus a clip and a fading crease band; slip = translate up from behind the bar; slide = translate in from the side the cell is on, and when `skin.travels` a second cell **moves the same panel** along the bar (animate `x`/`width`, swap content). Frame: `Surface` (`hangs` for fold/slip) and, for `sign: tategaki`, a 52 px `Sign` column on the right; `sign: tabs` hangs `Sign` tabs from the foot (Time, Sound, Network, Power, Letters; `picked` switches); `sign: eyebrow` puts `Sign` at the top of the content. Panels as `bar/kata/SoundPanel.qml`, `TimePanel`, `NetworkPanel`, `PowerPanel`, `LettersPanel`, each a pure Column fed by the data the Classic sheets already use (`core/Sound.js`, `Time.js`, `Net.js`, `Power.js`, `Blue.js`, `Status.notifications`, `services/Weather.qml`, `Season.at()` for Time's kō) and emitting the same actions the sheets do (read `bar/sheets/*Sheet.qml` and how `Bar.qml` wires them; reuse those handlers). Layouts to copy from the prototype: Sound = hero figure + `KataSlider` + "Plays on" list with `Selection` + app rows with thin sliders + mic row; Power = `Ring` hero (ensō or figure + glyph) + "About N left" + brightness slider + a segmented power mode + quick chips + session actions with hold-to-confirm; Letters = notifications with `UnreadMark`, Quiet switch, actions; Time = the day in a serif sentence, a month grid (today ringed by an ensō when `ring: enso`), Shōji's kō in tategaki when `season` is on, weather, other cities; Network = Wi-Fi hero name, nearby list, Bluetooth. Keyboard: Esc closes, Tab walks the cells in `rightCells` order. Harness: a scene with each panel × each design (dark), and a light mix.
 
@@ -842,7 +863,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 27. **Revision 2 (Classic sheets):** check on hardware that the watermark kanji stays faint enough on a busy theme at 1x, that the sheet's shadow reads on wallpaper without darkening the bar, and the needle's ease on a fast scroll. The Classic bar and the handscroll were left as they were.
 28. **Classic bar polish:** check the hover plate on a touchpad (it follows `containsMouse`, which can stick when the pointer leaves the bar window; see omacale's notes on hover), the ink seals on a light theme, and that Fraunces's `tnum` really applies in the shell's Qt (if not, the clock still renders, just proportional).
 29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
-30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), the Prose links' hover cursor and tap target on a touchpad, and each hand at the user's `typeSize` large (Prose sentences wrap to more lines; the sheets grow, they don't scroll).
+30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), the Mon crests' click on a star and wheel on a touchpad, and each hand at the user's `typeSize` large (Mon captions wrap; the sheets grow, they don't scroll).
 
 ## 13. QML pitfalls already hit
 

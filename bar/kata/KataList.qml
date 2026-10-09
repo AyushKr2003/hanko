@@ -4,8 +4,7 @@ import "../../core"
 import "../parts"
 
 // Rows with one chosen (a device, a network, a profile): the selection part
-// sits behind the chosen row and slides when it changes; on Leaf's ink
-// plate the chosen row's text turns paper.
+// sits behind the chosen row and slides when it changes.
 //   rows: [{ title, detail, note, chosen, mark (bool: unread) }]
 Item {
   id: root
@@ -37,8 +36,8 @@ Item {
       required property var modelData
       required property int index
       readonly property bool on: index === root.chosen
-      readonly property color strong: on && sel.inverts ? Ink.paper : Ink.ink
-      readonly property color quiet: on && sel.inverts ? Ink.alpha(Ink.paper, 0.75) : Ink.ink3
+      readonly property color strong: Ink.ink
+      readonly property color quiet: Ink.ink3
       y: index * root.rowHeight
       width: root.width; height: root.rowHeight
 

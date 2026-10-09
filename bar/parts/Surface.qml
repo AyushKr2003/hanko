@@ -2,58 +2,22 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 
-// What a panel is made of (Kata part `surface`):
-//   paper  Margin: flat paper, a hairline frame, a soft shadow below
-//   card   Leaf: a cut edge that catches light, a shaded underside, hard
-//          offset shadows that never blur
-//   washi  Shōji: translucent paper with fibres, lit from the top edge
-// `hangs` squares and opens the top edge, for a panel that comes out of the bar.
+// What a panel is made of (Kata part `surface`): Shōji's washi, translucent
+// paper with fibres, lit from the top edge, casting a long faint shadow.
 Item {
   id: root
 
   property var skin: ({})
-  property bool hangs: false
-  property bool lifted: false     // Leaf's height 2: a dragged or held sheet
 
-  readonly property string kind: skin.surface || "paper"
-  readonly property int r: skin.radius === undefined ? 16 : skin.radius
   // How solid the paper is (skin.opacity: the design's, or the panel opacity
   // setting). Shadows sit under the whole sheet, so they fade out as the
   // paper clears, gone by half: glass casts no shadow.
-  readonly property real paperOpacity: skin.opacity === undefined ? (kind === "washi" ? 0.86 : 1) : skin.opacity
+  readonly property real paperOpacity: skin.opacity === undefined ? 0.86 : skin.opacity
   readonly property real shadowOpacity: Math.max(0, Math.min(1, (paperOpacity - 0.5) / 0.36))
 
-  // Margin's soft shadow, stacked rather than blurred.
+  // The washi casts a long, faint shadow onto the desk, stacked soft.
   Repeater {
-    model: root.kind === "paper" ? 4 : 0
-    Rectangle {
-      id: layer
-      opacity: root.shadowOpacity
-      required property int index
-      x: -layer.index * 2; y: 6 + layer.index * 5
-      width: root.width + layer.index * 4; height: root.height
-      radius: root.r + layer.index * 2
-      color: Ink.alpha("black", Ink.light ? 0.035 : 0.12)
-    }
-  }
-  // Leaf's hard shadows: 0,2 and 2,4 (lifted 0,3 and 4,8).
-  Rectangle {
-    visible: root.kind === "card"
-    opacity: root.shadowOpacity
-    x: root.lifted ? 4 : 2; y: root.lifted ? 8 : 4
-    width: root.width; height: root.height
-    color: Ink.shade2
-  }
-  Rectangle {
-    visible: root.kind === "card"
-    opacity: root.shadowOpacity
-    y: root.lifted ? 3 : 2
-    width: root.width; height: root.height
-    color: Ink.shade
-  }
-  // Shōji's washi casts a long, faint shadow onto the desk, stacked soft.
-  Repeater {
-    model: root.kind === "washi" ? 3 : 0
+    model: 3
     Rectangle {
       id: fall
       opacity: root.shadowOpacity
@@ -67,23 +31,17 @@ Item {
   Rectangle {
     id: sheet
     anchors.fill: parent
-    radius: root.kind === "paper" ? root.r : 0
-    // hanging from the bar: square at the top, where it meets the bar's line
-    topLeftRadius: root.hangs ? 0 : radius
-    topRightRadius: root.hangs ? 0 : radius
     color: Ink.alpha(Ink.paper, root.paperOpacity)
-    border.width: root.kind === "card" ? 0 : 1
-    border.color: root.kind === "washi" ? Ink.ink4 : Ink.kLine
+    border.width: 1
+    border.color: Ink.ink4
     clip: true
 
     Fibres {
       anchors.fill: parent
-      kind: root.kind === "card" ? "grain" : "washi"
-      level: root.kind === "paper" ? 0 : Math.max(1, root.skin.grain || 0)
+      level: Math.max(1, root.skin.grain || 0)
     }
     // Light through paper: brightest at the top edge.
     Rectangle {
-      visible: root.kind === "washi"
       anchors.left: parent.left; anchors.right: parent.right
       height: parent.height * 0.4
       gradient: Gradient {
@@ -92,16 +50,4 @@ Item {
       }
     }
   }
-  // Paper hanging from the bar: the top edge is the bar's own line, so no
-  // hairline across it.
-  Rectangle {
-    visible: root.hangs && root.kind === "paper"
-    x: 1; width: root.width - 2; height: 1
-    color: Ink.alpha(Ink.paper, root.paperOpacity)
-  }
-  // Leaf's cut: light along the top, shade along the bottom and sides.
-  Rectangle { visible: root.kind === "card" && !root.hangs; width: root.width; height: 1; color: Ink.cut }
-  Rectangle { visible: root.kind === "card"; y: root.height - 1; width: root.width; height: 1; color: Ink.edge }
-  Rectangle { visible: root.kind === "card"; width: 1; height: root.height; color: Ink.edgeSide }
-  Rectangle { visible: root.kind === "card"; x: root.width - 1; width: 1; height: root.height; color: Ink.edgeSide }
 }

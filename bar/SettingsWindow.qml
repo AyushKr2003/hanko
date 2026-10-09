@@ -104,7 +104,7 @@ FloatingWindow {
         bluetooth: Blue.reading,
         power: Power.reading,
         display: Display.reading,
-        letters: win.bar.lettersShown(Status.notifications),
+        letters: Status.notifications,
         dnd: Status.doNotDisturb
       })
       onSettingPicked: function(key, value) {
@@ -118,10 +118,7 @@ FloatingWindow {
       onResetToPreset: { Typeset.draftReset(); Typeset.keep() }
       onUndo: Typeset.undo()
       onDesignPicked: function(name) { Typeset.draftDesign(name); Typeset.keep() }
-      onBorrowPicked: function(part, value) { Typeset.draftBorrow(part, value); Typeset.keep() }
       onTouchPicked: function(key, value) { Typeset.draftTouch(key, value); Typeset.keep() }
-      onSurprise: { Typeset.draftSurprise(); Typeset.keep() }
-      onBackToDesign: { Typeset.draftDesign(Typeset.kata.design); Typeset.keep() }
       onPagePicked: function(key) { win.page = key }
       // A search shows Typesetting, unless you are searching the Widgets page.
       onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets" && win.hankoDesign) win.page = "typesetting" }

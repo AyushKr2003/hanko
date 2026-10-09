@@ -24,7 +24,7 @@ Item {
   // Panel opacity (Style.js panelOpacity), 0..1.
   property real paperOpacity: 1
   property bool animate: true
-  // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku | prose.
+  // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku | mon.
   property var styles: ({})
   readonly property string hand: styles[sheet] || "ledger"
 
@@ -67,9 +67,9 @@ Item {
       sourceComponent: (root.hand === "tanzaku"
           ? { time: timeTanzaku, sound: soundTanzaku, network: networkTanzaku, bluetooth: bluetoothTanzaku,
               power: powerTanzaku, display: displayTanzaku, inbox: inboxTanzaku }
-          : root.hand === "prose"
-          ? { time: timeProse, sound: soundProse, network: networkProse, bluetooth: bluetoothProse,
-              power: powerProse, display: displayProse, inbox: inboxProse }
+          : root.hand === "mon"
+          ? { time: timeMon, sound: soundMon, network: networkMon, bluetooth: bluetoothMon,
+              power: powerMon, display: displayMon, inbox: inboxMon }
           : { time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
               power: powerSheet, display: displaySheet, inbox: inboxSheet })[root.sheet] || null
       onLoaded: if (root.open) root.focusContents()
@@ -239,10 +239,10 @@ Item {
     }
   }
 
-  // ---- prose
+  // ---- mon
   Component {
-    id: timeProse
-    TimeProse {
+    id: timeMon
+    TimeMon {
       now: root.feed.now || new Date()
       zones: root.feed.zones || []
       shift: root.feed.timeShift || 0
@@ -254,8 +254,8 @@ Item {
   }
 
   Component {
-    id: soundProse
-    SoundProse {
+    id: soundMon
+    SoundMon {
       sound: root.feed.sound || null
       onRequest: function(what, arg) { root.request("sound", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -265,8 +265,8 @@ Item {
   }
 
   Component {
-    id: networkProse
-    NetworkProse {
+    id: networkMon
+    NetworkMon {
       net: root.feed.network || null
       onRequest: function(what, arg) { root.request("network", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -276,8 +276,8 @@ Item {
   }
 
   Component {
-    id: powerProse
-    PowerProse {
+    id: powerMon
+    PowerMon {
       power: root.feed.power || null
       onRequest: function(what, arg) { root.request("power", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -287,8 +287,8 @@ Item {
   }
 
   Component {
-    id: inboxProse
-    InboxProse {
+    id: inboxMon
+    InboxMon {
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
       now: root.feed.now || new Date()
@@ -300,8 +300,8 @@ Item {
   }
 
   Component {
-    id: displayProse
-    DisplayProse {
+    id: displayMon
+    DisplayMon {
       display: root.feed.display || null
       onRequest: function(what, arg) { root.request("display", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -311,8 +311,8 @@ Item {
   }
 
   Component {
-    id: bluetoothProse
-    BluetoothProse {
+    id: bluetoothMon
+    BluetoothMon {
       blue: root.feed.bluetooth || null
       onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
       Keys.onEscapePressed: root.closeRequested()

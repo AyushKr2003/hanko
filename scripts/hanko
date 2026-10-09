@@ -13,10 +13,8 @@
 #   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
-#   hanko design [NAME]      show the design, or pick one: hanko | margin |
-#                            leaf | shoji | surprise (Kata, docs/kata)
-#   hanko borrow PART VALUE  take one part from another design (e.g. slider
-#                            ruler); VALUE auto gives it back
+#   hanko design [NAME]      show the design, or pick one: hanko | shoji
+#                            (Kata, docs/kata)
 #   hanko touch KEY VALUE    season off|kanji|english, numerals arabic|kanji,
 #                            grain smooth|fine|toothy
 #   hanko hide PART          take one part off the bar (e.g. tray, volume,
@@ -147,8 +145,8 @@ cmd_design() {
     ipc designGet | jq -r '"\(.name)\n", (.parts | to_entries[] | "  \(.key)\t\(.value)"), "  touches\t\(.touches | to_entries | map("\(.key)=\(.value)") | join(" "))"' | column -t -s $'\t'
     return
   fi
-  (( $# == 1 )) || fail "usage: hanko design [hanko|margin|leaf|shoji|surprise]"
-  [[ $(ipc design "$1") == ok ]] || fail "unknown design '$1' (hanko, margin, leaf, shoji or surprise)"
+  (( $# == 1 )) || fail "usage: hanko design [hanko|shoji]"
+  [[ $(ipc design "$1") == ok ]] || fail "unknown design '$1' (hanko or shoji)"
   ipc designDescribe
 }
 
@@ -213,10 +211,6 @@ case "${1:-}" in
   style) shift; cmd_style "$@" ;;
   settings) ipc settings >/dev/null ;;
   design) shift; cmd_design "$@" ;;
-  borrow)
-    (( $# == 3 )) || fail "usage: hanko borrow <part> <variant|auto> (hanko design lists the parts)"
-    [[ $(ipc borrow "$2" "$3") == ok ]] || fail "$2 does not take '$3'"
-    ipc designDescribe ;;
   touch)
     (( $# == 3 )) || fail "usage: hanko touch <season|numerals|grain> <value>"
     [[ $(ipc touch "$2" "$3") == ok ]] || fail "$2 does not take '$3'" ;;

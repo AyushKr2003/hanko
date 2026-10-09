@@ -12,7 +12,7 @@ import "../../../bar/overview"
 // The workspace overview over a desk with the bar on top. render.py passes
 // `params`: { theme, now, spaces (Hypr.spacesFor() rows with `all`),
 //   overview: { layout, active, selected, aspect, screen, width, height, rows, columns, fold },
-//   design: a Kata style doc ({ design: "leaf" }) to print the bar and pages in that design }
+//   design: a Kata style doc ({ design: "shoji" }) to print the bar and pages in that design }
 Rectangle {
   id: sheet
   readonly property var p: JSON.parse(params)

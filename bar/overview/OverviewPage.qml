@@ -26,12 +26,10 @@ Item {
   property Component snapshot: null
   property bool hot: false
   // A Kata design's skin (docs/kata); empty for Classic. Its `overview` part
-  // prints the page: miniatures (Margin: soft paper, the number in
-  // Fraunces), contact (Leaf: a contact sheet's frame, numbered 03A, with
-  // sprocket holes and crop marks), framed (Shōji: washi in a lattice frame,
-  // the kanji numeral over the figure).
+  // prints the page: framed (Shōji: washi in a lattice frame, the kanji
+  // numeral over the figure).
   property var skin: ({})
-  readonly property string variant: skin.overview || ""
+  readonly property bool framed: skin.overview === "framed"
 
   readonly property bool live: page.active
   readonly property var windows: O.visibleWindows(page.windows)
@@ -43,7 +41,7 @@ Item {
   // so it reads on the dark desk: 55% under the live page, 25% under the
   // rest, the shadow's color and color_inactive.
   RectangularShadow {
-    visible: root.variant !== "framed" && root.variant !== "contact"
+    visible: !root.framed
     anchors.fill: parent
     radius: sheet.radius
     offset.x: Type.px(3)
@@ -54,18 +52,10 @@ Item {
     Behavior on color { ColorAnimation { duration: Motion.ink } }
   }
 
-  // contact: a card's hard shadow
-  Rectangle {
-    visible: root.variant === "contact"
-    x: Type.px(3); y: Type.px(3); width: parent.width; height: parent.height
-    color: root.live ? Ink.shade : Ink.alpha(Ink.shade, 0.6)
-  }
-
   Rectangle {
     id: sheet
     anchors.fill: parent
-    radius: root.variant === "miniatures" ? (root.skin.radiusRow || 0) : 0
-    color: root.variant === "framed" ? Ink.alpha(Ink.paper, root.skin.opacity || 0.86) : root.variant === "contact" ? Ink.paper2 : Ink.paper
+    color: root.framed ? Ink.alpha(Ink.paper, root.skin.opacity || 0.86) : Ink.paper
     border.width: root.hot || root.live ? 2 : 1
     border.color: root.hot ? Ink.seal : root.live ? Ink.ink : root.hovered ? Ink.lineStrong : Ink.line
     clip: true
@@ -78,7 +68,7 @@ Item {
 
       Rectangle {
         id: folio
-        visible: root.variant === ""
+        visible: !root.framed
         x: Type.px(8)
         anchors.verticalCenter: parent.verticalCenter
         width: folioRow.width + Type.px(root.live ? 14 : 4)
@@ -111,31 +101,30 @@ Item {
       }
       // Kata folios
       Row {
-        visible: root.variant !== ""
-        x: Type.px(root.variant === "contact" ? 22 : 10)
+        visible: root.framed
+        x: Type.px(10)
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(6)
         Text {
-          visible: root.variant === "framed"
           anchors.verticalCenter: parent.verticalCenter
           text: Spaces.numeral(root.page.id)
           color: root.live ? Ink.ink : Ink.ink2
           font.family: Type.jpSerif; font.pixelSize: Type.px(18)
         }
         Text {
-          readonly property int size: root.variant === "contact" ? Type.px(12) : root.variant === "framed" ? Type.px(12) : Type.px(17)
+          readonly property int size: Type.px(12)
           anchors.verticalCenter: parent.verticalCenter
-          text: root.variant === "contact" ? (root.live ? "▸ " : "") + Spaces.folio(root.page.id) + "A" : String(root.page.id)
+          text: String(root.page.id)
           color: root.live ? Ink.ink : root.page.count > 0 ? Ink.ink2 : Ink.ink3
-          font.family: root.variant === "contact" ? Type.mono : Type.display
+          font.family: Type.display
           font.pixelSize: size
-          font.weight: root.variant === "contact" ? Font.Medium : Font.Normal
-          font.variableAxes: root.variant === "contact" ? ({}) : Type.axes(size, 380, root.skin.soft || 0)
+          font.weight: Font.Normal
+          font.variableAxes: Type.axes(size, 380)
           font.features: { "tnum": 1, "lnum": 1 }
         }
       }
       Text {
-        visible: root.variant === ""
+        visible: !root.framed
         anchors.left: folio.right
         anchors.leftMargin: Type.px(8)
         anchors.verticalCenter: parent.verticalCenter
@@ -157,36 +146,26 @@ Item {
         }
         Text {
           anchors.verticalCenter: parent.verticalCenter
-          text: root.variant === "" || root.variant === "contact"
+          text: !root.framed
             ? (root.page.count > 0 ? root.page.count + (root.page.count === 1 ? " WINDOW" : " WINDOWS") : root.live ? "HERE" : "")
             : (root.page.count > 0 ? root.page.count + (root.page.count === 1 ? " window" : " windows") : root.live ? "here" : "")
           color: Ink.inkMuted
-          font.family: root.variant === "" || root.variant === "contact" ? Type.mono : Type.text
+          font.family: root.framed ? Type.text : Type.mono
           font.pixelSize: Type.tag
           font.letterSpacing: Type.trackTag
         }
       }
-      Rectangle { visible: root.variant !== "framed"; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: root.variant === "" ? Ink.line : Ink.kLine }
-    }
-    // contact: sprocket holes down the left edge of the frame
-    Column {
-      visible: root.variant === "contact"
-      x: Type.px(6); y: Type.px(6)
-      spacing: Type.px(7)
-      Repeater {
-        model: Math.max(0, Math.floor((root.height - Type.px(12)) / Type.px(15)))
-        Rectangle { width: Type.px(7); height: Type.px(8); radius: 1; color: Ink.alpha(Ink.ink, 0.12) }
-      }
+      Rectangle { visible: !root.framed; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Ink.line }
     }
 
     // ---------------------------------------------- the screen
     Item {
       id: screen
-      readonly property int inset: root.variant === "contact" ? Type.px(20) : root.variant === "framed" ? Type.px(8) : 0
+      readonly property int inset: root.framed ? Type.px(8) : 0
       x: 1 + inset
       y: root.headH
-      width: parent.width - 2 - inset - (root.variant === "framed" ? inset : 0)
-      height: parent.height - root.headH - 1 - (root.variant === "framed" ? inset : 0)
+      width: parent.width - 2 - 2 * inset
+      height: parent.height - root.headH - 1 - inset
 
       // Bare page: its kanji, large and faint, like an unprinted leaf.
       Text {
@@ -306,22 +285,10 @@ Item {
 
     // framed: the lattice frame of a shōji, a hairline inside the edge with its joints
     Rectangle {
-      visible: root.variant === "framed"
+      visible: root.framed
       x: Type.px(4); y: Type.px(4); width: parent.width - 2 * x; height: parent.height - 2 * y
       color: "transparent"; border.width: 1; border.color: Ink.kLine
     }
-    Rectangle { visible: root.variant === "framed"; x: Type.px(4); y: root.headH; width: parent.width - Type.px(8); height: 1; color: Ink.kLine }
-    // contact: crop marks at the live frame's corners
-    Repeater {
-      model: root.variant === "contact" && root.live ? 4 : 0
-      Item {
-        required property int index
-        x: index % 2 ? sheet.width - Type.px(12) : Type.px(2)
-        y: index < 2 ? Type.px(2) : sheet.height - Type.px(12)
-        width: Type.px(10); height: Type.px(10)
-        Rectangle { x: parent.index % 2 ? parent.width - 1 : 0; width: 1; height: parent.height; color: Ink.ink }
-        Rectangle { y: parent.index < 2 ? 0 : parent.height - 1; width: parent.width; height: 1; color: Ink.ink }
-      }
-    }
+    Rectangle { visible: root.framed; x: Type.px(4); y: root.headH; width: parent.width - Type.px(8); height: 1; color: Ink.kLine }
   }
 }

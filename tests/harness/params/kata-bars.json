@@ -168,7 +168,7 @@
  ],
  "scene": "KataBars",
  "width": 1600,
- "title": "Kata K4 · the bar in each design",
+ "title": "Kata K4 · the bar in Shōji",
  "theme": {
   "foreground": "#ddd5c7",
   "background": "#0a0a09",
@@ -176,25 +176,6 @@
  },
  "now": "2026-10-08T21:44:00",
  "strips": [
-  {
-   "label": "Margin · all quiet: no red anywhere",
-   "doc": {
-    "design": "margin"
-   },
-   "notifications": []
-  },
-  {
-   "doc": {
-    "design": "margin"
-   },
-   "hover": "volume"
-  },
-  {
-   "doc": {
-    "design": "leaf"
-   },
-   "hover": "volume"
-  },
   {
    "doc": {
     "design": "shoji"
@@ -209,9 +190,9 @@
    "notifications": []
   },
   {
-   "label": "Leaf · muted, battery low, offline",
+   "label": "Shōji · muted, battery low, offline",
    "doc": {
-    "design": "leaf"
+    "design": "shoji"
    },
    "volume": {
     "percent": 62,
@@ -235,37 +216,24 @@
    }
   },
   {
-   "label": "Margin · pointing at Wi-Fi: the name slides out",
-   "doc": {
-    "design": "margin"
-   },
-   "hover": "network"
-  },
-  {
    "doc": {
     "design": "shoji",
-    "borrow": {
-     "slider": "ruler",
-     "ring": "glyph"
-    },
-    "touches": {
-     "numerals": "kanji"
-    }
-   },
-   "hover": "clock"
-  },
-  {
-   "doc": {
-    "design": "leaf",
-    "borrow": {
-     "pointer": "brush",
-     "select": "wash"
-    },
     "touches": {
      "season": "english"
     }
    },
-   "hover": "network"
+   "hover": "network",
+   "label": "Shōji · pointing at Wi-Fi: the name slides out, English season"
+  },
+  {
+   "doc": {
+    "design": "shoji",
+    "touches": {
+     "numerals": "kanji"
+    }
+   },
+   "hover": "clock",
+   "label": "Shōji · kanji numerals, pointing at the clock"
   },
   {
    "label": "Shōji · pointing at Bluetooth: the device's name slides out",
@@ -275,9 +243,9 @@
    "hover": "bluetooth"
   },
   {
-   "label": "Leaf · Bluetooth off, and a headset low on charge on Margin below",
+   "label": "Shōji · Bluetooth off",
    "doc": {
-    "design": "leaf"
+    "design": "shoji"
    },
    "bluetooth": {
     "name": "Off",
@@ -290,9 +258,9 @@
    }
   },
   {
-   "label": "Margin · headset at 9%: the rune and its charge go red",
+   "label": "Shōji · headset at 9%: the rune and its charge go red",
    "doc": {
-    "design": "margin"
+    "design": "shoji"
    },
    "bluetooth": {
     "name": "WH-1000XM5",

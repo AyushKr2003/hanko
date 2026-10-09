@@ -191,9 +191,8 @@
     "notify": "tickets"
    },
    "sheetStyles": {
-    "sound": "tanzaku",
-    "time": "prose",
-    "inbox": "prose"
+    "sound": "mon",
+    "network": "tanzaku"
    }
   },
   "page": "sheets",

@@ -9,23 +9,21 @@
 // Each tempo: how a panel arrives (open), how it goes (leave), how things
 // settle inside it. Curves are QML Easing.BezierSpline control points.
 var TEMPOS = {
-  spring:  { open: 240, openCurve: [0.32, 1.24, 0.46, 1, 1, 1], leave: 140, leaveCurve: [0.5, 0, 0.75, 0, 1, 1] },
-  snap:    { open: 220, openCurve: [0.22, 1, 0.36, 1, 1, 1], leave: 140, leaveCurve: [0.55, 0, 1, 0.45, 1, 1] },
   johakyu: { open: 340, openCurve: [0.62, 0.02, 0.18, 1, 1, 1], leave: 160, leaveCurve: [0.5, 0, 0.75, 0, 1, 1] }
 }
 var SETTLE = { duration: 200, curve: [0.16, 1, 0.3, 1, 1, 1] }
 // Panels and controls, per corner: the panel, a row or control, a chip.
-var RADII = { soft: [16, 10, 7], cut: [0, 0, 0] }
+var RADII = { cut: [0, 0, 0] }
 var GRAIN = { smooth: 0, fine: 1, toothy: 2 }
-// Shōji's washi lets the desk show through; paper and card are opaque.
-var OPACITY = { paper: 1, card: 1, washi: 0.86 }
+// Shōji's washi lets the desk show through.
+var OPACITY = { washi: 0.86 }
 
 // `panelOpacity` (Style.js, 30..100; 0 = the design's own) overrides the
 // surface's opacity for every panel.
 function skin(k, panelOpacity) {
   k = k || {}
-  var t = TEMPOS[k.tempo] || TEMPOS.spring
-  var r = RADII[k.corner] || RADII.soft
+  var t = TEMPOS[k.tempo] || TEMPOS.johakyu
+  var r = RADII[k.corner] || RADII.cut
   var touches = k.touches || {}
   return {
     design: k.design || "classic",
@@ -33,21 +31,16 @@ function skin(k, panelOpacity) {
     ring: k.ring, seal: k.seal, unread: k.unread, sign: k.sign, corner: k.corner, divider: k.divider, tempo: k.tempo,
     notify: k.notify, overview: k.overview, hold: k.hold,
     radius: r[0], radiusRow: r[1], radiusChip: r[2],
-    // A score is two lines (dark over light); hairline and lattice one.
-    dividerWidth: k.divider === "score" ? 2 : 1,
     // The lattice marks its joints where it meets the frame.
     joints: k.divider === "lattice",
     open: t.open, openCurve: t.openCurve, leave: t.leave, leaveCurve: t.leaveCurve,
     settle: SETTLE.duration, settleCurve: SETTLE.curve,
-    // Fraunces' SOFT axis: paper's figures are soft, card and washi are cut sharp.
-    soft: k.surface === "paper" ? 30 : 0,
     opacity: panelOpacity > 0 ? panelOpacity / 100 : OPACITY[k.surface] === undefined ? 1 : OPACITY[k.surface],
     grain: GRAIN[touches.grain] === undefined ? 0 : GRAIN[touches.grain],
     season: touches.season || "off",
     kanjiNumerals: touches.numerals === "kanji",
-    // Where a panel hangs: from the bar's edge (fold), flush under it (slip)
-    // or a little below on its rail (slide).
-    gap: k.arrive === "slide" ? 6 : k.arrive === "slip" ? 0 : -1,
+    // Where a panel hangs: a little below the bar, on its rail.
+    gap: k.arrive === "slide" ? 6 : 0,
     // One panel travels along the rail instead of closing and reopening.
     travels: k.arrive === "slide"
   }

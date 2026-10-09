@@ -185,14 +185,14 @@
  "settings": {
   "saved": {
    "preset": "Hanko",
-   "design": "leaf",
+   "design": "shoji",
    "touches": {
     "season": "english"
    }
   },
   "page": "design",
   "width": 620,
-  "height": 2600
+  "height": 1100
  },
  "now": "2026-10-08T21:44:00"
 }

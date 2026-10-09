@@ -6,8 +6,7 @@ import "../parts"
 
 // Letters 便り: what is waiting for you, newest first, each marked by the
 // unread part; Quiet (do not disturb) at the top; replay and clear at the foot.
-// Requests as InboxSheet's: dnd | replay | clear, and dismiss (a letter put away
-// by the notify part's swipe or tear).
+// Requests as InboxSheet's: dnd | replay | clear.
 Column {
   id: root
 
@@ -46,7 +45,6 @@ Column {
       letter: modelData
       now: root.now
       first: index === 0
-      onDismissed: root.request("inbox", "dismiss", modelData)
       onOpened: root.request("inbox", "replay", null)
     }
   }

@@ -84,7 +84,7 @@ Column {
         text: app.modelData.muted ? "—" : String(app.modelData.percent)
         color: Ink.ink
         font.family: Type.display; font.pixelSize: Type.px(17); font.weight: Font.Normal
-        font.variableAxes: Type.axes(Type.px(17), 400, root.skin.soft)
+        font.variableAxes: Type.axes(Type.px(17), 400)
       }
     }
   }

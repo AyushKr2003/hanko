@@ -118,15 +118,6 @@ Item {
   function cycleSheet(delta) {
     if (sheet) openSheet(Sheets.step(sheet, delta, sheetsReady), sheetScreen)
   }
-  // Letters put away in a Kata Letters panel (swiped or torn off). Omarchy's
-  // history has no per-letter delete a bar may call, so they are only set
-  // aside for this session; Clear all forgets them all for real.
-  property var setAside: ({})
-  function letterKey(l) { return l.timestamp + "|" + l.app + "|" + l.summary }
-  function lettersShown(list) {
-    var aside = setAside
-    return (list || []).filter(function(l) { return !aside[letterKey(l)] })
-  }
   // Something a sheet asked for: pages, values, devices.
   function sheetRequest(key, what, arg) {
     if (key === "time" && what === "shift") timeShift = Number(arg) || 0
@@ -165,15 +156,9 @@ Item {
       closeScroll()
     } else if (key === "inbox") {
       if (what === "dnd") Status.act("notif", "right")
-      else if (what === "dismiss" && arg) {
-        var aside = Object.assign({}, setAside)
-        aside[letterKey(arg)] = true
-        setAside = aside
-      }
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
       // `clear` forgets the history, `dismissAll` the toasts still on screen.
       else if (what === "clear") {
-        setAside = ({})
         Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
       }
     } else if (key === "leaf") leafRequest(what, arg)
@@ -506,19 +491,15 @@ Item {
     function styleReset(): string { Typeset.reset(); return "ok" }
     function styleShuffle(): string { Typeset.shuffle(); return "ok" }
     function warnings(): string { return Typeset.warnings.join("\n") }
-    // Kata 型 (core/Kata.js): pick a design, borrow a part, flip a touch.
+    // Kata 型 (core/Kata.js): pick a design, flip a touch.
     function designGet(): string {
       var k = Typeset.kata
       var parts = {}
       for (var p in Typeset.kataParts) parts[p] = k[p]
-      return JSON.stringify({ name: Typeset.describeDesign(k), design: k.design, parts: parts, touches: k.touches, borrowed: k.borrowed })
+      return JSON.stringify({ name: Typeset.describeDesign(k), design: k.design, parts: parts, touches: k.touches })
     }
-    function design(name: string): string {
-      if (name === "surprise") { Typeset.surprise(); return "ok" }
-      return Typeset.setDesign(name) ? "ok" : "unknown"
-    }
+    function design(name: string): string { return Typeset.setDesign(name) ? "ok" : "unknown" }
     function designDescribe(): string { return Typeset.describeDesign() }
-    function borrow(part: string, value: string): string { return Typeset.borrow(part, value) ? "ok" : "invalid" }
     function touch(key: string, value: string): string { return Typeset.touch(key, value) ? "ok" : "invalid" }
     function sheet(name: string): string {
       if (root.sheet === name) { root.closeSheet(); return "closed" }

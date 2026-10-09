@@ -185,16 +185,12 @@
  "settings": {
   "saved": {
    "preset": "Hanko",
-   "design": "shoji",
-   "borrow": {
-    "slider": "ruler",
-    "notify": "tickets"
-   }
+   "design": "shoji"
   },
   "page": "design",
   "undo": 3,
   "width": 1600,
-  "height": 2900
+  "height": 1500
  },
  "now": "2026-10-08T21:44:00"
 }

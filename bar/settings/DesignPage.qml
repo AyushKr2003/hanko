@@ -8,12 +8,10 @@ import "../../core/Season.js" as Season
 import ".."
 import "../parts"
 
-// Settings › Design 意匠 (docs/kata §6): which design draws the bar, the
-// parts borrowed from the others, and the touches. Four design cards with
-// the bar drawn live in each; a line naming the mix, Surprise and Back to
-// the design; one row per part, each variant drawn by the part itself; the
-// touches. Every pick applies at once (the window saves as you go and keeps
-// an undo history), so nothing here waits for a Save.
+// Settings › Design 意匠 (docs/kata §6): which design draws the bar, its
+// touches and the panels' opacity. Two design cards, Hanko and Shōji, with
+// the bar drawn live in each. Every pick applies at once (the window saves
+// as you go and keeps an undo history), so nothing here waits for a Save.
 Column {
   id: root
 
@@ -22,28 +20,25 @@ Column {
   property bool compact: false
 
   signal designPicked(string name)
-  signal borrowPicked(string part, string value)
   signal touchPicked(string key, string value)
-  signal surprise()
-  signal backToDesign()
   // Panel opacity: a percent (30..100) as text, or "auto" for the design's own.
   signal opacityPicked(string value)
 
   readonly property var kata: K.resolve(doc)
   readonly property bool classic: kata.classic
-  readonly property var blurbs: ({ classic: "the main bar, in type and ink", margin: "paper, soft and calm", leaf: "cards, tabs and tickets", shoji: "washi, ink and the seasons" })
-  // Classic has no parts to borrow; its rows show Margin's.
-  readonly property var base: classic ? ({ design: "margin" }) : doc
+  readonly property var blurbs: ({ classic: "the main bar, in type and ink", shoji: "washi, ink and the seasons" })
 
   readonly property int panelOpacity: doc.panelOpacity || 0
-  readonly property var skin: Sk.skin(K.resolve(base), panelOpacity)
+  // The opacity slider is drawn by Shōji's slider part on either design.
+  readonly property var skin: Sk.skin(K.resolve(classic ? { design: "shoji" } : doc), panelOpacity)
+  // Auto is solid paper on Hanko's sheets and the washi's own under Shōji.
+  readonly property real paperOpacity: panelOpacity > 0 ? panelOpacity / 100 : classic ? 1 : skin.opacity
   readonly property var season: Season.at(barData.now || new Date())
-  function skinWith(part, value) { return Sk.skin(K.resolve(K.withBorrow(base, part, value) || base)) }
 
   spacing: Type.px(14)
   topPadding: Type.px(22)
 
-  // ------------------------------------------------ the four designs
+  // ------------------------------------------------ the two designs
   Grid {
     id: cards
     width: parent.width
@@ -151,119 +146,6 @@ Column {
     }
   }
 
-  // ------------------------------------------------ the mix
-  Item {
-    visible: !root.classic
-    width: parent.width
-    height: Math.max(mix.implicitHeight, mixButtons.height) + Type.px(12)
-    Text {
-      id: mix
-      anchors.verticalCenter: parent.verticalCenter
-      width: parent.width - mixButtons.width - Type.px(16)
-      wrapMode: Text.Wrap
-      text: K.describe(root.kata)
-      color: Ink.ink
-      font.family: Type.display; font.italic: true; font.pixelSize: Type.px(20)
-      font.variableAxes: Type.axes(Type.px(20))
-    }
-    Row {
-      id: mixButtons
-      anchors.right: parent.right
-      anchors.verticalCenter: parent.verticalCenter
-      spacing: Type.px(10)
-      Button { label: root.classic ? "Back to Hanko" : "Back to " + K.LABELS[root.kata.design]; faint: root.classic || root.kata.borrowed.length === 0; onClicked: root.backToDesign() }
-      Button { label: "Surprise me"; onClicked: root.surprise() }
-    }
-  }
-
-  Rectangle { visible: !root.classic; width: parent.width; height: 1; color: Ink.line }
-
-  // ------------------------------------------------ borrow a part
-  Text {
-    visible: !root.classic
-    width: parent.width
-    wrapMode: Text.Wrap
-    text: "Borrow any part from another design. The parts that go with it (corners, dividers, tempo) follow on their own."
-    color: Ink.inkMuted
-    font.family: Type.text; font.pixelSize: Type.row
-  }
-
-  Repeater {
-    model: K.MAIN_PARTS
-    Item {
-      id: partRow
-      required property string modelData
-      required property int index
-      readonly property var variants: Object.keys(K.PARTS[modelData].v)
-      readonly property real labelW: root.compact ? parent.width : Type.px(150)
-      visible: !root.classic
-      width: root.width
-      height: (root.compact ? label.height + Type.px(8) : 0) + tiles.height + Type.px(8)
-
-      Column {
-        id: label
-        width: partRow.labelW - Type.px(12)
-        y: root.compact ? 0 : Type.px(10)
-        spacing: Type.px(3)
-        Text {
-          text: K.PART_LABELS[partRow.modelData].charAt(0).toUpperCase() + K.PART_LABELS[partRow.modelData].slice(1)
-          color: Ink.ink
-          font.family: Type.text; font.pixelSize: Type.row; font.weight: Font.Medium; font.variableAxes: Type.valueAxes
-        }
-        Text {
-          visible: root.kata.borrowed.indexOf(partRow.modelData) >= 0
-          text: "BORROWED"
-          color: Ink.seal
-          font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag
-        }
-      }
-      Row {
-        id: tiles
-        x: root.compact ? 0 : partRow.labelW
-        y: root.compact ? label.height + Type.px(8) : 0
-        spacing: Type.px(10)
-        readonly property real tileW: Math.min(Type.px(230), (partRow.width - x - 2 * spacing) / 3)
-        Repeater {
-          model: partRow.variants
-          Column {
-            id: tile
-            required property string modelData
-            readonly property bool on: root.kata[partRow.modelData] === modelData
-            readonly property string from: K.PARTS[partRow.modelData].v[modelData]
-            spacing: Type.px(4)
-            Rectangle {
-              width: tiles.tileW; height: Type.px(78)
-              radius: 3
-              color: "transparent"
-              border.width: tile.on ? 2 : 1
-              border.color: tile.on ? Ink.ink : tileArea.containsMouse ? Ink.lineStrong : Ink.line
-              PartPreview {
-                x: 2; y: 2
-                width: parent.width - 4; height: parent.height - 4
-                part: partRow.modelData
-                skin: root.skinWith(partRow.modelData, tile.modelData)
-              }
-              MouseArea {
-                id: tileArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.borrowPicked(partRow.modelData, tile.modelData)
-              }
-            }
-            Text {
-              width: tiles.tileW; elide: Text.ElideRight
-              text: tile.modelData + " · " + K.LABELS[tile.from]
-              color: tile.on ? Ink.ink : Ink.inkMuted
-              font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag
-              font.capitalization: Font.AllUppercase
-            }
-          }
-        }
-      }
-    }
-  }
-
   Rectangle { visible: !root.classic; width: parent.width; height: 1; color: Ink.line }
 
   // ------------------------------------------------ touches
@@ -318,7 +200,7 @@ Column {
       Text { text: "Panel opacity"; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
       Text {
         width: parent.width; wrapMode: Text.Wrap
-        text: "How much of your desk shows through every panel: sheets, the scroll and each design's panels. Auto keeps the design's own (solid paper, Shōji's washi at 86%)."
+        text: "How much of your desk shows through every panel: sheets, the scroll and Shōji's panels. Auto keeps the design's own (solid paper on Hanko, Shōji's washi at 86%)."
         color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(12)
       }
     }
@@ -332,17 +214,17 @@ Column {
         width: Type.px(240); height: Type.px(26)
         skin: root.skin
         // 30..100 drawn across the whole ruler
-        value: (Math.round(root.skin.opacity * 100) - 30) / 70 * 100
+        value: (Math.round(root.paperOpacity * 100) - 30) / 70 * 100
         onMoved: function(v) { root.opacityPicked(String(Math.round(30 + v / 100 * 70))) }
       }
       Text {
         anchors.verticalCenter: parent.verticalCenter
         width: Type.px(56)
         horizontalAlignment: Text.AlignRight
-        text: Math.round(root.skin.opacity * 100) + "%"
+        text: Math.round(root.paperOpacity * 100) + "%"
         color: Ink.ink
         font.family: Type.display; font.pixelSize: Type.px(22); font.weight: Font.Normal
-        font.variableAxes: Type.axes(Type.px(22), 360, root.skin.soft || 0)
+        font.variableAxes: Type.axes(Type.px(22), 360)
         font.features: { "tnum": 1, "lnum": 1 }
       }
       Button { anchors.verticalCenter: parent.verticalCenter; label: "Auto"; faint: root.panelOpacity === 0; onClicked: root.opacityPicked("auto") }

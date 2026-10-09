@@ -4,17 +4,17 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 
 ![The Typesetting settings page](docs/mockups/typeset/01-settings.webp)
 
-![Settings › Design: four designs, twelve parts to borrow, three touches](docs/kata/images/k7-design.webp)
+![Settings › Design: Hanko and Shōji, three touches and the panels' opacity](docs/kata/images/k7-design.webp)
 
 ## What you get
 
 - **Every part is a setting:** 22 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
-- **Four designs in one engine** (Kata 型, `docs/kata/`): pick Hanko, Margin, Leaf or Shōji on Settings › Design 意匠 and borrow any of twelve parts from the others; every pick prints live and is kept at once, with Undo (there is no Save button). A slider there sets how see-through every panel is (30–100%). From a terminal, `hanko design margin|leaf|shoji` switches the bar to that design, `hanko borrow slider ruler` takes one part from another design, `hanko touch season english` flips a touch, and `hanko design hanko` brings today's look back (still the default). Each design has a Bluetooth cell and opens its own panels (Time, Sound, Network, Bluetooth, Power, Letters), letters, overview and hold-to-confirm buttons.
+- **Two designs** (Kata 型, `docs/kata/`): pick Hanko or Shōji (washi, brush and the seasons) on Settings › Design 意匠, with three touches for Shōji (season, numerals, grain); every pick prints live and is kept at once, with Undo (there is no Save button). A slider there sets how see-through every panel is (30–100%). From a terminal, `hanko design shoji` switches the bar to Shōji, `hanko touch season english` flips a touch, and `hanko design hanko` brings today's look back (still the default). Shōji has a Bluetooth cell and opens its own panels (Time, Sound, Network, Bluetooth, Power, Letters), letters, overview and hold-to-confirm buttons.
 - **Hanko, finished by hand:** each sheet is numbered like a page, carries its kanji pressed faintly behind the title, and ends in a colophon strip; groups are underscored, sliders have a capped needle, and the paper casts a soft shadow with printer's crop marks.
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
 - **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).
-- **Three hands for every sheet:** each cell's sheet can be a Ledger 帳 (the editorial page), Tanzaku 短冊 (each choice a poem slip hung from a rail, right to left, as long as its level) or Prose 文 (the state as a sentence whose words you tap); pick per sheet on Settings › Sheets.
+- **Three hands for every sheet:** each cell's sheet can be a Ledger 帳 (the editorial page), Tanzaku 短冊 (each choice a poem slip hung from a rail, right to left, as long as its level) or Mon 紋 (a crest book's page: each choice a kamon, the one in use inked red); pick per sheet on Settings › Sheets.
 - **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
 - **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch, a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top.
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.

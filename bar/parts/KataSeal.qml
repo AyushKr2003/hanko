@@ -2,11 +2,9 @@ import QtQuick
 import "../../core"
 import "../../core/Brush.js" as Brush
 
-// The seal (Kata part `seal`). At rest it is quiet; when something is for
-// you (`on`) it is pressed in vermilion, in every design.
-//   outline  Margin: a quiet outline
-//   deboss   Leaf: a blind impression, no ink
-//   carved   Shōji: an ink outline with a carved, uneven edge
+// The seal (Kata part `seal`): Shōji's carved seal, an ink outline whose
+// edge wanders as cut stone does. At rest it is quiet; when something is
+// for you (`on`) it is pressed in vermilion.
 Item {
   id: root
 
@@ -14,9 +12,6 @@ Item {
   property string glyph: "鑑"
   property bool on: false
   property int size: Type.px(24)
-  readonly property string kind: skin.seal || "outline"
-  readonly property bool rough: kind === "carved"
-  readonly property real r: (skin.corner === "cut" || kind === "deboss") ? 0 : Math.round(size * 0.22)
 
   implicitWidth: size
   implicitHeight: size
@@ -31,33 +26,10 @@ Item {
   }
   scale: press
 
-  // outline and pressed, smooth-edged
-  Rectangle {
-    visible: !root.rough && root.kind !== "deboss" || (root.on && !root.rough)
-    anchors.fill: parent
-    anchors.margins: root.on ? 1 : 2
-    radius: root.r
-    color: root.on ? Ink.seal : "transparent"
-    border.width: root.on ? 0 : 1.5
-    border.color: Ink.ink3
-    antialiasing: true
-  }
-  // deboss at rest
-  Item {
-    visible: root.kind === "deboss" && !root.on
-    anchors.fill: parent
-    Rectangle { anchors.fill: parent; color: Ink.paper2 }
-    Rectangle { width: parent.width; height: 1; color: Ink.shadeIn }
-    Rectangle { width: 1; height: parent.height; color: Ink.shadeIn }
-    Rectangle { y: parent.height - 1; width: parent.width; height: 1; color: Ink.cut }
-    Rectangle { x: parent.width - 1; width: 1; height: parent.height; color: Ink.cut }
-  }
-  // carved: the edge wanders, as cut stone does
   InkShape {
-    visible: root.rough
     x: 1.5; y: 1.5
     width: root.size - 3; height: root.size - 3
-    path: Brush.rough(root.size - 3, root.size - 3, root.r * 0.6, root.glyph.charCodeAt(0) % 97 + 3, root.size / 30)
+    path: Brush.rough(root.size - 3, root.size - 3, 0, root.glyph.charCodeAt(0) % 97 + 3, root.size / 30)
     fill: root.on ? Ink.seal : "transparent"
     stroke: root.on ? "transparent" : Ink.ink2
     strokeWidth: root.on ? 0 : 1.5
@@ -65,7 +37,7 @@ Item {
   Text {
     anchors.centerIn: parent
     text: root.glyph
-    color: root.on ? Ink.paper : root.kind === "deboss" ? Ink.ink4 : root.rough ? Ink.ink2 : Ink.ink3
+    color: root.on ? Ink.paper : Ink.ink2
     font.family: Type.jpSerif
     font.weight: Font.DemiBold
     font.pixelSize: Math.round(root.size * 0.54)

@@ -1,7 +1,7 @@
 {
  "title": "Kata K6 · letters and holds",
  "scene": "KataWave",
- "width": 1500,
+ "width": 700,
  "theme": {
   "foreground": "#ddd5c7",
   "background": "#0a0a09",
@@ -38,18 +38,6 @@
   }
  ],
  "docs": [
-  {
-   "label": "Margin · cards, soak",
-   "doc": {
-    "design": "margin"
-   }
-  },
-  {
-   "label": "Leaf · tickets, soak",
-   "doc": {
-    "design": "leaf"
-   }
-  },
   {
    "label": "Shōji · rows, stroke",
    "doc": {

@@ -54,10 +54,7 @@ Rectangle {
   signal undo()
   // Settings › Design (DesignPage.qml).
   signal designPicked(string name)
-  signal borrowPicked(string part, string value)
   signal touchPicked(string key, string value)
-  signal surprise()
-  signal backToDesign()
   signal pagePicked(string key)
   signal queryEdited(string text)
   signal advancedToggled(bool on)
@@ -400,7 +397,7 @@ Rectangle {
           text: root.page === "typesetting"
             ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
             : root.page === "design"
-              ? "Pick the design that draws your bar, then borrow any part from another. Every change prints live and is kept at once."
+              ? "Pick the design that draws your bar: Hanko, in type and ink, or Shōji, in washi and brush. Every change prints live and is kept at once."
               : root.placeholders[root.page] || ""
           color: Ink.inkMuted
           font.family: Type.text
@@ -415,10 +412,7 @@ Rectangle {
           barData: root.barData
           compact: root.compact
           onDesignPicked: function(name) { root.designPicked(name) }
-          onBorrowPicked: function(part, value) { root.borrowPicked(part, value) }
           onTouchPicked: function(key, value) { root.touchPicked(key, value) }
-          onSurprise: root.surprise()
-          onBackToDesign: root.backToDesign()
           onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
         }
 
@@ -1133,7 +1127,7 @@ Rectangle {
   readonly property var placeholders: ({
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
     widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
-    sheets: "Sheets drop flush from the cell you click. Pick the hand that draws each one: the ledger's page, slips hung like tanzaku, or prose you tap. Every change is kept at once.",
+    sheets: "Sheets drop flush from the cell you click. Pick the hand that draws each one: the ledger's page, slips hung like tanzaku, or a crest book's page of mon. Every change is kept at once.",
     scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
     keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. Rebinding comes later."

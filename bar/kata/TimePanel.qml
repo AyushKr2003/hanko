@@ -40,7 +40,7 @@ Item {
       text: T.heading(root.now).title + ", "
       color: Ink.ink
       font.family: Type.display; font.pixelSize: Type.px(30); font.weight: Font.Normal
-      font.variableAxes: Type.axes(Type.px(30), 360, root.skin.soft)
+      font.variableAxes: Type.axes(Type.px(30), 360)
       Text {
         anchors.left: parent.right; anchors.baseline: parent.baseline
         text: T.ordinal(root.now.getDate())
@@ -65,15 +65,8 @@ Item {
           id: c
           required property var modelData
           width: left.width / 7; height: Type.px(32)
-          Rectangle {
-            visible: !!c.modelData.today && root.skin.ring !== "enso"
-            anchors.centerIn: parent
-            width: Type.px(30); height: Type.px(28)
-            radius: root.skin.radiusChip || 0
-            color: Ink.ink
-          }
           Ring {
-            visible: !!c.modelData.today && root.skin.ring === "enso"
+            visible: !!c.modelData.today
             anchors.centerIn: parent
             skin: root.skin; size: Type.px(34); value: 97
           }
@@ -81,7 +74,7 @@ Item {
             anchors.centerIn: parent
             visible: c.modelData.day > 0
             text: c.modelData.day
-            color: c.modelData.today ? (root.skin.ring === "enso" ? Ink.ink : Ink.paper) : c.modelData.past ? Ink.ink3 : Ink.ink2
+            color: c.modelData.today ? Ink.ink : c.modelData.past ? Ink.ink3 : Ink.ink2
             font.family: Type.text; font.pixelSize: Type.px(12.5)
             font.weight: c.modelData.today ? Font.DemiBold : Font.Normal
             font.features: { "tnum": 1 }
@@ -122,7 +115,7 @@ Item {
           text: root.season.koName
           color: Ink.ink
           font.family: Type.display; font.pixelSize: Type.px(22); font.weight: Font.Normal
-          font.variableAxes: Type.axes(Type.px(22), 380, root.skin.soft)
+          font.variableAxes: Type.axes(Type.px(22), 380)
         }
         Text {
           width: parent.width; wrapMode: Text.WordWrap
@@ -152,7 +145,7 @@ Item {
       text: z.zone.time || ""
       color: Ink.ink
       font.family: Type.display; font.pixelSize: Type.px(18); font.weight: Font.Normal
-      font.variableAxes: Type.axes(Type.px(18), 400, root.skin.soft)
+      font.variableAxes: Type.axes(Type.px(18), 400)
     }
   }
 }

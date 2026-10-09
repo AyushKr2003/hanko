@@ -1,7 +1,7 @@
 import QtQuick
 import "../../core"
 
-// A panel's hero figure: Fraunces, the skin's SOFT, tabular, with a unit.
+// A panel's hero figure: Fraunces, tabular, with a unit.
 // An Item around the row, so a MouseArea child can fill it.
 Item {
   id: root
@@ -22,7 +22,7 @@ Item {
       text: root.value
       color: root.color
       font.family: Type.display; font.pixelSize: root.size; font.weight: Font.Normal
-      font.variableAxes: Type.axes(root.size, 330, root.skin.soft)
+      font.variableAxes: Type.axes(root.size, 330)
       font.features: { "tnum": 1, "lnum": 1 }
     }
     Text {

@@ -29,7 +29,7 @@ Column {
     text: root.net ? root.net.current.label : "…"
     color: root.offline ? Ink.seal : Ink.ink
     font.family: Type.display; font.pixelSize: Type.px(44); font.weight: Font.Normal
-    font.variableAxes: Type.axes(Type.px(44), 360, root.skin.soft)
+    font.variableAxes: Type.axes(Type.px(44), 360)
   }
   Text {
     text: root.net ? root.net.current.detail : ""

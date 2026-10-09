@@ -1,5 +1,5 @@
 {
- "title": "Sheets · the prose hand",
+ "title": "Sheets · the mon hand",
  "scene": "Sheets",
  "width": 1600,
  "theme": {
@@ -177,17 +177,17 @@
  ],
  "desks": [
   {
-   "label": "TIME · PROSE",
+   "label": "TIME · MON",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "prose",
-     "sound": "prose",
-     "network": "prose",
-     "bluetooth": "prose",
-     "power": "prose",
-     "display": "prose",
-     "inbox": "prose"
+     "time": "mon",
+     "sound": "mon",
+     "network": "mon",
+     "bluetooth": "mon",
+     "power": "mon",
+     "display": "mon",
+     "inbox": "mon"
     }
    },
    "sheet": "time",
@@ -211,20 +211,20 @@
      }
     ]
    },
-   "height": 640
+   "height": 720
   },
   {
-   "label": "SOUND · PROSE",
+   "label": "SOUND · MON",
    "doc": {
     "preset": "Sheet",
     "sheetStyles": {
-     "time": "prose",
-     "sound": "prose",
-     "network": "prose",
-     "bluetooth": "prose",
-     "power": "prose",
-     "display": "prose",
-     "inbox": "prose"
+     "time": "mon",
+     "sound": "mon",
+     "network": "mon",
+     "bluetooth": "mon",
+     "power": "mon",
+     "display": "mon",
+     "inbox": "mon"
     }
    },
    "sheet": "sound",
@@ -275,20 +275,20 @@
      "inputMuted": false
     }
    },
-   "height": 640
+   "height": 720
   },
   {
-   "label": "NETWORK · PROSE",
+   "label": "NETWORK · MON",
    "doc": {
     "preset": "Sheet",
     "sheetStyles": {
-     "time": "prose",
-     "sound": "prose",
-     "network": "prose",
-     "bluetooth": "prose",
-     "power": "prose",
-     "display": "prose",
-     "inbox": "prose"
+     "time": "mon",
+     "sound": "mon",
+     "network": "mon",
+     "bluetooth": "mon",
+     "power": "mon",
+     "display": "mon",
+     "inbox": "mon"
     }
    },
    "sheet": "network",
@@ -341,20 +341,20 @@
      ]
     }
    },
-   "height": 640
+   "height": 720
   },
   {
-   "label": "BLUETOOTH · PROSE",
+   "label": "BLUETOOTH · MON",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "prose",
-     "sound": "prose",
-     "network": "prose",
-     "bluetooth": "prose",
-     "power": "prose",
-     "display": "prose",
-     "inbox": "prose"
+     "time": "mon",
+     "sound": "mon",
+     "network": "mon",
+     "bluetooth": "mon",
+     "power": "mon",
+     "display": "mon",
+     "inbox": "mon"
     }
    },
    "sheet": "bluetooth",
@@ -409,7 +409,7 @@
      ]
     }
    },
-   "height": 640,
+   "height": 720,
    "bluetooth": {
     "name": "WH-1000XM5",
     "enabled": true,
@@ -419,17 +419,17 @@
    }
   },
   {
-   "label": "POWER · PROSE",
+   "label": "POWER · MON",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "prose",
-     "sound": "prose",
-     "network": "prose",
-     "bluetooth": "prose",
-     "power": "prose",
-     "display": "prose",
-     "inbox": "prose"
+     "time": "mon",
+     "sound": "mon",
+     "network": "mon",
+     "bluetooth": "mon",
+     "power": "mon",
+     "display": "mon",
+     "inbox": "mon"
     }
    },
    "sheet": "power",
@@ -484,20 +484,20 @@
      }
     }
    },
-   "height": 640
+   "height": 720
   },
   {
-   "label": "DISPLAY · PROSE",
+   "label": "DISPLAY · MON",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "prose",
-     "sound": "prose",
-     "network": "prose",
-     "bluetooth": "prose",
-     "power": "prose",
-     "display": "prose",
-     "inbox": "prose"
+     "time": "mon",
+     "sound": "mon",
+     "network": "mon",
+     "bluetooth": "mon",
+     "power": "mon",
+     "display": "mon",
+     "inbox": "mon"
     }
    },
    "sheet": "display",
@@ -542,7 +542,7 @@
      "night": false
     }
    },
-   "height": 640,
+   "height": 720,
    "brightness": {
     "percent": 70,
     "level": 0.7,
@@ -550,17 +550,17 @@
    }
   },
   {
-   "label": "INBOX · PROSE",
+   "label": "INBOX · MON",
    "doc": {
     "preset": "Instrument",
     "sheetStyles": {
-     "time": "prose",
-     "sound": "prose",
-     "network": "prose",
-     "bluetooth": "prose",
-     "power": "prose",
-     "display": "prose",
-     "inbox": "prose"
+     "time": "mon",
+     "sound": "mon",
+     "network": "mon",
+     "bluetooth": "mon",
+     "power": "mon",
+     "display": "mon",
+     "inbox": "mon"
     }
    },
    "sheet": "inbox",
@@ -596,7 +596,7 @@
     ],
     "dnd": false
    },
-   "height": 640
+   "height": 720
   }
  ]
 }

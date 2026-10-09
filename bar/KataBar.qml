@@ -45,7 +45,6 @@ Item {
 
   readonly property int barHeight: Type.px(style.height || 40)
   readonly property int unread: notifications ? notifications.length : 0
-  readonly property string surfaceKind: skin.surface || "paper"
   readonly property var kanji: ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 
   implicitHeight: barHeight
@@ -82,25 +81,20 @@ Item {
   // ── the pointer: what you are on, or the harness's hoverCell ─────────
   property var hovered: null
   readonly property var pointed: hovered || cellItem(hoverCell)
-  readonly property var cellNames: ({ notif: "Letters", clock: "Calendar", network: root.network ? root.network.name : "Network", bluetooth: "Bluetooth", volume: "Sound", battery: "Battery" })
 
   // ── the bar's own paper ──────────────────────────────────────────────
-  Rectangle { visible: root.surfaceKind === "card"; y: root.height; width: root.width; height: 1; color: Ink.shade }
-  Rectangle { visible: root.surfaceKind === "card"; y: root.height + 1; width: root.width; height: 2; color: Ink.shade2 }
   Rectangle {
     anchors.fill: parent
     color: Ink.paper
     Fibres {
       anchors.fill: parent
-      kind: root.surfaceKind === "card" ? "grain" : "washi"
-      level: root.surfaceKind === "paper" ? 0 : Math.max(1, root.skin.grain || 0)
+      level: Math.max(1, root.skin.grain || 0)
     }
   }
-  Rectangle { y: root.height - 1; width: root.width; height: 1; color: root.surfaceKind === "card" ? Ink.edge : Ink.kLine }
+  Rectangle { y: root.height - 1; width: root.width; height: 1; color: Ink.kLine }
 
   component Cell: Item {
     id: cell
-    property string name: ""
     height: root.barHeight
     HoverHandler { onHoveredChanged: root.hovered = hovered ? cell : (root.hovered === cell ? null : root.hovered) }
   }
@@ -121,7 +115,6 @@ Item {
 
     Cell {
       id: sealCell
-      name: "notif"
       visible: root.shown("seal")
       width: sealRow.implicitWidth + Type.px(18)
       Row {
@@ -141,7 +134,7 @@ Item {
           text: String(root.unread)
           color: Ink.seal
           font.family: Type.display; font.pixelSize: Type.px(16); font.weight: Font.Normal
-          font.variableAxes: Type.axes(Type.px(16), 400, root.skin.soft)
+          font.variableAxes: Type.axes(Type.px(16), 400)
         }
       }
       MouseArea {
@@ -165,20 +158,10 @@ Item {
       readonly property var list: (root.spaces || []).filter(function(s) { return s.id > 0 && s.id <= 10 })
       property Item current: null
 
-      // the current desk's mark: an ink plate, or a brush mark under it (wash)
-      Rectangle {
-        visible: root.skin.select !== "wash" && desks.current !== null
-        x: desks.current ? desks.current.x : 0
-        y: (root.barHeight - height) / 2
-        width: Type.px(26); height: Type.px(24)
-        radius: root.skin.radiusChip || 0
-        color: Ink.ink
-        Behavior on x { enabled: Motion.live; NumberAnimation { duration: Motion.ms(root.skin.open || 200); easing.type: Easing.BezierSpline; easing.bezierCurve: root.skin.openCurve || [0.16, 1, 0.3, 1, 1, 1] } }
-      }
+      // the current desk's mark: a brush mark under it
       PointerMark {
-        visible: root.skin.select === "wash"
         anchors.fill: parent
-        skin: ({ pointer: "brush", open: root.skin.open, openCurve: root.skin.openCurve })
+        skin: root.skin
         target: desks.current ? Qt.rect(desks.current.x, 0, desks.current.width, root.barHeight) : Qt.rect(0, 0, 0, 0)
         lineY: root.barHeight + Type.px(5)
       }
@@ -198,7 +181,7 @@ Item {
             Text {
               anchors.centerIn: parent
               text: root.skin.kanjiNumerals ? root.kanji[desk.modelData.id] || String(desk.modelData.id) : String(desk.modelData.id)
-              color: desk.on ? (root.skin.select === "wash" ? Ink.ink : Ink.paper) : desk.modelData.count > 0 ? Ink.ink2 : Ink.ink3
+              color: desk.on ? Ink.ink : desk.modelData.count > 0 ? Ink.ink2 : Ink.ink3
               font.family: root.skin.kanjiNumerals ? Type.jp : Type.text
               font.pixelSize: Type.px(13)
               font.weight: desk.on ? Font.DemiBold : Font.Normal
@@ -248,7 +231,6 @@ Item {
         text: titleRow.parts ? (titleRow.parts.leaf || titleRow.parts.head) : ""
         color: Ink.ink3
         font.weight: Font.Normal
-        font.italic: root.surfaceKind === "card"
         height: root.barHeight
       }
     }
@@ -257,7 +239,6 @@ Item {
   // ── centre: the time, the date, the season ──────────────────────────
   Cell {
     id: clockCell
-    name: "clock"
     visible: root.shown("clock")
     anchors.horizontalCenter: parent.horizontalCenter
     width: clockRow.implicitWidth + Type.px(18)
@@ -272,7 +253,7 @@ Item {
         text: Qt.formatTime(root.now, root.timeFormat)
         color: Ink.ink
         font.family: Type.display; font.pixelSize: Type.px(20); font.weight: Font.Normal
-        font.variableAxes: Type.axes(Type.px(20), 400, root.skin.soft)
+        font.variableAxes: Type.axes(Type.px(20), 400)
         font.features: { "tnum": 1, "lnum": 1 }
       }
       Label { text: Qt.formatDate(root.now, "ddd d MMM"); color: Ink.ink3; font.weight: Font.Normal; height: root.barHeight }
@@ -328,13 +309,12 @@ Item {
         onClicked: function(mouse) { root.mediaAction(mouse.button === Qt.RightButton ? "next" : mouse.button === Qt.MiddleButton ? "previous" : "playPause") }
       }
     }
-    Rectangle { visible: mediaCell.visible; anchors.verticalCenter: parent.verticalCenter; width: root.skin.divider === "score" ? 2 : 1; height: Type.px(14); color: root.skin.divider === "score" ? Ink.scoreDark : Ink.kLine }
+    Rectangle { visible: mediaCell.visible; anchors.verticalCenter: parent.verticalCenter; width: 1; height: Type.px(14); color: Ink.kLine }
     Item { visible: mediaCell.visible; width: Type.px(6); height: 1 }
 
     // Wi-Fi: the icon; its name comes out when you reach for it
     Cell {
       id: netCell
-      name: "network"
       visible: root.network !== null && root.shown("network")
       readonly property bool reach: root.pointed === netCell
       width: netRow.implicitWidth + Type.px(18)
@@ -362,7 +342,6 @@ Item {
     // beside it, and its name when you reach for it
     Cell {
       id: btCell
-      name: "bluetooth"
       visible: root.bluetooth !== null && root.shown("bluetooth") && root.style.bluetooth !== "off"
       readonly property bool reach: root.pointed === btCell
       readonly property bool on: !!(root.bluetooth && root.bluetooth.enabled)
@@ -397,7 +376,6 @@ Item {
     // volume: an icon and a figure you can scroll
     Cell {
       id: volCell
-      name: "volume"
       visible: root.volume !== null && root.shown("volume")
       readonly property bool alert: root.volume && root.volume.muted
       width: volRow.implicitWidth + Type.px(18)
@@ -421,10 +399,9 @@ Item {
       }
     }
 
-    // battery: the ring part (a glyph, or an ensō that closes as it fills)
+    // battery: the ring part, an ensō that closes as it fills
     Cell {
       id: batCell
-      name: "battery"
       visible: root.battery !== null && root.shown("battery")
       readonly property bool alert: root.battery && root.battery.needsYou
       width: batRow.implicitWidth + Type.px(18)
@@ -466,6 +443,5 @@ Item {
       return Qt.rect(p.x, 0, it.width, root.barHeight)
     }
     lineY: root.barHeight
-    label: root.pointed && root.pointed.name ? root.cellNames[root.pointed.name] || "" : ""
   }
 }

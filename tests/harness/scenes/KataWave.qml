@@ -6,9 +6,8 @@ import "../../../core/Kata.js" as K
 import "../../../core/Skin.js" as Sk
 import "../../../bar/parts"
 
-// Kata's second wave (K6): the notify part (three letters, the second one
-// part-way swiped or torn) and the hold part (part-way held), one column per
-// style document, on that design's surface.
+// Kata's second wave (K6): the notify part (three letters) and the hold
+// part (part-way held), one column per style document, on its surface.
 //   { theme, width, now, title, letters, docs: [ { label, doc } ] }
 Rectangle {
   id: sheet
@@ -72,7 +71,6 @@ Rectangle {
                   letter: modelData
                   now: new Date(sheet.p.now)
                   first: index === 0
-                  pull: index === 1 ? (cell.skin.notify === "cards" ? 70 : cell.skin.notify === "tickets" ? 16 : 0) : 0
                 }
               }
               Item { width: 1; height: 6 }

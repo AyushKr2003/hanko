@@ -1,5 +1,7 @@
 # Hanko · Kata 型 — revision 1: one engine for every design
 
+> **Later:** Margin and Leaf were removed, and with them borrowing parts. Hanko ships two designs, Hanko (the Typeset bar) and Shōji, on the same engine; a style.json that names Margin or Leaf loads as Hanko. This page is kept as the proposal it was. See HANDOFF §9, "Margin and Leaf removed".
+
 **The question:** we have three designs, Margin (`design`), Leaf (`design2`) and Shōji (`design3`). Can Hanko have one uniform system that lets you use any of them, or twist them into your own? And does that need a complicated settings page?
 
 **The answer:** yes to the first, no to the second.
@@ -116,9 +118,7 @@ So no: this does not need complex settings. Today's Typeset page asks people to 
 
 ## 5. Mixes
 
-![Four mixes, each a real style document](images/07-mixes.webp)
-
-![A light-theme mix: Leaf's card with Shōji's brush, 未 stamps and the season](images/08-mix-light.webp)
+*(The renders of four mixes were removed with Margin and Leaf.)*
 
 The playground (`prototype/playground.html`) has a button for every part. Pick a design, borrow parts, switch theme, and watch the bar and panel change live, with the generated name and the style document beside them.
 

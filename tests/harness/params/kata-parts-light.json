@@ -1,3 +1,15 @@
-{ "scene": "Kata", "width": 1600, "title": "Kata 型 · the parts, Rosé Pine Dawn, and three mixes",
-  "theme": { "foreground": "#575279", "background": "#faf4ed", "red": "#b4637a" },
-  "designs": [ { "design": "shoji", "borrow": { "slider": "ruler", "ring": "glyph" } }, { "design": "leaf", "borrow": { "slider": "brush", "unread": "stamp" } }, { "design": "margin", "borrow": { "sign": "tategaki", "ring": "enso" } } ] }
+{
+ "scene": "Kata",
+ "width": 900,
+ "title": "Kata 型 · the parts, Rosé Pine Dawn",
+ "theme": {
+  "foreground": "#575279",
+  "background": "#faf4ed",
+  "red": "#b4637a"
+ },
+ "designs": [
+  {
+   "design": "shoji"
+  }
+ ]
+}

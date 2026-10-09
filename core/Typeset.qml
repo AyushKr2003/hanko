@@ -19,7 +19,7 @@ import "Kata.js" as K
 //   Typeset.kata               the Kata design for the default monitor
 //                              (core/Kata.js): { design, classic, <part>, touches }
 //   Typeset.kataFor(name)      with that monitor's overrides
-//   Typeset.setDesign(name), borrow(part, value), touch(key, value), surprise()
+//   Typeset.setDesign(name), touch(key, value)
 QtObject {
   id: root
 
@@ -40,7 +40,7 @@ QtObject {
   readonly property var current: S.resolve(live)
 
   // Kata 型: which design draws the bar. Classic (the default) is the
-  // Typeset bar above; Margin, Leaf and Shōji are presets over Kata's parts.
+  // Typeset bar above; Shōji is a preset over Kata's parts.
   readonly property var designNames: K.DESIGN_NAMES
   readonly property var kataParts: K.PARTS
   readonly property var kata: K.resolve(live)
@@ -82,9 +82,7 @@ QtObject {
   // Kata's edits, in the draft and saved at once. Each returns false when
   // the value is not one the key takes.
   function draftDesign(name) { return _draftWith(K.withDesign(live, name)) }
-  function draftBorrow(part, value) { return _draftWith(K.withBorrow(live, part, value)) }
   function draftTouch(key, value) { return _draftWith(K.withTouch(live, key, value)) }
-  function draftSurprise() { draft = S.normalize(K.surprised(live, Math.random)) }
   function _draftWith(next) {
     if (!next) return false
     draft = S.normalize(next)
@@ -174,15 +172,13 @@ QtObject {
   // What a reset keeps: the seal glyph, motion, type size, overview, hidden
   // parts, monitors, and the Kata design (a reset is about Typeset edits).
   function _keep(from, into) {
-    var keys = ["sealGlyph", "motion", "typeSize", "overview", "panelOpacity", "sheetStyles", "hidden", "monitors", "design", "borrow", "touches"]
+    var keys = ["sealGlyph", "motion", "typeSize", "overview", "panelOpacity", "sheetStyles", "hidden", "monitors", "design", "touches"]
     for (var i = 0; i < keys.length; i++) if (from[keys[i]] !== undefined) into[keys[i]] = from[keys[i]]
     return into
   }
 
   function setDesign(name) { return _commitWith(K.withDesign(doc, name)) }
-  function borrow(part, value) { return _commitWith(K.withBorrow(doc, part, value)) }
   function touch(key, value) { return _commitWith(K.withTouch(doc, key, value)) }
-  function surprise() { _commit(S.normalize(K.surprised(doc, Math.random))) }
   function _commitWith(next) {
     if (!next) return false
     _commit(S.normalize(next))

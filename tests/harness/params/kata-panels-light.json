@@ -1,7 +1,7 @@
 {
- "title": "Kata K5 · Rosé Pine Dawn, mixed",
+ "title": "Kata K5 · Rosé Pine Dawn",
  "scene": "KataPanels",
- "width": 2440,
+ "width": 1700,
  "theme": {
   "foreground": "#575279",
   "background": "#faf4ed",
@@ -311,30 +311,18 @@
  },
  "docs": [
   {
-   "label": "Shōji with Leaf's slider",
+   "label": "Shōji",
+   "doc": {
+    "design": "shoji"
+   }
+  },
+  {
+   "label": "Shōji · English season, kanji numerals",
    "doc": {
     "design": "shoji",
-    "borrow": {
-     "slider": "block"
-    }
-   }
-  },
-  {
-   "label": "Leaf with season",
-   "doc": {
-    "design": "leaf",
     "touches": {
-     "season": "english"
-    }
-   }
-  },
-  {
-   "label": "Margin with Shōji's ring",
-   "doc": {
-    "design": "margin",
-    "borrow": {
-     "ring": "enso",
-     "sign": "tategaki"
+     "season": "english",
+     "numerals": "kanji"
     }
    }
   }

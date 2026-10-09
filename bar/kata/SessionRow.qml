@@ -4,8 +4,8 @@ import "../../core"
 import "../parts"
 
 // Lock, Suspend, Restart, Shut down. The two that end your session ask you
-// to hold them instead of asking "are you sure?" (the hold part: Leaf's
-// soak, or Shōji's brush stroke).
+// to hold them instead of asking "are you sure?" (the hold part: Shōji's
+// brush stroke). The four sit side by side as one row of doors.
 Row {
   id: root
 
@@ -18,7 +18,7 @@ Row {
     { key: "reboot", name: "Restart", hold: true },
     { key: "shutdown", name: "Shut down", hold: true }
   ]
-  spacing: root.skin.surface === "washi" ? 0 : Type.px(8)
+  spacing: 0
   height: Type.px(56)
 
   Repeater {

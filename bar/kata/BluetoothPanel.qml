@@ -58,7 +58,7 @@ Column {
         text: root.blue ? root.blue.title : "Bluetooth"
         color: root.powered ? Ink.ink : Ink.ink3
         font.family: Type.display; font.pixelSize: Type.px(40); font.weight: Font.Normal
-        font.variableAxes: Type.axes(Type.px(40), 360, root.skin.soft)
+        font.variableAxes: Type.axes(Type.px(40), 360)
       }
       Text {
         width: parent.width; wrapMode: Text.Wrap

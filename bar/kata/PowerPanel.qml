@@ -4,7 +4,7 @@ import "../../core"
 import "../parts"
 
 // Power 電: the battery as the ring part (an ensō that closes as it
-// fills, or a figure with the glyph), how long it lasts, the display's
+// fills, the figure inside it), how long it lasts, the display's
 // brightness, the power profile and the session's actions.
 Column {
   id: root
@@ -23,23 +23,21 @@ Column {
     width: parent.width
     spacing: Type.px(18)
     visible: root.power !== null
+    // the charge as an ensō, the figure inside it
     Item {
-      width: root.skin.ring === "enso" ? Type.px(112) : hero.width
-      height: root.skin.ring === "enso" ? Type.px(112) : hero.height
+      width: Type.px(112)
+      height: Type.px(112)
       Ring {
-        visible: root.skin.ring === "enso"
         anchors.fill: parent
         skin: root.skin; size: Type.px(112); value: root.power ? root.power.percent : 0; alert: root.low
       }
       Text {
-        visible: root.skin.ring === "enso"
         anchors.centerIn: parent
         text: root.power ? String(root.power.percent) : ""
         color: root.low ? Ink.seal : Ink.ink
         font.family: Type.display; font.pixelSize: Type.px(38); font.weight: Font.Normal
-        font.variableAxes: Type.axes(Type.px(38), 340, root.skin.soft)
+        font.variableAxes: Type.axes(Type.px(38), 340)
       }
-      Figure { id: hero; visible: root.skin.ring !== "enso"; skin: root.skin; value: root.power ? String(root.power.percent) : ""; unit: "%"; color: root.low ? Ink.seal : Ink.ink }
     }
     Column {
       anchors.verticalCenter: parent.verticalCenter
@@ -54,9 +52,8 @@ Column {
         text: root.power ? root.power.blurb : ""
         color: Ink.ink
         font.family: Type.display; font.pixelSize: Type.px(20); font.weight: Font.Normal
-        font.variableAxes: Type.axes(Type.px(20), 380, root.skin.soft)
+        font.variableAxes: Type.axes(Type.px(20), 380)
       }
-      Ring { visible: root.skin.ring !== "enso"; skin: root.skin; size: Type.px(54); value: root.power ? root.power.percent : 0; alert: root.low }
     }
   }
   Text {

@@ -88,8 +88,8 @@ QtObject {
 
   // Fraunces is variable: its optical size follows the size it is set at
   // (sturdier hairlines when small), and the weight must be given here and
-  // as font.weight: Font.Normal, or it renders bold.
-  // Kata's skins also set the SOFT axis (skin.soft: 30 for paper, 0 cut sharp).
+  // as font.weight: Font.Normal, or it renders bold. `soft` sets the SOFT
+  // axis when given.
   function axes(size, wght, soft) {
     var a = { "opsz": Math.max(9, Math.min(144, size)), "wght": wght === undefined ? 400 : wght }
     if (soft !== undefined) a["SOFT"] = soft
