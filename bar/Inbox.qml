@@ -76,7 +76,7 @@ Item {
         font.letterSpacing: Type.trackLabel
       }
       Text {
-        text: root.dnd ? "静" : "報"
+        text: root.dnd ? "休" : "文"
         color: Ink.inkMuted
         font.family: Type.jp
         font.pixelSize: Type.gloss

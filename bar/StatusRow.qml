@@ -37,18 +37,22 @@ Item {
   readonly property int tickCount: mode === "cells" ? 10 : mode === "glyphs" ? 4 : 5
 
   // The readings, in the order each style reads them.
+  // The bar's kanji are the plainest that say it, few strokes so they stay
+  // clean at gloss size: 波 waves (network), 青 blue (Bluetooth), 音 sound,
+  // 光 light (brightness), 力 power (battery; 充 while charging). The
+  // sheets keep their fuller heads (網, 藍, 電, 明).
   readonly property var items: {
     var out = []
     function net() {
       var n = root.network
-      if (n) out.push({ key: "network", label: "NET", jp: "接続", glyph: "網", value: n.name, unit: "",
+      if (n) out.push({ key: "network", label: "NET", jp: "波", glyph: "波", value: n.name, unit: "",
                         level: -1, bars: n.kind === "wifi" ? n.bars : -1, needsYou: n.needsYou })
     }
     function bt() {
       var b = root.bluetooth
       if (!b) return
       var drawn = root.btStyle === "device" || !b.enabled ? "" : root.btStyle
-      out.push({ key: "bluetooth", label: "BT", jp: "藍", glyph: "藍", value: b.name, unit: "",
+      out.push({ key: "bluetooth", label: "BT", jp: "青", glyph: "青", value: b.name, unit: "",
                  level: drawn ? -1 : b.level, bars: -1, needsYou: !!b.needsYou,
                  bt: drawn, devices: b.devices || [], count: b.count || "00" })
     }
@@ -59,12 +63,12 @@ Item {
     }
     function bri() {
       var b = root.brightness
-      if (b) out.push({ key: "brightness", label: "LUM", jp: "明", glyph: "明", value: String(b.percent), unit: "%",
+      if (b) out.push({ key: "brightness", label: "LUM", jp: "光", glyph: "光", value: String(b.percent), unit: "%",
                         level: b.level, bars: -1, needsYou: false })
     }
     function bat() {
       var b = root.battery
-      if (b) out.push({ key: "battery", label: "BAT", jp: b.charging ? "充" : "電", glyph: b.charging ? "充" : "電",
+      if (b) out.push({ key: "battery", label: "BAT", jp: b.charging ? "充" : "力", glyph: b.charging ? "充" : "力",
                         value: String(b.percent), unit: "%", level: b.level, bars: -1, needsYou: b.needsYou })
     }
     if (mode === "cells") { net(); bt(); vol(); bri(); bat() }

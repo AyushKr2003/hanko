@@ -253,14 +253,14 @@
       "indicators": [
         {
           "key": "night",
-          "glyph": "夜",
+          "glyph": "月",
           "title": "Night",
           "red": false,
           "count": 0
         },
         {
           "key": "reminder",
-          "glyph": "鈴",
+          "glyph": "予",
           "title": "Remind",
           "red": false,
           "count": 2

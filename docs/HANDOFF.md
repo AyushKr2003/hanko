@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-08, after the four Kan and the brush face (every kanji written, not typeset), following the Profile's signed work.
+Last updated: 2026-10-09, after the bar's kanji were made plainer (fewer strokes), following the four Kan and the brush face.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -729,6 +729,13 @@ Research: seal shops carve in tensho (篆書) or kaisho; no free (OFL) tensho fo
 - **`Type.brush`** (Yuji Boku, `assets/fonts/YujiBoku.ttf`, 620 KB subset, `YujiBoku-OFL.txt`); `Type.jp` and `Type.jpSerif` resolve to it, so every kanji in the bar, sheets, scroll, overview, settings and plates is brushed. Glosses grew a step (`gloss` 11, `glossMid` 12) because the brush's hairlines vanished at 9 px on a 1x panel.
 - **Profile's work** (`Shikishi`): the glyph brushed at 62% of the box, turned 2°, over four faint offset copies (a bleed into the paper); the round shubun is brushed too.
 - Credits list Yuji Boku (Kinuta Font Factory) under Type; Noto CJK now covers what the brush lacks.
+
+### Plainer kanji on the bar ✅ (asked for: "in the bar cells and active indicators, kanji with fewer strokes so they look clean; leave the workspace numerals")
+The brush face drew the dense glosses (接続, 藍, 電, 録, 醒, 静) as smudges at gloss size. On the bar itself each is now the plainest kanji that still says it:
+- **Cells** (`StatusRow.items`, `jp` and `glyph`): NET 波 (waves), BT 青 (blue), VOL 音, LUM 光 (light), BAT 力 (power; 充 while charging). The glyphs status style and Islet use the same.
+- **Indicators** (`core/Extras.js`): 写 recording, 言 dictation, 予 reminder, 目 stay awake, 月 night light, 休 do not disturb.
+- **Inbox** count mode: 文 (休 under do not disturb). Mic 声 and the tray's 盆 were already plain; the workspace numerals (壱 弐 参 …) are unchanged.
+- The sheets, scroll and settings keep their fuller heads (網 藍 電 明 報). `Settings.js`, `Style.js` text, fixtures and the indicator unit test follow; the brush subset was re-cut to include the new kanji.
 
 ## 10. Instructions for the remaining phase (10)
 

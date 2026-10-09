@@ -15,7 +15,7 @@ var OPTIONS = {
   status:   ["cells", "glyphs", "numerals"],
   meters:   ["ticks", "off"],
   notif:    ["count", "stamps"],
-  // A BT 藍 cell for Bluetooth (only where there is an adapter):
+  // A BT 青 cell for Bluetooth (only where there is an adapter):
   // device = the connected device's name and battery, marks = one kanji
   // mark per device with its charge under it, count = how many, as dots.
   bluetooth: ["device", "marks", "count", "off"],

@@ -109,7 +109,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 
 | Option | What it does | From |
 |---|---|---|
-| **`cells`** (default) | `NET 接続 / VOL 音 / BAT 電` label-over-value cells, held together as one group by space alone (the zones keep their rules); a Bluetooth device's charge is a half-length meter. | Sheet |
+| **`cells`** (default) | `NET 波 / BT 青 / VOL 音 / LUM 光 / BAT 力` label-over-value cells (the plainest kanji that say it, so the glosses stay clean at 1x; 充 while charging), held together as one group by space alone (the zones keep their rules); a Bluetooth device's charge is a half-length meter. | Sheet |
 | `glyphs` | A boxed kanji is the icon and the number is the state. Solid red when it needs you; dashed when off. | Scroll |
 | `numerals` | Mono labels and numbers on one line (`VOL 62 · NET Kumo · BAT 91%`). | New |
 
@@ -135,7 +135,7 @@ All six status × meters pairs are drawn on sheet 12.
 
 | Option | What it does | From |
 |---|---|---|
-| **`device`** (default) | A `BT 藍` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. | New |
+| **`device`** (default) | A `BT 青` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. | New |
 | `marks` | One kanji mark per connected device, by its kind: 耳 headphones, 響 speaker, 鍵 keyboard, 鼠 mouse, 話 phone, 遊 controller, 機 computer, 器 anything else. In cells each mark is a small box its charge fills from the bottom; in glyphs the charge is a rule under the mark; four at most, then `+N`. | New |
 | `count` | How many devices are connected, as a two-digit count, and a dot for each (six at most). | New |
 | `off` | No Bluetooth cell. The panel is still in the scroll and on Omarchy's hotkey. | New |
@@ -154,7 +154,7 @@ Omarchy's six indicators (screen recording, dictation, reminder, stay awake, nig
 | `indicatorStyle` | What it does |
 |---|---|
 | **`icon`** (default) | Omarchy's own icon in the stamp (the Nerd Font glyph its bar uses), readable without the kanji. Red only for "now": a recording and live dictation are solid red; transcribing shows an hourglass. |
-| `kanji` | The kanji: 録 recording, 書 dictation, 鈴 reminder, 醒 stay awake, 夜 night light, 静 do not disturb. One that is on is a small seal like the one at the far left, carved in ink (a bone plate, an inner rule, serif kanji); only one that means "now" (recording, dictation) is red; off, a faint outline like an off icon stamp. |
+| `kanji` | The kanji, the plainest that say it: 写 recording, 言 dictation, 予 reminder, 目 stay awake, 月 night light, 休 do not disturb. One that is on is a small seal like the one at the far left, carved in ink (a bone plate, an inner rule, serif kanji); only one that means "now" (recording, dictation) is red; off, a faint outline like an off icon stamp. |
 | `iconname` | `icon`, with the name in small caps beside each one that is on. |
 | `kanjiname` | `kanji`, with the name beside each one that is on. |
 

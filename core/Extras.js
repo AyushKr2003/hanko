@@ -8,14 +8,16 @@
 // Indicator marks, in the order they sit: each a stamp with the same icon
 // Omarchy's bar uses (Nerd Font, so it reads without knowing the kanji),
 // the kanji kept for the settings and the stamp's name. Red means "you" or
-// "now": only a recording and live dictation are red.
+// "now": only a recording and live dictation are red. The kanji are the
+// plainest that say it, so a stamp stays clean at 1x: 写 recording, 言
+// dictation, 予 reminder, 目 stay awake, 月 night light, 休 do not disturb.
 var INDICATORS = [
-  { key: "recording", glyph: "録", icon: "\u{f0ec2}", title: "Screen recording", red: true },
-  { key: "dictation", glyph: "書", icon: "\u{f036c}", title: "Dictation", red: true },
-  { key: "reminder",  glyph: "鈴", icon: "\u{f088c}", title: "Reminder", red: false },
-  { key: "awake",     glyph: "醒", icon: "\u{f0176}", title: "Stay awake", red: false },
-  { key: "night",     glyph: "夜", icon: "\u{f050e}", title: "Night light", red: false },
-  { key: "dnd",       glyph: "静", icon: "\u{f009b}", title: "Do not disturb", red: false }
+  { key: "recording", glyph: "写", icon: "\u{f0ec2}", title: "Screen recording", red: true },
+  { key: "dictation", glyph: "言", icon: "\u{f036c}", title: "Dictation", red: true },
+  { key: "reminder",  glyph: "予", icon: "\u{f088c}", title: "Reminder", red: false },
+  { key: "awake",     glyph: "目", icon: "\u{f0176}", title: "Stay awake", red: false },
+  { key: "night",     glyph: "月", icon: "\u{f050e}", title: "Night light", red: false },
+  { key: "dnd",       glyph: "休", icon: "\u{f009b}", title: "Do not disturb", red: false }
 ]
 // Dictation at work on what it heard: an hourglass instead of the mic.
 var TRANSCRIBING_ICON = "\u{f051f}"

@@ -675,7 +675,7 @@ test("togglePanelAt counts hosted widgets in their place", () => {
 test("own marks: only the indicators that are on, red only for now", () => {
   assert.deepEqual(X.indicators({}), [])
   const all = X.indicators({ recording: true, dictation: "recording", reminders: 2, awake: true, night: true })
-  assert.deepEqual(all.map(i => i.glyph), ["録", "書", "鈴", "醒", "夜"])
+  assert.deepEqual(all.map(i => i.glyph), ["写", "言", "予", "目", "月"])
   assert.deepEqual(all.map(i => i.red), [true, true, false, false, false])
   assert.equal(all[2].count, 2)
   assert.equal(X.indicators({ dictation: "transcribing" })[0].red, false)
