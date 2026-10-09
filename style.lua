@@ -187,3 +187,14 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 2.6, bezier = "hanko
 -- The overview is already animated by QML; keep Hyprland from sliding its
 -- full-screen layer in as well.
 hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, animation = "none" })
+
+-- ── Settings window ─────────────────────────────────────────────────────────
+-- Hanko's settings open as a floating sheet in the middle of the screen,
+-- never tiled. Matched on class and title so no other Quickshell window
+-- picks this up.
+
+o.window({ class = "^org\\.quickshell$", title = "^Hanko settings$" }, {
+  float = true,
+  center = true,
+  size = { 1320, 980 },
+})
