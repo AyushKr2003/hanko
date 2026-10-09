@@ -116,10 +116,11 @@ function normalizeOverview(o) {
 // beside the twenty-two like the overview: no preset sets them and a reset
 // keeps them. Three hands for every cell's sheet:
 //   ledger  帳  the editorial page: eyebrow, serif title, `//` groups, rows
-//   dial    盤  the instrument: one arc gauge as the hero, tiles to pick from
+//   tanzaku 短冊 the poem slips: each choice a paper strip hung from a rail,
+//               right to left, as long as its level; the one in use inked
 //   prose   文  the state written as a sentence whose words you tap
 // Stored only where a sheet is not a ledger; resolve() gives the full map.
-var SHEET_STYLES = ["ledger", "dial", "prose"]
+var SHEET_STYLES = ["ledger", "tanzaku", "prose"]
 var SHEET_KEYS = ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
 
 function normalizeSheetStyles(o) {
@@ -127,6 +128,8 @@ function normalizeSheetStyles(o) {
   if (!o || typeof o !== "object") return out
   for (var i = 0; i < SHEET_KEYS.length; i++) {
     var k = SHEET_KEYS[i], v = String(o[k])
+    // The Dial hand was replaced by Tanzaku; a saved dial carries over.
+    if (v === "dial") v = "tanzaku"
     if (SHEET_STYLES.indexOf(v) > 0) out[k] = v
   }
   return out
@@ -334,9 +337,9 @@ function withSetting(doc, key, value) {
     else delete d.panelOpacity
     return d
   }
-  // sheetStyle:<sheet> or sheetStyle:all, to ledger | dial | prose.
+  // sheetStyle:<sheet> or sheetStyle:all, to ledger | tanzaku | prose.
   if (String(key).indexOf("sheetStyle:") === 0) {
-    var which = String(key).slice(11), how = String(value)
+    var which = String(key).slice(11), how = String(value) === "dial" ? "tanzaku" : String(value)
     if (SHEET_STYLES.indexOf(how) < 0) return null
     if (which !== "all" && SHEET_KEYS.indexOf(which) < 0) return null
     var map = normalizeSheetStyles(d.sheetStyles)

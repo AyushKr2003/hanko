@@ -14,7 +14,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
 - **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).
-- **Three hands for every sheet:** each cell's sheet can be a Ledger 帳 (the editorial page), a Dial 盤 (a gauge you turn and tiles) or Prose 文 (the state as a sentence whose words you tap); pick per sheet on Settings › Sheets.
+- **Three hands for every sheet:** each cell's sheet can be a Ledger 帳 (the editorial page), Tanzaku 短冊 (each choice a poem slip hung from a rail, right to left, as long as its level) or Prose 文 (the state as a sentence whose words you tap); pick per sheet on Settings › Sheets.
 - **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
 - **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch, a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top.
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.

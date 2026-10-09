@@ -24,7 +24,7 @@ Item {
   // Panel opacity (Style.js panelOpacity), 0..1.
   property real paperOpacity: 1
   property bool animate: true
-  // How each sheet is drawn (Style.js sheetStyles): ledger | dial | prose.
+  // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku | prose.
   property var styles: ({})
   readonly property string hand: styles[sheet] || "ledger"
 
@@ -64,9 +64,9 @@ Item {
     Loader {
       id: body
       width: card.width
-      sourceComponent: (root.hand === "dial"
-          ? { time: timeDial, sound: soundDial, network: networkDial, bluetooth: bluetoothDial,
-              power: powerDial, display: displayDial, inbox: inboxDial }
+      sourceComponent: (root.hand === "tanzaku"
+          ? { time: timeTanzaku, sound: soundTanzaku, network: networkTanzaku, bluetooth: bluetoothTanzaku,
+              power: powerTanzaku, display: displayTanzaku, inbox: inboxTanzaku }
           : root.hand === "prose"
           ? { time: timeProse, sound: soundProse, network: networkProse, bluetooth: bluetoothProse,
               power: powerProse, display: displayProse, inbox: inboxProse }
@@ -157,10 +157,10 @@ Item {
     }
   }
 
-  // ---- dial
+  // ---- tanzaku
   Component {
-    id: timeDial
-    TimeDial {
+    id: timeTanzaku
+    TimeTanzaku {
       now: root.feed.now || new Date()
       zones: root.feed.zones || []
       shift: root.feed.timeShift || 0
@@ -172,8 +172,8 @@ Item {
   }
 
   Component {
-    id: soundDial
-    SoundDial {
+    id: soundTanzaku
+    SoundTanzaku {
       sound: root.feed.sound || null
       onRequest: function(what, arg) { root.request("sound", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -183,8 +183,8 @@ Item {
   }
 
   Component {
-    id: networkDial
-    NetworkDial {
+    id: networkTanzaku
+    NetworkTanzaku {
       net: root.feed.network || null
       onRequest: function(what, arg) { root.request("network", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -194,8 +194,8 @@ Item {
   }
 
   Component {
-    id: powerDial
-    PowerDial {
+    id: powerTanzaku
+    PowerTanzaku {
       power: root.feed.power || null
       onRequest: function(what, arg) { root.request("power", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -205,8 +205,8 @@ Item {
   }
 
   Component {
-    id: inboxDial
-    InboxDial {
+    id: inboxTanzaku
+    InboxTanzaku {
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
       now: root.feed.now || new Date()
@@ -218,8 +218,8 @@ Item {
   }
 
   Component {
-    id: displayDial
-    DisplayDial {
+    id: displayTanzaku
+    DisplayTanzaku {
       display: root.feed.display || null
       onRequest: function(what, arg) { root.request("display", what, arg) }
       Keys.onEscapePressed: root.closeRequested()
@@ -229,8 +229,8 @@ Item {
   }
 
   Component {
-    id: bluetoothDial
-    BluetoothDial {
+    id: bluetoothTanzaku
+    BluetoothTanzaku {
       blue: root.feed.bluetooth || null
       onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
       Keys.onEscapePressed: root.closeRequested()

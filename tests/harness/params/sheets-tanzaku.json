@@ -1,5 +1,5 @@
 {
- "title": "Sheets · the dial hand",
+ "title": "Sheets · the tanzaku hand",
  "scene": "Sheets",
  "width": 1600,
  "theme": {
@@ -177,17 +177,17 @@
  ],
  "desks": [
   {
-   "label": "TIME · DIAL",
+   "label": "TIME · TANZAKU",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "dial",
-     "sound": "dial",
-     "network": "dial",
-     "bluetooth": "dial",
-     "power": "dial",
-     "display": "dial",
-     "inbox": "dial"
+     "time": "tanzaku",
+     "sound": "tanzaku",
+     "network": "tanzaku",
+     "bluetooth": "tanzaku",
+     "power": "tanzaku",
+     "display": "tanzaku",
+     "inbox": "tanzaku"
     }
    },
    "sheet": "time",
@@ -211,20 +211,20 @@
      }
     ]
    },
-   "height": 800
+   "height": 700
   },
   {
-   "label": "SOUND · DIAL",
+   "label": "SOUND · TANZAKU",
    "doc": {
     "preset": "Sheet",
     "sheetStyles": {
-     "time": "dial",
-     "sound": "dial",
-     "network": "dial",
-     "bluetooth": "dial",
-     "power": "dial",
-     "display": "dial",
-     "inbox": "dial"
+     "time": "tanzaku",
+     "sound": "tanzaku",
+     "network": "tanzaku",
+     "bluetooth": "tanzaku",
+     "power": "tanzaku",
+     "display": "tanzaku",
+     "inbox": "tanzaku"
     }
    },
    "sheet": "sound",
@@ -275,20 +275,20 @@
      "inputMuted": false
     }
    },
-   "height": 800
+   "height": 700
   },
   {
-   "label": "NETWORK · DIAL",
+   "label": "NETWORK · TANZAKU",
    "doc": {
     "preset": "Sheet",
     "sheetStyles": {
-     "time": "dial",
-     "sound": "dial",
-     "network": "dial",
-     "bluetooth": "dial",
-     "power": "dial",
-     "display": "dial",
-     "inbox": "dial"
+     "time": "tanzaku",
+     "sound": "tanzaku",
+     "network": "tanzaku",
+     "bluetooth": "tanzaku",
+     "power": "tanzaku",
+     "display": "tanzaku",
+     "inbox": "tanzaku"
     }
    },
    "sheet": "network",
@@ -341,20 +341,20 @@
      ]
     }
    },
-   "height": 800
+   "height": 700
   },
   {
-   "label": "BLUETOOTH · DIAL",
+   "label": "BLUETOOTH · TANZAKU",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "dial",
-     "sound": "dial",
-     "network": "dial",
-     "bluetooth": "dial",
-     "power": "dial",
-     "display": "dial",
-     "inbox": "dial"
+     "time": "tanzaku",
+     "sound": "tanzaku",
+     "network": "tanzaku",
+     "bluetooth": "tanzaku",
+     "power": "tanzaku",
+     "display": "tanzaku",
+     "inbox": "tanzaku"
     }
    },
    "sheet": "bluetooth",
@@ -409,7 +409,7 @@
      ]
     }
    },
-   "height": 800,
+   "height": 700,
    "bluetooth": {
     "name": "WH-1000XM5",
     "enabled": true,
@@ -419,17 +419,17 @@
    }
   },
   {
-   "label": "POWER · DIAL",
+   "label": "POWER · TANZAKU",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "dial",
-     "sound": "dial",
-     "network": "dial",
-     "bluetooth": "dial",
-     "power": "dial",
-     "display": "dial",
-     "inbox": "dial"
+     "time": "tanzaku",
+     "sound": "tanzaku",
+     "network": "tanzaku",
+     "bluetooth": "tanzaku",
+     "power": "tanzaku",
+     "display": "tanzaku",
+     "inbox": "tanzaku"
     }
    },
    "sheet": "power",
@@ -484,20 +484,20 @@
      }
     }
    },
-   "height": 800
+   "height": 700
   },
   {
-   "label": "DISPLAY · DIAL",
+   "label": "DISPLAY · TANZAKU",
    "doc": {
     "preset": "Hanko",
     "sheetStyles": {
-     "time": "dial",
-     "sound": "dial",
-     "network": "dial",
-     "bluetooth": "dial",
-     "power": "dial",
-     "display": "dial",
-     "inbox": "dial"
+     "time": "tanzaku",
+     "sound": "tanzaku",
+     "network": "tanzaku",
+     "bluetooth": "tanzaku",
+     "power": "tanzaku",
+     "display": "tanzaku",
+     "inbox": "tanzaku"
     }
    },
    "sheet": "display",
@@ -542,7 +542,7 @@
      "night": false
     }
    },
-   "height": 800,
+   "height": 700,
    "brightness": {
     "percent": 70,
     "level": 0.7,
@@ -550,17 +550,17 @@
    }
   },
   {
-   "label": "INBOX · DIAL",
+   "label": "INBOX · TANZAKU",
    "doc": {
     "preset": "Instrument",
     "sheetStyles": {
-     "time": "dial",
-     "sound": "dial",
-     "network": "dial",
-     "bluetooth": "dial",
-     "power": "dial",
-     "display": "dial",
-     "inbox": "dial"
+     "time": "tanzaku",
+     "sound": "tanzaku",
+     "network": "tanzaku",
+     "bluetooth": "tanzaku",
+     "power": "tanzaku",
+     "display": "tanzaku",
+     "inbox": "tanzaku"
     }
    },
    "sheet": "inbox",
@@ -596,7 +596,7 @@
     ],
     "dnd": false
    },
-   "height": 800
+   "height": 700
   }
  ]
 }

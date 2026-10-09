@@ -221,27 +221,27 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 Sheets 20–25 show both on full desktops.
 
-#### Sheet hands `sheetStyles` 帳/盤/文
+#### Sheet hands `sheetStyles` 帳/短冊/文
 
-Each cell's sheet can be drawn in one of three hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound dial`, `sheetStyle:all prose`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+Each cell's sheet can be drawn in one of three hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all prose`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
 
 | Hand | What it does | After |
 |---|---|---|
 | **`ledger`** 帳 (default) | The editorial page above: eyebrow and folio, serif title over its faint kanji, standfirst, `//` groups of hairline rows, colophon foot. Everything listed. | Hanko's own sheet |
-| `dial` 盤 | The instrument: a compact eyebrow, then one arc gauge as the hero (270°, ticked every tenth, inked to the value, a head at it; drag round it or scroll), what it reads beside it with the quick buttons, and the choices as tiles (the one in use a bone plate, a level along a tile's foot). Time's hero is a clock face whose rim is the day spent, the now-notch in red. | Synth and hi-fi displays (a few things always visible, nothing nested), quick-settings tiles |
+| `tanzaku` 短冊 | Each choice is a tanzaku, the tall slip a poem is written on and hung up: slips hang by short cords from a rail (a rod with a knot at each end) and run **right to left**, as vertical writing does. A slip carries its kanji at the head, its name down it sideways (Latin turned, as vertical Japanese sets it) and a short figure upright at its foot (tate-chū-yoko); it hangs **as far as its level** (an app's volume, a network's signal, a device's charge), or at rest when it has none. The one in use is inked with a small red seal at its foot; an urgent one has the seal hanging under it; muted or switched-off slips are dashed. Under the pointer a slip swings a little on its cord. The first, wider slip carries the sheet's kanji brushed large, its reading, and a wash of ink down it as far as the level; where that level is yours to set (volume, brightness) you pull the slip: drag down it or scroll. | Tanzaku (about 36 × 5.5 cm, cut eight from a sheet of kaishi), Tanabata slips, vertical setting (JLReq) |
 | `prose` 文 | The sheet's state written as a sentence in Fraunces, its changeable words underlined (tap one: it does what it says), a ruler where there is a level to set, and the choices as a numbered index with dotted leaders below. | "Mad libs" forms whose fields complete a sentence; a book's notes under a paragraph |
 
-What each sheet shows in each hand:
+What each sheet hangs:
 
-| Sheet | Dial | Prose |
+| Sheet | Tanzaku | Prose |
 |---|---|---|
-| Time | clock face with the day round its rim; two weeks as a calendar block; other cities as tiles | "Tuesday, the 6th of October, week 41: day 279 of 365…. In Tokyo it is 06:44. See last week or next." The fortnight as a line of figures, cities as an index |
-| Sound | master gauge (red, dashed when muted) with Mute and Next; outputs and the apps playing as tiles (an app tile mutes it) | "Playing at 62% through Studio Monitors. Spotify at 80…. The mic is live." The level mutes, the output moves on, the mic toggles; a ruler sets the master |
-| Network | signal gauge, the name beside it (red offline) with Wi-Fi and the speed test; networks as tiles | "On Kumo…. Four networks are around you; Wi-Fi is on." The name runs the speed test, the count rescans, the state switches Wi-Fi |
-| Bluetooth | the connected device's charge as the gauge; every device a tile | "Bluetooth is on. WH-1000XM5 is connected, 80% charged…." |
-| Power | battery gauge (red when low); profiles as three tiles; details as read-only tiles | "91%, on battery: 2h 41m left…. Running Balanced…." The profile's name steps to the next |
-| Display | brightness gauge you turn, with Night; monitors as tiles | "Built-in, at 70% brightness…. Night light is off." A ruler sets the brightness |
-| Inbox | the count as the gauge (a full ring at ten), the newest sender with Quiet and Clear all; letters as cards | "Three letters, the newest from Signal 2m ago: “…”. Do not disturb is off; clear them." |
+| Time | the time on the first slip, the day spent washed down it; a week of slips headed 月 火 水 木 金 土 日, dates at their feet, today inked, days gone dashed; other cities under the rail | "Tuesday, the 6th of October, week 41: … In Tokyo it is 06:44. See last week or next." |
+| Sound | the master on the first slip (pull it); a slip per output (出; a click plays there) and per app playing, as long as its volume (a click mutes it) | "Playing at 62% through Studio Monitors. … The mic is live." |
+| Network | the signal of the network you are on; a slip per network, as long as its signal (a click joins) | "On Kumo…. Four networks are around you; Wi-Fi is on." |
+| Bluetooth | the connected device's charge; a slip per device, as long as its charge (a click connects, disconnects or pairs) | "Bluetooth is on. WH-1000XM5 is connected, 80% charged…." |
+| Power | the battery; a slip per profile (a click runs it); cycles and capacity as quiet slips | "91%, on battery: 2h 41m left…. Running Balanced…." |
+| Display | the brightness (pull it; never under 1%); a slip per monitor, one switched off dashed | "Built-in, at 70% brightness…. Night light is off." |
+| Inbox | the count; each letter a slip, newest at the right, the app's mark at its head and its age at its foot | "Three letters, the newest from Signal 2m ago: “…”. Do not disturb is off; clear them." |
 
 #### Scroll dividers `interlude` 間
 

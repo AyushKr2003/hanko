@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after sheet hands (every cell's sheet in Ledger, Dial or Prose, chosen on Settings › Sheets), following the plainer bar kanji.
+Last updated: 2026-10-09, after the Tanzaku hand replaced Dial (sheets as poem slips hung from a rail), following the sheet hands.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -737,7 +737,7 @@ The brush face drew the dense glosses (接続, 藍, 電, 録, 醒, 静) as smudg
 - **Inbox** count mode: 文 (休 under do not disturb). Mic 声 and the tray's 盆 were already plain; the workspace numerals (壱 弐 参 …) are unchanged.
 - The sheets, scroll and settings keep their fuller heads (網 藍 音 電 明 報). `Settings.js`, `Style.js` text, fixtures and the indicator unit test follow; the brush subset was re-cut to include the new kanji.
 
-### Sheet hands: Ledger 帳, Dial 盤, Prose 文 ✅ (asked for: "two more sheets for every bar cell after intensive research, chosen in the existing Settings tab")
+### Sheet hands: Ledger 帳, Prose 文 (and Dial, since replaced by Tanzaku) ✅ (asked for: "two more sheets for every bar cell after intensive research, chosen in the existing Settings tab")
 Research: Teenage Engineering's OP-1 (a whole-screen graphic per mode, four parameters always visible, nothing nested, monospace type), Nothing OS quick settings (circular and pill tiles, a 2x2 tile for Bluetooth), and "mad libs" forms (fields completing a sentence; Luke Wroblewski reported 25–40% better completion in one test, with the caveat that prose scans slower than columns, which is why every Prose sheet keeps an index list under its sentence).
 - **`core/Style.js`**: `SHEET_STYLES` (ledger, dial, prose), `SHEET_KEYS` (the seven sheets), `sheetStyles` in style.json holding only the non-ledger ones (`normalizeSheetStyles`), `resolve()` gives the full map as `style.sheetStyles`, `withSetting(doc, "sheetStyle:<sheet>|all", hand)`. Beside the twenty-two (presets and reset keep it); `Typeset._keep` lists it. 1 test (114).
 - **`bar/sheets/SheetView.qml`**: `styles` picks the component per sheet (`hand`); SheetWindow passes `barWindow.shown.sheetStyles`, the harness `desk.style.sheetStyles`.
@@ -746,6 +746,13 @@ Research: Teenage Engineering's OP-1 (a whole-screen graphic per mode, four para
 - `SheetHead.compact` keeps the eyebrow and folio only, for Dial and Prose.
 - **Settings › Sheets** (`bar/settings/SheetsPage.qml`, replacing the placeholder): three hand cards (a click sets every sheet), a row per sheet with a Ledger · Dial · Prose segmented choice, and a live preview of the sheet last touched in its hand, in a room fixed to the widest sheet (500 px) so hovering another row never resizes the list or shifts its buttons, fed by `SettingsPage.sheetFeed` (SettingsWindow builds it as SheetWindow does).
 - Harness `sheets-dial.json`, `sheets-prose.json` (all seven sheets in each hand), `sheets-settings.json`. Images `docs/revision2/images/r2-sheets-dial.webp`, `r2-sheets-prose.webp`, `r2-sheets-settings.webp`.
+
+### Tanzaku 短冊 replaces Dial ✅ (asked for: "the dial is not good; research a premium look, not AI slop; something new and unique")
+Why: an arc gauge and a tile grid are what every dashboard has; nothing about them is Hanko's. Research: tanzaku, the poem slips (museum pieces 35.7–36 × 5.2–5.9 cm; cut eight from a sheet of kaishi since about the 14th century; hung at Tanabata), JLReq on vertical setting (Latin turned sideways, short figures set upright as tate-chū-yoko), and Kenya Hara's emptiness (the empty part of the rail as room, not lack).
+- **Parts**: `Tanzaku` (cord, slip, kanji head, sideways name clipped to the slip, upright figure at the foot, `level` as hang length between half and full `reach`, bone plate and a red seal when selected, the seal hanging under an urgent one, dashed edges, a 1.8° swing on hover with an OutBack settle), `LeadStrip` (88 px, brushed kanji, Fraunces figure, a wash down to the level with an inked edge, pulled to set by drag or wheel; caption only in the room below the wash), `TanzakuRail` (a rod with knots, a right-to-left Row), `TanzakuFoot` (the hint line).
+- **Sheets**: `TimeTanzaku` (a week of slips headed by weekday kanji, today sealed, past dashed; zones and ‹ week › under the rail), `SoundTanzaku`, `NetworkTanzaku`, `BluetoothTanzaku`, `PowerTanzaku`, `DisplayTanzaku`, `InboxTanzaku`. Dial's files are deleted (`DialGauge`, `DialHero`, `TileSection`, `Tile`, the seven `*Dial`).
+- **Style.js**: the hands are `ledger | tanzaku | prose`; a saved `dial` (or `sheetStyle:x dial` from a script) is read as `tanzaku`. Test updated (114).
+- Settings › Sheets names the hand 短冊 Tanzaku. Harness `sheets-tanzaku.json` (was `sheets-dial.json`); image `docs/revision2/images/r2-sheets-tanzaku.webp`.
 
 ## 10. Instructions for the remaining phase (10)
 
@@ -835,7 +842,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 27. **Revision 2 (Classic sheets):** check on hardware that the watermark kanji stays faint enough on a busy theme at 1x, that the sheet's shadow reads on wallpaper without darkening the bar, and the needle's ease on a fast scroll. The Classic bar and the handscroll were left as they were.
 28. **Classic bar polish:** check the hover plate on a touchpad (it follows `containsMouse`, which can stick when the pointer leaves the bar window; see omacale's notes on hover), the ink seals on a light theme, and that Fraunces's `tnum` really applies in the shell's Qt (if not, the clock still renders, just proportional).
 29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
-30. **Sheet hands:** drag the Dial gauges on hardware (the angle maths assumes a square gauge), the Prose links' hover cursor and tap target on a touchpad, and each hand at the user's `typeSize` large (Prose sentences wrap to more lines; the sheets grow, they don't scroll).
+30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), the Prose links' hover cursor and tap target on a touchpad, and each hand at the user's `typeSize` large (Prose sentences wrap to more lines; the sheets grow, they don't scroll).
 
 ## 13. QML pitfalls already hit
 

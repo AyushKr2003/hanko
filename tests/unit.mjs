@@ -1429,21 +1429,23 @@ test("kata K4: the season comes from the sun, right on the boundaries", () => {
 })
 
 test("sheet styles: three hands per sheet, stored only where not a ledger", () => {
-  assert.deepEqual(S.SHEET_STYLES, ["ledger", "dial", "prose"])
+  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku", "prose"])
   assert.equal(S.resolve({}).sheetStyles.sound, "ledger")
-  let d = S.withSetting({}, "sheetStyle:sound", "dial")
-  assert.deepEqual(d.sheetStyles, { sound: "dial" })
-  assert.equal(S.resolve(d).sheetStyles.sound, "dial")
+  let d = S.withSetting({}, "sheetStyle:sound", "tanzaku")
+  assert.deepEqual(d.sheetStyles, { sound: "tanzaku" })
+  assert.equal(S.resolve(d).sheetStyles.sound, "tanzaku")
+  // A dial saved before the Tanzaku hand replaced it carries over.
+  assert.deepEqual(S.normalize({ sheetStyles: { time: "dial" } }).sheetStyles, { time: "tanzaku" })
   assert.equal(S.resolve(d).sheetStyles.time, "ledger")
   d = S.withSetting(d, "sheetStyle:all", "prose")
   assert.equal(Object.keys(d.sheetStyles).length, S.SHEET_KEYS.length)
   d = S.withSetting(d, "sheetStyle:all", "ledger")
   assert.equal(d.sheetStyles, undefined)
   assert.equal(S.withSetting({}, "sheetStyle:sound", "fancy"), null)
-  assert.equal(S.withSetting({}, "sheetStyle:nope", "dial"), null)
+  assert.equal(S.withSetting({}, "sheetStyle:nope", "tanzaku"), null)
   // A preset change keeps them, like the overview.
-  const p = S.withPreset(S.withSetting({}, "sheetStyle:time", "dial"), "Quiet")
-  assert.deepEqual(p.sheetStyles, { time: "dial" })
+  const p = S.withPreset(S.withSetting({}, "sheetStyle:time", "tanzaku"), "Quiet")
+  assert.deepEqual(p.sheetStyles, { time: "tanzaku" })
   assert.deepEqual(S.normalize({ sheetStyles: { time: "ledger", sound: "x", inbox: "prose" } }).sheetStyles, { inbox: "prose" })
 })
 
