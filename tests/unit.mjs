@@ -1110,7 +1110,6 @@ test("scroll guides: the tabs on top, the position bar at the foot, both or none
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "both")
 })
-const Mn = load("core/Mon.js", ["ORDER", "at", "WEEKDAYS"])
 const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE", "CREDIT_GROUPS", "creditsIn"])
 
 test("profile: the machine probe's lines become facts", () => {
@@ -1427,8 +1426,8 @@ test("kata K4: the season comes from the sun, right on the boundaries", () => {
   assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "off"), "")
 })
 
-test("sheet styles: three hands per sheet, stored only where not a ledger", () => {
-  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku", "mon"])
+test("sheet styles: two hands per sheet, stored only where not a ledger", () => {
+  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku"])
   assert.equal(S.resolve({}).sheetStyles.sound, "ledger")
   let d = S.withSetting({}, "sheetStyle:sound", "tanzaku")
   assert.deepEqual(d.sheetStyles, { sound: "tanzaku" })
@@ -1448,15 +1447,9 @@ test("sheet styles: three hands per sheet, stored only where not a ledger", () =
   assert.deepEqual(S.normalize({ sheetStyles: { time: "ledger", sound: "x", inbox: "tanzaku" } }).sheetStyles, { inbox: "tanzaku" })
   // Prose was taken out: a sheet saved in it is a ledger again.
   assert.equal(S.normalize({ sheetStyles: { inbox: "prose" } }).sheetStyles, undefined)
-})
-
-test("mon: crests for choices without a level, neighbours never alike", () => {
-  assert.equal(Mn.ORDER.length, 6)
-  for (let i = 0; i < 6; i++) assert.notDeepEqual(Mn.at(i), Mn.at(i + 1))
-  assert.deepEqual(Mn.at(6), Mn.at(0))
-  assert.deepEqual(Mn.at(-1), Mn.at(5))
-  assert.equal(Mn.WEEKDAYS[0], "日")
-  assert.equal(S.resolve(S.withSetting({}, "sheetStyle:all", "mon")).sheetStyles.inbox, "mon")
+  // So was Mon.
+  assert.equal(S.normalize({ sheetStyles: { sound: "mon" } }).sheetStyles, undefined)
+  assert.equal(S.withSetting({}, "sheetStyle:sound", "mon"), null)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

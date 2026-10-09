@@ -5,8 +5,8 @@ import "../../core/Style.js" as S
 import "../../core/Sheets.js" as Sheets
 import "../sheets"
 
-// Settings › Sheets 紙: which hand draws each cell's sheet. Three cards name
-// the hands (Ledger 帳, Tanzaku 短冊, Mon 紋; a click sets every sheet); then
+// Settings › Sheets 紙: which hand draws each cell's sheet. Cards name
+// the hands (Ledger 帳, Tanzaku 短冊; a click sets every sheet); then
 // one row per sheet with its choice. Beside the rows the sheet you last
 // touched prints live in its hand, in a room as wide as the widest sheet.
 Item {
@@ -24,9 +24,8 @@ Item {
   readonly property var hands: [
     { key: "ledger", jp: "帳", name: "Ledger", short: "The editorial page: every choice listed", line: "The editorial page: a serif title, // groups and hairline rows. Everything listed, nothing hidden." },
     { key: "tanzaku", jp: "短冊", name: "Tanzaku", short: "The poem slips: each choice a hanging strip", line: "Each choice a paper slip hung from a rail, right to left, as long as its level; the one in use inked and sealed." },
-    { key: "mon", jp: "紋", name: "Mon", short: "The crest book: each choice a kamon", line: "A page of a crest book: each choice a kamon of circles and lines, levels lit as its stars; the one you bear is inked red, like a banner's crest." },
   ]
-  readonly property var labels: ({ ledger: "帳 Ledger", tanzaku: "短冊 Tanzaku", mon: "紋 Mon" })
+  readonly property var labels: ({ ledger: "帳 Ledger", tanzaku: "短冊 Tanzaku" })
   readonly property string allStyle: {
     var first = styles[S.SHEET_KEYS[0]]
     for (var i = 1; i < S.SHEET_KEYS.length; i++) if (styles[S.SHEET_KEYS[i]] !== first) return ""

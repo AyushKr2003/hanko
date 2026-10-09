@@ -118,11 +118,8 @@ function normalizeOverview(o) {
 //   ledger  帳  the editorial page: eyebrow, serif title, `//` groups, rows
 //   tanzaku 短冊 the poem slips: each choice a paper strip hung from a rail,
 //               right to left, as long as its level; the one in use inked
-//   mon     紋  a page of a crest book: each choice a kamon drawn with compass
-//               and ruler, levels as the lit stars of a kuyō, the one you
-//               bear inked red as a banner's crest
 // Stored only where a sheet is not a ledger; resolve() gives the full map.
-var SHEET_STYLES = ["ledger", "tanzaku", "mon"]
+var SHEET_STYLES = ["ledger", "tanzaku"]
 var SHEET_KEYS = ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
 
 function normalizeSheetStyles(o) {
@@ -132,8 +129,8 @@ function normalizeSheetStyles(o) {
     var k = SHEET_KEYS[i], v = String(o[k])
     // The Dial hand was replaced by Tanzaku; a saved dial carries over.
     if (v === "dial") v = "tanzaku"
-    // Prose was taken out; a sheet saved in it is a ledger again.
-    if (v === "prose") v = "ledger"
+    // Prose and Mon were taken out; a sheet saved in either is a ledger again.
+    if (v === "prose" || v === "mon") v = "ledger"
     if (SHEET_STYLES.indexOf(v) > 0) out[k] = v
   }
   return out
@@ -341,7 +338,7 @@ function withSetting(doc, key, value) {
     else delete d.panelOpacity
     return d
   }
-  // sheetStyle:<sheet> or sheetStyle:all, to ledger | tanzaku | mon.
+  // sheetStyle:<sheet> or sheetStyle:all, to ledger | tanzaku.
   if (String(key).indexOf("sheetStyle:") === 0) {
     var which = String(key).slice(11), how = String(value) === "dial" ? "tanzaku" : String(value)
     if (SHEET_STYLES.indexOf(how) < 0) return null

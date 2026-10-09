@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after the Mon 紋 hand replaced Prose (each sheet a page of a crest book) and Margin and Leaf were removed.
+Last updated: 2026-10-09, after the Mon hand was taken out (sheets have two hands, Ledger and Tanzaku, until a third is chosen from design studies).
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -773,6 +773,9 @@ Why a crest book: what a samurai carried into the field was his house's mark. Th
 - **Style.js**: the hands are `ledger | tanzaku | mon`; a saved `prose` is read as `ledger` (and `dial` still as `tanzaku`).
 - Settings › Sheets names the hand 紋 Mon. Yuji Boku re-subset for the new kanji. Harness `sheets-mon.json` (`sheets-prose.json` deleted); image `docs/revision2/images/r2-sheets-mon.webp` (`r2-sheets-prose.webp` deleted).
 
+### Mon 紋 taken out ✅ (asked for: "Mon is not looking good; remove it and come up with more designs")
+The seven `*Mon` sheets, `Crest`, `CrestCell`, `MonHero`, `MonPage`, `core/Mon.js`, `sheets-mon.json` and `r2-sheets-mon.webp` are deleted. `SHEET_STYLES` is `ledger | tanzaku`; a saved `mon` (like `prose`) loads as a ledger, and `sheetStyle:x mon` is refused. Test updated (113). The research for it stays above. The next third hand is chosen from rendered design studies before it is built for all seven sheets.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -863,7 +866,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 27. **Revision 2 (Classic sheets):** check on hardware that the watermark kanji stays faint enough on a busy theme at 1x, that the sheet's shadow reads on wallpaper without darkening the bar, and the needle's ease on a fast scroll. The Classic bar and the handscroll were left as they were.
 28. **Classic bar polish:** check the hover plate on a touchpad (it follows `containsMouse`, which can stick when the pointer leaves the bar window; see omacale's notes on hover), the ink seals on a light theme, and that Fraunces's `tnum` really applies in the shell's Qt (if not, the clock still renders, just proportional).
 29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
-30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), the Mon crests' click on a star and wheel on a touchpad, and each hand at the user's `typeSize` large (Mon captions wrap; the sheets grow, they don't scroll).
+30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), and each hand at the user's `typeSize` large (the sheets grow, they don't scroll).
 
 ## 13. QML pitfalls already hit
 

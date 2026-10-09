@@ -24,7 +24,7 @@ Item {
   // Panel opacity (Style.js panelOpacity), 0..1.
   property real paperOpacity: 1
   property bool animate: true
-  // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku | mon.
+  // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku.
   property var styles: ({})
   readonly property string hand: styles[sheet] || "ledger"
 
@@ -67,9 +67,6 @@ Item {
       sourceComponent: (root.hand === "tanzaku"
           ? { time: timeTanzaku, sound: soundTanzaku, network: networkTanzaku, bluetooth: bluetoothTanzaku,
               power: powerTanzaku, display: displayTanzaku, inbox: inboxTanzaku }
-          : root.hand === "mon"
-          ? { time: timeMon, sound: soundMon, network: networkMon, bluetooth: bluetoothMon,
-              power: powerMon, display: displayMon, inbox: inboxMon }
           : { time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
               power: powerSheet, display: displaySheet, inbox: inboxSheet })[root.sheet] || null
       onLoaded: if (root.open) root.focusContents()
@@ -231,88 +228,6 @@ Item {
   Component {
     id: bluetoothTanzaku
     BluetoothTanzaku {
-      blue: root.feed.bluetooth || null
-      onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
-    }
-  }
-
-  // ---- mon
-  Component {
-    id: timeMon
-    TimeMon {
-      now: root.feed.now || new Date()
-      zones: root.feed.zones || []
-      shift: root.feed.timeShift || 0
-      onRequest: function(what, arg) { root.request("time", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
-    }
-  }
-
-  Component {
-    id: soundMon
-    SoundMon {
-      sound: root.feed.sound || null
-      onRequest: function(what, arg) { root.request("sound", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
-    }
-  }
-
-  Component {
-    id: networkMon
-    NetworkMon {
-      net: root.feed.network || null
-      onRequest: function(what, arg) { root.request("network", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
-    }
-  }
-
-  Component {
-    id: powerMon
-    PowerMon {
-      power: root.feed.power || null
-      onRequest: function(what, arg) { root.request("power", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
-    }
-  }
-
-  Component {
-    id: inboxMon
-    InboxMon {
-      letters: root.feed.letters || []
-      dnd: !!root.feed.dnd
-      now: root.feed.now || new Date()
-      onRequest: function(what, arg) { root.request("inbox", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
-    }
-  }
-
-  Component {
-    id: displayMon
-    DisplayMon {
-      display: root.feed.display || null
-      onRequest: function(what, arg) { root.request("display", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
-    }
-  }
-
-  Component {
-    id: bluetoothMon
-    BluetoothMon {
       blue: root.feed.bluetooth || null
       onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
       Keys.onEscapePressed: root.closeRequested()

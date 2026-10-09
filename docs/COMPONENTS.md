@@ -221,27 +221,26 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 Sheets 20–25 show both on full desktops.
 
-#### Sheet hands `sheetStyles` 帳/短冊/紋
+#### Sheet hands `sheetStyles` 帳/短冊
 
-Each cell's sheet can be drawn in one of three hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all mon`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+Each cell's sheet can be drawn in one of two hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all tanzaku`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
 
 | Hand | What it does | After |
 |---|---|---|
 | **`ledger`** 帳 (default) | The editorial page above: eyebrow and folio, serif title over its faint kanji, standfirst, `//` groups of hairline rows, colophon foot. Everything listed. | Hanko's own sheet |
 | `tanzaku` 短冊 | Each choice is a tanzaku, the tall slip a poem is written on and hung up: slips hang by short cords from a rail (a rod with a knot at each end) and run **right to left**, as vertical writing does. A slip carries its kanji at the head, its name down it sideways (Latin turned, as vertical Japanese sets it) and a short figure upright at its foot (tate-chū-yoko); it hangs **as far as its level** (an app's volume, a network's signal, a device's charge), or at rest when it has none. The one in use is inked with a small red seal at its foot; an urgent one has the seal hanging under it; muted or switched-off slips are dashed. Under the pointer a slip swings a little on its cord. The first, wider slip carries the sheet's kanji brushed large, its reading, and a wash of ink down it as far as the level; where that level is yours to set (volume, brightness) you pull the slip: drag down it or scroll. | Tanzaku (about 36 × 5.5 cm, cut eight from a sheet of kaishi), Tanabata slips, vertical setting (JLReq) |
-| `mon` 紋 | A page of a crest book (monchō). Every choice is a kamon drawn the way crests were, with compass and ruler only: a level is a kuyō 九曜 crest whose eight stars light as far as the level round a centre star (the clock is twelve stars), and choices without a level take the plain crests in turn (one, two and three 引両 bars, the 菱 lozenge, the 井桁 well frame, 輪違い interlaced rings) so no two neighbours are alike; a letter or a day is 丸に文字, a brushed character in a ring. The choice you bear is *inked*: a solid seal-red disc with the crest cut out of it in paper, as a banner (sashimono) or a kimono's crest carried the house's mark. Urgent crests are red, off or quiet ones faint; under the pointer a crest turns 30°. The hero is a 132 px crest with the figure in Fraunces beside it; where the level is yours, click a star or scroll on it (eight steps). | Monchō crest books, kamon geometry (compass and ruler), sashimono banners, the kuyō crest |
 
 What each sheet hangs:
 
-| Sheet | Tanzaku | Mon |
-|---|---|---|
-| Time | the time on the first slip, the day spent washed down it; a week of slips headed 月 火 水 木 金 土 日, dates at their feet, today inked, days gone dashed; other cities under the rail | the hours crest (the hour's stars lit); ‹ Today ›; the week as 丸に文字 crests of the weekday kanji 日 月 火 水 木 金 土, today inked, days gone faint; the cities in a line |
-| Sound | the master on the first slip (pull it); a slip per output (出; a click plays there) and per app playing, as long as its volume (a click mutes it) | the master as a kuyō (click a star, scroll); a crest per output (the one playing inked) and a kuyō per app (a click mutes it); Mute mic, Next output |
-| Network | the signal of the network you are on; a slip per network, as long as its signal (a click joins) | a kuyō of each network's signal, the one you are on inked (a click joins); Rescan, Share, Speed test |
-| Bluetooth | the connected device's charge; a slip per device, as long as its charge (a click connects, disconnects or pairs) | a kuyō of each device's charge, or interlaced rings when it reports none; the connected one inked |
-| Power | the battery; a slip per profile (a click runs it); cycles and capacity as quiet slips | the battery as the hero; a crest per profile, the running one inked; cycles and capacity as faint crests |
-| Display | the brightness (pull it; never under 1%); a slip per monitor, one switched off dashed | the brightness (click or scroll, never under 1%); a crest per monitor, one switched off faint |
-| Inbox | the count; each letter a slip, newest at the right, the app's mark at its head and its age at its foot | the count; each letter a ring with the app's mark brushed in it, urgent ones red, all faint under Do not disturb |
+| Sheet | Tanzaku |
+|---|---|
+| Time | the time on the first slip, the day spent washed down it; a week of slips headed 月 火 水 木 金 土 日, dates at their feet, today inked, days gone dashed; other cities under the rail |
+| Sound | the master on the first slip (pull it); a slip per output (出; a click plays there) and per app playing, as long as its volume (a click mutes it) |
+| Network | the signal of the network you are on; a slip per network, as long as its signal (a click joins) |
+| Bluetooth | the connected device's charge; a slip per device, as long as its charge (a click connects, disconnects or pairs) |
+| Power | the battery; a slip per profile (a click runs it); cycles and capacity as quiet slips |
+| Display | the brightness (pull it; never under 1%); a slip per monitor, one switched off dashed |
+| Inbox | the count; each letter a slip, newest at the right, the app's mark at its head and its age at its foot |
 
 #### Scroll dividers `interlude` 間
 
