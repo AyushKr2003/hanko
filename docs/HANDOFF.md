@@ -776,6 +776,14 @@ Why a crest book: what a samurai carried into the field was his house's mark. Th
 ### Mon 紋 taken out ✅ (asked for: "Mon is not looking good; remove it and come up with more designs")
 The seven `*Mon` sheets, `Crest`, `CrestCell`, `MonHero`, `MonPage`, `core/Mon.js`, `sheets-mon.json` and `r2-sheets-mon.webp` are deleted. `SHEET_STYLES` is `ledger | tanzaku`; a saved `mon` (like `prose`) loads as a ledger, and `sheetStyle:x mon` is refused. Test updated (113). The research for it stays above. The next third hand is chosen from rendered design studies before it is built for all seven sheets.
 
+### Sheet-hand studies: Shōgi, Soroban, Odoshi, Kasumi (awaiting a pick)
+Four candidates for the third hand, each drawn as the Sound sheet only, in `tests/harness/studies/` (not shipped) with the scene `tests/harness/scenes/Studies.qml`, params `studies-sound.json`, image `docs/revision2/images/r2-studies-sound.webp`.
+- **Shōgi 将棋**: a level is a rank of nine squares and its piece (a pentagonal koma) stands on the square of its level; file numbers ９..１ over the board, rank numerals 一二三 down its side, hoshi dots; outputs wait on the piece stand (komadai), the one playing promoted (its character red, as a promoted piece's reverse is written); a muted app's piece is turned away (the opponent's).
+- **Soroban 算盤**: each level counted in beads on two rods (tens, units): the heaven bead is five, earth beads one, counted when pushed to the beam; unit dots part readings; the master's beads red.
+- **Odoshi 縅**: armour lacing; a crown plate (kanmuri-ita) holds the master; each choice a lame of kozane laced densely in scarlet (kebiki, hi-odoshi) to its level and sparsely beyond (sugake); the output in use laced in full with hishinui cross-knots at its foot.
+- **Kasumi 霞**: the suyari-gasumi mist bands of Yamato-e scrolls and gold screens; each choice a band of gold leaf as long as its level, drifting from alternate sides; the one in use gilded whole and sealed.
+Once one is picked: move it into `bar/sheets/` for all seven sheets, add it to `SHEET_STYLES`, Settings › Sheets and the docs, and delete the studies.
+
 ## 10. Instructions for the remaining phase (10)
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.

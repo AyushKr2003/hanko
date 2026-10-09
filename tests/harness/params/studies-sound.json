@@ -1,0 +1,80 @@
+{
+ "title": "Sheet-hand studies · Sound",
+ "width": 2000,
+ "theme": {
+  "foreground": "#ddd5c7",
+  "background": "#0a0a09",
+  "red": "#d8452f"
+ },
+ "sound": {
+  "master": {
+   "percent": 62,
+   "level": 0.62,
+   "muted": false
+  },
+  "outputs": [
+   {
+    "id": 41,
+    "name": "usb",
+    "label": "Studio Monitors",
+    "detail": "USB · Focusrite 2i2 · 48 kHz",
+    "current": true,
+    "note": "Live"
+   },
+   {
+    "id": 52,
+    "name": "bt",
+    "label": "WH-1000XM5",
+    "detail": "Bluetooth · LDAC",
+    "current": false,
+    "note": "Paired"
+   }
+  ],
+  "streams": [
+   {
+    "id": 7,
+    "name": "spotify",
+    "label": "Spotify",
+    "level": 0.8,
+    "percent": 80,
+    "muted": false
+   },
+   {
+    "id": 8,
+    "name": "firefox",
+    "label": "Firefox",
+    "level": 0.45,
+    "percent": 45,
+    "muted": false
+   }
+  ],
+  "input": "Input · Shure MV7",
+  "inputMuted": false
+ },
+ "studies": [
+  {
+   "key": "shogi",
+   "jp": "将棋",
+   "name": "Shōgi",
+   "line": "The samurai's board game. Each level is a rank of nine squares, its piece standing on the square of its level; the output in play is promoted, its character red. A muted app's piece is turned away."
+  },
+  {
+   "key": "soroban",
+   "jp": "算盤",
+   "name": "Soroban",
+   "line": "The abacus. Each level is counted out in beads on two rods, tens and units, pushed to the beam; the master's beads lacquered red. Unit dots part the readings."
+  },
+  {
+   "key": "odoshi",
+   "jp": "縅",
+   "name": "Odoshi",
+   "line": "Armour lacing. The sheet hangs like a samurai's shoulder guard: a crown plate, then a lame of small scales per choice, laced in scarlet silk as far as its level; the output in use cross-stitched at its foot."
+  },
+  {
+   "key": "kasumi",
+   "jp": "霞",
+   "name": "Kasumi",
+   "line": "The mist bands of a picture scroll and gold screens: each choice a band of gold leaf drawn as far as its level, drifting in from alternate sides; the one in use gilded whole and sealed."
+  }
+ ]
+}
