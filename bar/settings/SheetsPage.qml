@@ -6,9 +6,9 @@ import "../../core/Sheets.js" as Sheets
 import "../sheets"
 
 // Settings › Sheets 紙: which hand draws each cell's sheet. Three cards name
-// the hands (Ledger 帳, Dial 盤, Prose 文); then one row per sheet with its
-// choice, and "All sheets" to set them together. Beside the rows the sheet
-// you last touched prints live in its hand, with the bar's own readings.
+// the hands (Ledger 帳, Dial 盤, Prose 文; a click sets every sheet); then
+// one row per sheet with its choice. Beside the rows the sheet you last
+// touched prints live in its hand, in a room as wide as the widest sheet.
 Item {
   id: root
 
@@ -33,7 +33,10 @@ Item {
     return first
   }
   readonly property bool twoUp: width >= Type.px(900)
-  readonly property real listWidth: twoUp ? width - preview.width - Type.px(40) : width
+  // The preview's room is fixed to the widest sheet, so pointing at another
+  // row never resizes the list or shifts its choices.
+  readonly property real previewRoom: Type.px(Math.max.apply(null, Sheets.SHEETS.map(function(x) { return x.width })))
+  readonly property real listWidth: twoUp ? width - previewRoom - Type.px(40) : width
 
   width: parent ? parent.width : 0
   implicitHeight: body.y + Math.max(list.height, twoUp ? previewBox.height : 0) + (twoUp ? 0 : previewBox.height + Type.px(24))
@@ -103,13 +106,6 @@ Item {
       id: list
       width: root.listWidth
 
-      Row_ {
-        jp: "全"
-        name: "All sheets"
-        line: root.allStyle ? "Every sheet in one hand" : "A mix: each sheet as set below"
-        selected: root.allStyle
-        onPicked: function(v) { root.stylePicked("all", v) }
-      }
       Repeater {
         model: Sheets.SHEETS
         Row_ {
@@ -128,9 +124,9 @@ Item {
     // The sheet last touched, printed live in its hand.
     Item {
       id: previewBox
-      x: root.twoUp ? root.width - preview.width : 0
+      x: root.twoUp ? root.width - root.previewRoom : 0
       y: root.twoUp ? 0 : list.height + Type.px(24)
-      width: preview.width
+      width: root.previewRoom
       height: previewLabel.height + Type.px(10) + preview.height
       Text {
         id: previewLabel
