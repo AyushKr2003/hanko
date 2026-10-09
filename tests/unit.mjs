@@ -58,11 +58,11 @@ test("indicators: all or only what is on; icon or kanji, alone or named; set per
   assert.deepEqual(S.OPTIONS.indicators, ["all", "active"])
   assert.deepEqual(S.OPTIONS.indicatorStyle, ["icon", "kanji", "iconname", "kanjiname"])
   assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
-  assert.equal(S.resolve({}).indicators, "all")
-  assert.equal(S.resolve({}).indicatorStyle, "icon")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "all", "active", "all", "active", "active"])
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "icon", "icon", "iconname", "icon", "icon"])
-  assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "icon")
+  assert.equal(S.resolve({}).indicators, "active")
+  assert.equal(S.resolve({}).indicatorStyle, "kanjiname")
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "active", "active", "all", "active", "active"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "kanjiname", "icon", "iconname", "icon", "icon"])
+  assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "kanjiname")
   assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
 
@@ -142,7 +142,7 @@ test("shuffle never moves the bar or changes how panels open", () => {
     const d = S.shuffled({ preset: "Hanko", edits: { position: "bottom" } }, rng)
     const s = S.resolve(d)
     assert.equal(s.position, "bottom")
-    assert.equal(s.panels, "scroll")
+    assert.equal(s.panels, "sheets")
     for (const k of S.KEYS) assert.ok(S.OPTIONS[k].includes(s[k]))
   }
 })
@@ -619,7 +619,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 10)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 13)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -1107,10 +1107,10 @@ test("scroll sides: bare or curl, in place of the rollers", () => {
 
 test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
   assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
-  assert.equal(S.resolve({}).guides, "both")
-  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === "both"))
+  assert.equal(S.resolve({}).guides, "none")
+  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (p === "Hanko" ? "none" : "both")))
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
-  assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "both")
+  assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
 })
 const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE", "CREDIT_GROUPS", "creditsIn"])
 
@@ -1287,7 +1287,7 @@ test("shōji: a saved Shōji design loads as the Shōji preset; touches become s
   assert.equal(n.overview, "framed")
   assert.equal(n.sheetStyles.inbox, "tanzaku"); assert.equal(n.sheetStyles.sound, "shoji")  // a hand you picked stays
   // A monitor in the other design gets that preset's values, under its own.
-  assert.equal(n.monitors["DP-2"].seal, "workspace"); assert.equal(n.monitors["DP-2"].height, 32)
+  assert.equal(n.monitors["DP-2"].seal, "stamp"); assert.equal(n.monitors["DP-2"].height, 32)
   assert.equal(n.monitors["DP-2"].design, undefined)
   assert.deepEqual(n.monitors["HDMI-A-1"], {})
   assert.equal(S.resolve(doc, "DP-2").status, "cells"); assert.equal(S.resolve(doc).status, "ink")

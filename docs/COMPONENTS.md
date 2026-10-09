@@ -51,8 +51,8 @@ Each setting has a key (used in the config file), its options, the default (from
 
 | Option | What it does | From |
 |---|---|---|
-| `stamp` | A fixed glyph (鑑 by default; any character). Click for the Omarchy menu, right-click for a terminal. | Sheet |
-| **`workspace`** (default) | The seal shows the active workspace as a kanji numeral (壱 弐 参 …). Scroll on it to walk workspaces. | Scroll |
+| **`stamp`** (default) | A fixed glyph (鑑 by default; any character). Click for the Omarchy menu, right-click for a terminal. | Sheet |
+| `workspace` | The seal shows the active workspace as a kanji numeral (壱 弐 参 …). Scroll on it to walk workspaces. | Scroll |
 | `carved` | Shōji's seal: your glyph as an ink outline, carved at the edge. With `notif: seal` it carries your letters: pressed red with their count beside it while any wait, and then a click opens the inbox, middle-click is do not disturb and right-click the Omarchy menu. | Shōji |
 | `none` | No seal. The bar opens with the workspaces. | New |
 
@@ -63,8 +63,8 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 | Option | What it does | From |
 |---|---|---|
 | `folio` | Page numbers `01 02 // 03 04`. The live page inverts with a `//` lead; dots under a number count its windows; a red dot marks urgent. | Sheet |
-| **`layout`** (default) | Each workspace drawn as its real tiling in hairlines. The live one is outlined and its focused window filled. Hover opens it to show window names. | Scroll |
-| `kanji` | Kanji numerals 壱 弐 参 with window dots; the live one inverts. | New |
+| `layout` | Each workspace drawn as its real tiling in hairlines. The live one is outlined and its focused window filled. Hover opens it to show window names. | Scroll |
+| **`kanji`** (default) | Kanji numerals 壱 弐 参 with window dots; the live one inverts. | New |
 | `dots` | The quietest: one dot per workspace, the live one a short bar, urgent a red dot, empty an open ring. | New |
 | `brush` | Shōji's desks: numerals (Arabic, or 一 二 三 with `numerals: kanji`), a faint brush mark sliding under the live one, a dot under a busy one, the 未 stamp on an urgent one. | Shōji |
 
@@ -155,15 +155,15 @@ Omarchy's six indicators (screen recording, dictation, reminder, stay awake, nig
 
 | `indicators` | What it does |
 |---|---|
-| **`all`** (default) | All six, the ones that are off as faint outlines to click on. |
-| `active` | Only the ones that are on. |
+| `all` | All six, the ones that are off as faint outlines to click on. |
+| **`active`** (default) | Only the ones that are on. |
 
 | `indicatorStyle` | What it does |
 |---|---|
-| **`icon`** (default) | Omarchy's own icon in the stamp (the Nerd Font glyph its bar uses), readable without the kanji. Red only for "now": a recording and live dictation are solid red; transcribing shows an hourglass. |
+| `icon` | Omarchy's own icon in the stamp (the Nerd Font glyph its bar uses), readable without the kanji. Red only for "now": a recording and live dictation are solid red; transcribing shows an hourglass. |
 | `kanji` | The kanji, the plainest that say it: 写 recording, 言 dictation, 予 reminder, 目 stay awake, 月 night light, 休 do not disturb. One that is on is a small seal like the one at the far left, carved in ink (a bone plate, an inner rule, serif kanji); only one that means "now" (recording, dictation) is red; off, a faint outline like an off icon stamp. |
 | `iconname` | `icon`, with the name in small caps beside each one that is on. |
-| `kanjiname` | `kanji`, with the name beside each one that is on. |
+| **`kanjiname`** (default) | `kanji`, with the name beside each one that is on. |
 
 The name is in the same ink as the icon styles (red only for a recording or live dictation). The old `full` reads as `iconname`. Each indicator can be hidden on the Widgets page. Added after the Typeset mockups were drawn.
 
@@ -241,8 +241,8 @@ Three switches beside the twenty-three (like `typeSize`: global, not per monitor
 
 | Option | What it does | From |
 |---|---|---|
-| `sheets` | Clicking a cell inverts it and a flush sheet drops from it, joined to the bar: a mini settings page with eyebrow and folio, serif title over its faint kanji, an italic standfirst, underscored `//` groups and a colophon action strip. | Sheet |
-| **`scroll`** (default) | Every panel lives on one handscroll that unrolls from the bar, its edges finished by the `sides` setting, with an index plate and an interlude between each two sections. Pan with `H` `L`. | Scroll |
+| **`sheets`** (default) | Clicking a cell inverts it and a flush sheet drops from it, joined to the bar: a mini settings page with eyebrow and folio, serif title over its faint kanji, an italic standfirst, underscored `//` groups and a colophon action strip. | Sheet |
+| `scroll` | Every panel lives on one handscroll that unrolls from the bar, its edges finished by the `sides` setting, with an index plate and an interlude between each two sections. Pan with `H` `L`. | Scroll |
 
 Sheets 20–25 show both on full desktops.
 
@@ -366,10 +366,10 @@ What helps you find your way on the scroll: the index plate of tabs (on top; bel
 
 | Option | What it shows | Presets |
 |---|---|---|
-| **`both`** (default) | The tabs and the position bar. | all six |
+| `both` | The tabs and the position bar. | Sheet, Scroll, Quiet, Instrument, Islet, Shōji |
 | `tabs` | The tabs only. | |
 | `foot` | The position bar only. | |
-| `none` | Neither: bare paper. Panning by drag, wheel and keys still works. | |
+| **`none`** (default) | Neither: bare paper. Panning by drag, wheel and keys still works. | Hanko |
 
 Added after the Typeset mockups were drawn.
 
@@ -411,8 +411,8 @@ A preset sets all twenty-three settings at once. Change any setting afterwards a
 
 | Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet | Shōji |
 |---|---|---|---|---|---|---|---|
-| seal | stamp | workspace | workspace | stamp | stamp | workspace | carved |
-| spaces | folio | layout | layout | dots | kanji | kanji | brush |
+| seal | stamp | workspace | stamp | stamp | stamp | workspace | carved |
+| spaces | folio | layout | kanji | dots | kanji | kanji | brush |
 | title | cell | byline | byline | none | cell | byline | ink |
 | clock | stacked | inline | stacked | inline | mono | inline | season |
 | clockAt | center | center | center | center | right | center | center |
@@ -421,23 +421,23 @@ A preset sets all twenty-three settings at once. Change any setting afterwards a
 | meters | ticks | off | ticks | off | ticks | ticks | off |
 | notif | count | stamps | stamps | count | count | stamps | seal |
 | bluetooth | device | marks | device | off | device | marks | device |
-| indicators | all | active | all | active | all | active | active |
-| indicatorStyle | kanji | kanji | icon | icon | iconname | icon | icon |
+| indicators | all | active | active | active | all | active | active |
+| indicatorStyle | kanji | kanji | kanjiname | icon | iconname | icon | icon |
 | edge | dayrule | rod | rodrule | hairline | dayrule | rodrule | hairline |
 | rules | on | off | on | off | on | off | off |
 | pointer | plain | plain | plain | plain | plain | plain | brush |
 | height | 36 | 40 | 40 | 32 | 44 | 36 | 40 |
 | surface | solid | solid | solid | glass | solid | inset | washi |
 | position | top | top | top | top | top | top | top |
-| panels | sheets | scroll | scroll | sheets | sheets | scroll | sheets |
+| panels | sheets | scroll | sheets | sheets | sheets | scroll | sheets |
 | interlude | folio | kotoba | seal | ma | folio | fuda | ma |
 | endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu | koyomi |
 | sides | bare | curl | curl | bare | bare | curl | bare |
-| guides | both | both | both | both | both | both | both |
+| guides | both | both | none | both | both | both | both |
 
 - **Sheet**: the Sheet design, exactly. A spec table across the top of the page.
 - **Scroll**: the Scroll design, exactly. Calm type and a handscroll underneath.
-- **Hanko**: the merge. Scroll's left end and panels, Sheet's cells and meters, and the roller that carries the day.
+- **Hanko**: the merge. A stamped seal and kanji pages, Sheet's cells, meters and flush sheets, Scroll's byline and stamps, named kanji indicators shown only when on, and the roller that carries the day.
 - **Shōji**: the Shōji design, folded into Hanko: washi, the carved seal carrying your letters, brush desks, the season by the clock, icons and an ensō for status, a brush mark where you point. Picking it also puts every sheet in the Shōji hand and frames the overview (kept afterwards, like anything beside the settings). A style.json that names the Shōji design loads as this preset.
 - **Quiet**: the least on screen. Dots, an inline clock, numerals, a hairline, on glass.
 - **Instrument**: the most on screen. Kanji pages, a mono clock on the right, every meter, 44 px.

@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
+Last updated: 2026-10-09, after the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -111,8 +111,8 @@ Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with
 
 | Zone | Key | Options |
 |---|---|---|
-| Left | `seal` | `stamp`, **`workspace`**, `carved`‡, `none` (plus free-text `sealGlyph`, default 鑑; the four Kan 鑑 漢 観 寛 offered) |
-| Left | `spaces` | `folio`, **`layout`**, `kanji`, `dots`, `brush`‡ |
+| Left | `seal` | **`stamp`**, `workspace`, `carved`‡, `none` (plus free-text `sealGlyph`, default 鑑; the four Kan 鑑 漢 観 寛 offered) |
+| Left | `spaces` | `folio`, `layout`, **`kanji`**, `dots`, `brush`‡ |
 | Left | `title` | `cell`, **`byline`**, `ink`‡, `none` |
 | Centre | `clock` | **`stacked`**, `inline`, `mono`, `season`‡ |
 | Centre | `clockAt` | **`center`**, `right` |
@@ -121,26 +121,26 @@ Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with
 | Right | `meters` | **`ticks`**, `off` |
 | Right | `notif` | `count`, **`stamps`**, `seal`‡ |
 | Right | `bluetooth` | **`device`**, `marks`, `count`, `off` (added after Typeset; `on` reads as `device`) |
-| Right | `indicators` | **`all`**, `active` (added after Typeset; Omarchy's six indicators as stamps) |
-| Right | `indicatorStyle` | **`icon`**, `kanji`, `iconname`, `kanjiname` (added after Typeset; `full` reads as `iconname`) |
+| Right | `indicators` | `all`, **`active`** (added after Typeset; Omarchy's six indicators as stamps) |
+| Right | `indicatorStyle` | `icon`, `kanji`, `iconname`, **`kanjiname`** (added after Typeset; `full` reads as `iconname`) |
 | Edge | `edge` | `hairline`, `dayrule`, `rod`, **`rodrule`** |
 | Edge | `rules` | **`on`**, `off` |
 | Edge | `pointer` | **`plain`**, `brush`‡ (added with Shōji) |
 | Frame | `height` | `32`, `36`, **`40`**, `44` |
 | Frame | `surface` | **`solid`**, `glass`, `inset`, `washi`‡ |
 | Frame | `position` | **`top`**, `bottom` |
-| Panels | `panels` | `sheets`, **`scroll`** |
+| Panels | `panels` | **`sheets`**, `scroll` |
 | Panels | `interlude` | `ma`, `hairline`, `folio`, `kotoba`, `tsugime`, **`seal`**, `jiku`, `fuda`, `su` (added after Typeset; what sits between scroll sections) |
 | Panels | `endleaf` | `okugaki`, **`koyomi`**, `kiki`, `shimai`, `iro`, `dougu`, `shuchu`, `hikae`, `batsu` (added after Typeset; the leaf right of Inbox on the scroll) |
 | Panels | `sides` | `bare`, **`curl`** (added after Typeset; the scroll's left and right edges, in place of the rollers) |
-| Panels | `guides` | **`both`**, `tabs`, `foot`, `none` (added after Typeset; the scroll's index plate and position bar) |
+| Panels | `guides` | `both`, `tabs`, `foot`, **`none`** (added after Typeset; the scroll's index plate and position bar) |
 
 ### Presets
 
 | Setting | Sheet | Scroll | **Hanko** (default) | Quiet | Instrument | Islet | Shōji |
 |---|---|---|---|---|---|---|---|
-| seal | stamp | workspace | workspace | stamp | stamp | workspace | carved |
-| spaces | folio | layout | layout | dots | kanji | kanji | brush |
+| seal | stamp | workspace | stamp | stamp | stamp | workspace | carved |
+| spaces | folio | layout | kanji | dots | kanji | kanji | brush |
 | title | cell | byline | byline | none | cell | byline | ink |
 | clock | stacked | inline | stacked | inline | mono | inline | season |
 | clockAt | center | center | center | center | right | center | center |
@@ -149,19 +149,19 @@ Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with
 | meters | ticks | off | ticks | off | ticks | ticks | off |
 | notif | count | stamps | stamps | count | count | stamps | seal |
 | bluetooth | device | marks | device | off | device | marks | device |
-| indicators | all | active | all | active | all | active | active |
-| indicatorStyle | kanji | kanji | icon | icon | iconname | icon | icon |
+| indicators | all | active | active | active | all | active | active |
+| indicatorStyle | kanji | kanji | kanjiname | icon | iconname | icon | icon |
 | edge | dayrule | rod | rodrule | hairline | dayrule | rodrule | hairline |
 | rules | on | off | on | off | on | off | off |
 | pointer | plain | plain | plain | plain | plain | plain | brush |
 | height | 36 | 40 | 40 | 32 | 44 | 36 | 40 |
 | surface | solid | solid | solid | glass | solid | inset | washi |
 | position | top | top | top | top | top | top | top |
-| panels | sheets | scroll | scroll | sheets | sheets | scroll | sheets |
+| panels | sheets | scroll | sheets | sheets | sheets | scroll | sheets |
 | interlude | folio | kotoba | seal | ma | folio | fuda | ma |
 | endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu | koyomi |
 | sides | bare | curl | curl | bare | bare | curl | bare |
-| guides | both | both | both | both | both | both | both |
+| guides | both | both | none | both | both | both | both |
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -839,6 +839,11 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - **Settings**: the rail's Design page and `Settings.rail()`/`HANKO_ONLY` are gone (every page shows; the window opens on Typesetting); Panel opacity moved to Settings › Sheets (the brush slider, the figure, Auto) as `SheetsPage.opacityPicked` → `settingPicked("panelOpacity")`.
 - **Panels**: `ShojiPanel.ownDisplay` is gone (Display always opens its own panel); `PowerPanel` lost its brightness slider.
 - The window files lint with the same warnings as before. Unit tests: the eight Kata design tests are removed; the migration, preset and skin tests use `Style.js` and `Skin.fromStyle` (111).
+
+### The Hanko preset is the user's bar ✅ (asked for: "the Hanko preset … the same as the one I have running, with its modifications")
+- `core/Style.js` `PRESETS.Hanko` now holds the user's running edits: `seal: stamp`, `spaces: kanji`, `indicators: active`, `indicatorStyle: kanjiname`, `panels: sheets`, `guides: none` (the rest was already theirs). Since Hanko is `DEFAULT_PRESET`, these are the new defaults too. The seal glyph (寛 on their machine) stays outside presets, default 鑑.
+- COMPONENTS.md (defaults, preset table, the Hanko blurb) and §5 here follow. Five unit tests that pinned the old Hanko values were updated (a switch to Scroll now moves 13 settings, not 10). Unit tests: 111.
+- The user's `~/.config/hanko/style.json` still lists those six as edits; they now equal the preset, so they change nothing.
 
 ## 10. Instructions for the remaining phase (10)
 
