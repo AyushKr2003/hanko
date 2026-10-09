@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after the Mon hand was taken out (sheets have two hands, Ledger and Tanzaku, until a third is chosen from design studies).
+Last updated: 2026-10-09, after the four studies for the third sheet hand (Shōgi, Soroban, Odoshi, Kasumi) were drawn and written up in docs/revision2/sheet-hands.md.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -782,6 +782,7 @@ Four candidates for the third hand, each drawn as the Sound sheet only, in `test
 - **Soroban 算盤**: each level counted in beads on two rods (tens, units): the heaven bead is five, earth beads one, counted when pushed to the beam; unit dots part readings; the master's beads red.
 - **Odoshi 縅**: armour lacing; a crown plate (kanmuri-ita) holds the master; each choice a lame of kozane laced densely in scarlet (kebiki, hi-odoshi) to its level and sparsely beyond (sugake); the output in use laced in full with hishinui cross-knots at its foot.
 - **Kasumi 霞**: the suyari-gasumi mist bands of Yamato-e scrolls and gold screens; each choice a band of gold leaf as long as its level, drifting from alternate sides; the one in use gilded whole and sealed.
+The research, each study's strengths and weaknesses, the rejected hands and sources are in [revision2/sheet-hands.md](revision2/sheet-hands.md).
 Once one is picked: move it into `bar/sheets/` for all seven sheets, add it to `SHEET_STYLES`, Settings › Sheets and the docs, and delete the studies.
 
 ## 10. Instructions for the remaining phase (10)
