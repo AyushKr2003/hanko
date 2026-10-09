@@ -126,7 +126,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **S1 · Shōji as a sheet hand**: the panels move to `bar/sheets/`, a new Shōji Display panel, the rail kept, a seventh card on Settings › Sheets.
   - ✅ **S2 · The framed overview** as `overview: framed`, on any bar.
   - ✅ **S3 · Shōji's bar parts as Hanko options** (`surface: washi`, `seal: carved`, `notif: seal`, `spaces: brush`, `title: ink`, `clock: season`, `media: ink`, `status: ink`, `pointer`, and global `season`, `numerals`, `grain`).
-  - ⬜ **S4 · The Shōji preset and migration** (a saved `design: shoji` loads as the preset).
+  - ✅ **S4 · The Shōji preset and migration** (a saved `design: shoji` loads as the preset).
   - ⬜ **S5 · Removal**: the design switch, `KataBar`, Settings › Design, `hanko design`.
 - ✅ **K7 · Settings › Design 意匠** (asked for without a Save button): the rail's first Bar page. Four design cards, each with its bar drawn live (Classic the Typeset bar); the mix named in a line, Back to the design and Surprise me; twelve borrow rows, each variant drawn small by its own part (`bar/settings/PartPreview.qml`), the current one ringed and a borrowed part marked; the touches (season with today's sekki, numerals, grain). The whole settings window now saves as you go: `Typeset.keep()` after every edit, `Typeset.history` and `undo()` (Ctrl+Z and the action bar's Undo), forgotten on close; Save and Revert are gone. Harness `design-settings.json`, `-light`, `-narrow`.
 - ✅ **Margin and Leaf removed** (asked for): two designs are left, Hanko and Shōji, and with them borrowing, Surprise me and the borrow rows on Settings › Design; a style.json naming Margin or Leaf loads as Hanko and a saved `borrow` is ignored. Shōji renders exactly as before.

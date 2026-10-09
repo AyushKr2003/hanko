@@ -14,7 +14,7 @@ import "../scroll"
 // live bar data; the harness renders it still.
 //
 // Typesetting 組版 holds every setting: a live preview of the bar over a
-// sample plate, the six presets, and six cards of segmented controls.
+// sample plate, the seven presets, and six cards of segmented controls.
 Rectangle {
   id: root
 
@@ -474,13 +474,13 @@ Rectangle {
 
           Item { width: 1; height: Type.px(14) }
 
-          // The six presets; the one in use inverted, `*` when edited. One
+          // The seven presets; the one in use inverted, `*` when edited. One
           // row of six, or two of three, or three of two on a narrow page.
           Grid {
             id: presetRow
             width: parent.width
             spacing: Type.px(8)
-            columns: width >= Type.px(900) ? 6 : width >= Type.px(440) ? 3 : 2
+            columns: width >= Type.px(1000) ? S.PRESET_NAMES.length : width >= Type.px(440) ? 4 : 2
             Repeater {
               model: S.PRESET_NAMES
               Rectangle {

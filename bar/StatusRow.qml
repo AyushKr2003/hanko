@@ -33,8 +33,10 @@ Item {
   property var bluetooth: null
   // How the BT cell reads (style `bluetooth`): device | marks | count.
   property string btStyle: "device"
-  // ink: Shōji's skin, for the ensō.
+  // ink: Shōji's skin, for the ensō; and the reading pointed at by other
+  // means than the mouse (the harness), whose name comes out as on reach.
   property var skin: ({})
+  property string reachKey: ""
 
   // name: volume | network | battery | brightness; how: click | middle | right | up | down
   signal action(string name, string how)
@@ -202,7 +204,7 @@ Item {
       anchors.centerIn: parent
       spacing: Type.px(7)
       readonly property var s: reading.r.src || ({})
-      readonly property bool reach: readingHover.containsMouse
+      readonly property bool reach: readingHover.containsMouse || root.reachKey === reading.r.key
       readonly property color tint: reading.r.needsYou ? Ink.seal : reach ? Ink.ink : Ink.ink2
       readonly property bool linked: reading.r.key === "bluetooth" && !!s.enabled && s.connected > 0
       Parts.Icon {

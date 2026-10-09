@@ -52,7 +52,8 @@ Column {
       Rectangle {
         id: card
         required property string modelData
-        readonly property bool on: root.kata.design === modelData
+        // The Shōji design is the Shōji preset now: light the card for the preset in use.
+        readonly property bool on: (modelData === "shoji") === (S.normalize(root.doc).preset === "Shōji")
         readonly property var cardKata: K.resolve({ design: modelData, touches: root.doc.touches })
         width: cards.cardWidth
         height: cardCol.implicitHeight + Type.px(28)

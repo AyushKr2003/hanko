@@ -43,7 +43,8 @@ var PLATES = ["profile", "about", "credits"]
 
 var PRESET_BLURBS = {
   Sheet: "the printed bar", Scroll: "the handscroll", Hanko: "the two together",
-  Quiet: "least on screen", Instrument: "most on screen", Islet: "floating, inset"
+  Quiet: "least on screen", Instrument: "most on screen", Islet: "floating, inset",
+  "Shōji": "washi and the seasons"
 }
 
 // Seal glyphs offered as one-tap choices; anything else is typed under

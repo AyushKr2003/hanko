@@ -76,10 +76,23 @@ var PRESETS = {
   Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "all", indicatorStyle: "icon", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "both" },
   Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both" },
   Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", pointer: "plain", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare", guides: "both" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" }
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" },
+  // Shōji 障子: the Shōji design, folded into Hanko (HANDOFF §10). Its
+  // values are drawn with Shōji's parts; picking it also puts every sheet
+  // in the Shōji hand and frames the overview (PRESET_BESIDE).
+  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both" }
 }
 
-var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]
+var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet", "Shōji"]
+// What picking a preset also sets beside the twenty-three (only Shōji does:
+// its panels are a sheet hand and its overview is framed). Kept afterwards,
+// like anything beside the settings.
+var PRESET_BESIDE = {
+  "Shōji": { sheetStyles: { time: "shoji", sound: "shoji", network: "shoji", bluetooth: "shoji", power: "shoji", display: "shoji", inbox: "shoji" },
+             overview: "framed" }
+}
+// A preset name as typed: any case, with or without the macron (shoji).
+function foldName(name) { return String(name || "").toLowerCase().replace(/ō/g, "o") }
 var DEFAULT_PRESET = "Hanko"
 var DEFAULT_SEAL_GLYPH = "鑑"
 
@@ -248,7 +261,7 @@ function isValid(key, value) {
 
 function presetName(name) {
   for (var i = 0; i < PRESET_NAMES.length; i++)
-    if (PRESET_NAMES[i].toLowerCase() === String(name || "").toLowerCase()) return PRESET_NAMES[i]
+    if (foldName(PRESET_NAMES[i]) === foldName(name)) return PRESET_NAMES[i]
   return ""
 }
 
@@ -281,22 +294,12 @@ function normalizeGlyph(glyph) {
   return Array.from(s)[0]
 }
 
-// Kata's keys (core/Kata.js: design, borrow) ride along untouched, at the
-// top and in each monitor's overrides; Kata.js cleans and resolves them.
+// Kata's keys (core/Kata.js: design, borrow) are read, never kept: the
+// Shōji design is the Shōji preset now (S4 of "Shōji into Hanko").
 // Its `touches` became the season, numerals and grain settings: normalize
 // reads them in and drops the key (a monitor's own touches are dropped).
 var KATA_KEYS = ["design", "borrow"]
 
-function kataOf(obj) {
-  var out = {}
-  if (!obj || typeof obj !== "object") return out
-  for (var i = 0; i < KATA_KEYS.length; i++) {
-    var k = KATA_KEYS[i], v = obj[k]
-    if (v === undefined || v === null) continue
-    out[k] = typeof v === "object" ? JSON.parse(JSON.stringify(v)) : String(v)
-  }
-  return out
-}
 
 function withoutKata(obj) {
   var out = {}
@@ -307,10 +310,23 @@ function withoutKata(obj) {
 
 // A style document as stored in style.json:
 //   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, sheetStyles, hidden: [...], monitors: { "<name>": {...} },
-//     season, numerals, grain, design, borrow }
+//     season, numerals, grain }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
+//
+// A file from before Shōji was folded into Hanko may name a design. Shōji
+// (`design: "shoji"`) loads as the Shōji preset: its bar honoured only the
+// height, position and Bluetooth of the Typeset edits, so only those are
+// kept; every sheet not given a hand of its own takes the Shōji hand, and
+// the overview is framed, as that design drew them. A monitor that named
+// the other design than the file's gets that preset's values as overrides.
+// `borrow` is dropped.
+var SHOJI_KEPT_EDITS = ["height", "position", "bluetooth"]
+function designOf(v) { var d = foldName(v); return d === "shoji" ? "Shōji" : d === "classic" || d === "hanko" ? "Hanko" : "" }
+
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
+  var topDesign = designOf(doc.design) || "Hanko"
+  if (topDesign === "Shōji") doc = fromShojiDesign(doc)
   var preset = presetName(doc.preset)
   if (!preset) {
     if (doc.preset !== undefined && warnings) warnings.push("unknown preset " + doc.preset + ", using " + DEFAULT_PRESET)
@@ -322,8 +338,13 @@ function normalize(doc, warnings) {
       var raw = withoutKata(doc.monitors[name])
       delete raw.touches
       var own = cleanEdits(raw, warnings)
-      var kata = kataOf(doc.monitors[name])
-      for (var kk in kata) own[kk] = kata[kk]
+      // A monitor in the other design: that preset's values, under its own.
+      var mine = designOf(doc.monitors[name] && doc.monitors[name].design)
+      if (mine && mine !== topDesign) {
+        var base = copyOf(PRESETS[mine])
+        for (var ok in own) base[ok] = own[ok]
+        own = base
+      }
       monitors[name] = own
     }
   var out = {
@@ -343,9 +364,26 @@ function normalize(doc, warnings) {
   if (op) out.panelOpacity = op
   var ss = normalizeSheetStyles(doc.sheetStyles)
   if (Object.keys(ss).length) out.sheetStyles = ss
-  var top = kataOf(doc)
-  for (var t in top) out[t] = top[t]
   return out
+}
+
+// A document whose design is Shōji, as the Shōji preset (see normalize).
+function fromShojiDesign(doc) {
+  var next = JSON.parse(JSON.stringify(doc))
+  delete next.design
+  delete next.borrow
+  next.preset = "Shōji"
+  var kept = {}
+  var edits = next.edits && typeof next.edits === "object" ? next.edits : {}
+  for (var i = 0; i < SHOJI_KEPT_EDITS.length; i++)
+    if (edits[SHOJI_KEPT_EDITS[i]] !== undefined) kept[SHOJI_KEPT_EDITS[i]] = edits[SHOJI_KEPT_EDITS[i]]
+  next.edits = kept
+  var ss = next.sheetStyles && typeof next.sheetStyles === "object" ? next.sheetStyles : {}
+  var all = PRESET_BESIDE["Shōji"].sheetStyles
+  for (var k in all) if (!ss[k] || ss[k] === "ledger") ss[k] = all[k]
+  next.sheetStyles = ss
+  next.overview = "framed"
+  return next
 }
 
 // Preset, then edits, then the named monitor's overrides.
@@ -468,9 +506,11 @@ function withPreset(doc, name) {
   var d = normalize(doc)
   d.preset = preset
   d.edits = {}
-  // A Typeset preset is the Classic design: picking one leaves a Kata design.
-  delete d.design
-  delete d.borrow
+  var beside = PRESET_BESIDE[preset]
+  if (beside) {
+    if (beside.sheetStyles) d.sheetStyles = normalizeSheetStyles(beside.sheetStyles)
+    if (beside.overview) d.overview = beside.overview
+  }
   return d
 }
 

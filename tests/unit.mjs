@@ -62,8 +62,8 @@ test("indicators: all or only what is on; icon or kanji, alone or named; set per
   assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
   assert.equal(S.resolve({}).indicators, "all")
   assert.equal(S.resolve({}).indicatorStyle, "icon")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "all", "active", "all", "active"])
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "icon", "icon", "iconname", "icon"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "all", "active", "all", "active", "active"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "icon", "icon", "iconname", "icon", "icon"])
   assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "icon")
   assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
@@ -949,7 +949,7 @@ test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () =
   assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
   assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
   assert.equal(S.resolve({}).endleaf, "koyomi")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu", "koyomi"])
   assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
   assert.equal(Se.endleafOf("iro").name, "Iro")
   assert.equal(Lf.kindOf("nope").key, "koyomi")
@@ -1103,7 +1103,7 @@ test("end leaf: notes you can tick, and the clipboard", () => {
 test("scroll sides: bare or curl, in place of the rollers", () => {
   assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
   assert.equal(S.resolve({}).sides, "curl")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl", "bare"])
   assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
 })
 
@@ -1357,22 +1357,38 @@ test("kata: describe names the design", () => {
   assert.equal(K.describe(K.resolve({ design: "shoji", borrow: { slider: "ruler" } })), "Shōji")
   assert.equal(K.describe(K.resolve({})), "Hanko")
 })
-test("kata: Style.js carries design through normalize and monitors; touches become settings", () => {
-  const doc = { preset: "Quiet", design: "shoji", touches: { season: "english" },
-    monitors: { "DP-2": { height: 36, design: "classic", touches: { grain: "toothy" } } } }
+test("kata: a saved Shōji design loads as the Shōji preset; touches become settings", () => {
+  const doc = { preset: "Quiet", edits: { clock: "mono", height: 36 }, design: "shoji", borrow: { slider: "ruler" },
+    touches: { season: "english" }, sheetStyles: { inbox: "tanzaku" },
+    monitors: { "DP-2": { height: 32, design: "classic", touches: { grain: "toothy" } }, "HDMI-A-1": { design: "shoji" } } }
   const n = S.normalize(doc, [])
-  assert.equal(n.design, "shoji"); assert.equal(n.touches, undefined)
+  assert.equal(n.preset, "Shōji"); assert.deepEqual(n.edits, { height: 36 })      // only what Shōji's bar honoured
+  assert.equal(n.design, undefined); assert.equal(n.borrow, undefined); assert.equal(n.touches, undefined)
   assert.deepEqual([n.season, n.numerals, n.grain], ["english", "arabic", "fine"])
-  assert.deepEqual(n.monitors["DP-2"], { height: 36, design: "classic" })
+  assert.equal(n.overview, "framed")
+  assert.equal(n.sheetStyles.inbox, "tanzaku"); assert.equal(n.sheetStyles.sound, "shoji")  // a hand you picked stays
+  // A monitor in the other design gets that preset's values, under its own.
+  assert.equal(n.monitors["DP-2"].seal, "workspace"); assert.equal(n.monitors["DP-2"].height, 32)
+  assert.equal(n.monitors["DP-2"].design, undefined)
+  assert.deepEqual(n.monitors["HDMI-A-1"], {})
+  assert.equal(S.resolve(doc, "DP-2").status, "cells"); assert.equal(S.resolve(doc).status, "ink")
   const w = []; S.normalize(doc, w); assert.deepEqual(w, [])
-  assert.equal(S.resolve(doc, "DP-2").height, 36); assert.equal(S.resolve(doc, "DP-2").design, undefined)
-  assert.equal(S.resolve(doc).season, "english")
-  assert.equal(JSON.stringify(S.normalize({})).includes("design"), false)   // nothing new in an untouched file
-  const p = S.withPreset(n, "Sheet"); assert.equal(p.design, undefined); assert.equal(p.season, "english")
-  assert.equal(S.withSetting(n, "clock", "mono").design, "shoji")
-  assert.equal(S.withSetting(n, "grain", "toothy").grain, "toothy")
-  assert.equal(S.withSetting(n, "numerals", "roman"), null)
-  assert.equal(S.withMonitorSetting(n, "DP-2", "height", 32).monitors["DP-2"].design, "classic")
+  assert.deepEqual(S.normalize(n), n)                                    // the migration settles
+  // On a Hanko file, a monitor that was Shōji gets Shōji's values.
+  assert.equal(S.resolve({ monitors: { "DP-2": { design: "shoji" } } }, "DP-2").surface, "washi")
+  assert.equal(JSON.stringify(S.normalize({})).includes("design"), false)
+  assert.equal(S.withSetting(n, "clock", "mono").preset, "Shōji")
+})
+
+test("the Shōji preset: picked by any spelling, it puts every sheet in the Shōji hand and frames the overview", () => {
+  for (const name of ["Shōji", "shoji", "SHOJI", "shōji"]) assert.equal(S.withPreset({}, name).preset, "Shōji")
+  const d = S.withPreset({ sheetStyles: { time: "kasumi" }, overview: "dynamic" }, "shoji")
+  assert.ok(S.SHEET_KEYS.every(k => S.resolve(d).sheetStyles[k] === "shoji"))
+  assert.equal(d.overview, "framed")
+  // Kept afterwards, like anything beside the settings.
+  const h = S.withPreset(d, "Hanko"); assert.equal(h.overview, "framed"); assert.equal(h.sheetStyles.time, "shoji")
+  const st = S.resolve(d)
+  assert.deepEqual([st.seal, st.spaces, st.status, st.notif, st.surface, st.pointer, st.panels], ["carved", "brush", "ink", "seal", "washi", "brush", "sheets"])
 })
 
 test("kata K2: the inks are solved by contrast in every theme", () => {
@@ -1480,8 +1496,8 @@ test("Shōji's bar parts are Hanko values (S3)", () => {
   }
   // The values that leave a part out stay last.
   for (const k of ["seal", "title", "media"]) assert.equal(S.OPTIONS[k][S.OPTIONS[k].length - 1], "none")
-  // Every preset keeps the plain pointer; Hanko itself is unchanged.
-  for (const n of S.PRESET_NAMES) assert.equal(S.PRESETS[n].pointer, "plain")
+  // Every Typeset preset keeps the plain pointer; Hanko itself is unchanged.
+  for (const n of S.PRESET_NAMES) assert.equal(S.PRESETS[n].pointer, n === "Shōji" ? "brush" : "plain")
   // The touches are kept through a preset change and a shuffle.
   const d = S.withSetting(S.withSetting({}, "season", "off"), "numerals", "kanji")
   assert.equal(S.withPreset(d, "Quiet").season, "off")

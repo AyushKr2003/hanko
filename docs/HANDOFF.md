@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after S3 of folding Shōji into Hanko: Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), and its bar parts are Hanko values with season, numerals and grain as settings (S3); plan and remaining steps in §10, "Shōji into Hanko".
+Last updated: 2026-10-09, after S4 of folding Shōji into Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), and Shōji is a preset that a saved Shōji design loads as (S4). Plan and the last step in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -137,31 +137,31 @@ Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with
 
 ### Presets
 
-| Setting | Sheet | Scroll | **Hanko** (default) | Quiet | Instrument | Islet |
-|---|---|---|---|---|---|---|
-| seal | stamp | workspace | workspace | stamp | stamp | workspace |
-| spaces | folio | layout | layout | dots | kanji | kanji |
-| title | cell | byline | byline | none | cell | byline |
-| clock | stacked | inline | stacked | inline | mono | inline |
-| clockAt | center | center | center | center | right | center |
-| media | cell | underline | underline | none | cell | underline |
-| status | cells | glyphs | cells | numerals | cells | glyphs |
-| meters | ticks | off | ticks | off | ticks | ticks |
-| notif | count | stamps | stamps | count | count | stamps |
-| bluetooth | device | marks | device | off | device | marks |
-| indicators | all | active | all | active | all | active |
-| indicatorStyle | kanji | kanji | icon | icon | iconname | icon |
-| edge | dayrule | rod | rodrule | hairline | dayrule | rodrule |
-| rules | on | off | on | off | on | off |
-| pointer | plain | plain | plain | plain | plain | plain |
-| height | 36 | 40 | 40 | 32 | 44 | 36 |
-| surface | solid | solid | solid | glass | solid | inset |
-| position | top | top | top | top | top | top |
-| panels | sheets | scroll | scroll | sheets | sheets | scroll |
-| interlude | folio | kotoba | seal | ma | folio | fuda |
-| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu |
-| sides | bare | curl | curl | bare | bare | curl |
-| guides | both | both | both | both | both | both |
+| Setting | Sheet | Scroll | **Hanko** (default) | Quiet | Instrument | Islet | Shōji |
+|---|---|---|---|---|---|---|---|
+| seal | stamp | workspace | workspace | stamp | stamp | workspace | carved |
+| spaces | folio | layout | layout | dots | kanji | kanji | brush |
+| title | cell | byline | byline | none | cell | byline | ink |
+| clock | stacked | inline | stacked | inline | mono | inline | season |
+| clockAt | center | center | center | center | right | center | center |
+| media | cell | underline | underline | none | cell | underline | ink |
+| status | cells | glyphs | cells | numerals | cells | glyphs | ink |
+| meters | ticks | off | ticks | off | ticks | ticks | off |
+| notif | count | stamps | stamps | count | count | stamps | seal |
+| bluetooth | device | marks | device | off | device | marks | device |
+| indicators | all | active | all | active | all | active | active |
+| indicatorStyle | kanji | kanji | icon | icon | iconname | icon | icon |
+| edge | dayrule | rod | rodrule | hairline | dayrule | rodrule | hairline |
+| rules | on | off | on | off | on | off | off |
+| pointer | plain | plain | plain | plain | plain | plain | brush |
+| height | 36 | 40 | 40 | 32 | 44 | 36 | 40 |
+| surface | solid | solid | solid | glass | solid | inset | washi |
+| position | top | top | top | top | top | top | top |
+| panels | sheets | scroll | scroll | sheets | sheets | scroll | sheets |
+| interlude | folio | kotoba | seal | ma | folio | fuda | ma |
+| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu | koyomi |
+| sides | bare | curl | curl | bare | bare | curl | bare |
+| guides | both | both | both | both | both | both | both |
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -827,6 +827,14 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - **Components**: `Seal` `carved` (KataSeal, pressed red with the count only under `notif: seal`); `Workspaces` `brush` (a cell per desk, `PointerMark` under `liveCell`, `UnreadMark` on urgent, `numerals`); `WindowTitle` `ink`; `NowPlaying` `ink`; `Clock` `season` (`Season.label(now, season)`); `StatusRow` `ink` (a branch in `Reading`; items carry `src`, their raw reading; the battery a `Ring`; brightness a new `sun` in `Icon`; names on reach; no meters). `StatusRow` now signals `_cellsChanged()` when a cell reports itself, so bindings that look cells up (the pointer) re-run.
 - Harness `shoji-parts.json` and `shoji-parts-light.json` (Strips: each value alone, the touches, pointing at cells, every value together at 40 and 32 px and at the bottom); `Strips` passes `pointAt`. Images `docs/revision2/images/r2-shoji-parts.webp`, `r2-shoji-parts-light.webp`. Unit tests: Kata touch tests rewritten, one for the Shōji values (118).
 
+### Shōji into Hanko · S4, the Shōji preset and migration ✅
+- **`core/Style.js`**: `PRESETS["Shōji"]` (carved, brush, ink, season, center, ink, ink, ticks off, notif seal, device, indicators active, icon, hairline, rules off, pointer brush, 40, washi, top, sheets, ma, koyomi, bare, both); `PRESET_NAMES` has seven. `PRESET_BESIDE["Shōji"]`: `withPreset` also sets every sheet to the `shoji` hand and `overview: framed` (kept afterwards). `presetName` folds case and the macron (`foldName`), so `shoji`, `SHOJI`, `Shōji` all work.
+- **Migration** in `normalize`: a top-level `design` of Shōji runs `fromShojiDesign` first: preset Shōji, only the `height`, `position`, `bluetooth` edits kept (`SHOJI_KEPT_EDITS`, what `KataBar` honoured), every sheet still on the ledger to `shoji` (a hand you picked stays), `overview: framed`; `design` and `borrow` dropped. A monitor whose `design` differs from the file's gets that preset's values under its own overrides (`designOf`). `normalize` never writes `design` again, so Kata always resolves classic and `KataBar`, `SheetWindow.kataView` and the Kata overview are unreachable (removed in S5). `kataOf` is gone.
+- **`Typeset.draftDesign` / `setDesign`** (Settings › Design, IPC `design`, `hanko design`) apply the Hanko or Shōji preset (`presetForDesign`); the Design page lights the card for the preset in use. Its two card previews now both follow the document (so both show Shōji under the Shōji preset); the page goes in S5.
+- **Settings**: `PRESET_BLURBS` gains Shōji ("washi and the seasons"); the preset row holds all seven at 1000 px and up, else four, then two.
+- **Compared** with the Shōji design (`kata-bars.png`) in the same eight states (`shoji-preset.json`; `pointAt` now also brings out an ink cell's name, via `StatusRow.reachKey`): the same seal, count, desks, title, clock and season, media, icons, ensō, red states, names on reach and brush pointer. Differences: Shōji drew one hairline between now playing and the status icons and none elsewhere, the preset has none (`rules: off`; `on` rules every group); the left end starts 4 px further left (Hanko's 6 px margin against Shōji's 10 px plus cell padding); indicators show as Hanko's stamps when on (Shōji had none); the preset gains what `KataBar` lacked (tray, keyboard and mic marks, hosted widgets, a brightness cell on laptops, the scroll, per-monitor settings).
+- Tests: the per-preset arrays gain Shōji's value; the Kata normalize test is the migration test; one for the preset (spellings, sheet hands, overview, values) (119). Harness `shoji-preset.json`; image `docs/revision2/images/r2-shoji-preset.webp` (beside `docs/kata/images/k4-bars.webp`).
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
@@ -855,7 +863,7 @@ The user asked for Shōji to stop being a separate design: "Shōji should be par
 **Steps**, each a commit pushed to `dev`, with renders dark and light:
 - **S2 · overview** ✅ (see §9).
 - **S3 · bar parts** ✅ (see §9). `title: ink` and `media: ink` were added as the plan allowed; the skin is built in `BarSurface` itself, not passed from `BarWindow`.
-- **S4 · preset and migration**: `Shōji` in `PRESETS` and `PRESET_NAMES` (and `PRESET_BLURBS`), `sheetStyles` all `shoji` and `overview: framed` with it. A saved `design: "shoji"` normalizes to that preset (keeping edits; `touches` become the global keys; a monitor whose `design` is Shōji gets the preset's values as overrides). Render today's Shōji design (`kata-bars.json`) beside the preset and match by eye; pixel identity is impossible (different layout code), so list each difference.
+- **S4 · preset and migration** ✅ (see §9).
 - **S5 · removal**: `KataBar.qml`, Settings › Design (`DesignPage.qml`, its rail entry, `designPicked`/`touchPicked`), `SheetWindow.kataView` and `kataOrder`, `OverviewWindow.kata`, the Kata `design`/`touches` resolution (keep a small skin-from-style helper), IPC `designGet`/`design`/`designDescribe`/`touch`, `scripts/hanko design` and `touch` (removed, no alias), `Typeset.setDesign`/`touch`/`kata`, Kata harness scenes (`KataBars`, `KataPanels`, `KataWave`, `design-settings*`), and `ShojiPanel.ownDisplay` (always on). Panel opacity moves to Settings › Sheets. Docs: README (the "Two designs" line and its image), ROADMAP, COMPONENTS, CHANGELOG, this file; `docs/kata/` stays as history.
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
@@ -948,7 +956,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
 30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), and each hand at the user's `typeSize` large (the sheets grow, they don't scroll).
 31. **Craft hands to verify on hardware:** Shōgi's square click and wheel on the master and an app (the wheel steps one file, 12.5%), Soroban's bead flick (a hundreds rod appears at 100%; clicking the units' first earth bead when one is counted takes it back to zero), Odoshi's scale click, Kasumi's drag along a band that drifts in from the right (it measures from the right edge), the 24-scale day lame at 1x, and each hand on the user's theme (light themes draw Kasumi's bands as ink and Shōgi's pieces as pale wood). The harness letter timestamps are UTC: render with `TZ=UTC` or the inbox reads "now" for every letter.
-32. **Shōji sheet hand to verify on hardware:** the rail slide between two cells on a Hanko bar (`Behavior on x` only runs while both are Shōji sheets; from another hand it jumps), the panel's side when the cell is near the middle, the Display panel's monitor pick and Arrange › (`omarchy-launch-editor`), the brush slider dragged on a real brightness (DDC can lag), and Tab from Power to Display. Shōji's bar values (S3): the brush pointer following a real pointer across cells and leaving when it leaves the bar, names coming out on reach in `status: ink`, the carved seal's press when a letter arrives, the season clock's sekki at midnight on a change of term, washi grain on a 1x panel, and `notif: seal` with the seal hidden (the inbox must come back). `overview: framed` on a Hanko bar: the washi pages' opacity follows Panel opacity (Auto is the washi's 86%), keys and drag as on the grid.
+32. **Shōji sheet hand to verify on hardware:** the rail slide between two cells on a Hanko bar (`Behavior on x` only runs while both are Shōji sheets; from another hand it jumps), the panel's side when the cell is near the middle, the Display panel's monitor pick and Arrange › (`omarchy-launch-editor`), the brush slider dragged on a real brightness (DDC can lag), and Tab from Power to Display. The Shōji preset (S4) on a real `style.json` that had `"design": "shoji"` (it should load straight into the preset, keep its height and Bluetooth, and open Shōji panels and the framed overview), and on a laptop (the brightness cell appears, which Shōji never had). Shōji's bar values (S3): the brush pointer following a real pointer across cells and leaving when it leaves the bar, names coming out on reach in `status: ink`, the carved seal's press when a letter arrives, the season clock's sekki at midnight on a change of term, washi grain on a 1x panel, and `notif: seal` with the seal hidden (the inbox must come back). `overview: framed` on a Hanko bar: the washi pages' opacity follows Panel opacity (Auto is the washi's 86%), keys and drag as on the grid.
 
 ## 13. QML pitfalls already hit
 

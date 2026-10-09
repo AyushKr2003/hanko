@@ -296,6 +296,7 @@ Item {
       ruled: root.ruled
       barHeight: root.barHeight
       skin: root.skin
+      reachKey: root.pointAt
       volume: root.shown("volume") ? root.volume : null
       network: root.shown("network") ? root.network : null
       battery: root.shown("battery") ? root.battery : null

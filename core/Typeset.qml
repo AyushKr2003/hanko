@@ -81,7 +81,10 @@ QtObject {
   }
   // Kata's edits, in the draft and saved at once. Each returns false when
   // the value is not one the key takes.
-  function draftDesign(name) { return _draftWith(K.withDesign(live, name)) }
+  // The Shōji design is the Shōji preset now (HANDOFF §10): picking a
+  // design picks its preset (Hanko or Shōji), until Settings › Design goes.
+  function presetForDesign(name) { var d = K.designName(name); return d === "shoji" ? "Shōji" : d === "classic" ? "Hanko" : "" }
+  function draftDesign(name) { var p = presetForDesign(name); return p ? _draftWith(S.withPreset(live, p)) : false }
   function draftTouch(key, value) { return _draftWith(K.withTouch(live, key, value)) }
   function _draftWith(next) {
     if (!next) return false
@@ -177,7 +180,7 @@ QtObject {
     return into
   }
 
-  function setDesign(name) { return _commitWith(K.withDesign(doc, name)) }
+  function setDesign(name) { var p = presetForDesign(name); return p ? _commitWith(S.withPreset(doc, p)) : false }
   function touch(key, value) { return _commitWith(K.withTouch(doc, key, value)) }
   function _commitWith(next) {
     if (!next) return false

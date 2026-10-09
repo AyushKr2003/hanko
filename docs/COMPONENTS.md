@@ -409,34 +409,36 @@ Most settings are independent. These are the places where one setting changes ho
 
 A preset sets all twenty-three settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
-| Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet |
-|---|---|---|---|---|---|---|
-| seal | stamp | workspace | workspace | stamp | stamp | workspace |
-| spaces | folio | layout | layout | dots | kanji | kanji |
-| title | cell | byline | byline | none | cell | byline |
-| clock | stacked | inline | stacked | inline | mono | inline |
-| clockAt | center | center | center | center | right | center |
-| media | cell | underline | underline | none | cell | underline |
-| status | cells | glyphs | cells | numerals | cells | glyphs |
-| meters | ticks | off | ticks | off | ticks | ticks |
-| notif | count | stamps | stamps | count | count | stamps |
-| bluetooth | device | marks | device | off | device | marks |
-| indicators | all | active | all | active | all | active |
-| indicatorStyle | kanji | kanji | icon | icon | iconname | icon |
-| edge | dayrule | rod | rodrule | hairline | dayrule | rodrule |
-| rules | on | off | on | off | on | off |
-| height | 36 | 40 | 40 | 32 | 44 | 36 |
-| surface | solid | solid | solid | glass | solid | inset |
-| position | top | top | top | top | top | top |
-| panels | sheets | scroll | scroll | sheets | sheets | scroll |
-| interlude | folio | kotoba | seal | ma | folio | fuda |
-| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu |
-| sides | bare | curl | curl | bare | bare | curl |
-| guides | both | both | both | both | both | both |
+| Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet | Shōji |
+|---|---|---|---|---|---|---|---|
+| seal | stamp | workspace | workspace | stamp | stamp | workspace | carved |
+| spaces | folio | layout | layout | dots | kanji | kanji | brush |
+| title | cell | byline | byline | none | cell | byline | ink |
+| clock | stacked | inline | stacked | inline | mono | inline | season |
+| clockAt | center | center | center | center | right | center | center |
+| media | cell | underline | underline | none | cell | underline | ink |
+| status | cells | glyphs | cells | numerals | cells | glyphs | ink |
+| meters | ticks | off | ticks | off | ticks | ticks | off |
+| notif | count | stamps | stamps | count | count | stamps | seal |
+| bluetooth | device | marks | device | off | device | marks | device |
+| indicators | all | active | all | active | all | active | active |
+| indicatorStyle | kanji | kanji | icon | icon | iconname | icon | icon |
+| edge | dayrule | rod | rodrule | hairline | dayrule | rodrule | hairline |
+| rules | on | off | on | off | on | off | off |
+| pointer | plain | plain | plain | plain | plain | plain | brush |
+| height | 36 | 40 | 40 | 32 | 44 | 36 | 40 |
+| surface | solid | solid | solid | glass | solid | inset | washi |
+| position | top | top | top | top | top | top | top |
+| panels | sheets | scroll | scroll | sheets | sheets | scroll | sheets |
+| interlude | folio | kotoba | seal | ma | folio | fuda | ma |
+| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu | koyomi |
+| sides | bare | curl | curl | bare | bare | curl | bare |
+| guides | both | both | both | both | both | both | both |
 
 - **Sheet**: the Sheet design, exactly. A spec table across the top of the page.
 - **Scroll**: the Scroll design, exactly. Calm type and a handscroll underneath.
 - **Hanko**: the merge. Scroll's left end and panels, Sheet's cells and meters, and the roller that carries the day.
+- **Shōji**: the Shōji design, folded into Hanko: washi, the carved seal carrying your letters, brush desks, the season by the clock, icons and an ensō for status, a brush mark where you point. Picking it also puts every sheet in the Shōji hand and frames the overview (kept afterwards, like anything beside the settings). A style.json that names the Shōji design loads as this preset.
 - **Quiet**: the least on screen. Dots, an inline clock, numerals, a hairline, on glass.
 - **Instrument**: the most on screen. Kanji pages, a mono clock on the right, every meter, 44 px.
 - **Islet**: a floating inset strip with kanji status and stamps.
