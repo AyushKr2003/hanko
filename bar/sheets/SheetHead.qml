@@ -21,6 +21,8 @@ Column {
   property string blurb: ""
   // Red only when the title is something that needs you (offline, low).
   property color titleColor: Ink.ink
+  // The eyebrow alone: Dial and Prose sheets make their own hero.
+  property bool compact: false
 
   readonly property var info: Sheets.byKey(sheet)
   readonly property string folio: info ? info.no : ""
@@ -81,9 +83,10 @@ Column {
     }
   }
 
-  Item { width: 1; height: Type.px(14) }
+  Item { visible: !root.compact; width: 1; height: Type.px(14) }
 
   Item {
+    visible: !root.compact
     width: root.width
     height: titleText.height
 
@@ -118,12 +121,12 @@ Column {
     }
   }
 
-  Item { width: 1; height: Type.px(8) }
+  Item { visible: !root.compact; width: 1; height: Type.px(8) }
 
   // The standfirst: Fraunces italic, as a magazine sets the line under a head.
   Text {
     width: root.width - Type.px(40)
-    visible: text !== ""
+    visible: text !== "" && !root.compact
     text: root.blurb
     color: Ink.inkDim
     wrapMode: Text.Wrap

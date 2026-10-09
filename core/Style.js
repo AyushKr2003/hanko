@@ -112,6 +112,32 @@ function normalizeOverview(o) {
   return OVERVIEWS.indexOf(String(o)) >= 0 ? String(o) : DEFAULT_OVERVIEW
 }
 
+// How each sheet is drawn (style.json `sheetStyles`, Settings › Sheets 紙),
+// beside the twenty-two like the overview: no preset sets them and a reset
+// keeps them. Three hands for every cell's sheet:
+//   ledger  帳  the editorial page: eyebrow, serif title, `//` groups, rows
+//   dial    盤  the instrument: one arc gauge as the hero, tiles to pick from
+//   prose   文  the state written as a sentence whose words you tap
+// Stored only where a sheet is not a ledger; resolve() gives the full map.
+var SHEET_STYLES = ["ledger", "dial", "prose"]
+var SHEET_KEYS = ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
+
+function normalizeSheetStyles(o) {
+  var out = {}
+  if (!o || typeof o !== "object") return out
+  for (var i = 0; i < SHEET_KEYS.length; i++) {
+    var k = SHEET_KEYS[i], v = String(o[k])
+    if (SHEET_STYLES.indexOf(v) > 0) out[k] = v
+  }
+  return out
+}
+
+function sheetStylesOf(d) {
+  var out = {}, own = normalizeSheetStyles(d && d.sheetStyles)
+  for (var i = 0; i < SHEET_KEYS.length; i++) out[SHEET_KEYS[i]] = own[SHEET_KEYS[i]] || "ledger"
+  return out
+}
+
 // Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
 // page), beside the twenty-two like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
@@ -229,7 +255,7 @@ function withoutKata(obj) {
 }
 
 // A style document as stored in style.json:
-//   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, hidden: [...], monitors: { "<name>": {...} },
+//   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, sheetStyles, hidden: [...], monitors: { "<name>": {...} },
 //     design, borrow, touches }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
@@ -259,6 +285,8 @@ function normalize(doc, warnings) {
   }
   var op = normalizeOpacity(doc.panelOpacity)
   if (op) out.panelOpacity = op
+  var ss = normalizeSheetStyles(doc.sheetStyles)
+  if (Object.keys(ss).length) out.sheetStyles = ss
   var top = kataOf(doc)
   for (var t in top) out[t] = top[t]
   return out
@@ -276,6 +304,7 @@ function resolve(doc, monitor) {
   style.typeSize = d.typeSize
   style.overview = d.overview
   style.panelOpacity = d.panelOpacity || 0
+  style.sheetStyles = sheetStylesOf(d)
   style.hidden = d.hidden.slice()
   style.preset = d.preset
   style.edited = Object.keys(d.edits).length > 0
@@ -303,6 +332,21 @@ function withSetting(doc, key, value) {
     var op = normalizeOpacity(value)
     if (op) d.panelOpacity = op
     else delete d.panelOpacity
+    return d
+  }
+  // sheetStyle:<sheet> or sheetStyle:all, to ledger | dial | prose.
+  if (String(key).indexOf("sheetStyle:") === 0) {
+    var which = String(key).slice(11), how = String(value)
+    if (SHEET_STYLES.indexOf(how) < 0) return null
+    if (which !== "all" && SHEET_KEYS.indexOf(which) < 0) return null
+    var map = normalizeSheetStyles(d.sheetStyles)
+    var keys = which === "all" ? SHEET_KEYS : [which]
+    for (var si = 0; si < keys.length; si++) {
+      if (how === "ledger") delete map[keys[si]]
+      else map[keys[si]] = how
+    }
+    if (Object.keys(map).length) d.sheetStyles = map
+    else delete d.sheetStyles
     return d
   }
   if (key === "overview") {

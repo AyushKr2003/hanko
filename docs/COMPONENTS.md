@@ -221,6 +221,28 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 Sheets 20–25 show both on full desktops.
 
+#### Sheet hands `sheetStyles` 帳/盤/文
+
+Each cell's sheet can be drawn in one of three hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound dial`, `sheetStyle:all prose`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+
+| Hand | What it does | After |
+|---|---|---|
+| **`ledger`** 帳 (default) | The editorial page above: eyebrow and folio, serif title over its faint kanji, standfirst, `//` groups of hairline rows, colophon foot. Everything listed. | Hanko's own sheet |
+| `dial` 盤 | The instrument: a compact eyebrow, then one arc gauge as the hero (270°, ticked every tenth, inked to the value, a head at it; drag round it or scroll), what it reads beside it with the quick buttons, and the choices as tiles (the one in use a bone plate, a level along a tile's foot). Time's hero is a clock face whose rim is the day spent, the now-notch in red. | Synth and hi-fi displays (a few things always visible, nothing nested), quick-settings tiles |
+| `prose` 文 | The sheet's state written as a sentence in Fraunces, its changeable words underlined (tap one: it does what it says), a ruler where there is a level to set, and the choices as a numbered index with dotted leaders below. | "Mad libs" forms whose fields complete a sentence; a book's notes under a paragraph |
+
+What each sheet shows in each hand:
+
+| Sheet | Dial | Prose |
+|---|---|---|
+| Time | clock face with the day round its rim; two weeks as a calendar block; other cities as tiles | "Tuesday, the 6th of October, week 41: day 279 of 365…. In Tokyo it is 06:44. See last week or next." The fortnight as a line of figures, cities as an index |
+| Sound | master gauge (red, dashed when muted) with Mute and Next; outputs and the apps playing as tiles (an app tile mutes it) | "Playing at 62% through Studio Monitors. Spotify at 80…. The mic is live." The level mutes, the output moves on, the mic toggles; a ruler sets the master |
+| Network | signal gauge, the name beside it (red offline) with Wi-Fi and the speed test; networks as tiles | "On Kumo…. Four networks are around you; Wi-Fi is on." The name runs the speed test, the count rescans, the state switches Wi-Fi |
+| Bluetooth | the connected device's charge as the gauge; every device a tile | "Bluetooth is on. WH-1000XM5 is connected, 80% charged…." |
+| Power | battery gauge (red when low); profiles as three tiles; details as read-only tiles | "91%, on battery: 2h 41m left…. Running Balanced…." The profile's name steps to the next |
+| Display | brightness gauge you turn, with Night; monitors as tiles | "Built-in, at 70% brightness…. Night light is off." A ruler sets the brightness |
+| Inbox | the count as the gauge (a full ring at ten), the newest sender with Quiet and Clear all; letters as cards | "Three letters, the newest from Signal 2m ago: “…”. Do not disturb is off; clear them." |
+
 #### Scroll dividers `interlude` 間
 
 What sits between two sections of the scroll. Pick it on the Scroll 巻 page (a gallery that draws each one) or by kanji in the Panels card; from a terminal, `hanko style set interlude kotoba`. Every divider is quieter than the sections, and red appears at most once in a gap. They replace the dithered ink slivers the Scroll design drew; the research and the full set of studies are in `docs/revision1/` on the `docs` branch.

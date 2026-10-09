@@ -13,7 +13,7 @@ function load(file, names) {
   return new Function(`${src}\nreturn { ${names.join(", ")} }`)()
 }
 
-const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
+const S = load("core/Style.js", ["SHEET_STYLES", "SHEET_KEYS", "OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
@@ -1426,6 +1426,25 @@ test("kata K4: the season comes from the sun, right on the boundaries", () => {
   assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "kanji"), "寒露")
   assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "english"), "Cold dew")
   assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "off"), "")
+})
+
+test("sheet styles: three hands per sheet, stored only where not a ledger", () => {
+  assert.deepEqual(S.SHEET_STYLES, ["ledger", "dial", "prose"])
+  assert.equal(S.resolve({}).sheetStyles.sound, "ledger")
+  let d = S.withSetting({}, "sheetStyle:sound", "dial")
+  assert.deepEqual(d.sheetStyles, { sound: "dial" })
+  assert.equal(S.resolve(d).sheetStyles.sound, "dial")
+  assert.equal(S.resolve(d).sheetStyles.time, "ledger")
+  d = S.withSetting(d, "sheetStyle:all", "prose")
+  assert.equal(Object.keys(d.sheetStyles).length, S.SHEET_KEYS.length)
+  d = S.withSetting(d, "sheetStyle:all", "ledger")
+  assert.equal(d.sheetStyles, undefined)
+  assert.equal(S.withSetting({}, "sheetStyle:sound", "fancy"), null)
+  assert.equal(S.withSetting({}, "sheetStyle:nope", "dial"), null)
+  // A preset change keeps them, like the overview.
+  const p = S.withPreset(S.withSetting({}, "sheetStyle:time", "dial"), "Quiet")
+  assert.deepEqual(p.sheetStyles, { time: "dial" })
+  assert.deepEqual(S.normalize({ sheetStyles: { time: "ledger", sound: "x", inbox: "prose" } }).sheetStyles, { inbox: "prose" })
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

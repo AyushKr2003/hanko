@@ -95,6 +95,18 @@ FloatingWindow {
         dnd: Status.doNotDisturb
       })
 
+      sheetFeed: ({
+        now: win.bar.now,
+        zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
+        timeShift: win.bar.timeShift,
+        sound: Sound.reading,
+        network: Net.reading,
+        bluetooth: Blue.reading,
+        power: Power.reading,
+        display: Display.reading,
+        letters: win.bar.lettersShown(Status.notifications),
+        dnd: Status.doNotDisturb
+      })
       onSettingPicked: function(key, value) {
         // "…" asks for a glyph of your own, under Advanced.
         if (key === "sealGlyph" && value === "…") { win.advanced = true; return }

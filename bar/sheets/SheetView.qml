@@ -24,6 +24,9 @@ Item {
   // Panel opacity (Style.js panelOpacity), 0..1.
   property real paperOpacity: 1
   property bool animate: true
+  // How each sheet is drawn (Style.js sheetStyles): ledger | dial | prose.
+  property var styles: ({})
+  readonly property string hand: styles[sheet] || "ledger"
 
   // A sheet asked for something (a value, a device, a page of the ribbon).
   signal request(string sheet, string what, var arg)
@@ -61,8 +64,14 @@ Item {
     Loader {
       id: body
       width: card.width
-      sourceComponent: ({ time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
-                         power: powerSheet, display: displaySheet, inbox: inboxSheet })[root.sheet] || null
+      sourceComponent: (root.hand === "dial"
+          ? { time: timeDial, sound: soundDial, network: networkDial, bluetooth: bluetoothDial,
+              power: powerDial, display: displayDial, inbox: inboxDial }
+          : root.hand === "prose"
+          ? { time: timeProse, sound: soundProse, network: networkProse, bluetooth: bluetoothProse,
+              power: powerProse, display: displayProse, inbox: inboxProse }
+          : { time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
+              power: powerSheet, display: displaySheet, inbox: inboxSheet })[root.sheet] || null
       onLoaded: if (root.open) root.focusContents()
     }
   }
@@ -140,6 +149,170 @@ Item {
   Component {
     id: bluetoothSheet
     BluetoothSheet {
+      blue: root.feed.bluetooth || null
+      onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  // ---- dial
+  Component {
+    id: timeDial
+    TimeDial {
+      now: root.feed.now || new Date()
+      zones: root.feed.zones || []
+      shift: root.feed.timeShift || 0
+      onRequest: function(what, arg) { root.request("time", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: soundDial
+    SoundDial {
+      sound: root.feed.sound || null
+      onRequest: function(what, arg) { root.request("sound", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: networkDial
+    NetworkDial {
+      net: root.feed.network || null
+      onRequest: function(what, arg) { root.request("network", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: powerDial
+    PowerDial {
+      power: root.feed.power || null
+      onRequest: function(what, arg) { root.request("power", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: inboxDial
+    InboxDial {
+      letters: root.feed.letters || []
+      dnd: !!root.feed.dnd
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.request("inbox", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: displayDial
+    DisplayDial {
+      display: root.feed.display || null
+      onRequest: function(what, arg) { root.request("display", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: bluetoothDial
+    BluetoothDial {
+      blue: root.feed.bluetooth || null
+      onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  // ---- prose
+  Component {
+    id: timeProse
+    TimeProse {
+      now: root.feed.now || new Date()
+      zones: root.feed.zones || []
+      shift: root.feed.timeShift || 0
+      onRequest: function(what, arg) { root.request("time", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: soundProse
+    SoundProse {
+      sound: root.feed.sound || null
+      onRequest: function(what, arg) { root.request("sound", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: networkProse
+    NetworkProse {
+      net: root.feed.network || null
+      onRequest: function(what, arg) { root.request("network", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: powerProse
+    PowerProse {
+      power: root.feed.power || null
+      onRequest: function(what, arg) { root.request("power", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: inboxProse
+    InboxProse {
+      letters: root.feed.letters || []
+      dnd: !!root.feed.dnd
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.request("inbox", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: displayProse
+    DisplayProse {
+      display: root.feed.display || null
+      onRequest: function(what, arg) { root.request("display", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: bluetoothProse
+    BluetoothProse {
       blue: root.feed.bluetooth || null
       onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
       Keys.onEscapePressed: root.closeRequested()

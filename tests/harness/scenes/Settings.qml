@@ -46,6 +46,7 @@ Rectangle {
     profileEditing: !!sheet.s.editing
     undoCount: sheet.s.undo || 0
     overrideMonitor: sheet.s.monitor || ""
+    sheetFeed: Object.assign({ now: new Date(sheet.p.now || "2026-10-06T21:44:00") }, sheet.s.sheetFeed || {})
     barData: ({
       now: new Date(sheet.p.now || "2026-10-06T21:44:00"),
       spaces: sheet.p.spaces || [],

@@ -31,6 +31,8 @@ Rectangle {
   // media, volume, network, battery, brightness, notifications, dnd,
   // timeFormat }.
   property var barData: ({})
+  // The sheets' plain data, for the Sheets page's live preview.
+  property var sheetFeed: ({})
   // For the plates: services/Machine.qml info, core/Dossier.qml doc, the
   // plugin's version and where Profile saves an image.
   property var machine: ({ user: "", host: "", kernel: "", uptime: 0, theme: "", omarchy: "", hyprland: "", packages: 0, since: "", machine: "" })
@@ -418,6 +420,16 @@ Rectangle {
           onSurprise: root.surprise()
           onBackToDesign: root.backToDesign()
           onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
+        }
+
+        // ------------------------------------------------ Sheets
+        SheetsPage {
+          visible: root.page === "sheets"
+          width: parent.width
+          doc: root.draft
+          feed: root.sheetFeed
+          compact: root.compact
+          onStylePicked: function(sheet, style) { root.settingPicked("sheetStyle:" + sheet, style) }
         }
 
         // ------------------------------------------------ Typesetting
@@ -1121,7 +1133,7 @@ Rectangle {
   readonly property var placeholders: ({
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
     widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
-    sheets: "Sheets drop flush from the cell you click. Choose them under Panels on Typesetting; their own settings come later.",
+    sheets: "Sheets drop flush from the cell you click. Pick the hand that draws each one: the ledger's page, the dial's instrument or prose you tap. Every change is kept at once.",
     scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
     keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. Rebinding comes later."

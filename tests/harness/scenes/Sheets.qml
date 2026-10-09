@@ -137,6 +137,7 @@ Rectangle {
             id: view
             visible: !desk.scroll
             paperOpacity: desk.style.panelOpacity > 0 ? desk.style.panelOpacity / 100 : 1
+            styles: desk.style.sheetStyles || ({})
             x: bar.x + desk.placed.x
             y: desk.atBottom ? bar.y - height : bar.y + bar.height
             sheet: desk.scroll ? "" : desk.key
