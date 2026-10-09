@@ -4,6 +4,7 @@ import "../core"
 // Now playing 再生 (docs/COMPONENTS.md):
 //   cell       NOW 再生 over artist — song
 //   underline  the song in serif italic; its underline is the progress bar
+//   ink        Shōji's: three level bars (faint when paused), the title, the artist
 //   none       hidden
 // Click plays or pauses, middle-click skips, scroll moves between tracks.
 Item {
@@ -20,7 +21,7 @@ Item {
   readonly property bool compact: barHeight <= Type.px(32)
 
   visible: mode !== "none" && media !== null
-  implicitWidth: visible ? Math.min(maxWidth, mode === "cell" ? (compact ? oneLine.implicitWidth : cell.implicitWidth) : under.implicitWidth) : 0
+  implicitWidth: visible ? Math.min(maxWidth, mode === "cell" ? (compact ? oneLine.implicitWidth : cell.implicitWidth) : mode === "ink" ? inkRow.implicitWidth : under.implicitWidth) : 0
   implicitHeight: barHeight
   clip: true
 
@@ -37,6 +38,41 @@ Item {
     cursorShape: Qt.PointingHandCursor
     onClicked: function(mouse) { root.action(mouse.button === Qt.MiddleButton ? "next" : "playPause") }
     onWheel: function(wheel) { root.action(wheel.angleDelta.y > 0 ? "previous" : "next") }
+  }
+
+  // ------------------------------------------------------------ ink
+  Row {
+    id: inkRow
+    visible: root.mode === "ink"
+    anchors.verticalCenter: parent.verticalCenter
+    spacing: Type.px(9)
+    Row {
+      anchors.verticalCenter: parent.verticalCenter
+      spacing: 2
+      // three level bars, faint while paused
+      Rectangle { anchors.bottom: parent.bottom; width: 2; height: Type.px(5); color: Ink.ink2; opacity: root.media && root.media.playing ? 1 : 0.4 }
+      Rectangle { anchors.bottom: parent.bottom; width: 2; height: Type.px(11); color: Ink.ink2; opacity: root.media && root.media.playing ? 1 : 0.4 }
+      Rectangle { anchors.bottom: parent.bottom; width: 2; height: Type.px(7); color: Ink.ink2; opacity: root.media && root.media.playing ? 1 : 0.4 }
+    }
+    Text {
+      id: inkSong
+      anchors.verticalCenter: parent.verticalCenter
+      width: Math.min(implicitWidth, (root.maxWidth - Type.px(30)) * 0.62)
+      elide: Text.ElideRight
+      text: root.media ? root.media.title : ""
+      color: root.songInk
+      font.family: Type.text; font.pixelSize: Type.px(13)
+      font.weight: Font.Medium; font.variableAxes: Type.valueAxes
+    }
+    Text {
+      anchors.verticalCenter: parent.verticalCenter
+      visible: text !== ""
+      width: Math.min(implicitWidth, Math.max(0, root.maxWidth - Type.px(30) - inkSong.width - inkRow.spacing))
+      elide: Text.ElideRight
+      text: root.media ? root.media.artist || "" : ""
+      color: Ink.ink3
+      font.family: Type.text; font.pixelSize: Type.px(13)
+    }
   }
 
   // ------------------------------------------------------------ underline

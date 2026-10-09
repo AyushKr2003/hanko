@@ -1,0 +1,362 @@
+{
+ "width": 1600,
+ "theme": {
+  "foreground": "#100F0F",
+  "background": "#FFFCF0",
+  "red": "#D14D41"
+ },
+ "spaces": [
+  {
+   "id": 1,
+   "active": false,
+   "urgent": false,
+   "count": 2,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "active": false,
+   "urgent": false,
+   "count": 1,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1,
+     "focused": true
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "active": true,
+   "urgent": false,
+   "count": 3,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "active": false,
+   "urgent": true,
+   "count": 4,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "active": false,
+   "urgent": false,
+   "count": 0,
+   "windows": []
+  }
+ ],
+ "window": {
+  "cls": "Alacritty",
+  "title": "nvim /home/ayush/code/hanko/Bar.qml"
+ },
+ "media": {
+  "title": "Water Copy",
+  "artist": "Hiroshi Yoshimura",
+  "progress": 0.38,
+  "playing": true
+ },
+ "volume": {
+  "percent": 62,
+  "level": 0.62,
+  "muted": false,
+  "needsYou": false
+ },
+ "network": {
+  "kind": "wifi",
+  "name": "Kumo",
+  "signal": 68,
+  "bars": 3,
+  "off": false,
+  "needsYou": false
+ },
+ "battery": {
+  "percent": 91,
+  "level": 0.91,
+  "charging": false,
+  "needsYou": false
+ },
+ "brightness": null,
+ "notifications": [
+  {
+   "app": "Signal",
+   "summary": "",
+   "timestamp": 3,
+   "urgent": false,
+   "glyph": "S",
+   "tilt": -3
+  },
+  {
+   "app": "Ghostty",
+   "summary": "",
+   "timestamp": 2,
+   "urgent": false,
+   "glyph": "G",
+   "tilt": 3
+  },
+  {
+   "app": "Firefox",
+   "summary": "",
+   "timestamp": 1,
+   "urgent": false,
+   "glyph": "火",
+   "tilt": -1.5
+  }
+ ],
+ "title": "Shōji's bar parts as Hanko options · light",
+ "strips": [
+  {
+   "label": "HANKO · AS IT IS",
+   "doc": {
+    "preset": "Hanko"
+   }
+  },
+  {
+   "label": "SURFACE · WASHI (GRAIN FINE)",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "surface": "washi"
+    }
+   }
+  },
+  {
+   "label": "SURFACE · WASHI · GRAIN TOOTHY",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "surface": "washi"
+    },
+    "grain": "toothy"
+   }
+  },
+  {
+   "label": "SEAL · CARVED, NOTIFICATIONS · SEAL (THREE LETTERS WAIT)",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "seal": "carved",
+     "notif": "seal"
+    }
+   }
+  },
+  {
+   "label": "SEAL · CARVED, NOTIFICATIONS · STAMPS",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "seal": "carved"
+    }
+   }
+  },
+  {
+   "label": "WORKSPACES · BRUSH",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "spaces": "brush"
+    }
+   }
+  },
+  {
+   "label": "WORKSPACES · BRUSH · NUMERALS KANJI",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "spaces": "brush"
+    },
+    "numerals": "kanji"
+   }
+  },
+  {
+   "label": "WINDOW TITLE · INK, NOW PLAYING · INK",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "title": "ink",
+     "media": "ink"
+    }
+   }
+  },
+  {
+   "label": "CLOCK · SEASON (KANJI)",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "clock": "season"
+    }
+   }
+  },
+  {
+   "label": "CLOCK · SEASON · ENGLISH",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "clock": "season"
+    },
+    "season": "english"
+   }
+  },
+  {
+   "label": "STATUS · INK",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "status": "ink"
+    }
+   }
+  },
+  {
+   "label": "STATUS · INK · POINTING AT WI-FI (POINTER BRUSH)",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "status": "ink",
+     "pointer": "brush"
+    }
+   },
+   "pointAt": "network"
+  },
+  {
+   "label": "POINTER · BRUSH · POINTING AT THE CLOCK",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "pointer": "brush"
+    }
+   },
+   "pointAt": "clock"
+  },
+  {
+   "label": "EVERY SHŌJI VALUE TOGETHER",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "seal": "carved",
+     "notif": "seal",
+     "spaces": "brush",
+     "title": "ink",
+     "clock": "season",
+     "media": "ink",
+     "status": "ink",
+     "surface": "washi",
+     "pointer": "brush",
+     "edge": "hairline",
+     "rules": "off"
+    }
+   },
+   "pointAt": "volume"
+  },
+  {
+   "label": "EVERY SHŌJI VALUE · 32 PX",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "seal": "carved",
+     "notif": "seal",
+     "spaces": "brush",
+     "title": "ink",
+     "clock": "season",
+     "media": "ink",
+     "status": "ink",
+     "surface": "washi",
+     "pointer": "brush",
+     "edge": "hairline",
+     "rules": "off",
+     "height": 32
+    }
+   }
+  },
+  {
+   "label": "EVERY SHŌJI VALUE · AT THE BOTTOM, POINTING AT BATTERY",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "seal": "carved",
+     "notif": "seal",
+     "spaces": "brush",
+     "title": "ink",
+     "clock": "season",
+     "media": "ink",
+     "status": "ink",
+     "surface": "washi",
+     "pointer": "brush",
+     "edge": "hairline",
+     "rules": "off",
+     "position": "bottom"
+    }
+   },
+   "pointAt": "battery"
+  }
+ ]
+}

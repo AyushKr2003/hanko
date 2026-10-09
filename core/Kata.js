@@ -9,9 +9,10 @@
 // it is ported onto the parts. Margin and Leaf were removed; a file that
 // names them loads as Hanko, and a saved `borrow` is ignored.
 //
-// style.json gains two optional keys beside the Typeset ones:
-//   { "design": "shoji", "touches": { "season": "english" },
-//     "monitors": { "DP-2": { "design": "classic" } } }
+// style.json gains one optional key beside the Typeset ones:
+//   { "design": "shoji", "monitors": { "DP-2": { "design": "classic" } } }
+// The touches are Style.js's global `season`, `numerals` and `grain`
+// (an old `touches` object is still read, under them).
 // Pure JavaScript with no QML dependency, so tests/unit.mjs runs it under Node.
 
 // v: variant -> the design it comes from. Main parts come first; partners
@@ -114,17 +115,28 @@ function merged(a, b) {
   return out
 }
 
+// The touches a document sets: its top-level season, numerals and grain
+// (Style.js), over an old `touches` object; invalid values are skipped.
+function touchesOf(doc, cleaned) {
+  var out = merged(cleaned.touches, {})
+  for (var k in TOUCHES) {
+    var v = doc && doc[k] !== undefined ? String(doc[k]) : ""
+    if (TOUCHES[k].indexOf(v) >= 0) out[k] = v
+  }
+  return out
+}
+
 // The style document's Kata keys, then the named monitor's, into one flat
 // object: { design, classic, <part>: variant, touches, warnings }. A monitor
-// that names its own design starts from that design; touches merge over the
-// document's.
+// that names its own design starts from that design; the touches are the
+// document's (global since they became settings).
 function resolve(doc, monitor) {
   var warnings = []
   var top = clean(doc, warnings)
   var mons = doc && doc.monitors && typeof doc.monitors === "object" ? doc.monitors : {}
   var mine = monitor && mons[monitor] ? clean(mons[monitor], warnings, monitor) : {}
   var design = mine.design || top.design || DEFAULT_DESIGN
-  var touchEdits = merged(top.touches, mine.touches)
+  var touchEdits = touchesOf(doc, top)
   var out = { design: design, classic: design === CLASSIC, warnings: warnings }
   var base = DESIGNS[design] || DESIGNS.shoji   // Classic resolves Shōji's parts, unused until it is ported
   var i, k
@@ -157,16 +169,15 @@ function withDesign(doc, name) {
   return next
 }
 
+// A touch is a top-level setting now (Style.js season | numerals | grain);
+// the old `touches` object is folded in and dropped.
 function withTouch(doc, key, value) {
   if (!TOUCHES[key] || TOUCHES[key].indexOf(String(value)) < 0) return null
   var next = copyDoc(doc)
-  var t = next.touches && typeof next.touches === "object" ? next.touches : {}
-  var design = resolve(next).design
-  var base = (DESIGNS[design] || DESIGNS.shoji).touches
-  if (base[key] === String(value)) delete t[key]
-  else t[key] = String(value)
-  if (Object.keys(t).length) next.touches = t
-  else delete next.touches
+  var old = next.touches && typeof next.touches === "object" ? next.touches : {}
+  for (var k in old) if (next[k] === undefined && TOUCHES[k] && TOUCHES[k].indexOf(String(old[k])) >= 0) next[k] = String(old[k])
+  delete next.touches
+  next[key] = String(value)
   return next
 }
 

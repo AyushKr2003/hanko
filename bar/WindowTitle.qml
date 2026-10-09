@@ -5,6 +5,7 @@ import "../core/Title.js" as TitleJs
 // Window title 窓 (docs/COMPONENTS.md):
 //   cell    the app as a tracked mono label over the title
 //   byline  the app in serif italic like a byline; title in grotesk
+//   ink     Shōji's: the app, then what it shows, in grotesk, the second fainter
 //   none    hidden
 // Folders recede to a fainter ink so the file stays the thing you read.
 Item {
@@ -22,7 +23,7 @@ Item {
   readonly property bool empty: parts.app === "" && parts.head === "" && parts.leaf === ""
 
   visible: mode !== "none" && !empty
-  implicitWidth: visible ? Math.min(maxWidth, (mode === "byline" ? byline.implicitWidth : compact ? oneLine.implicitWidth : cell.implicitWidth)) : 0
+  implicitWidth: visible ? Math.min(maxWidth, (mode === "byline" ? byline.implicitWidth : mode === "ink" ? inkRow.implicitWidth : compact ? oneLine.implicitWidth : cell.implicitWidth)) : 0
   implicitHeight: barHeight
   clip: true
 
@@ -38,6 +39,28 @@ Item {
 
   function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  }
+
+  // ------------------------------------------------------------ ink
+  Row {
+    id: inkRow
+    visible: root.mode === "ink"
+    anchors.verticalCenter: parent.verticalCenter
+    spacing: Type.px(9)
+    Text {
+      id: inkApp
+      text: root.parts.app
+      color: Ink.ink
+      font.family: Type.text; font.pixelSize: Type.px(13)
+      font.weight: Font.Medium; font.variableAxes: Type.valueAxes
+    }
+    Text {
+      width: Math.min(implicitWidth, root.maxWidth - inkApp.implicitWidth - inkRow.spacing)
+      elide: Text.ElideMiddle
+      text: root.parts.leaf || root.parts.head
+      color: Ink.ink3
+      font.family: Type.text; font.pixelSize: Type.px(13)
+    }
   }
 
   // ------------------------------------------------------------ byline

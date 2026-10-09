@@ -1,20 +1,33 @@
 .pragma library
 
-// The twenty-two typesetting settings, the presets, and how a style document
+// The twenty-three typesetting settings, the presets, and how a style document
 // resolves into the one flat object the bar reads. Pure JavaScript with no
 // QML or Quickshell dependency, so tests/unit.mjs can run it under Node.
 // docs/COMPONENTS.md is the spec for every option below.
 
 var OPTIONS = {
-  seal:     ["stamp", "workspace", "none"],
-  spaces:   ["folio", "layout", "kanji", "dots"],
-  title:    ["cell", "byline", "none"],
-  clock:    ["stacked", "inline", "mono"],
+  // Values after the Typeset ones come from Shōji (HANDOFF §10, "Shōji
+  // into Hanko"), drawn with its parts (bar/parts) in Shōji's skin:
+  //   seal carved     an ink outline, pressed red when letters wait (notif: seal)
+  //   spaces brush    numerals (style `numerals`) with a brush mark under the
+  //                   live one, a dot when busy, the 未 stamp when urgent
+  //   title ink       the app, then what it shows, in Space Grotesk
+  //   clock season    the time, the date and the solar term (style `season`)
+  //   media ink       three level bars, the title and the artist
+  //   status ink      an icon and a figure each, the name on reach, the
+  //                   battery an ensō that closes as it fills
+  //   notif seal      the letter count on the seal; the inbox cell goes
+  //   surface washi   paper with long fibres (style `grain`)
+  //   pointer brush   a faint brush mark under the cell you point at
+  seal:     ["stamp", "workspace", "carved", "none"],
+  spaces:   ["folio", "layout", "kanji", "dots", "brush"],
+  title:    ["cell", "byline", "ink", "none"],
+  clock:    ["stacked", "inline", "mono", "season"],
   clockAt:  ["center", "right"],
-  media:    ["cell", "underline", "none"],
-  status:   ["cells", "glyphs", "numerals"],
+  media:    ["cell", "underline", "ink", "none"],
+  status:   ["cells", "glyphs", "numerals", "ink"],
   meters:   ["ticks", "off"],
-  notif:    ["count", "stamps"],
+  notif:    ["count", "stamps", "seal"],
   // A BT 双 cell for Bluetooth (only where there is an adapter):
   // device = the connected device's name and battery, marks = one kanji
   // mark per device with its charge under it, count = how many, as dots.
@@ -28,8 +41,9 @@ var OPTIONS = {
   indicatorStyle: ["icon", "kanji", "iconname", "kanjiname"],
   edge:     ["hairline", "dayrule", "rod", "rodrule"],
   rules:    ["on", "off"],
+  pointer:  ["plain", "brush"],
   height:   [32, 36, 40, 44],
-  surface:  ["solid", "glass", "inset"],
+  surface:  ["solid", "glass", "inset", "washi"],
   position: ["top", "bottom"],
   panels:   ["sheets", "scroll"],
   // What sits between two sections of the scroll (docs/revision1 on the
@@ -57,19 +71,19 @@ var OPTIONS = {
 var KEYS = Object.keys(OPTIONS)
 
 var PRESETS = {
-  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", height: 36, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai", sides: "bare", guides: "both" },
-  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki", sides: "curl", guides: "both" },
-  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "all", indicatorStyle: "icon", edge: "rodrule", rules: "on", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "both" },
-  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both" },
-  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare", guides: "both" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" }
+  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", pointer: "plain", height: 36, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai", sides: "bare", guides: "both" },
+  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki", sides: "curl", guides: "both" },
+  Hanko:      { seal: "workspace", spaces: "layout", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "all", indicatorStyle: "icon", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "both" },
+  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both" },
+  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", pointer: "plain", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare", guides: "both" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" }
 }
 
 var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet"]
 var DEFAULT_PRESET = "Hanko"
 var DEFAULT_SEAL_GLYPH = "鑑"
 
-// Motion 動 sits outside the twenty-two settings (no preset sets it and it is
+// Motion 動 sits outside the twenty-three settings (no preset sets it and it is
 // not counted): paper moves like paper, still cuts every transition to its
 // end frame. Omarchy's own reduced motion makes Hanko still as well.
 var MOTIONS = ["paper", "still"]
@@ -90,7 +104,27 @@ function normalizeTypeSize(t) {
   return TYPE_SIZES.indexOf(String(t)) >= 0 ? String(t) : DEFAULT_TYPE_SIZE
 }
 
-// Panel opacity 透け, beside the twenty-two like motion: how much of the
+// Shōji's three touches, beside the twenty-three like type size (global, not
+// per monitor; presets, resets and shuffles keep them). They were Kata's
+// `touches`; a saved `touches` is read into them.
+//   season    the solar term by the clock (clock: season) and the kō in
+//             the Shōji Time panel: off, in kanji, or in English
+//   numerals  workspace numbers in spaces: brush and the Shōji panels
+//   grain     the washi's fibres (surface: washi and the Shōji panels)
+var SEASONS = ["off", "kanji", "english"]
+var NUMERALS = ["arabic", "kanji"]
+var GRAINS = ["smooth", "fine", "toothy"]
+var TOUCH_DEFAULTS = { season: "kanji", numerals: "arabic", grain: "fine" }
+var TOUCH_LISTS = { season: SEASONS, numerals: NUMERALS, grain: GRAINS }
+
+function normalizeTouch(key, v, legacy) {
+  var list = TOUCH_LISTS[key]
+  if (v !== undefined && list.indexOf(String(v)) >= 0) return String(v)
+  if (legacy && typeof legacy === "object" && list.indexOf(String(legacy[key])) >= 0) return String(legacy[key])
+  return TOUCH_DEFAULTS[key]
+}
+
+// Panel opacity 透け, beside the twenty-three like motion: how much of the
 // desk shows through every panel (sheets, the scroll, Kata's panels), in
 // percent, 30 to 100. 0 (or no key) leaves it to the design: solid paper,
 // Shōji's washi at 86%.
@@ -102,7 +136,7 @@ function normalizeOpacity(o) {
   return Math.max(OPACITY_MIN, Math.min(100, n))
 }
 
-// Which workspace overview 一覧 opens, beside the twenty-two like motion:
+// Which workspace overview 一覧 opens, beside the twenty-three like motion:
 // grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
 // overview (only workspaces with windows, a + for a new one, desktops);
 // framed, the same grid as Shōji prints it: each page washi in a lattice
@@ -115,7 +149,7 @@ function normalizeOverview(o) {
 }
 
 // How each sheet is drawn (style.json `sheetStyles`, Settings › Sheets 紙),
-// beside the twenty-two like the overview: no preset sets them and a reset
+// beside the twenty-three like the overview: no preset sets them and a reset
 // keeps them. The hands for every cell's sheet:
 //   ledger  帳  the editorial page: eyebrow, serif title, `//` groups, rows
 //   tanzaku 短冊 the poem slips: each choice a paper strip hung from a rail,
@@ -154,7 +188,7 @@ function sheetStylesOf(d) {
 }
 
 // Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
-// page), beside the twenty-two like the seal glyph: no preset sets them and a
+// page), beside the twenty-three like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
 // clock, media, network, bluetooth, volume, brightness, battery, notif,
 // edge, keyboard, mic, tray, weather and endleaf (the scroll's two leaves);
@@ -247,9 +281,11 @@ function normalizeGlyph(glyph) {
   return Array.from(s)[0]
 }
 
-// Kata's keys (core/Kata.js: design, borrow, touches) ride along untouched,
-// at the top and in each monitor's overrides; Kata.js cleans and resolves them.
-var KATA_KEYS = ["design", "borrow", "touches"]
+// Kata's keys (core/Kata.js: design, borrow) ride along untouched, at the
+// top and in each monitor's overrides; Kata.js cleans and resolves them.
+// Its `touches` became the season, numerals and grain settings: normalize
+// reads them in and drops the key (a monitor's own touches are dropped).
+var KATA_KEYS = ["design", "borrow"]
 
 function kataOf(obj) {
   var out = {}
@@ -271,7 +307,7 @@ function withoutKata(obj) {
 
 // A style document as stored in style.json:
 //   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, sheetStyles, hidden: [...], monitors: { "<name>": {...} },
-//     design, borrow, touches }
+//     season, numerals, grain, design, borrow }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
@@ -283,7 +319,9 @@ function normalize(doc, warnings) {
   var monitors = {}
   if (doc.monitors && typeof doc.monitors === "object")
     for (var name in doc.monitors) {
-      var own = cleanEdits(withoutKata(doc.monitors[name]), warnings)
+      var raw = withoutKata(doc.monitors[name])
+      delete raw.touches
+      var own = cleanEdits(raw, warnings)
       var kata = kataOf(doc.monitors[name])
       for (var kk in kata) own[kk] = kata[kk]
       monitors[name] = own
@@ -294,6 +332,9 @@ function normalize(doc, warnings) {
     sealGlyph: normalizeGlyph(doc.sealGlyph),
     motion: normalizeMotion(doc.motion),
     typeSize: normalizeTypeSize(doc.typeSize),
+    season: normalizeTouch("season", doc.season, doc.touches),
+    numerals: normalizeTouch("numerals", doc.numerals, doc.touches),
+    grain: normalizeTouch("grain", doc.grain, doc.touches),
     overview: normalizeOverview(doc.overview),
     hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
@@ -317,6 +358,9 @@ function resolve(doc, monitor) {
   style.sealGlyph = d.sealGlyph
   style.motion = d.motion
   style.typeSize = d.typeSize
+  style.season = d.season
+  style.numerals = d.numerals
+  style.grain = d.grain
   style.overview = d.overview
   style.panelOpacity = d.panelOpacity || 0
   style.sheetStyles = sheetStylesOf(d)
@@ -340,6 +384,11 @@ function withSetting(doc, key, value) {
   if (key === "typeSize") {
     if (TYPE_SIZES.indexOf(String(value)) < 0) return null
     d.typeSize = String(value)
+    return d
+  }
+  if (TOUCH_LISTS[key]) {
+    if (TOUCH_LISTS[key].indexOf(String(value)) < 0) return null
+    d[key] = String(value)
     return d
   }
   if (key === "panelOpacity") {

@@ -6,14 +6,14 @@ Typeset merges the two earlier directions into one bar. Sheet (the printed runni
 - **Scroll** is the Scroll design as drawn.
 - **Hanko** is the merge, and the default.
 
-Twenty-two settings give **61,917,364,224** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
+Twenty-three settings give **1,304,596,316,160** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
 ![The settings page](mockups/typeset/01-settings.webp)
 
 ## Contents
 
 1. [The rules every option keeps](#1-the-rules-every-option-keeps)
-2. [The twenty-two settings](#2-the-twenty-two-settings)
+2. [The twenty-three settings](#2-the-twenty-three-settings)
 3. [How options interact](#3-how-options-interact)
 4. [Presets](#4-presets)
 5. [Counting the combinations](#5-counting-the-combinations)
@@ -39,9 +39,9 @@ These rules are what let any combination look designed rather than assembled.
 
 ---
 
-## 2. The twenty-two settings
+## 2. The twenty-three settings
 
-Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset.
+Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset; **Shōji** came from the Shōji design when it was folded into Hanko, drawn with its parts.
 
 ### Left: where you are
 
@@ -53,6 +53,7 @@ Each setting has a key (used in the config file), its options, the default (from
 |---|---|---|
 | `stamp` | A fixed glyph (鑑 by default; any character). Click for the Omarchy menu, right-click for a terminal. | Sheet |
 | **`workspace`** (default) | The seal shows the active workspace as a kanji numeral (壱 弐 参 …). Scroll on it to walk workspaces. | Scroll |
+| `carved` | Shōji's seal: your glyph as an ink outline, carved at the edge. With `notif: seal` it carries your letters: pressed red with their count beside it while any wait, and then a click opens the inbox, middle-click is do not disturb and right-click the Omarchy menu. | Shōji |
 | `none` | No seal. The bar opens with the workspaces. | New |
 
 The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 観 寛 …). It is not counted in the combinations below.
@@ -65,6 +66,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 | **`layout`** (default) | Each workspace drawn as its real tiling in hairlines. The live one is outlined and its focused window filled. Hover opens it to show window names. | Scroll |
 | `kanji` | Kanji numerals 壱 弐 参 with window dots; the live one inverts. | New |
 | `dots` | The quietest: one dot per workspace, the live one a short bar, urgent a red dot, empty an open ring. | New |
+| `brush` | Shōji's desks: numerals (Arabic, or 一 二 三 with `numerals: kanji`), a faint brush mark sliding under the live one, a dot under a busy one, the 未 stamp on an urgent one. | Shōji |
 
 #### Window title `title` 窓
 
@@ -74,6 +76,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 |---|---|---|
 | `cell` | The app as a tracked mono label (`ALACRITTY 窓`) over the title. | Sheet |
 | **`byline`** (default) | The app in serif italic like an author's byline; title in grotesk; path parts recede. | Scroll |
+| `ink` | Shōji's: the app, then what it shows (the file, else the title), in Space Grotesk, the second a tier fainter. | Shōji |
 | `none` | No title. | New |
 
 ### Centre: when
@@ -85,6 +88,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 | **`stacked`** (default) | Serif time, with the day and date stacked in small mono beside it. | Sheet |
 | `inline` | Serif time with a red colon and a small-caps date on the same line. | Scroll |
 | `mono` | All mono, for an instrument look. | New |
+| `season` | Shōji's: the time in Fraunces, the date (Tue 6 Oct), and after a hairline the solar term by the clock (秋分, or *Autumn equinox*), as `season` sets it; with `season: off`, the time and date only. | Shōji |
 
 #### Clock position `clockAt` 中
 
@@ -99,6 +103,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 |---|---|---|
 | `cell` | `NOW 再生` label over artist and song. | Sheet |
 | **`underline`** (default) | Song in serif italic; its underline is the progress bar. | Scroll |
+| `ink` | Shōji's: three level bars (faint while paused), the title, the artist a tier fainter. | Shōji |
 | `none` | Hidden. | New |
 
 ### Right: how things are
@@ -112,6 +117,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 | **`cells`** (default) | `NET 波 / BT 双 / VOL 耳 / LUM 光 / BAT 力` label-over-value cells (the plainest kanji that say it, so the glosses stay clean at 1x; 充 while charging), held together as one group by space alone (the zones keep their rules); a Bluetooth device's charge is a half-length meter. | Sheet |
 | `glyphs` | A boxed kanji is the icon and the number is the state. Solid red when it needs you; dashed when off. | Scroll |
 | `numerals` | Mono labels and numbers on one line (`VOL 62 · NET Kumo · BAT 91%`). | New |
+| `ink` | Shōji's: a line icon and a figure for each reading (Wi-Fi's name and the Bluetooth device's come out when you point at them), brightness a sun, the battery an ensō that closes as it fills, a bolt while charging. Meters do not apply. Red still means it needs you. | Shōji |
 
 #### Meters `meters` 目盛
 
@@ -130,6 +136,7 @@ All six status × meters pairs are drawn on sheet 12.
 |---|---|---|
 | `count` | `INBOX 03` with one red dot. | Sheet |
 | **`stamps`** (default) | Each notification is a small stamped seal of its app's initial, slightly askew, newest on top. Hover fans them out. | Scroll |
+| `seal` | The letter count goes onto the seal (`seal: carved` presses it red) and the inbox cell goes; the inbox sheet opens under the seal. With no seal showing, the inbox stays as `count`. | Shōji |
 
 #### Bluetooth `bluetooth` 藍
 
@@ -180,6 +187,13 @@ The name is in the same ink as the icon styles (red only for a recording or live
 | **`on`** (default) | Hairline dividers between groups. | Sheet |
 | `off` | Groups separated by space alone. | Scroll |
 
+
+#### Pointer `pointer` 指
+
+| Option | What it does | From |
+|---|---|---|
+| **`plain`** (default) | Each cell shows its own hover (a status reading's faint plate, the stamps fanning out). | Typeset |
+| `brush` | Shōji's: a faint brush mark slides under the cell you point at, along the bar's foot (its top at `position: bottom`). | Shōji |
 ### Frame
 
 ![Height, surface, position](mockups/typeset/15-height-surface-position.webp)
@@ -200,6 +214,7 @@ The name is in the same ink as the icon styles (red only for a recording or live
 | **`solid`** (default) | Opaque paper. |
 | `glass` | Paper at 74 % over a background blur. The ink ramp does not change, so contrast holds. |
 | `inset` | Floats 8 px off the screen edges with a hairline frame and 3 px corners. |
+| `washi` | Shōji's paper: solid, with long faint fibres, as fine as `grain` sets them. | Shōji |
 
 #### Position `position` 位
 
@@ -210,6 +225,16 @@ The name is in the same ink as the icon styles (red only for a recording or live
 
 Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
+
+#### Shōji's touches `season` 季, `numerals` 数, `grain` 繊
+
+Three switches beside the twenty-three (like `typeSize`: global, not per monitor, kept by presets, resets and shuffles, not counted in the combinations). They were the Shōji design's touches; a saved `touches` is read into them.
+
+| Key | Options | What it does |
+|---|---|---|
+| `season` | `off`, **`kanji`**, `english` | The solar term by the clock (`clock: season`) and the micro-season in the Shōji Time panel |
+| `numerals` | **`arabic`**, `kanji` | Workspace numbers in `spaces: brush` and on the Shōji panels |
+| `grain` | `smooth`, **`fine`**, `toothy` | The washi's fibres (`surface: washi`, the Shōji panels) |
 ### Panels
 
 #### Panels open as `panels` 紙/巻
@@ -223,7 +248,7 @@ Sheets 20–25 show both on full desktops.
 
 #### Sheet hands `sheetStyles` 帳/短冊/将棋/算盤/縅/霞/障子
 
-Each cell's sheet can be drawn in one of seven hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+Each cell's sheet can be drawn in one of seven hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-three: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
 
 | Hand | What it does | After |
 |---|---|---|
@@ -382,7 +407,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/typeset/03-presets.webp)
 
-A preset sets all twenty-two settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
+A preset sets all twenty-three settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
 
 | Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet |
 |---|---|---|---|---|---|---|
@@ -424,22 +449,23 @@ A preset sets all twenty-two settings at once. Change any setting afterwards and
 
 | Setting | Options |
 |---|---|
-| seal | 3 |
-| spaces | 4 |
-| title | 3 |
-| clock | 3 |
+| seal | 4 |
+| spaces | 5 |
+| title | 4 |
+| clock | 4 |
 | clockAt | 2 |
-| media | 3 |
-| status | 3 |
+| media | 4 |
+| status | 4 |
 | meters | 2 |
-| notif | 2 |
+| notif | 3 |
 | bluetooth | 4 |
 | indicators | 2 |
 | indicatorStyle | 4 |
 | edge | 4 |
 | rules | 2 |
+| pointer | 2 |
 | height | 4 |
-| surface | 3 |
+| surface | 4 |
 | position | 2 |
 | panels | 2 |
 | interlude | 9 |
@@ -447,9 +473,9 @@ A preset sets all twenty-two settings at once. Change any setting afterwards and
 | sides | 2 |
 | guides | 4 |
 
-3 × 4 × 3 × 3 × 2 × 3 × 3 × 2 × 2 × 4 × 2 × 4 × 4 × 2 × 4 × 3 × 2 × 2 × 9 × 9 × 2 × 4 = **61,917,364,224** bars.
+4 × 5 × 4 × 4 × 2 × 4 × 4 × 2 × 3 × 4 × 2 × 4 × 4 × 2 × 2 × 4 × 4 × 2 × 2 × 9 × 9 × 2 × 4 = **1,304,596,316,160** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers, its end leaf, its sides and its guides, is 23,887,872 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers, its end leaf, its sides and its guides, is 503,316,480 combinations.
 
 ![Twelve random combinations](mockups/typeset/04-shuffle.webp)
 
@@ -487,7 +513,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Widgets 部品** shows or hides anything the bar can show, each row `shown | hidden`, in cards: *Left* (seal, workspaces, window title), *Centre* (clock, now playing), *Right · readings* (network, Bluetooth, volume, brightness, battery, notifications), *Marks · Hanko's own* (each indicator, the keyboard layout, the microphone, the tray, as your Omarchy layout has them), *Tray apps* (each app in the tray now), *Widgets · from your Omarchy bar* (every hosted widget, marked Omarchy or third-party) and *Edge*. A part its own setting leaves out (`seal: none`, `title: none`, `media: none`, `bluetooth: off`) reads hidden, and showing it sets it back to the preset's way. Show all puts every hidden part back. Hiding is for this bar only: the widget stays in Omarchy's layout. From a terminal: `hanko hide <part>`, `hanko show <part>`, or `hanko style set show:<part> hidden`.
 
-**Motion 動** holds one switch outside the twenty-two settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
+**Motion 動** holds one switch outside the twenty-three settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
 **Typesetting 組版**, the page drawn on sheets 01 and 02, holds every setting in this document:
 
@@ -539,7 +565,7 @@ Resolution order: preset → `edits` → `monitors[name]`. Unknown keys and inva
 In QML, the bar reads one resolved object:
 
 ```qml
-property var style: Typeset.current   // 22 settings
+property var style: Typeset.current   // 23 settings
 Seal   { mode: style.seal }
 Spaces { mode: style.spaces }
 Clock  { mode: style.clock; anchor: style.clockAt }

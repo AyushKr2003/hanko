@@ -123,6 +123,7 @@ Rectangle {
             keyboard: sheet.pick(modelData, "keyboard")
             mic: sheet.pick(modelData, "mic")
             tray: sheet.pick(modelData, "tray") || []
+            pointAt: modelData.pointAt || ""
           }
         }
       }

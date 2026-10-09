@@ -51,9 +51,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-two settings, 61,917,364,224 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 22)
-  assert.equal(S.combinations(), 61917364224)
+test("twenty-three settings, 1,304,596,316,160 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 23)
+  assert.equal(S.combinations(), 1304596316160)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -588,8 +588,9 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the twenty-two settings once", () => {
-  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph" && k !== "typeSize" && k !== "overview")
+test("settings: six cards hold every one of the twenty-three settings once", () => {
+  const beside = ["sealGlyph", "typeSize", "overview", "season", "numerals", "grain"]
+  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => beside.indexOf(k) < 0)
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
@@ -600,6 +601,9 @@ test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.deepEqual(Se.optionsFor("height", S.OPTIONS), ["32", "36", "40", "44"])
   assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["鑑", "漢", "観", "寛", "…"])
   assert.deepEqual(Se.optionsFor("motion", S.OPTIONS), S.MOTIONS)
+  assert.deepEqual(Se.optionsFor("season", S.OPTIONS), ["off", "kanji", "english"])
+  assert.deepEqual(Se.optionsFor("grain", S.OPTIONS), ["smooth", "fine", "toothy"])
+  assert.equal(Se.selected("numerals", S.resolve({ numerals: "kanji" }), "鑑"), "kanji")
   assert.equal(Se.MOTION_ROWS.length, 8)
   assert.equal(Se.nameOf("clockAt"), "Clock position")
   assert.equal(Se.nameOf("bluetooth"), "Bluetooth")
@@ -784,7 +788,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 61917364224)
+  assert.equal(S.combinations(), 1304596316160)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -1329,19 +1333,23 @@ test("kata: unknown designs and touches fall back with a warning", () => {
   assert.equal(s.warnings.length, 3)
   assert.equal(K.resolve({ design: "Shōji" }).design, "shoji")
 })
-test("kata: a monitor's own design and touches win on that monitor", () => {
-  const doc = { design: "shoji", touches: { numerals: "kanji" }, monitors: { "DP-2": { design: "classic", touches: { season: "off" } } } }
+test("kata: a monitor's own design wins there; touches are global", () => {
+  const doc = { design: "shoji", numerals: "kanji", monitors: { "DP-2": { design: "classic", touches: { season: "off" } } } }
   const here = K.resolve(doc), there = K.resolve(doc, "DP-2")
-  assert.equal(here.design, "shoji"); assert.equal(here.touches.season, "kanji")
-  assert.equal(there.design, "classic"); assert.equal(there.touches.season, "off"); assert.equal(there.touches.numerals, "kanji")
+  assert.equal(here.design, "shoji"); assert.equal(here.touches.season, "kanji"); assert.equal(here.touches.numerals, "kanji")
+  assert.equal(there.design, "classic"); assert.equal(there.touches.season, "kanji"); assert.equal(there.touches.numerals, "kanji")
+  // An old touches object is still read, under the settings.
+  assert.equal(K.resolve({ touches: { season: "english" } }).touches.season, "english")
+  assert.equal(K.resolve({ touches: { season: "english" }, season: "off" }).touches.season, "off")
 })
 test("kata: picking a design keeps touches; Classic leaves no key", () => {
   let d = K.withTouch({ design: "shoji" }, "season", "english")
   d = K.withDesign(d, "classic")
-  assert.equal(d.design, undefined); assert.equal(d.touches.season, "english")
+  assert.equal(d.design, undefined); assert.equal(d.season, "english"); assert.equal(d.touches, undefined)
   assert.equal(K.withDesign(d, "shoji").design, "shoji")
   assert.equal(K.withDesign(d, "bauhaus"), null)
-  assert.equal(K.withTouch({ design: "shoji" }, "season", "kanji").touches, undefined)   // Shōji's own
+  // An old touches object is folded into the settings.
+  assert.deepEqual(K.withTouch({ touches: { grain: "toothy" } }, "season", "off"), { grain: "toothy", season: "off" })
   assert.equal(K.withTouch({}, "grain", "velvet"), null)
 })
 test("kata: describe names the design", () => {
@@ -1349,17 +1357,21 @@ test("kata: describe names the design", () => {
   assert.equal(K.describe(K.resolve({ design: "shoji", borrow: { slider: "ruler" } })), "Shōji")
   assert.equal(K.describe(K.resolve({})), "Hanko")
 })
-test("kata: Style.js carries design and touches through normalize and monitors", () => {
+test("kata: Style.js carries design through normalize and monitors; touches become settings", () => {
   const doc = { preset: "Quiet", design: "shoji", touches: { season: "english" },
-    monitors: { "DP-2": { height: 36, design: "classic" } } }
+    monitors: { "DP-2": { height: 36, design: "classic", touches: { grain: "toothy" } } } }
   const n = S.normalize(doc, [])
-  assert.equal(n.design, "shoji"); assert.deepEqual(n.touches, { season: "english" })
+  assert.equal(n.design, "shoji"); assert.equal(n.touches, undefined)
+  assert.deepEqual([n.season, n.numerals, n.grain], ["english", "arabic", "fine"])
   assert.deepEqual(n.monitors["DP-2"], { height: 36, design: "classic" })
   const w = []; S.normalize(doc, w); assert.deepEqual(w, [])
   assert.equal(S.resolve(doc, "DP-2").height, 36); assert.equal(S.resolve(doc, "DP-2").design, undefined)
+  assert.equal(S.resolve(doc).season, "english")
   assert.equal(JSON.stringify(S.normalize({})).includes("design"), false)   // nothing new in an untouched file
-  const p = S.withPreset(n, "Sheet"); assert.equal(p.design, undefined)
+  const p = S.withPreset(n, "Sheet"); assert.equal(p.design, undefined); assert.equal(p.season, "english")
   assert.equal(S.withSetting(n, "clock", "mono").design, "shoji")
+  assert.equal(S.withSetting(n, "grain", "toothy").grain, "toothy")
+  assert.equal(S.withSetting(n, "numerals", "roman"), null)
   assert.equal(S.withMonitorSetting(n, "DP-2", "height", 32).monitors["DP-2"].design, "classic")
 })
 
@@ -1458,6 +1470,22 @@ test("sheet styles: two hands per sheet, stored only where not a ledger", () => 
     assert.equal(S.resolve(e).sheetStyles.inbox, h)
     assert.deepEqual(S.normalize(e).sheetStyles, e.sheetStyles)
   }
+})
+
+test("Shōji's bar parts are Hanko values (S3)", () => {
+  const shoji = { seal: "carved", spaces: "brush", title: "ink", clock: "season", media: "ink", status: "ink", notif: "seal", surface: "washi", pointer: "brush" }
+  for (const k in shoji) {
+    assert.ok(S.OPTIONS[k].includes(shoji[k]), k)
+    assert.equal(S.resolve(S.withSetting({}, k, shoji[k]))[k], shoji[k])
+  }
+  // The values that leave a part out stay last.
+  for (const k of ["seal", "title", "media"]) assert.equal(S.OPTIONS[k][S.OPTIONS[k].length - 1], "none")
+  // Every preset keeps the plain pointer; Hanko itself is unchanged.
+  for (const n of S.PRESET_NAMES) assert.equal(S.PRESETS[n].pointer, "plain")
+  // The touches are kept through a preset change and a shuffle.
+  const d = S.withSetting(S.withSetting({}, "season", "off"), "numerals", "kanji")
+  assert.equal(S.withPreset(d, "Quiet").season, "off")
+  assert.equal(S.shuffled(d, () => 0.5).numerals, "kanji")
 })
 
 // ---- the craft hands' model (core/Hands.js)

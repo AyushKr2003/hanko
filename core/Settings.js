@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the twenty-two settings into six cards, and the
+// Typesetting 組版 page groups the twenty-three settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -54,15 +54,17 @@ var GLYPHS = ["鑑", "漢", "観", "寛"]
 
 var CARDS = [
   { title: "Left · where you are", rows: [
-    { key: "seal", name: "Seal", detail: "Fixed glyph or your workspace" },
+    { key: "seal", name: "Seal", detail: "Fixed glyph, your workspace, or Shōji's carved seal" },
     { key: "spaces", name: "Workspaces", detail: "How spaces are drawn" },
-    { key: "title", name: "Window title", detail: "Cell, byline or hidden" }] },
+    { key: "numerals", name: "Numerals", detail: "Workspace numbers in brush and on Shōji's panels" },
+    { key: "title", name: "Window title", detail: "Cell, byline, Shōji's ink or hidden" }] },
   { title: "Centre · when", rows: [
-    { key: "clock", name: "Clock", detail: "Typeface of the time" },
+    { key: "clock", name: "Clock", detail: "Typeface of the time; season adds the solar term" },
+    { key: "season", name: "Season", detail: "The solar term by the clock and in Shōji's Time" },
     { key: "clockAt", name: "Clock position", detail: "" },
     { key: "media", name: "Now playing", detail: "" }] },
   { title: "Right · how things are", rows: [
-    { key: "status", name: "Status", detail: "Cells, kanji glyphs or numerals" },
+    { key: "status", name: "Status", detail: "Cells, kanji glyphs, numerals, or Shōji's icons and ensō" },
     { key: "meters", name: "Meters", detail: "Ticks beside quantities" },
     { key: "notif", name: "Notifications", detail: "" },
     { key: "bluetooth", name: "Bluetooth", detail: "A BT 双 cell for your devices" },
@@ -70,11 +72,13 @@ var CARDS = [
     { key: "indicatorStyle", name: "Indicator marks", detail: "Icon or kanji, alone or named while on" }] },
   { title: "Edge", rows: [
     { key: "edge", name: "Bottom edge", detail: "Hairline, day rule, rod, both" },
-    { key: "rules", name: "Dividers", detail: "Hairlines between groups" }] },
+    { key: "rules", name: "Dividers", detail: "Hairlines between groups" },
+    { key: "pointer", name: "Pointer", detail: "A brush mark under the cell you point at" }] },
   { title: "Frame", rows: [
     { key: "height", name: "Height", detail: "px at font size 12" },
     { key: "typeSize", name: "Type size", detail: "Hanko's text over Omarchy's font size" },
-    { key: "surface", name: "Surface", detail: "" },
+    { key: "surface", name: "Surface", detail: "Washi is Shōji's paper, with fibres" },
+    { key: "grain", name: "Paper grain", detail: "The washi's fibres" },
     { key: "position", name: "Position", detail: "" }] },
   { title: "Panels", rows: [
     { key: "panels", name: "Panels open as", detail: "Flush sheets or one scroll" },
@@ -86,13 +90,15 @@ var CARDS = [
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
-// The Motion 動 page: one switch outside the twenty-two (style.json `motion`),
+// The Motion 動 page: one switch outside the twenty-three (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
 var OVERVIEW_OPTIONS = ["grid", "dynamic", "framed"]
+// Shōji's touches, beside the twenty-three (Style.js SEASONS, NUMERALS, GRAINS).
+var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"] }
 
 // [name, what moves, Motion.qml property for its time]
 var MOTION_ROWS = [
@@ -231,6 +237,7 @@ function optionsFor(key, OPTIONS) {
   if (key === "motion") return MOTION_OPTIONS.slice()
   if (key === "typeSize") return TYPE_SIZE_OPTIONS.slice()
   if (key === "overview") return OVERVIEW_OPTIONS.slice()
+  if (TOUCH_OPTIONS[key]) return TOUCH_OPTIONS[key].slice()
   return (OPTIONS[key] || []).map(String)
 }
 
@@ -242,7 +249,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// twenty-two that resolves differently, the seal glyph, and each monitor whose
+// twenty-three that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)

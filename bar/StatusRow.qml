@@ -2,11 +2,16 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../core"
 import "../core/Status.js" as StatusJs
+import "parts" as Parts
 
 // Status 音 and meters 目盛 (docs/COMPONENTS.md):
 //   cells     NET 接続 / VOL 音 / BAT 電 label-over-value cells
 //   glyphs    a boxed kanji is the icon, the number is the state
 //   numerals  mono labels and numbers on one line
+//   ink       Shōji's: a line icon and a figure each (Wi-Fi's name and the
+//             Bluetooth device's come out when you point at them), the
+//             battery an ensō (the Ring part) that closes as it fills;
+//             meters don't apply
 // meters: ticks puts a ruler beside each quantity (ten in cells, four with
 // glyphs, five with numerals) and Wi-Fi bars in cells; off is numbers only.
 // The red rule: a reading turns red only when it needs you (muted, low
@@ -28,12 +33,14 @@ Item {
   property var bluetooth: null
   // How the BT cell reads (style `bluetooth`): device | marks | count.
   property string btStyle: "device"
+  // ink: Shōji's skin, for the ensō.
+  property var skin: ({})
 
   // name: volume | network | battery | brightness; how: click | middle | right | up | down
   signal action(string name, string how)
 
   readonly property bool compact: barHeight <= Type.px(32)
-  readonly property bool ticksOn: meters === "ticks"
+  readonly property bool ticksOn: meters === "ticks" && mode !== "ink"
   readonly property int tickCount: mode === "cells" ? 10 : mode === "glyphs" ? 4 : 5
 
   // The readings, in the order each style reads them.
@@ -45,33 +52,33 @@ Item {
     var out = []
     function net() {
       var n = root.network
-      if (n) out.push({ key: "network", label: "NET", jp: "波", glyph: "波", value: n.name, unit: "",
+      if (n) out.push({ src: n, key: "network", label: "NET", jp: "波", glyph: "波", value: n.name, unit: "",
                         level: -1, bars: n.kind === "wifi" ? n.bars : -1, needsYou: n.needsYou })
     }
     function bt() {
       var b = root.bluetooth
       if (!b) return
       var drawn = root.btStyle === "device" || !b.enabled ? "" : root.btStyle
-      out.push({ key: "bluetooth", label: "BT", jp: "双", glyph: "双", value: b.name, unit: "",
+      out.push({ src: b, key: "bluetooth", label: "BT", jp: "双", glyph: "双", value: b.name, unit: "",
                  level: drawn ? -1 : b.level, bars: -1, needsYou: !!b.needsYou,
                  bt: drawn, devices: b.devices || [], count: b.count || "00" })
     }
     function vol() {
       var v = root.volume
-      if (v) out.push({ key: "volume", label: "VOL", jp: "耳", glyph: "耳", value: String(v.percent), unit: "%",
+      if (v) out.push({ src: v, key: "volume", label: "VOL", jp: "耳", glyph: "耳", value: String(v.percent), unit: "%",
                         level: v.muted ? 0 : v.level, bars: -1, needsYou: v.needsYou })
     }
     function bri() {
       var b = root.brightness
-      if (b) out.push({ key: "brightness", label: "LUM", jp: "光", glyph: "光", value: String(b.percent), unit: "%",
+      if (b) out.push({ src: b, key: "brightness", label: "LUM", jp: "光", glyph: "光", value: String(b.percent), unit: "%",
                         level: b.level, bars: -1, needsYou: false })
     }
     function bat() {
       var b = root.battery
-      if (b) out.push({ key: "battery", label: "BAT", jp: b.charging ? "充" : "力", glyph: b.charging ? "充" : "力",
+      if (b) out.push({ src: b, key: "battery", label: "BAT", jp: b.charging ? "充" : "力", glyph: b.charging ? "充" : "力",
                         value: String(b.percent), unit: "%", level: b.level, bars: -1, needsYou: b.needsYou })
     }
-    if (mode === "cells") { net(); bt(); vol(); bri(); bat() }
+    if (mode === "cells" || mode === "ink") { net(); bt(); vol(); bri(); bat() }
     else { vol(); net(); bt(); bri(); bat() }
     return out
   }
@@ -102,12 +109,14 @@ Item {
         required property var modelData
         required property int index
         height: row.height
-        Component.onCompleted: root._cells[slot.modelData.key] = readingItem
-        Component.onDestruction: if (root._cells[slot.modelData.key] === readingItem) delete root._cells[slot.modelData.key]
+        // Changed in place, so say so: bindings that look a cell up (the
+        // brush pointer) re-run once the cells exist.
+        Component.onCompleted: { root._cells[slot.modelData.key] = readingItem; root._cellsChanged() }
+        Component.onDestruction: if (root._cells[slot.modelData.key] === readingItem) { delete root._cells[slot.modelData.key]; root._cellsChanged() }
 
         // Cells are ruled off by hairlines; numerals by a middle dot.
         Item {
-          visible: slot.index > 0 && root.mode !== "glyphs"
+          visible: slot.index > 0 && root.mode !== "glyphs" && root.mode !== "ink"
           // Readings are one group, held together by space (proximity), not
           // fenced by lines: the bar's rules are kept for its zones.
           width: root.mode === "numerals" ? Type.px(20) : root.mode === "cells" ? Type.px(22) : root.ruled ? Type.px(10) * 2 + 1 : Type.px(14)
@@ -156,7 +165,8 @@ Item {
     readonly property color labelInk: lit ? Ink.ink : Ink.inkMuted
 
     implicitWidth: root.mode === "cells" ? (root.compact ? cellLine.implicitWidth : cell.implicitWidth)
-      : root.mode === "glyphs" ? glyphRow.implicitWidth : numeral.implicitWidth
+      : root.mode === "glyphs" ? glyphRow.implicitWidth
+      : root.mode === "ink" ? inkRow.implicitWidth + Type.px(18) : numeral.implicitWidth
     implicitHeight: root.barHeight
 
     // Under the pointer a reading sits on a faint plate, so you see which
@@ -183,6 +193,60 @@ Item {
         root.action(reading.r.key, mouse.button === Qt.MiddleButton ? "middle" : mouse.button === Qt.RightButton ? "right" : "click")
       }
       onWheel: function(wheel) { root.action(reading.r.key, wheel.angleDelta.y > 0 ? "up" : "down") }
+    }
+
+    // ---- ink: Shōji's icon and figure; names on reach; the battery an ensō
+    Row {
+      id: inkRow
+      visible: root.mode === "ink"
+      anchors.centerIn: parent
+      spacing: Type.px(7)
+      readonly property var s: reading.r.src || ({})
+      readonly property bool reach: readingHover.containsMouse
+      readonly property color tint: reading.r.needsYou ? Ink.seal : reach ? Ink.ink : Ink.ink2
+      readonly property bool linked: reading.r.key === "bluetooth" && !!s.enabled && s.connected > 0
+      Parts.Icon {
+        visible: reading.r.key !== "battery"
+        anchors.verticalCenter: parent.verticalCenter
+        name: reading.r.key === "network" ? (inkRow.s.off ? "offline" : "wifi")
+          : reading.r.key === "bluetooth" ? (inkRow.s.enabled ? "bluetooth" : "bluetoothOff")
+          : reading.r.key === "volume" ? (inkRow.s.muted ? "muted" : "volume")
+          : "sun"
+        level: inkRow.s.bars > 0 ? Math.max(1, Math.min(3, inkRow.s.bars - (inkRow.s.bars > 3 ? 1 : 0))) : 3
+        color: reading.r.key === "bluetooth" && !inkRow.linked && !inkRow.reach && !reading.r.needsYou ? Ink.ink3 : inkRow.tint
+        size: Type.px(16)
+      }
+      Parts.Ring {
+        visible: reading.r.key === "battery"
+        anchors.verticalCenter: parent.verticalCenter
+        skin: root.skin
+        value: inkRow.s.percent || 0
+        size: Type.px(17)
+        alert: reading.r.needsYou
+        tint: inkRow.reach ? Ink.ink : Ink.ink2
+      }
+      FadeText {
+        visible: reading.r.key === "volume" || reading.r.key === "brightness" || reading.r.key === "battery"
+          || (inkRow.linked && inkRow.s.level >= 0)
+        anchors.verticalCenter: parent.verticalCenter
+        text: reading.r.key === "bluetooth" ? String(Math.round((inkRow.s.level || 0) * 100)) : reading.r.value
+        color: inkRow.tint
+        font.family: Type.text; font.pixelSize: Type.px(13)
+        font.weight: Font.Medium; font.variableAxes: Type.valueAxes
+        font.features: { "tnum": 1 }
+      }
+      Text {
+        visible: inkRow.reach && (reading.r.key === "network" || reading.r.key === "bluetooth")
+        anchors.verticalCenter: parent.verticalCenter
+        text: inkRow.s.name || ""
+        color: Ink.ink3
+        font.family: Type.text; font.pixelSize: Type.px(13)
+      }
+      Parts.Icon {
+        visible: reading.r.key === "battery" && !!inkRow.s.charging
+        anchors.verticalCenter: parent.verticalCenter
+        name: "bolt"; color: Ink.ink2; size: Type.px(14)
+      }
     }
 
     // ---- cells: label over value
