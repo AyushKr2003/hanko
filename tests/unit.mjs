@@ -1427,7 +1427,7 @@ test("kata K4: the season comes from the sun, right on the boundaries", () => {
 })
 
 test("sheet styles: two hands per sheet, stored only where not a ledger", () => {
-  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku"])
+  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku", "shogi", "soroban", "odoshi", "kasumi"])
   assert.equal(S.resolve({}).sheetStyles.sound, "ledger")
   let d = S.withSetting({}, "sheetStyle:sound", "tanzaku")
   assert.deepEqual(d.sheetStyles, { sound: "tanzaku" })
@@ -1450,6 +1450,124 @@ test("sheet styles: two hands per sheet, stored only where not a ledger", () => 
   // So was Mon.
   assert.equal(S.normalize({ sheetStyles: { sound: "mon" } }).sheetStyles, undefined)
   assert.equal(S.withSetting({}, "sheetStyle:sound", "mon"), null)
+  // The four craft hands are kept like Tanzaku.
+  for (const h of ["shogi", "soroban", "odoshi", "kasumi"]) {
+    const e = S.withSetting({}, "sheetStyle:all", h)
+    assert.equal(S.resolve(e).sheetStyles.inbox, h)
+    assert.deepEqual(S.normalize(e).sheetStyles, e.sheetStyles)
+  }
+})
+
+// ---- the craft hands' model (core/Hands.js)
+const Hd = load("core/Hands.js", ["HANDS", "model", "ranks", "setArg", "FRESH_MS"])
+const handLib = {
+  T: load("core/Time.js", ["WEEKDAYS", "MONTHS", "pad2", "startOfDay", "dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading"]),
+  St: St,
+  B: load("core/Blue.js", ["KIND_MARKS", "LOW", "action", "kind"]),
+}
+const handNow = new Date(2026, 9, 6, 21, 44)
+const handFeed = {
+  zones: [{ label: "Tokyo", time: "06:44", rel: "+9", ready: true }],
+  sound: { master: { percent: 62, level: 0.62, muted: false },
+           outputs: [{ id: 41, name: "usb", label: "Studio Monitors", current: true, note: "Live" },
+                     { id: 52, name: "bt", label: "WH-1000XM5", current: false, note: "Paired" }],
+           streams: [{ id: 7, name: "spotify", label: "Spotify", level: 0.8, percent: 80, muted: false },
+                     { id: 8, name: "firefox", label: "Firefox", level: 0.45, percent: 45, muted: true }],
+           input: "Input · Shure MV7", inputMuted: false },
+  network: { current: { kind: "wifi", label: "Kumo", detail: "Wi-Fi" }, radio: true, offline: false,
+             networks: [{ ssid: "Kumo", current: true, saved: true, secure: true, signal: 82, note: "Connected" },
+                        { ssid: "Library", current: false, saved: false, secure: false, signal: 22, note: "Open" }] },
+  bluetooth: { title: "WH-1000XM5", blurb: "Headphones · 80%", present: true, enabled: true, scanning: false,
+               connected: [{ address: "A", name: "WH-1000XM5", detail: "Headphones · 80%", connected: true, paired: true, level: 80 }],
+               known: [{ address: "B", name: "MX Keys", detail: "Keyboard", connected: false, paired: true, level: -1 }], found: [] },
+  power: { percent: 12, low: true, charging: false, blurb: "40m left",
+           details: [{ name: "State", value: "On battery" }, { name: "Cycles", value: "112" }, { name: "Charge limit", value: "80%" }],
+           profiles: [{ name: "balanced", label: "Balanced", active: true }, { name: "power-saver", label: "Power saver", active: false }] },
+  display: { title: "Built-in", blurb: "2880×1800", monitors: [
+               { name: "eDP-1", label: "Built-in", internal: true, enabled: true, focused: true, current: true },
+               { name: "HDMI-A-1", label: "TV", internal: false, enabled: false, focused: false, current: false }],
+             brightness: { percent: 70, level: 0.7 }, night: false },
+  letters: [{ app: "Signal", summary: "Mika", body: "See  you\nat 8", timestamp: handNow.getTime() - 60000, urgent: false, glyph: "信" },
+            { app: "System", summary: "Battery low", body: "", timestamp: handNow.getTime() - Hd.FRESH_MS * 2, urgent: true, glyph: "S" }],
+  dnd: false,
+}
+
+test("hands: every sheet gives a whole model, with data and without", () => {
+  for (const sheet of S.SHEET_KEYS) {
+    for (const feed of [handFeed, {}]) {
+      const m = Hd.model(sheet, feed, handNow, handLib)
+      assert.equal(m.sheet, sheet)
+      for (const k of ["levels", "choices", "tally", "lines", "buttons"]) assert.ok(Array.isArray(m[k]), sheet + " " + k)
+      assert.equal(typeof m.hero.figure, "string")
+      for (const r of m.levels.concat(m.choices)) {
+        assert.ok(r.level <= 1, sheet + " level")
+        assert.equal(typeof r.selected, "boolean")
+      }
+    }
+  }
+  assert.deepEqual(Hd.HANDS, ["shogi", "soroban", "odoshi", "kasumi"])
+})
+
+test("hands: sound sets the master and each app, outputs are the choices", () => {
+  const m = Hd.model("sound", handFeed, handNow, handLib)
+  assert.equal(m.hero.figure, "62")
+  assert.deepEqual(m.hero.set, { what: "master" })
+  const r = Hd.ranks(m)
+  assert.equal(r[0].key, "hero")
+  assert.equal(r.length, 3)
+  assert.deepEqual(Hd.setArg(r[1].set, 0.5), { id: 7, name: "spotify", value: 0.5 })
+  assert.equal(Hd.setArg(r[0].set, 0.5), 0.5)
+  assert.ok(r[2].muted)
+  assert.equal(m.choices[0].selected, true)
+  assert.equal(m.choices[0].click, null)
+  assert.deepEqual(m.choices[1].click, { what: "output", arg: { id: 52, name: "bt" } })
+  assert.deepEqual(m.keys.step, { what: "master", min: 0, level: 0.62 })
+})
+
+test("hands: time is the day, week, month and year, and a week of days", () => {
+  const m = Hd.model("time", { zones: handFeed.zones }, handNow, handLib)
+  assert.equal(m.hero.figure, "21:44")
+  assert.equal(m.hero.scales, 24)
+  assert.deepEqual(m.levels.map(r => r.key), ["week", "month", "year"])
+  assert.equal(m.choices.length, 7)
+  assert.equal(m.choices.filter(c => c.selected).length, 1)
+  assert.equal(m.choices[1].selected, true) // a Tuesday: Monday first
+  assert.equal(m.choices[0].dashed, true)
+  assert.equal(m.choices[1].click, null)
+  assert.deepEqual(m.tally.map(t => t.n), [21, 44, 6])
+  assert.deepEqual(m.lines, ["Tokyo  06:44  +9"])
+  const later = Hd.model("time", { timeShift: 2 }, handNow, handLib)
+  assert.equal(later.choices.filter(c => c.selected).length, 0)
+  assert.deepEqual(later.choices[0].click, { what: "shift", arg: 0 })
+  assert.deepEqual(later.keys.left, { what: "shift", arg: 1 })
+})
+
+test("hands: network, bluetooth, power, display and inbox", () => {
+  const n = Hd.model("network", handFeed, handNow, handLib)
+  assert.equal(n.hero.level, 0.82)
+  assert.equal(n.levels[0].click, null)
+  assert.equal(n.levels[1].click.arg.ssid, "Library")
+  assert.equal(Hd.model("network", { network: { radio: false, networks: [] } }, handNow, handLib).hint, "Wi-Fi is off")
+  const b = Hd.model("bluetooth", handFeed, handNow, handLib)
+  assert.equal(b.levels.length, 1) // has a charge
+  assert.equal(b.choices[0].name, "MX Keys") // doesn't
+  assert.equal(b.levels[0].mark, "耳")
+  assert.equal(b.choices[0].click.what, "device")
+  const p = Hd.model("power", handFeed, handNow, handLib)
+  assert.ok(p.hero.red)
+  assert.deepEqual(p.tally.map(t => t.n), [12, 112])
+  assert.equal(p.choices[1].click.arg, "power-saver")
+  const d = Hd.model("display", handFeed, handNow, handLib)
+  assert.equal(d.hero.min, 0.01)
+  assert.equal(d.choices[1].dashed, true)
+  assert.equal(d.choices[1].click, null)
+  const i = Hd.model("inbox", handFeed, handNow, handLib)
+  assert.equal(i.hero.figure, "02")
+  assert.equal(i.hero.caption, "1 needs you")
+  assert.ok(i.levels[0].level > 0.9)
+  assert.equal(i.levels[1].level, 0.08)
+  assert.equal(i.levels[0].detail, "See you at 8")
+  assert.ok(i.levels[1].urgent)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

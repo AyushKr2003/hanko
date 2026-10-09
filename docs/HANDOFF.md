@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after the four studies for the third sheet hand (Shōgi, Soroban, Odoshi, Kasumi) were drawn and written up in docs/revision2/sheet-hands.md.
+Last updated: 2026-10-09, after the four sheet-hand studies (Shōgi, Soroban, Odoshi, Kasumi) were built as hands for all seven sheets and added to Settings › Sheets.
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -303,7 +303,9 @@ bar/
                          Time/Sound/Network/Power/Display/Spaces/InboxSection (all pure)
   sheets/                SheetView, SheetCard, SheetHead, GroupHead, SheetRow, Ruler,
                          SheetButton, ActionBar; TimeSheet, SoundSheet, NetworkSheet,
-                         PowerSheet, DisplaySheet, InboxSheet (all pure)
+                         PowerSheet, DisplaySheet, InboxSheet (all pure); the Tanzaku
+                         sheets; HandSheet + ShogiHand, SorobanHand, OdoshiHand,
+                         KasumiHand (one per craft hand, drawing core/Hands.js's model)
   Edge.qml               hairline | dayrule | rod | rodrule, mirrored at the bottom,
                          inset-aware; rod grip lifts on hover, drag emits pulled()
 core/
@@ -776,14 +778,24 @@ Why a crest book: what a samurai carried into the field was his house's mark. Th
 ### Mon 紋 taken out ✅ (asked for: "Mon is not looking good; remove it and come up with more designs")
 The seven `*Mon` sheets, `Crest`, `CrestCell`, `MonHero`, `MonPage`, `core/Mon.js`, `sheets-mon.json` and `r2-sheets-mon.webp` are deleted. `SHEET_STYLES` is `ledger | tanzaku`; a saved `mon` (like `prose`) loads as a ledger, and `sheetStyle:x mon` is refused. Test updated (113). The research for it stays above. The next third hand is chosen from rendered design studies before it is built for all seven sheets.
 
-### Sheet-hand studies: Shōgi, Soroban, Odoshi, Kasumi (awaiting a pick)
-Four candidates for the third hand, each drawn as the Sound sheet only, in `tests/harness/studies/` (not shipped) with the scene `tests/harness/scenes/Studies.qml`, params `studies-sound.json`, image `docs/revision2/images/r2-studies-sound.webp`.
+### Sheet hands: Shōgi 将棋, Soroban 算盤, Odoshi 縅, Kasumi 霞 ✅ (asked for: "make the sheet for all cell sheets in Shōgi, Soroban, Odoshi and Kasumi … give all these 4 options in the Sheets tab in settings")
+All four studies were built, each for all seven sheets; the hands are now `ledger | tanzaku | shogi | soroban | odoshi | kasumi`.
+- **`core/Hands.js`** (+ 4 tests, 117 in all): `HANDS`, `model(sheet, feed, now, lib)` turns any sheet's feed into one model: `hero` (mark, name, figure, unit, line, caption, red, level, `rank` when its level is a row of its own, `set` when you can set it, `min`, `scales`), `levels` and `choices` (rows: name, mark, detail, note, figure, level, count, lead, muted, urgent, selected, dashed, `set`, `click`), `choicesLabel`/`choicesMark`, `inline` (short choices: Time's week), `tally` (what the abacus counts when not the rows), `lines`, `hint`, `note`, `buttons`, `keys`. `ranks(m)` puts the hero first for hands that draw it as a row; `setArg(set, v)` builds the request (`stream` gets `{id, name, value}`). `lib` is `{ T: Time.js, St: Status.js, B: Blue.js }`, passed in because core modules don't import each other. Every request is one the Ledger already sends; nothing new in `Bar.sheetRequest`. Letters' freshness wanes over `FRESH_MS` (8 h).
+- **`bar/sheets/`**: `HandSheet` (the frame: eyebrow, the hand's body as default property, lines, a wrapping hint, ActionBar from `model.buttons`, Up/Down/Left/Right and letter keys from `model.keys`; `act(o)`, `pick(row, v)`), `ShogiHand` (+ `Koma`, moved from the studies; pale wood with an inked edge on light paper), `SorobanHand` (inline `Bead`; a click on a bead flicks it), `OdoshiHand` (+ `Lame`: `count`, `marks` for a lame of days drawn as runs of normal scales, `stitched`, `settable`), `KasumiHand` (+ `MistBand`: settable by click, drag or wheel from the side it drifts in from; the shortest band fits its name), `FigureHero` (Shōgi and Soroban's hero).
+- **`SheetView`**: `handModel` (built when the hand is one of `Hands.HANDS`) and one component per craft hand, not one per sheet.
+- **`core/Style.js`**: `SHEET_STYLES` has the four; nothing else changed (saved files, `sheetStyle:<sheet>|all <hand>` work as before).
+- **Settings › Sheets**: six hand cards, three to a row (two under 720 px), the per-sheet Segmented with six plain names; the blurb names all six.
+- Yuji Boku re-subset from the full Google Fonts file with fontTools (`pyftsubset --layout-features='*' --name-IDs='*' --notdef-outline`, the old cmap plus every kanji in the sources): 将棋 算盤 縅 駒台 内 外 均 省 速 式 年 were missing (514 glyphs, 659 KB).
+- Studies deleted (`tests/harness/studies/`, `scenes/Studies.qml`, `params/studies-sound.json`); `r2-studies-sound.webp` stays as the record. Harness `sheets-shogi`, `sheets-soroban`, `sheets-odoshi`, `sheets-kasumi` (all seven sheets each), `sheets-hands-light` (two sheets per hand on Flexoki light); `sheets-settings` now saves a mix of hands. Images `docs/revision2/images/r2-sheets-<hand>.webp`, `r2-sheets-hands-light.webp`, `r2-sheets-settings.webp`.
+- Departures from the studies, and why, are in [revision2/sheet-hands.md](revision2/sheet-hands.md) under each study ("Built:").
+
+Below is the study write-up as it was before the pick:
 - **Shōgi 将棋**: a level is a rank of nine squares and its piece (a pentagonal koma) stands on the square of its level; file numbers ９..１ over the board, rank numerals 一二三 down its side, hoshi dots; outputs wait on the piece stand (komadai), the one playing promoted (its character red, as a promoted piece's reverse is written); a muted app's piece is turned away (the opponent's).
 - **Soroban 算盤**: each level counted in beads on two rods (tens, units): the heaven bead is five, earth beads one, counted when pushed to the beam; unit dots part readings; the master's beads red.
 - **Odoshi 縅**: armour lacing; a crown plate (kanmuri-ita) holds the master; each choice a lame of kozane laced densely in scarlet (kebiki, hi-odoshi) to its level and sparsely beyond (sugake); the output in use laced in full with hishinui cross-knots at its foot.
 - **Kasumi 霞**: the suyari-gasumi mist bands of Yamato-e scrolls and gold screens; each choice a band of gold leaf as long as its level, drifting from alternate sides; the one in use gilded whole and sealed.
 The research, each study's strengths and weaknesses, the rejected hands and sources are in [revision2/sheet-hands.md](revision2/sheet-hands.md).
-Once one is picked: move it into `bar/sheets/` for all seven sheets, add it to `SHEET_STYLES`, Settings › Sheets and the docs, and delete the studies.
+(All four were built; see the entry above.)
 
 ## 10. Instructions for the remaining phase (10)
 
@@ -876,6 +888,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 28. **Classic bar polish:** check the hover plate on a touchpad (it follows `containsMouse`, which can stick when the pointer leaves the bar window; see omacale's notes on hover), the ink seals on a light theme, and that Fraunces's `tnum` really applies in the shell's Qt (if not, the clock still renders, just proportional).
 29. **Bar feedback:** watch the counters and the meter cascade on a fast wheel scroll (each step restarts the roll from the shown number) and the breathing's cost when a low battery breathes all evening (one opacity animation; stop it with `motion: still` if it bothers).
 30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), and each hand at the user's `typeSize` large (the sheets grow, they don't scroll).
+31. **Craft hands to verify on hardware:** Shōgi's square click and wheel on the master and an app (the wheel steps one file, 12.5%), Soroban's bead flick (a hundreds rod appears at 100%; clicking the units' first earth bead when one is counted takes it back to zero), Odoshi's scale click, Kasumi's drag along a band that drifts in from the right (it measures from the right edge), the 24-scale day lame at 1x, and each hand on the user's theme (light themes draw Kasumi's bands as ink and Shōgi's pieces as pale wood). The harness letter timestamps are UTC: render with `TZ=UTC` or the inbox reads "now" for every letter.
 
 ## 13. QML pitfalls already hit
 

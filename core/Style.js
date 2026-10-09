@@ -118,8 +118,14 @@ function normalizeOverview(o) {
 //   ledger  帳  the editorial page: eyebrow, serif title, `//` groups, rows
 //   tanzaku 短冊 the poem slips: each choice a paper strip hung from a rail,
 //               right to left, as long as its level; the one in use inked
+//   shogi   将棋 the board: a level is a rank of nine squares, its piece on
+//               the square of its level; choices wait on the piece stand
+//   soroban 算盤 the abacus: readings counted in beads pushed to the beam
+//   odoshi  縅  armour lacing: each level a lame of scales laced to it
+//   kasumi  霞  mist bands: each level a band of gold leaf drawn as far
+// The last four draw one model per sheet (core/Hands.js).
 // Stored only where a sheet is not a ledger; resolve() gives the full map.
-var SHEET_STYLES = ["ledger", "tanzaku"]
+var SHEET_STYLES = ["ledger", "tanzaku", "shogi", "soroban", "odoshi", "kasumi"]
 var SHEET_KEYS = ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
 
 function normalizeSheetStyles(o) {
@@ -338,7 +344,7 @@ function withSetting(doc, key, value) {
     else delete d.panelOpacity
     return d
   }
-  // sheetStyle:<sheet> or sheetStyle:all, to ledger | tanzaku.
+  // sheetStyle:<sheet> or sheetStyle:all, to one of SHEET_STYLES.
   if (String(key).indexOf("sheetStyle:") === 0) {
     var which = String(key).slice(11), how = String(value) === "dial" ? "tanzaku" : String(value)
     if (SHEET_STYLES.indexOf(how) < 0) return null

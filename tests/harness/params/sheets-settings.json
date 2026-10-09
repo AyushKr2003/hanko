@@ -191,8 +191,11 @@
     "notify": "tickets"
    },
    "sheetStyles": {
-    "sound": "tanzaku",
-    "network": "tanzaku"
+    "time": "shogi",
+    "sound": "kasumi",
+    "network": "tanzaku",
+    "power": "soroban",
+    "display": "odoshi"
    }
   },
   "page": "sheets",

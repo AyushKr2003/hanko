@@ -221,9 +221,9 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 Sheets 20–25 show both on full desktops.
 
-#### Sheet hands `sheetStyles` 帳/短冊
+#### Sheet hands `sheetStyles` 帳/短冊/将棋/算盤/縅/霞
 
-Each cell's sheet can be drawn in one of two hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all tanzaku`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+Each cell's sheet can be drawn in one of six hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-two: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
 
 | Hand | What it does | After |
 |---|---|---|
@@ -241,6 +241,27 @@ What each sheet hangs:
 | Power | the battery; a slip per profile (a click runs it); cycles and capacity as quiet slips |
 | Display | the brightness (pull it; never under 1%); a slip per monitor, one switched off dashed |
 | Inbox | the count; each letter a slip, newest at the right, the app's mark at its head and its age at its foot |
+
+The four craft hands (`shogi`, `soroban`, `odoshi`, `kasumi`) draw one model per sheet (`core/Hands.js`): a **hero** (the sheet's figure, an italic line, a mono caption, and its level when it has one), **levels** (things with a level: an app's volume, a network's signal, a device's charge, a letter's freshness, which wanes over eight hours), **choices** (things you pick one of: an output, a profile, a monitor, a day of the week) and quiet **lines** (other cities, battery details). Red stays for the sheet's own reading, the thing in use and anything urgent.
+
+| Hand | Levels | Choices | After |
+|---|---|---|---|
+| `shogi` 将棋 | A rank of nine squares each, file numbers ９…１ over the board, rank numerals 一 二 三 down its side, hoshi dots; the level's piece (koma) stands on its square, the squares it crossed washed (red for the sheet's own). A click on a square moves a piece you can set, the wheel steps a file; a muted app's piece is turned away. | Pieces on the piece stand (komadai) under the board, named beneath; the one in play promoted, its character red. | Shōgi boards and pieces; a promoted piece's red reverse |
+| `soroban` 算盤 | The figures counted on rods, tens and units (hundreds when needed), heaven bead five, earth beads one, a spare rod and unit dot between readings, the sheet's own beads red; a click on a bead counts to it. Levels the frame does not count are a wire of ten beads, as many home as the level. | One bead on a short wire each, slid across for the one in use; a week is one wire of seven beads, the days gone and today pushed home. | The soroban (1:4 beads) |
+| `odoshi` 縅 | A crown plate (kanmuri-ita) carries the figure; its lame laced scarlet to the level (24 scales, an hour each, on Time). Every other level a lame of small scales laced in ink as far as it goes (kebiki), sparsely beyond (sugake), scarlet when urgent; a click on a scale laces to it. | A lame each: the one in use laced in full and cross-knotted red along its foot (hishinui); a week is one lame of seven runs of scales, today laced scarlet. | Ō-yoroi sode, kozane, hi-odoshi |
+| `kasumi` 霞 | The figure with its kanji set large at the right like a title slip, its band the fullest gilt beneath; every other level a band of gold-leaf mist (suyari-gasumi) as long as its level, drifting in from alternate sides; click or drag along a band to set it. Muted: a thin mist with no gold. | The one in use a band gilded the whole width and sealed red; the others short, thin mist; a week is a row of gold squares (shikishi), today sealed. | Yamato-e emaki, Rinpa gold screens |
+
+What the craft hands show per sheet:
+
+| Sheet | Hero | Levels | Choices |
+|---|---|---|---|
+| Time | the time; the day spent | week, month, year spent (the abacus counts hour, minute, day) | the week, today sealed; ‹ Week · Today · Week › |
+| Sound | the master (set it) | each app's volume (set it; muted shows as muted) | the outputs |
+| Network | the signal | each network by signal (a click joins) | — |
+| Bluetooth | the connected device's charge | devices that report a charge | devices that don't |
+| Power | the battery | — (the abacus counts charge and the numeric details) | the profiles |
+| Display | the brightness (set it, never under 1%) | — | the monitors, one switched off faint |
+| Inbox | the count | each letter, reaching as far as it is fresh, urgent ones red | — |
 
 #### Scroll dividers `interlude` 間
 

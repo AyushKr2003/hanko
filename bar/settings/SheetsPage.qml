@@ -6,7 +6,8 @@ import "../../core/Sheets.js" as Sheets
 import "../sheets"
 
 // Settings › Sheets 紙: which hand draws each cell's sheet. Cards name
-// the hands (Ledger 帳, Tanzaku 短冊; a click sets every sheet); then
+// the six hands (Ledger 帳, Tanzaku 短冊, Shōgi 将棋, Soroban 算盤,
+// Odoshi 縅, Kasumi 霞; a click sets every sheet), three to a row; then
 // one row per sheet with its choice. Beside the rows the sheet you last
 // touched prints live in its hand, in a room as wide as the widest sheet.
 Item {
@@ -24,8 +25,12 @@ Item {
   readonly property var hands: [
     { key: "ledger", jp: "帳", name: "Ledger", short: "The editorial page: every choice listed", line: "The editorial page: a serif title, // groups and hairline rows. Everything listed, nothing hidden." },
     { key: "tanzaku", jp: "短冊", name: "Tanzaku", short: "The poem slips: each choice a hanging strip", line: "Each choice a paper slip hung from a rail, right to left, as long as its level; the one in use inked and sealed." },
+    { key: "shogi", jp: "将棋", name: "Shōgi", short: "The board: each level a piece on its square", line: "Each level a rank of nine squares, its piece on the square of its level; choices wait on the piece stand, the one in play promoted red." },
+    { key: "soroban", jp: "算盤", name: "Soroban", short: "The abacus: readings counted in beads", line: "The figures counted out in beads pushed to the beam, the sheet's own in red; each choice one bead, slid across for the one in use." },
+    { key: "odoshi", jp: "縅", name: "Odoshi", short: "Armour lacing: each level a laced lame", line: "A crown plate, then a lame of small scales for each level, laced as far as it goes; the one in use laced in full and knotted red." },
+    { key: "kasumi", jp: "霞", name: "Kasumi", short: "Mist bands: each level a band of gold leaf", line: "Each level a band of gold-leaf mist drawn as far as it goes, drifting in from alternate sides; the one in use gilded whole and sealed." },
   ]
-  readonly property var labels: ({ ledger: "帳 Ledger", tanzaku: "短冊 Tanzaku" })
+  readonly property var labels: ({ ledger: "Ledger", tanzaku: "Tanzaku", shogi: "Shōgi", soroban: "Soroban", odoshi: "Odoshi", kasumi: "Kasumi" })
   readonly property string allStyle: {
     var first = styles[S.SHEET_KEYS[0]]
     for (var i = 1; i < S.SHEET_KEYS.length; i++) if (styles[S.SHEET_KEYS[i]] !== first) return ""
@@ -40,18 +45,19 @@ Item {
   width: parent ? parent.width : 0
   implicitHeight: body.y + Math.max(list.height, twoUp ? previewBox.height : 0) + (twoUp ? 0 : previewBox.height + Type.px(24))
 
-  // The three hands.
-  Row {
+  // The six hands, three to a row (two when narrow).
+  Grid {
     id: cards
     y: Type.px(22)
     width: parent.width
+    columns: root.width >= Type.px(720) ? 3 : 2
     spacing: Type.px(12)
     Repeater {
       model: root.hands
       Rectangle {
         id: card
         required property var modelData
-        width: (cards.width - (root.hands.length - 1) * cards.spacing) / root.hands.length
+        width: (cards.width - (cards.columns - 1) * cards.spacing) / cards.columns
         height: Type.px(root.compact ? 96 : 104)
         radius: 3
         color: root.allStyle === card.modelData.key ? Ink.bone : cardHover.containsMouse ? Ink.alpha(Ink.bone, 0.05) : "transparent"

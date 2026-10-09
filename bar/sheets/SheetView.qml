@@ -2,6 +2,10 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 import "../../core/Sheets.js" as Sheets
+import "../../core/Hands.js" as Hands
+import "../../core/Time.js" as TimeJs
+import "../../core/Status.js" as StatusJs
+import "../../core/Blue.js" as BlueJs
 
 // One open sheet: the paper (SheetCard) with the right contents in it.
 // Pure QtQuick like BarSurface: bar/SheetWindow.qml feeds it live data,
@@ -24,9 +28,14 @@ Item {
   // Panel opacity (Style.js panelOpacity), 0..1.
   property real paperOpacity: 1
   property bool animate: true
-  // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku.
+  // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku |
+  // shogi | soroban | odoshi | kasumi.
   property var styles: ({})
   readonly property string hand: styles[sheet] || "ledger"
+  // The craft hands (Shōgi, Soroban, Odoshi, Kasumi) draw one model of
+  // whichever sheet is open (core/Hands.js).
+  readonly property var handModel: Hands.HANDS.indexOf(hand) >= 0
+    ? Hands.model(sheet, feed, feed.now || new Date(), { T: TimeJs, St: StatusJs, B: BlueJs }) : null
 
   // A sheet asked for something (a value, a device, a page of the ribbon).
   signal request(string sheet, string what, var arg)
@@ -64,7 +73,9 @@ Item {
     Loader {
       id: body
       width: card.width
-      sourceComponent: (root.hand === "tanzaku"
+      sourceComponent: root.handModel
+        ? ({ shogi: shogiHand, soroban: sorobanHand, odoshi: odoshiHand, kasumi: kasumiHand })[root.hand]
+        : (root.hand === "tanzaku"
           ? { time: timeTanzaku, sound: soundTanzaku, network: networkTanzaku, bluetooth: bluetoothTanzaku,
               power: powerTanzaku, display: displayTanzaku, inbox: inboxTanzaku }
           : { time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
@@ -230,6 +241,51 @@ Item {
     BluetoothTanzaku {
       blue: root.feed.bluetooth || null
       onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  // ---- the craft hands: one component each, for every sheet
+  Component {
+    id: shogiHand
+    ShogiHand {
+      model: root.handModel
+      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: sorobanHand
+    SorobanHand {
+      model: root.handModel
+      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: odoshiHand
+    OdoshiHand {
+      model: root.handModel
+      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+
+  Component {
+    id: kasumiHand
+    KasumiHand {
+      model: root.handModel
+      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
       Keys.onEscapePressed: root.closeRequested()
       Keys.onTabPressed: root.cycle(1)
       Keys.onBacktabPressed: root.cycle(-1)
