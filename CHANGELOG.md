@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The bar's kanji are plainer, so they stay clean at small sizes: cells 波 青 音 光 力, indicator stamps 写 言 予 目 月 休, the inbox 文.
+- The bar's kanji are plainer, so they stay clean at small sizes: cells 波 双 耳 光 力, indicator stamps 写 言 予 目 月 休, the inbox 文.
 - Kan 鑑 replaces 印 everywhere: the default seal glyph, the settings mark, the Omarchy menu icon (`hanko menu add` updates an older entry in place), the seal's labels and the docs. Settings › Typesetting offers the four Kan, 鑑 漢 観 寛. Every kanji is drawn in a bundled brush face, Yuji Boku.
 - Overview: a second layout, `dynamic`, after Ryoku's: only the workspaces you use and a + for a new one, desktops along the top, a selection you move with Tab and confirm with Enter. Pick it under Panels on Typesetting, or `hanko style set overview dynamic`.
 - Overview 一覧: a workspace overview laid on the theme's paper, each workspace a page with its windows live where they sit, lying on the sheet with the window style's paper shadow; arrows switch, click goes, drag moves a window, middle-click closes one. Right-click the workspaces, or `omarchy-shell hanko overview`.

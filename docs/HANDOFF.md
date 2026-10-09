@@ -732,10 +732,10 @@ Research: seal shops carve in tensho (篆書) or kaisho; no free (OFL) tensho fo
 
 ### Plainer kanji on the bar ✅ (asked for: "in the bar cells and active indicators, kanji with fewer strokes so they look clean; leave the workspace numerals")
 The brush face drew the dense glosses (接続, 藍, 電, 録, 醒, 静) as smudges at gloss size. On the bar itself each is now the plainest kanji that still says it:
-- **Cells** (`StatusRow.items`, `jp` and `glyph`): NET 波 (waves), BT 青 (blue), VOL 音, LUM 光 (light), BAT 力 (power; 充 while charging). The glyphs status style and Islet use the same.
+- **Cells** (`StatusRow.items`, `jp` and `glyph`): NET 波 (waves), BT 双 (a pair, as devices pair), VOL 耳 (ear), LUM 光 (light), BAT 力 (power; 充 while charging); BT and VOL were 青 and 音 for a day, then matched to the others' open shapes at the user's ask. The glyphs status style and Islet use the same.
 - **Indicators** (`core/Extras.js`): 写 recording, 言 dictation, 予 reminder, 目 stay awake, 月 night light, 休 do not disturb.
 - **Inbox** count mode: 文 (休 under do not disturb). Mic 声 and the tray's 盆 were already plain; the workspace numerals (壱 弐 参 …) are unchanged.
-- The sheets, scroll and settings keep their fuller heads (網 藍 電 明 報). `Settings.js`, `Style.js` text, fixtures and the indicator unit test follow; the brush subset was re-cut to include the new kanji.
+- The sheets, scroll and settings keep their fuller heads (網 藍 音 電 明 報). `Settings.js`, `Style.js` text, fixtures and the indicator unit test follow; the brush subset was re-cut to include the new kanji.
 
 ## 10. Instructions for the remaining phase (10)
 

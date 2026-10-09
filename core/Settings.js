@@ -65,7 +65,7 @@ var CARDS = [
     { key: "status", name: "Status", detail: "Cells, kanji glyphs or numerals" },
     { key: "meters", name: "Meters", detail: "Ticks beside quantities" },
     { key: "notif", name: "Notifications", detail: "" },
-    { key: "bluetooth", name: "Bluetooth", detail: "A BT 青 cell for your devices" },
+    { key: "bluetooth", name: "Bluetooth", detail: "A BT 双 cell for your devices" },
     { key: "indicators", name: "Indicators", detail: "All six, the off ones faint, or only what is on" },
     { key: "indicatorStyle", name: "Indicator marks", detail: "Icon or kanji, alone or named while on" }] },
   { title: "Edge", rows: [
@@ -189,7 +189,7 @@ function visibilityCards(ctx) {
       row("endleaf", "End leaf 跋", "Right of Inbox on the scroll")] },
     { title: "Right · readings", rows: [
       row("network", "Network 網", "NET"),
-      row("bluetooth", "Bluetooth 青", "BT, where there is an adapter"),
+      row("bluetooth", "Bluetooth 双", "BT, where there is an adapter"),
       row("volume", "Volume 音", "VOL"),
       row("brightness", "Brightness 明", "LUM, where the screen has a backlight"),
       row("battery", "Battery 電", "BAT, where there is one"),

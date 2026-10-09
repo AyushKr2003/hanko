@@ -109,7 +109,7 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 
 | Option | What it does | From |
 |---|---|---|
-| **`cells`** (default) | `NET 波 / BT 青 / VOL 音 / LUM 光 / BAT 力` label-over-value cells (the plainest kanji that say it, so the glosses stay clean at 1x; 充 while charging), held together as one group by space alone (the zones keep their rules); a Bluetooth device's charge is a half-length meter. | Sheet |
+| **`cells`** (default) | `NET 波 / BT 双 / VOL 耳 / LUM 光 / BAT 力` label-over-value cells (the plainest kanji that say it, so the glosses stay clean at 1x; 充 while charging), held together as one group by space alone (the zones keep their rules); a Bluetooth device's charge is a half-length meter. | Sheet |
 | `glyphs` | A boxed kanji is the icon and the number is the state. Solid red when it needs you; dashed when off. | Scroll |
 | `numerals` | Mono labels and numbers on one line (`VOL 62 · NET Kumo · BAT 91%`). | New |
 
@@ -135,7 +135,7 @@ All six status × meters pairs are drawn on sheet 12.
 
 | Option | What it does | From |
 |---|---|---|
-| **`device`** (default) | A `BT 青` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. | New |
+| **`device`** (default) | A `BT 双` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. | New |
 | `marks` | One kanji mark per connected device, by its kind: 耳 headphones, 響 speaker, 鍵 keyboard, 鼠 mouse, 話 phone, 遊 controller, 機 computer, 器 anything else. In cells each mark is a small box its charge fills from the bottom; in glyphs the charge is a rule under the mark; four at most, then `+N`. | New |
 | `count` | How many devices are connected, as a two-digit count, and a dot for each (six at most). | New |
 | `off` | No Bluetooth cell. The panel is still in the scroll and on Omarchy's hotkey. | New |

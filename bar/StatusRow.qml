@@ -38,9 +38,9 @@ Item {
 
   // The readings, in the order each style reads them.
   // The bar's kanji are the plainest that say it, few strokes so they stay
-  // clean at gloss size: 波 waves (network), 青 blue (Bluetooth), 音 sound,
+  // clean at gloss size: 波 waves (network), 双 a pair (Bluetooth), 耳 ear (volume),
   // 光 light (brightness), 力 power (battery; 充 while charging). The
-  // sheets keep their fuller heads (網, 藍, 電, 明).
+  // sheets keep their fuller heads (網, 藍, 音, 電, 明).
   readonly property var items: {
     var out = []
     function net() {
@@ -52,13 +52,13 @@ Item {
       var b = root.bluetooth
       if (!b) return
       var drawn = root.btStyle === "device" || !b.enabled ? "" : root.btStyle
-      out.push({ key: "bluetooth", label: "BT", jp: "青", glyph: "青", value: b.name, unit: "",
+      out.push({ key: "bluetooth", label: "BT", jp: "双", glyph: "双", value: b.name, unit: "",
                  level: drawn ? -1 : b.level, bars: -1, needsYou: !!b.needsYou,
                  bt: drawn, devices: b.devices || [], count: b.count || "00" })
     }
     function vol() {
       var v = root.volume
-      if (v) out.push({ key: "volume", label: "VOL", jp: "音", glyph: "音", value: String(v.percent), unit: "%",
+      if (v) out.push({ key: "volume", label: "VOL", jp: "耳", glyph: "耳", value: String(v.percent), unit: "%",
                         level: v.muted ? 0 : v.level, bars: -1, needsYou: v.needsYou })
     }
     function bri() {
