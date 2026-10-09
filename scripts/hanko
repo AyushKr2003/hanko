@@ -10,13 +10,9 @@
 #   hanko style set K V      change one setting (e.g. clock mono)
 #   hanko style set --monitor NAME K V
 #                            change it on one monitor only (e.g. DP-2 height 32)
-#   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet
+#   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet | Shoji
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
-#   hanko design [NAME]      show the design, or pick one: hanko | shoji
-#                            (Kata, docs/kata)
-#   hanko touch KEY VALUE    season off|kanji|english, numerals arabic|kanji,
-#                            grain smooth|fine|toothy
 #   hanko hide PART          take one part off the bar (e.g. tray, volume,
 #                            indicator:night, tray:nm-applet, hosted:omarchy.weather)
 #   hanko show PART          put it back
@@ -139,16 +135,6 @@ cmd_style() {
   esac
 }
 
-cmd_design() {
-  if (( $# == 0 )); then
-    need jq
-    ipc designGet | jq -r '"\(.name)\n", (.parts | to_entries[] | "  \(.key)\t\(.value)"), "  touches\t\(.touches | to_entries | map("\(.key)=\(.value)") | join(" "))"' | column -t -s $'\t'
-    return
-  fi
-  (( $# == 1 )) || fail "usage: hanko design [hanko|shoji]"
-  [[ $(ipc design "$1") == ok ]] || fail "unknown design '$1' (hanko or shoji)"
-  ipc designDescribe
-}
 
 # Omarchy reads menu additions from ~/.config/omarchy/extensions/omarchy-menu.jsonc
 # (a JSONC object of entries). Hanko's entry is one line carrying a marker,
@@ -210,10 +196,6 @@ case "${1:-}" in
   uninstall) cmd_uninstall ;;
   style) shift; cmd_style "$@" ;;
   settings) ipc settings >/dev/null ;;
-  design) shift; cmd_design "$@" ;;
-  touch)
-    (( $# == 3 )) || fail "usage: hanko touch <season|numerals|grain> <value>"
-    [[ $(ipc touch "$2" "$3") == ok ]] || fail "$2 does not take '$3'" ;;
   hide|show)
     (( $# == 2 )) || fail "usage: hanko $1 <part> (see the Widgets page in hanko settings)"
     [[ $(ipc "$1" "$2") == ok ]] || fail "'$2' is not a part Hanko knows" ;;

@@ -4,18 +4,16 @@ import "../../core"
 import "../parts"
 
 // Power 電: the battery as the ring part (an ensō that closes as it
-// fills, the figure inside it), how long it lasts, the display's
-// brightness, the power profile and the session's actions.
+// fills, the figure inside it), how long it lasts, the power profile and
+// the session's actions. Brightness has its own panel (DisplayPanel).
 Column {
   id: root
 
   property var skin: ({})
   property var power: null
-  property var display: null
   signal request(string sheet, string what, var arg)
 
   readonly property bool low: !!(power && power.low && !power.charging)
-  readonly property var light: display ? display.brightness : null
 
   spacing: Type.px(10)
 
@@ -60,15 +58,6 @@ Column {
     visible: root.power === null
     text: "No battery"
     color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(13)
-  }
-  Divider { visible: root.light !== null; skin: root.skin; width: parent.width; bleed: Type.px(20) }
-  Heading { visible: root.light !== null; skin: root.skin; text: "Brightness"; note: root.light ? String(root.light.percent) : "" }
-  KataSlider {
-    visible: root.light !== null
-    width: parent.width
-    skin: root.skin; seed: 7
-    value: root.light ? root.light.percent : 0
-    onMoved: function(v) { root.request("display", "brightness", v / 100) }
   }
   Divider { visible: root.power !== null; skin: root.skin; width: parent.width; bleed: Type.px(20) }
   Heading { visible: root.power !== null; skin: root.skin; text: "Power mode" }

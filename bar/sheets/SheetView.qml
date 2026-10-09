@@ -70,7 +70,6 @@ Item {
     visible: root.rail
     skin: root.skin
     side: root.side
-    ownDisplay: true
     sheet: root.rail ? root.sheet : ""
     open: root.open && root.rail
     feed: root.feed

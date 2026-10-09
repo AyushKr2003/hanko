@@ -20,7 +20,7 @@ PanelWindow {
 
   required property var bar          // the Bar.qml root
   required property var barWindow    // this screen's BarWindow
-  // The bar drawn on this screen: BarSurface (Classic) or KataBar; both have anchorFor().
+  // The bar drawn on this screen (BarSurface), for anchorFor().
   required property var surface
 
   readonly property string screenName: screen ? screen.name : ""
@@ -33,10 +33,9 @@ PanelWindow {
   property string shownSheet: ""
   // Where the open sheet sits: Sheets.place() in screen coordinates.
   property var placed: ({ x: 0, tearX: 0, tearWidth: 0 })
-  // Kata designs print their own panels (docs/kata); Classic keeps SheetView.
-  readonly property bool kata: !!barWindow.kata && !barWindow.kata.classic
+  // Shōji's skin, for a sheet in the Shōji hand.
   readonly property var skin: barWindow.skin || ({})
-  readonly property var view: kata ? kataView : classicView
+  readonly property var view: classicView
   readonly property var feed: ({
     now: win.bar.now,
     zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
@@ -49,17 +48,7 @@ PanelWindow {
     letters: Status.notifications,
     dnd: Status.doNotDisturb
   })
-  // Kata has six panels (Display lives in Power), so Tab steps through those.
-  readonly property var kataOrder: ["time", "sound", "network", "bluetooth", "power", "inbox"]
-  function cycle(delta) {
-    if (!kata) { bar.cycleSheet(delta); return }
-    var here = ({ display: "power" })[shownSheet] || shownSheet
-    var i = Math.max(0, kataOrder.indexOf(here))
-    for (var n = 1; n <= kataOrder.length; n++) {
-      var next = kataOrder[(i + delta * n + kataOrder.length * n) % kataOrder.length]
-      if (bar.sheetReady(next)) { bar.openSheet(next, screenName); return }
-    }
-  }
+  function cycle(delta) { bar.cycleSheet(delta) }
 
   function place() {
     if (!open) return
@@ -72,9 +61,7 @@ PanelWindow {
     var screenW = barWindow.width + 2 * gap
     var cellX = a ? a.x + gap : screenW - gap - 200
     placed = Sheets.place(shownSheet, cellX, a ? a.width : 100, view.width, screenW)
-    var side = cellX + (a ? a.width : 100) / 2 < screenW / 2 ? -1 : 1
-    if (kata) kataView.side = side
-    else classicView.side = side
+    classicView.side = cellX + (a ? a.width : 100) / 2 < screenW / 2 ? -1 : 1
   }
   onWidthChanged: Qt.callLater(place)
   Connections {
@@ -161,7 +148,6 @@ PanelWindow {
 
   SheetView {
     id: classicView
-    visible: !win.kata
     paperOpacity: win.barWindow.shown.panelOpacity > 0 ? win.barWindow.shown.panelOpacity / 100 : 1
     styles: win.barWindow.shown.sheetStyles || ({})
     skin: win.skin
@@ -175,8 +161,8 @@ PanelWindow {
       NumberAnimation { duration: win.skin.open || 360; easing.type: Easing.BezierSpline; easing.bezierCurve: win.skin.openCurve || [0.16, 1, 0.3, 1, 1, 1] }
     }
     y: win.atBottom ? win.height - win.strip - height - railGap : win.strip + railGap
-    sheet: win.kata ? "" : win.shownSheet
-    open: win.open && !win.kata
+    sheet: win.shownSheet
+    open: win.open
     atBottom: win.atBottom
     tearX: win.placed.tearX
     tearWidth: win.placed.tearWidth
@@ -192,27 +178,6 @@ PanelWindow {
       anchors.fill: parent
       acceptedButtons: Qt.AllButtons
     }
-  }
-
-  ShojiPanel {
-    id: kataView
-    visible: win.kata
-    onWidthChanged: Qt.callLater(win.place)
-    // the panel travels along the bar when another cell is picked
-    x: win.placed.x
-    Behavior on x {
-      enabled: win.kata && !!win.skin.travels && win.open && !Motion.still
-      NumberAnimation { duration: win.skin.open || 360; easing.type: Easing.BezierSpline; easing.bezierCurve: win.skin.openCurve || [0.16, 1, 0.3, 1, 1, 1] }
-    }
-    y: win.atBottom ? win.height - win.strip - height - (win.skin.gap || 0) : win.strip + (win.skin.gap || 0)
-    skin: win.skin
-    sheet: win.kata ? win.shownSheet : ""
-    open: win.open && win.kata
-    feed: win.feed
-
-    onRequest: function(sheet, what, arg) { win.bar.sheetRequest(sheet, what, arg) }
-    onCloseRequested: win.bar.closeSheet()
-    onCycle: function(delta) { win.cycle(delta) }
   }
 
   // Other screens get a clear twin while the sheet is open, so a click on

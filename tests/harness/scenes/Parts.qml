@@ -2,20 +2,21 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.Commons
 import "../../../core"
-import "../../../core/Kata.js" as K
 import "../../../core/Skin.js" as Sk
+import "../../../core/Style.js" as S
 import "../../../bar/parts"
 
-// Kata's parts in QML: every part as Shōji draws it, then a small panel
-// built from nothing but parts. params:
-//   { theme: { foreground, background, red }, width, title, designs?: [doc, ...] }
+// Shōji's parts in QML (bar/parts): every part as it draws, then a small
+// panel built from nothing but parts. params:
+//   { theme: { foreground, background, red }, width, title, styles?: [style doc, ...] }
+// Each style doc (season, numerals, grain, panelOpacity) gets a column.
 Rectangle {
   id: sheet
 
   readonly property var p: JSON.parse(params)
-  readonly property var docs: p.designs || [{ design: "shoji" }]
-  readonly property var skins: docs.map(function(d) { return Sk.skin(K.resolve(d)) })
-  readonly property var names: docs.map(function(d) { return K.describe(K.resolve(d)) })
+  readonly property var docs: p.styles || [{}]
+  readonly property var skins: docs.map(function(d) { return Sk.fromStyle(S.resolve(d)) })
+  readonly property var names: docs.map(function(d) { return d.label || "Shōji" })
   readonly property real col: (width - 80 - 170) / docs.length
 
   width: p.width || 1600
@@ -42,14 +43,14 @@ Rectangle {
     spacing: 0
 
     Text {
-      text: sheet.p.title || "Kata 型 · the parts in QML"
+      text: sheet.p.title || "Shōji's parts in QML"
       color: Ink.ink
       font.family: Type.display; font.pixelSize: 30; font.weight: Font.Normal
       font.variableAxes: Type.axes(30, 360, 0)
       bottomPadding: 20
     }
 
-    // header: design names
+    // header: one name per column
     Row {
       Item { width: 170; height: 30 }
       Repeater {

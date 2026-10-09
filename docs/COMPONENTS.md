@@ -379,7 +379,7 @@ Right-click the workspaces (or `omarchy-shell hanko overview`) and every screen 
 
 `overview: dynamic` (Panels card, or `hanko style set overview dynamic`) opens Ryoku's layout instead: only the workspaces with windows and the live one, as live mini-desktops over the dimmed wallpaper, packed into as many centred rows as fit, then a + cell that opens the next free workspace; desktops (blocks of ten workspaces) along the top with a NEW card; Tab, the arrows and the wheel move a selection, Alt+Tab steps desktops, Enter or a click goes, ✕ on a window closes it, dragging moves a window to a workspace or a desktop. It is not counted in the combinations.
 
-`overview: framed` (or `hanko style set overview framed`) keeps the grid and its keys but prints each page as Shōji does: washi in a lattice frame (a hairline inside the edge, its joints marked), the kanji numeral in the page's head with its number in Fraunces, a quiet window count, a 急 dot on an urgent one. It follows Panel opacity. Under the Shōji design the overview is always framed, until that design is folded into Hanko.
+`overview: framed` (or `hanko style set overview framed`) keeps the grid and its keys but prints each page as Shōji does: washi in a lattice frame (a hairline inside the edge, its joints marked), the kanji numeral in the page's head with its number in Fraunces, a quiet window count, a 急 dot on an urgent one. It follows Panel opacity. The Shōji preset frames it.
 
 ## 3. How options interact
 

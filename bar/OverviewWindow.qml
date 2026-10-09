@@ -32,10 +32,8 @@ PanelWindow {
   readonly property int activeId: monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : 1
   // Which overview (style.json `overview`): grid, Hanko's pages; dynamic,
   // Ryoku's (bar/overview/DynamicView.qml); framed, the grid in Shōji's
-  // `overview` part (washi pages in lattice frames). The Shōji design
-  // always prints it framed, until it is folded into Hanko (HANDOFF §10).
-  readonly property bool kata: !!barWindow.kata && !barWindow.kata.classic
-  readonly property bool framed: kata || Typeset.current.overview === "framed"
+  // `overview` part (washi pages in lattice frames).
+  readonly property bool framed: Typeset.current.overview === "framed"
   readonly property bool dynamic: !framed && Typeset.current.overview === "dynamic"
   // This screen's workspaces, for the dynamic overview.
   readonly property var screenSpaces: Hypr.workspaces.filter(function(w) { return w.id > 0 && (!w.monitor || w.monitor === win.screenName) })

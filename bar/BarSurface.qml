@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../core"
 import "../core/Style.js" as S
-import "../core/Kata.js" as K
 import "../core/Skin.js" as Sk
 import "parts" as Parts
 
@@ -44,7 +43,7 @@ Item {
   // Shōji's skin (core/Skin.js) for the values that come from it (seal
   // carved, spaces brush, status ink, surface washi, pointer brush), with
   // the style's season, numerals and grain.
-  readonly property var skin: Sk.skin(K.resolve({ design: "shoji", season: style.season, numerals: style.numerals, grain: style.grain }), style.panelOpacity || 0)
+  readonly property var skin: Sk.fromStyle(style)
   // notif: seal puts the letter count on the seal, so the inbox cell goes
   // (unless there is no seal to carry it).
   readonly property bool lettersOnSeal: style.notif === "seal" && seal.visible

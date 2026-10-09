@@ -3,9 +3,9 @@ import QtQuick
 import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Sheets.js" as Sheets
-import "../../core/Kata.js" as K
 import "../../core/Skin.js" as Sk
 import "../sheets"
+import "../parts" as Parts
 
 // Settings › Sheets 紙: which hand draws each cell's sheet. Cards name
 // the six hands (Ledger 帳, Tanzaku 短冊, Shōgi 将棋, Soroban 算盤,
@@ -22,6 +22,8 @@ Item {
   property bool compact: false
 
   signal stylePicked(string sheet, string style)
+  // Panel opacity: a percent (30..100) as text, or "auto" for each hand's own.
+  signal opacityPicked(string value)
 
   readonly property var styles: S.resolve(doc).sheetStyles
   property string focusSheet: "sound"
@@ -36,7 +38,11 @@ Item {
   ]
   readonly property var labels: ({ ledger: "Ledger", tanzaku: "Tanzaku", shogi: "Shōgi", soroban: "Soroban", odoshi: "Odoshi", kasumi: "Kasumi", shoji: "Shōji" })
   // Shōji's panels are drawn in Shōji's skin, with your touches and opacity.
-  readonly property var skin: Sk.skin(K.resolve(doc), S.resolve(doc).panelOpacity)
+  readonly property var skin: Sk.fromStyle(S.resolve(doc))
+  readonly property int panelOpacity: S.resolve(doc).panelOpacity || 0
+  // Auto: each hand's own paper (solid, or Shōji's washi at 86%); the
+  // slider and figure read 100% then.
+  readonly property real paperOpacity: panelOpacity > 0 ? panelOpacity / 100 : 1
   readonly property string allStyle: {
     var first = styles[S.SHEET_KEYS[0]]
     for (var i = 1; i < S.SHEET_KEYS.length; i++) if (styles[S.SHEET_KEYS[i]] !== first) return ""
@@ -108,9 +114,81 @@ Item {
     }
   }
 
+  // Panel opacity 透け: how much of the desk shows through every panel
+  // (sheets in any hand, the scroll, the framed overview), with Shōji's
+  // brush slider. It was on Settings › Design, which went with the design.
+  Item {
+    id: opacityRow
+    y: cards.y + cards.height + Type.px(18)
+    width: root.width
+    height: opacityLabel.implicitHeight + Type.px(14) + (root.compact ? opacityControls.height + Type.px(10) : 0)
+    Rectangle { width: parent.width; height: 1; color: Ink.line }
+    Column {
+      id: opacityLabel
+      y: Type.px(12)
+      width: root.compact ? parent.width : parent.width - opacityControls.width - Type.px(24)
+      spacing: Type.px(2)
+      Text { text: "Panel opacity"; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
+      Text {
+        width: parent.width; wrapMode: Text.Wrap
+        text: "How much of your desk shows through every panel: sheets in any hand, the scroll and the framed overview. Auto keeps each one's own paper (solid, or Shōji's washi at 86%)."
+        color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note
+      }
+    }
+    Row {
+      id: opacityControls
+      x: root.compact ? 0 : parent.width - width
+      y: root.compact ? opacityLabel.y + opacityLabel.implicitHeight + Type.px(10) : Type.px(12)
+      spacing: Type.px(14)
+      Parts.KataSlider {
+        anchors.verticalCenter: parent.verticalCenter
+        width: Type.px(240); height: Type.px(26)
+        skin: root.skin
+        // 30..100 drawn across the whole ruler
+        value: (Math.round(root.paperOpacity * 100) - 30) / 70 * 100
+        onMoved: function(v) { root.opacityPicked(String(Math.round(30 + v / 100 * 70))) }
+      }
+      Text {
+        anchors.verticalCenter: parent.verticalCenter
+        width: Type.px(56)
+        horizontalAlignment: Text.AlignRight
+        text: Math.round(root.paperOpacity * 100) + "%"
+        color: Ink.ink
+        font.family: Type.display; font.pixelSize: Type.px(22); font.weight: Font.Normal
+        font.variableAxes: Type.axes(Type.px(22), 360)
+        font.features: { "tnum": 1, "lnum": 1 }
+      }
+      Rectangle {
+        id: autoButton
+        readonly property bool faint: root.panelOpacity === 0
+        anchors.verticalCenter: parent.verticalCenter
+        width: autoText.implicitWidth + 2 * Type.px(14)
+        height: Type.px(32)
+        radius: 3
+        color: autoHover.containsMouse && !faint ? Ink.lineSoft : "transparent"
+        border.width: 1
+        border.color: faint ? Ink.line : Ink.lineStrong
+        Text {
+          id: autoText
+          anchors.centerIn: parent
+          text: "AUTO"
+          color: autoButton.faint ? Ink.inkFaint : Ink.ink
+          font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.8)
+        }
+        MouseArea {
+          id: autoHover
+          anchors.fill: parent
+          hoverEnabled: true
+          cursorShape: Qt.PointingHandCursor
+          onClicked: if (!autoButton.faint) root.opacityPicked("auto")
+        }
+      }
+    }
+  }
+
   Item {
     id: body
-    y: cards.y + cards.height + Type.px(22)
+    y: opacityRow.y + opacityRow.height + Type.px(18)
     width: parent.width
 
     Column {

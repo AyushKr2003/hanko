@@ -185,11 +185,6 @@
  "settings": {
   "saved": {
    "preset": "Hanko",
-   "design": "shoji",
-   "borrow": {
-    "slider": "ruler",
-    "notify": "tickets"
-   },
    "sheetStyles": {
     "time": "shogi",
     "sound": "kasumi",

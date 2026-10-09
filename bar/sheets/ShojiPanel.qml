@@ -3,16 +3,12 @@ import QtQuick
 import "../../core"
 import "../parts"
 
-// One open Shōji 障子 panel: the frame (the washi surface and the sign, a
-// vertical name down the right edge) around one of the seven panels. It is
-// the `shoji` sheet hand (SheetView hands a Shōji sheet to it) and, until
-// the Shōji design is folded into Hanko, that design's panels. It slides in
-// on its rail; SheetWindow moves the same panel along the bar when another
-// cell is clicked (skin.travels).
-// Pure like SheetView, and fed the same `feed`; requests name their sheet
-// so Bar.sheetRequest handles them unchanged. `ownDisplay`: Display opens
-// its own panel; without it (the Shōji design's bar has no LUM cell) it
-// opens Power, where brightness is then shown.
+// One open Shōji 障子 panel, the `shoji` sheet hand (SheetView hands a Shōji
+// sheet to it): the frame (the washi surface and the sign, a vertical name
+// down the right edge) around one of the seven panels. It slides in on its
+// rail; SheetWindow moves the same panel along the bar when another cell is
+// clicked (skin.travels). Pure like SheetView, and fed the same `feed`;
+// requests name their sheet so Bar.sheetRequest handles them unchanged.
 Item {
   id: root
 
@@ -22,13 +18,12 @@ Item {
   property bool open: true
   // Which side of the screen the panel's cell is on, for the slide (-1 left, 1 right).
   property int side: 1
-  property bool ownDisplay: false
 
   signal request(string sheet, string what, var arg)
   signal closeRequested()
   signal cycle(int delta)
 
-  readonly property string panel: ({ time: "time", sound: "sound", network: "network", bluetooth: "bluetooth", power: "power", display: ownDisplay ? "display" : "power", inbox: "inbox" })[sheet] || ""
+  readonly property string panel: ({ time: "time", sound: "sound", network: "network", bluetooth: "bluetooth", power: "power", display: "display", inbox: "inbox" })[sheet] || ""
   readonly property var signs: ({
     time: ["時", "Time"], sound: ["音", "Sound"], network: ["繋", "Network"], bluetooth: ["藍", "Bluetooth"], power: ["電", "Power"], display: ["明", "Display"], inbox: ["便り", "Letters"]
   })
@@ -147,7 +142,6 @@ Item {
     PowerPanel {
       skin: root.skin
       power: root.feed.power || null
-      display: root.ownDisplay ? null : root.feed.display || null
       onRequest: function(s, what, arg) { root.request(s, what, arg) }
       Keys.onEscapePressed: root.closeRequested()
       Keys.onTabPressed: root.cycle(1)

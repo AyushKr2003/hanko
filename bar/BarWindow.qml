@@ -55,13 +55,10 @@ PanelWindow {
   }
 
   readonly property string screenName: screen ? screen.name : ""
-  // Kata 型: which design draws this screen's bar. Classic is the Typeset
-  // BarSurface; any other design is the KataBar, with the same data, the
-  // same signals and the same anchors, so sheets and the scroll open under
-  // its cells unchanged.
-  readonly property var kata: Typeset.kataFor(screenName)
-  readonly property var skin: Skin.skin(kata, shown.panelOpacity)
-  readonly property Item surface: kata.classic ? classicSurface : kataSurface
+  // Shōji's skin (core/Skin.js) for this screen's style: the Shōji sheet
+  // hand and the framed overview wear it, as the bar's Shōji values do.
+  readonly property var skin: Skin.fromStyle(shown)
+  readonly property Item surface: classicSurface
 
   Component.onCompleted: bar.registerWindow(screenName, win)
   Component.onDestruction: bar.unregisterWindow(screenName, win)
@@ -90,7 +87,6 @@ PanelWindow {
   BarSurface {
     id: classicSurface
     anchors.fill: parent
-    visible: win.kata.classic
     style: win.shown
     now: win.bar.now
     spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
@@ -130,38 +126,6 @@ PanelWindow {
     onClockClicked: win.cellClicked("clock", "click", function() {})
     // The rod unrolls the scroll, or drops the sheet under the pull.
     onEdgePulled: function(x) { win.rodPulled(x) }
-  }
-
-  KataBar {
-    id: kataSurface
-    anchors.fill: parent
-    visible: !win.kata.classic
-    skin: win.skin
-    style: win.shown
-    now: win.bar.now
-    spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
-    activeWindow: Hypr.activeWindow
-    home: Hypr.home
-    media: Media.now
-    timeFormat: win.bar.timeFormat
-    volume: Status.volume
-    network: Status.network
-    bluetooth: Blue.cell
-    battery: Status.battery
-    notifications: Status.notifications
-    dnd: Status.doNotDisturb
-
-    onSealClicked: function(button) {
-      if (button === Qt.RightButton) Hypr.openTerminal()
-      else Hypr.openMenu()
-    }
-    onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
-    onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
-    onOverviewRequested: win.bar.toggleOverview()
-    onMediaAction: function(name) { Media.act(name) }
-    onStatusAction: function(name, how) { win.cellClicked(name, how, function() { Status.act(name, how) }) }
-    onInboxAction: function(how) { win.cellClicked("notif", how, function() { Status.act("notif", how) }) }
-    onClockClicked: win.cellClicked("clock", "click", function() {})
   }
 
   ScrollWindow {

@@ -6,8 +6,7 @@
 
 var RAIL = [
   { group: "00 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" }] },
-  { group: "01 BAR",    pages: [{ key: "design", label: "Design", jp: "意匠" },
-                                { key: "typesetting", label: "Typesetting", jp: "組版" },
+  { group: "01 BAR",    pages: [{ key: "typesetting", label: "Typesetting", jp: "組版" },
                                 { key: "colour", label: "Colour", jp: "色" },
                                 { key: "widgets", label: "Widgets", jp: "部品" }] },
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
@@ -18,18 +17,7 @@ var RAIL = [
                                 { key: "credits", label: "Credits", jp: "謝辞" }] }
 ]
 
-// Pages that only mean something while the Hanko design draws the bar; the
-// rail drops them (and their group, if it empties) under Margin, Leaf and Shōji.
-var HANKO_ONLY = ["typesetting", "sheets", "scroll"]
-
-function rail(hanko) {
-  if (hanko) return RAIL
-  return RAIL.map(function(g) {
-    return { group: g.group, pages: g.pages.filter(function(p) { return HANKO_ONLY.indexOf(p.key) < 0 }) }
-  }).filter(function(g) { return g.pages.length > 0 })
-}
-
-// The group and page a rail key names (Design when the key is unknown).
+// The group and page a rail key names (Typesetting when the key is unknown).
 function pageInfo(key) {
   for (var g = 0; g < RAIL.length; g++)
     for (var p = 0; p < RAIL[g].pages.length; p++)

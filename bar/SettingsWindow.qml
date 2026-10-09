@@ -17,16 +17,10 @@ FloatingWindow {
 
   required property var bar          // the Bar.qml root
 
-  property string page: "design"
+  property string page: "typesetting"
   property string query: ""
   property bool advanced: false
 
-  // The Hanko-only pages vanish under another design; fall back to Design.
-  readonly property bool hankoDesign: Typeset.kata.classic
-  readonly property var hankoOnly: ["typesetting", "sheets", "scroll"]
-  function leaveHankoOnly() { if (!hankoDesign && hankoOnly.indexOf(page) >= 0) page = "design" }
-  onHankoDesignChanged: leaveHankoOnly()
-  onPageChanged: leaveHankoOnly()
 
   title: "Hanko settings"
   visible: bar.settingsOpen
@@ -50,7 +44,7 @@ FloatingWindow {
 
     Keys.onPressed: function(event) {
       if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { Typeset.undo(); event.accepted = true }
-      else if (event.key === Qt.Key_Slash) { if (win.hankoDesign) win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
+      else if (event.key === Qt.Key_Slash) { win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
       else if (event.key === Qt.Key_Escape) {
         if (win.query !== "") win.query = ""
         else win.bar.closeSettings()
@@ -117,11 +111,9 @@ FloatingWindow {
       onPresetPicked: function(name) { Typeset.draftPreset(name); Typeset.keep() }
       onResetToPreset: { Typeset.draftReset(); Typeset.keep() }
       onUndo: Typeset.undo()
-      onDesignPicked: function(name) { Typeset.draftDesign(name); Typeset.keep() }
-      onTouchPicked: function(key, value) { Typeset.draftTouch(key, value); Typeset.keep() }
       onPagePicked: function(key) { win.page = key }
       // A search shows Typesetting, unless you are searching the Widgets page.
-      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets" && win.hankoDesign) win.page = "typesetting" }
+      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets") win.page = "typesetting" }
       onAdvancedToggled: function(on) { win.advanced = on }
       onMonitorCleared: function(name) { Typeset.draftClearMonitor(name); Typeset.keep() }
       onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value); Typeset.keep() }

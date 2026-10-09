@@ -491,16 +491,6 @@ Item {
     function styleReset(): string { Typeset.reset(); return "ok" }
     function styleShuffle(): string { Typeset.shuffle(); return "ok" }
     function warnings(): string { return Typeset.warnings.join("\n") }
-    // Kata 型 (core/Kata.js): pick a design, flip a touch.
-    function designGet(): string {
-      var k = Typeset.kata
-      var parts = {}
-      for (var p in Typeset.kataParts) parts[p] = k[p]
-      return JSON.stringify({ name: Typeset.describeDesign(k), design: k.design, parts: parts, touches: k.touches })
-    }
-    function design(name: string): string { return Typeset.setDesign(name) ? "ok" : "unknown" }
-    function designDescribe(): string { return Typeset.describeDesign() }
-    function touch(key: string, value: string): string { return Typeset.touch(key, value) ? "ok" : "invalid" }
     function sheet(name: string): string {
       if (root.sheet === name) { root.closeSheet(); return "closed" }
       return root.openSheet(name, root.focusedScreen()) ? "open" : "unknown"

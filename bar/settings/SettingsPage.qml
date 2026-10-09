@@ -3,7 +3,6 @@ import QtQuick
 import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
-import "../../core/Kata.js" as K
 import "../../core/Leaf.js" as LeafJs
 import ".."
 import "../scroll"
@@ -52,9 +51,6 @@ Rectangle {
   // Every change is saved as it is made; Undo walks this visit's back.
   property int undoCount: 0
   signal undo()
-  // Settings › Design (DesignPage.qml).
-  signal designPicked(string name)
-  signal touchPicked(string key, string value)
   signal pagePicked(string key)
   signal queryEdited(string text)
   signal advancedToggled(bool on)
@@ -83,9 +79,7 @@ Rectangle {
   // `/` from the window: put the cursor in the search field.
   function focusSearch() { (compact ? pageSearch : railSearch).input.forceActiveFocus() }
   readonly property int changes: Settings.changes(saved, draft, S.resolve)
-  // Typesetting, Sheets, Scroll and Presets belong to the Hanko design alone.
-  readonly property bool hanko: K.resolve(draft).classic
-  readonly property var rail: Settings.rail(hanko) || Settings.RAIL
+  readonly property var rail: Settings.RAIL
   // Which rail entry the open page is; looked up in the whole rail, so the
   // title never depends on what the rail currently hides.
   readonly property var pageInfo: Settings.pageInfo(root.page)
@@ -396,24 +390,10 @@ Rectangle {
           wrapMode: Text.Wrap
           text: root.page === "typesetting"
             ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
-            : root.page === "design"
-              ? "Pick the design that draws your bar: Hanko, in type and ink, or Shōji, in washi and brush. Every change prints live and is kept at once."
-              : root.placeholders[root.page] || ""
+            : root.placeholders[root.page] || ""
           color: Ink.inkMuted
           font.family: Type.text
           font.pixelSize: Type.row
-        }
-
-        // ------------------------------------------------ Design
-        DesignPage {
-          visible: root.page === "design"
-          width: parent.width
-          doc: root.draft
-          barData: root.barData
-          compact: root.compact
-          onDesignPicked: function(name) { root.designPicked(name) }
-          onTouchPicked: function(key, value) { root.touchPicked(key, value) }
-          onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
         }
 
         // ------------------------------------------------ Sheets
@@ -424,6 +404,7 @@ Rectangle {
           feed: root.sheetFeed
           compact: root.compact
           onStylePicked: function(sheet, style) { root.settingPicked("sheetStyle:" + sheet, style) }
+          onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
         }
 
         // ------------------------------------------------ Typesetting

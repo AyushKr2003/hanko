@@ -1,10 +1,11 @@
 .pragma library
 
-// Skin: a resolved Kata style (core/Kata.js resolve) as the concrete tokens
-// the parts draw with. Components take the result as a plain `skin` prop
-// (props in, signals out), so every monitor can wear its own design and the
-// harness can render any of them. Sizes are at Omarchy's 12px base; scale
-// them with Type.px().
+// Skin: Shōji's parts (bar/parts) as the concrete tokens they draw with.
+// Shōji was a design of its own (Kata 型, docs/kata) and is part of Hanko
+// now: its values on the bar, its sheet hand and its framed overview all
+// wear this skin, with the style's season, numerals, grain and panel
+// opacity (fromStyle). Components take it as a plain `skin` prop (props in,
+// signals out). Sizes are at Omarchy's 12px base; scale them with Type.px().
 
 // Each tempo: how a panel arrives (open), how it goes (leave), how things
 // settle inside it. Curves are QML Easing.BezierSpline control points.
@@ -18,7 +19,21 @@ var GRAIN = { smooth: 0, fine: 1, toothy: 2 }
 // Shōji's washi lets the desk show through.
 var OPACITY = { washi: 0.86 }
 
-// `panelOpacity` (Style.js, 30..100; 0 = the design's own) overrides the
+// Shōji's variant of every part (they were Kata's PARTS, one variant each).
+var SHOJI = { surface: "washi", arrive: "slide", pointer: "brush", select: "wash", slider: "brush", ring: "enso",
+              seal: "carved", unread: "stamp", sign: "tategaki", notify: "rows", overview: "framed", hold: "stroke",
+              corner: "cut", divider: "lattice", tempo: "johakyu" }
+
+// The skin for a resolved style (core/Style.js resolve): Shōji's parts with
+// the style's touches and panel opacity.
+function fromStyle(style) {
+  style = style || {}
+  var k = { design: "shoji", touches: { season: style.season || "kanji", numerals: style.numerals || "arabic", grain: style.grain || "fine" } }
+  for (var p in SHOJI) k[p] = SHOJI[p]
+  return skin(k, style.panelOpacity || 0)
+}
+
+// `panelOpacity` (Style.js, 30..100; 0 = the part's own) overrides the
 // surface's opacity for every panel.
 function skin(k, panelOpacity) {
   k = k || {}

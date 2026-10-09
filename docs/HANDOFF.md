@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after S4 of folding Shōji into Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), and Shōji is a preset that a saved Shōji design loads as (S4). Plan and the last step in §10, "Shōji into Hanko".
+Last updated: 2026-10-09, after Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -50,7 +50,7 @@ These come from the user's own messages and reactions:
 - **Redesigns are explored on their own branches first, built on `dev` only once chosen.** The user asked for a premium redesign "as a simple person would see it" (`design`, Margin), got a second take (`design2`, Leaf), then asked for "a Japanese touch" (`design3`, Shōji), then for "a uniform for all designs so we can twist whatever design we want" (`revision1`, Kata). They liked all three; Kata was built, and later Margin and Leaf were removed, leaving Hanko and Shōji.
 - **Japanese touches must mean something.** Kanji only where they are the thing itself (a season, a panel's sign, the seal), large, with English beside; Mincho only at 18 px and up; each touch switchable off. The old tiny kanji glosses were judged noise in the audits.
 - **When the user leaves a decision open and says "start", pick a sensible default, say so, and keep going.** For Kata: Classic stays the default design; Shōji's variants were to be built first (all three landed together in K3).
-- **Naming:** the main bar is called **Hanko** in the UI, README and CLI (`hanko design hanko`). Its stored id stays `classic` (so saved `style.json` and code still work); `designName` accepts `hanko` as an alias. Older docs below still say "Classic" for the same design.
+- **Naming:** the bar is called **Hanko** in the UI, README and CLI. Older docs below say "Classic" for it, from when Shōji was a second design; since "Shōji into Hanko" (§9, §10) there is one design, and Shōji is a preset, a sheet hand and option values.
 - **Pushing straight to `dev` works** in cloud sessions (the user said: push to dev, or make a branch from dev if that is refused).
 - **Settings have no Save button.** Verbatim: *"in setting you don't keep the save button"*. Every change applies and is kept at once, with Undo (Ctrl+Z). Keep it that way for any new setting.
 
@@ -294,10 +294,8 @@ bar/
                          plates ProfilePlate, AboutPlate, CreditsPlate with their art
                          (SealImpression, HangingScroll) and parts (PlateEyebrow,
                          PlateSpine, LeaderRow)
-  KataBar.qml            the bar a Kata design draws (K4): same data/signals/anchorFor/
-                         cellAt/rightCells as BarSurface; BarWindow swaps them
-  parts/                 Kata's parts (K3), pure, each takes `skin` (Skin.js) and draws
-                         Shōji's variant: Surface, Fibres, Divider, Selection,
+  parts/                 Shōji's parts (Kata K3), pure, each takes `skin` (Skin.js):
+                         Surface, Fibres, Divider, Selection,
                          KataSlider, Ring, KataSeal, UnreadMark, PointerMark, Sign,
                          Letter, Hold, Choice, KataSwitch, Icon, InkShape
   HostedSlot.qml         one hosted widget from the registry (see Phase 9 in §9)
@@ -325,12 +323,9 @@ core/
                          valueWeight, valueAxes, axes(size, wght) for Fraunces
   Motion.qml (singleton) every timing and curve (Scroll mockup 05); still (motion: still
                          or Omarchy's reduced motion), live (awake and not still), ms()
-  Kata.js                Kata 型 (docs/kata): PARTS (12 main + 3 partners, one variant
-                         each, Shōji's), AUTO, TOUCHES, DESIGNS (shoji), DESIGN_NAMES
-                         (classic, the default, and shoji), RETIRED (margin, leaf load as
-                         classic), clean, resolve(doc, monitor), withDesign, withTouch,
-                         describe(style)
-  Skin.js                skin(kata) → tokens for the parts: radius/radiusRow/radiusChip,
+  Skin.js                SHOJI (Shōji's part variants), fromStyle(style) (the skin for a
+                         resolved style: its season, numerals, grain, panel opacity),
+                         skin(k) → tokens for the parts: radius/radiusRow/radiusChip,
                          joints, open/openCurve/leave/leaveCurve, settle, opacity, grain,
                          season, kanjiNumerals, gap, travels; TEMPOS, RADII, OPACITY
   Season.js              SEKKI (24), KO (72), sunLongitude, koIndex, at(date), label(date,
@@ -391,7 +386,7 @@ docs/                    ROADMAP, COMPONENTS (spec), DESIGN, HANDOFF (this), his
                          mockups/{sheet,scroll,typeset}
 ```
 
-**IPC target `hanko`** (Bar.qml): `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings`, and Kata's `designGet`, `design(name)` (`classic | hanko | shoji`), `designDescribe`, `touch(key, value)`. All typed, all return strings.
+**IPC target `hanko`** (Bar.qml): `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings` (Kata's `design*` and `touch` went with the design switch; `styleSet season english` and `stylePreset shoji` do their work). All typed, all return strings.
 
 **Data flow:** services (live Quickshell data) → `BarWindow` (per screen, picks `Typeset.styleFor(screen.name)`) → `BarSurface` props (plain JS objects) → components. Components never import services. This is what lets the harness render any state, and it is the pattern to keep for every new part.
 
@@ -835,6 +830,16 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - **Compared** with the Shōji design (`kata-bars.png`) in the same eight states (`shoji-preset.json`; `pointAt` now also brings out an ink cell's name, via `StatusRow.reachKey`): the same seal, count, desks, title, clock and season, media, icons, ensō, red states, names on reach and brush pointer. Differences: Shōji drew one hairline between now playing and the status icons and none elsewhere, the preset has none (`rules: off`; `on` rules every group); the left end starts 4 px further left (Hanko's 6 px margin against Shōji's 10 px plus cell padding); indicators show as Hanko's stamps when on (Shōji had none); the preset gains what `KataBar` lacked (tray, keyboard and mic marks, hosted widgets, a brightness cell on laptops, the scroll, per-monitor settings).
 - Tests: the per-preset arrays gain Shōji's value; the Kata normalize test is the migration test; one for the preset (spellings, sheet hands, overview, values) (119). Harness `shoji-preset.json`; image `docs/revision2/images/r2-shoji-preset.webp` (beside `docs/kata/images/k4-bars.webp`).
 
+### Shōji into Hanko · S5, removal ✅
+- **Deleted**: `bar/KataBar.qml`, `bar/settings/DesignPage.qml`, `core/Kata.js`; harness scenes `KataBars`, `KataPanels`, `KataWave` and params `kata-bars*`, `kata-panels*`, `kata-wave*`, `design-settings*`, `overview-shoji`, `overview-kata-light` (replaced by `shoji-preset`, `sheets-shoji`, `overview-framed*`). `Kata.qml` is now `scenes/Parts.qml` (params `parts.json`, `parts-light.json`; `styles: [style doc]` per column in place of `designs`).
+- **`core/Skin.js`**: `SHOJI` (the part variants Kata held) and `fromStyle(style)`; `BarSurface`, `BarWindow` (`skin`, for the sheet hand and the framed overview), `SheetsPage` and the scenes use it.
+- **Windows**: `BarWindow` draws `BarSurface` only (`surface`); `SheetWindow` lost `kata`, `kataView`, `kataOrder` (Tab is `bar.cycleSheet` everywhere); `OverviewWindow.framed` is `overview: framed` alone.
+- **`Typeset`**: `kata`, `kataFor`, `designNames`, `kataParts`, `describeDesign`, `setDesign`, `touch`, `draftDesign`, `draftTouch` and the Kata warnings are gone; `_keep` no longer keeps `design`. `Style.js` still reads a saved `design` (the S4 migration) and never writes it.
+- **IPC / CLI**: `designGet`, `design`, `designDescribe`, `touch` and `scripts/hanko design|touch` are removed, as the user chose (no alias); `hanko style preset shoji`, `hanko style set season english`.
+- **Settings**: the rail's Design page and `Settings.rail()`/`HANKO_ONLY` are gone (every page shows; the window opens on Typesetting); Panel opacity moved to Settings › Sheets (the brush slider, the figure, Auto) as `SheetsPage.opacityPicked` → `settingPicked("panelOpacity")`.
+- **Panels**: `ShojiPanel.ownDisplay` is gone (Display always opens its own panel); `PowerPanel` lost its brightness slider.
+- The window files lint with the same warnings as before. Unit tests: the eight Kata design tests are removed; the migration, preset and skin tests use `Style.js` and `Skin.fromStyle` (111).
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
@@ -864,13 +869,13 @@ The user asked for Shōji to stop being a separate design: "Shōji should be par
 - **S2 · overview** ✅ (see §9).
 - **S3 · bar parts** ✅ (see §9). `title: ink` and `media: ink` were added as the plan allowed; the skin is built in `BarSurface` itself, not passed from `BarWindow`.
 - **S4 · preset and migration** ✅ (see §9).
-- **S5 · removal**: `KataBar.qml`, Settings › Design (`DesignPage.qml`, its rail entry, `designPicked`/`touchPicked`), `SheetWindow.kataView` and `kataOrder`, `OverviewWindow.kata`, the Kata `design`/`touches` resolution (keep a small skin-from-style helper), IPC `designGet`/`design`/`designDescribe`/`touch`, `scripts/hanko design` and `touch` (removed, no alias), `Typeset.setDesign`/`touch`/`kata`, Kata harness scenes (`KataBars`, `KataPanels`, `KataWave`, `design-settings*`), and `ShojiPanel.ownDisplay` (always on). Panel opacity moves to Settings › Sheets. Docs: README (the "Two designs" line and its image), ROADMAP, COMPONENTS, CHANGELOG, this file; `docs/kata/` stays as history.
+- **S5 · removal** ✅ (see §9): `KataBar.qml`, Settings › Design (`DesignPage.qml`, its rail entry, `designPicked`/`touchPicked`), `SheetWindow.kataView` and `kataOrder`, `OverviewWindow.kata`, the Kata `design`/`touches` resolution (keep a small skin-from-style helper), IPC `designGet`/`design`/`designDescribe`/`touch`, `scripts/hanko design` and `touch` (removed, no alias), `Typeset.setDesign`/`touch`/`kata`, Kata harness scenes (`KataBars`, `KataPanels`, `KataWave`, `design-settings*`), and `ShojiPanel.ownDisplay` (always on). Panel opacity moves to Settings › Sheets. Docs: README (the "Two designs" line and its image), ROADMAP, COMPONENTS, CHANGELOG, this file; `docs/kata/` stays as history.
 
 Each phase: read the matching Typeset mockups and the HTML kit first, keep `BarSurface` pure (data in, signals out), add services for live data, add a `tests/harness/params/phaseN.json` covering every option and state, and follow §11.
 
-### Kata 型: what is left
+### Kata 型 (history)
 
-The spec is `docs/kata/README.md`; the HTML prototype that shows every part and panel in every design is `docs/kata/prototype/` (open `playground.html` or `desk.html?design=shoji&panel=sound`; `kata.js` holds the panel markup to port). The prototype still shows Margin and Leaf, which were removed (see §9, "Margin and Leaf removed"); only Shōji is built. Shōji's own prototype is on `design3` (`docs/design3/`). Rules that hold for every Kata phase:
+Kata is finished and folded away: Shōji is part of Hanko (§9, "Shōji into Hanko"), `core/Kata.js`, `KataBar` and Settings › Design are gone, and `bar/parts/` are Shōji's parts drawn in `Skin.fromStyle(style)`. The notes below are the instructions as they were. The spec is `docs/kata/README.md`; the HTML prototype that shows every part and panel in every design is `docs/kata/prototype/` (open `playground.html` or `desk.html?design=shoji&panel=sound`; `kata.js` holds the panel markup to port). The prototype still shows Margin and Leaf, which were removed (see §9, "Margin and Leaf removed"); only Shōji is built. Shōji's own prototype is on `design3` (`docs/design3/`). Rules that hold for every Kata phase:
 
 - Content is written **once**, against `bar/parts/` and plain data; it never asks which design is active. If it needs to, a part is missing: add it to `core/Kata.js` `PARTS` (with Shōji's variant and unit tests), to `Skin.js` if it needs tokens, and a component in `bar/parts/`.
 - Every part takes `skin` (from `Skin.skin(kata)`); BarWindow builds one per screen (`win.skin`). Use `Ink.ink2/ink3/ink4/kLine/lift/paper2/sunk`; never pick a colour.

@@ -41,10 +41,8 @@ const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 const Sn = load("core/Season.js", ["SEKKI", "KO", "sunLongitude", "koIndex", "at", "label"])
-const Sk = load("core/Skin.js", ["skin", "TEMPOS", "RADII", "OPACITY"])
+const Sk = load("core/Skin.js", ["skin", "fromStyle", "SHOJI", "TEMPOS", "RADII", "OPACITY"])
 const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
-const K = load("core/Kata.js", ["PARTS", "PART_KEYS", "MAIN_PARTS", "AUTO", "TOUCHES", "DESIGNS", "DESIGN_NAMES", "DEFAULT_DESIGN",
-  "LABELS", "resolve", "withDesign", "withTouch", "describe", "clean", "designName"])
 
 let passed = 0
 function test(name, fn) {
@@ -594,7 +592,7 @@ test("settings: six cards hold every one of the twenty-three settings once", () 
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 10)   // Design went with the Shōji design (S5)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -1277,87 +1275,8 @@ test("overview layout is a setting beside the counted ones", () => {
   assert.equal(S.resolve(S.withSetting({}, "overview", "framed")).overview, "framed")
 })
 
-// ── Kata 型: one engine for every design ──────────────────────────────
-test("kata: two designs, Hanko and Shōji; twelve parts, three partners, three touches", () => {
-  assert.equal(K.MAIN_PARTS.length, 12)
-  assert.equal(K.PART_KEYS.length, 15)
-  assert.deepEqual(K.DESIGN_NAMES, ["classic", "shoji"])
-  assert.deepEqual(Object.keys(K.DESIGNS), ["shoji"])
-  assert.deepEqual(K.LABELS, { classic: "Hanko", shoji: "Shōji" })
-  // one variant per part now, each Shōji's
-  for (const k of K.PART_KEYS) assert.deepEqual(Object.values(K.PARTS[k].v), ["shoji"], k)
-  for (const d of K.DESIGN_NAMES) {
-    const s = K.resolve({ design: d })
-    assert.deepEqual(s.warnings, [])
-    for (const k of K.PART_KEYS) assert.ok(K.PARTS[k].v[s[k]], `${d}.${k} = ${s[k]}`)
-  }
-  const s = K.resolve({ design: "shoji" })
-  assert.deepEqual(K.PART_KEYS.map(k => s[k]), ["washi", "slide", "brush", "wash", "brush", "enso", "carved", "stamp", "tategaki",
-    "rows", "framed", "stroke", "cut", "lattice", "johakyu"])
-})
-test("kata: Classic is the default, so today's style.json is unchanged", () => {
-  const s = K.resolve({ preset: "Sheet", edits: { clock: "mono" } })
-  assert.equal(s.design, "classic"); assert.equal(s.classic, true); assert.deepEqual(s.warnings, [])
-  assert.equal(K.DEFAULT_DESIGN, "classic")
-  assert.equal(K.designName("hanko"), "classic"); assert.equal(K.resolve({ design: "Hanko" }).classic, true)
-  // Classic resolves Shōji's parts, unused until it is ported onto them
-  assert.equal(K.resolve({}).surface, "washi")
-})
-test("kata: a saved Margin or Leaf loads as Hanko, and a saved borrow is ignored", () => {
-  for (const d of ["margin", "leaf", "Margin", "LEAF"]) {
-    const s = K.resolve({ design: d, borrow: { slider: "ruler", seal: "deboss" }, touches: { season: "english" } })
-    assert.equal(s.design, "classic"); assert.equal(s.classic, true)
-    assert.deepEqual(s.warnings, [])
-    assert.equal(s.slider, "brush"); assert.equal(s.seal, "carved"); assert.equal(s.touches.season, "english")
-    assert.equal(s.borrowed, undefined)
-  }
-  assert.deepEqual(K.clean({ design: "leaf", borrow: { slider: "ruler" } }), { design: "classic" })
-  const shoji = K.resolve({ design: "shoji", borrow: { slider: "ruler", wings: "on" } })
-  assert.equal(shoji.design, "shoji"); assert.equal(shoji.slider, "brush"); assert.deepEqual(shoji.warnings, [])
-  // on a monitor too
-  const there = K.resolve({ design: "shoji", monitors: { "DP-2": { design: "margin", borrow: { ring: "glyph" } } } }, "DP-2")
-  assert.equal(there.design, "classic"); assert.equal(there.ring, "enso")
-  // a removed design is not something to pick; any edit drops the old borrow
-  assert.equal(K.withDesign({}, "margin"), null); assert.equal(K.withDesign({}, "leaf"), null)
-  assert.equal(K.withDesign({ design: "shoji", borrow: { slider: "ruler" } }, "classic").borrow, undefined)
-  assert.equal(K.withTouch({ design: "shoji", borrow: { slider: "ruler" } }, "grain", "toothy").borrow, undefined)
-})
-test("kata: partners follow the part they belong with", () => {
-  const s = K.resolve({ design: "shoji" })
-  assert.deepEqual([s.corner, s.divider, s.tempo], ["cut", "lattice", "johakyu"])
-  assert.deepEqual(K.AUTO, { corner: { washi: "cut" }, divider: { washi: "lattice" }, tempo: { slide: "johakyu" } })
-})
-test("kata: unknown designs and touches fall back with a warning", () => {
-  const s = K.resolve({ design: "nope", touches: { season: "always", wings: "on" } })
-  assert.equal(s.design, "classic"); assert.equal(s.touches.season, "kanji")
-  assert.equal(s.warnings.length, 3)
-  assert.equal(K.resolve({ design: "Shōji" }).design, "shoji")
-})
-test("kata: a monitor's own design wins there; touches are global", () => {
-  const doc = { design: "shoji", numerals: "kanji", monitors: { "DP-2": { design: "classic", touches: { season: "off" } } } }
-  const here = K.resolve(doc), there = K.resolve(doc, "DP-2")
-  assert.equal(here.design, "shoji"); assert.equal(here.touches.season, "kanji"); assert.equal(here.touches.numerals, "kanji")
-  assert.equal(there.design, "classic"); assert.equal(there.touches.season, "kanji"); assert.equal(there.touches.numerals, "kanji")
-  // An old touches object is still read, under the settings.
-  assert.equal(K.resolve({ touches: { season: "english" } }).touches.season, "english")
-  assert.equal(K.resolve({ touches: { season: "english" }, season: "off" }).touches.season, "off")
-})
-test("kata: picking a design keeps touches; Classic leaves no key", () => {
-  let d = K.withTouch({ design: "shoji" }, "season", "english")
-  d = K.withDesign(d, "classic")
-  assert.equal(d.design, undefined); assert.equal(d.season, "english"); assert.equal(d.touches, undefined)
-  assert.equal(K.withDesign(d, "shoji").design, "shoji")
-  assert.equal(K.withDesign(d, "bauhaus"), null)
-  // An old touches object is folded into the settings.
-  assert.deepEqual(K.withTouch({ touches: { grain: "toothy" } }, "season", "off"), { grain: "toothy", season: "off" })
-  assert.equal(K.withTouch({}, "grain", "velvet"), null)
-})
-test("kata: describe names the design", () => {
-  assert.equal(K.describe(K.resolve({ design: "shoji" })), "Shōji")
-  assert.equal(K.describe(K.resolve({ design: "shoji", borrow: { slider: "ruler" } })), "Shōji")
-  assert.equal(K.describe(K.resolve({})), "Hanko")
-})
-test("kata: a saved Shōji design loads as the Shōji preset; touches become settings", () => {
+// ── Shōji, folded into Hanko: the preset, the migration, its skin ──────
+test("shōji: a saved Shōji design loads as the Shōji preset; touches become settings", () => {
   const doc = { preset: "Quiet", edits: { clock: "mono", height: 36 }, design: "shoji", borrow: { slider: "ruler" },
     touches: { season: "english" }, sheetStyles: { inbox: "tanzaku" },
     monitors: { "DP-2": { height: 32, design: "classic", touches: { grain: "toothy" } }, "HDMI-A-1": { design: "shoji" } } }
@@ -1401,7 +1320,7 @@ test("kata K2: the inks are solved by contrast in every theme", () => {
   }
 })
 test("kata K2: a skin carries Shōji's tokens", () => {
-  const s = Sk.skin(K.resolve({ design: "shoji" }))
+  const s = Sk.fromStyle(S.resolve({}))
   assert.deepEqual([s.radius, s.radiusRow, s.radiusChip], [0, 0, 0])
   assert.deepEqual([s.open, s.leave], [340, 160])
   assert.equal(s.opacity, 0.86); assert.equal(s.travels, true); assert.equal(s.joints, true); assert.equal(s.season, "kanji")
@@ -1409,6 +1328,10 @@ test("kata K2: a skin carries Shōji's tokens", () => {
   assert.equal(s.soft, undefined); assert.equal(s.dividerWidth, undefined)
   assert.deepEqual(Object.keys(Sk.TEMPOS), ["johakyu"]); assert.deepEqual(Object.keys(Sk.RADII), ["cut"]); assert.deepEqual(Object.keys(Sk.OPACITY), ["washi"])
   assert.equal(Sk.skin({}).design, "classic")
+  // The style's touches and panel opacity reach the skin.
+  const t = Sk.fromStyle(S.resolve({ season: "english", numerals: "kanji", grain: "toothy", panelOpacity: 50 }))
+  assert.deepEqual([t.season, t.kanjiNumerals, t.grain, t.opacity], ["english", true, 2, 0.5])
+  assert.equal(Sk.fromStyle(null).season, "kanji")
 })
 test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () => {
   const a = Br.stroke(120, 16, 4), b = Br.stroke(120, 16, 4)
@@ -1422,8 +1345,9 @@ test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () 
 })
 
 test("kata K6: the second wave: Shōji's rows, framed pages and brush-stroke hold", () => {
-  const s = K.resolve({ design: "shoji" })
+  const s = Sk.fromStyle(S.resolve({}))
   assert.deepEqual([s.notify, s.overview, s.hold], ["rows", "framed", "stroke"])
+  assert.equal(Object.keys(Sk.SHOJI).length, 15)
 })
 test("panel opacity: 30..100 or the design's own, kept beside the edits and through presets", () => {
   assert.equal(S.normalize({}).panelOpacity, undefined)
@@ -1438,9 +1362,8 @@ test("panel opacity: 30..100 or the design's own, kept beside the edits and thro
   assert.equal(S.withSetting(d, "panelOpacity", "auto").panelOpacity, undefined)
   assert.equal(S.withSetting(d, "panelOpacity", "x"), null)
   assert.equal(S.withPreset(d, "Quiet").panelOpacity, 64)
-  assert.equal(Sk.skin(K.resolve({ design: "shoji" })).opacity, 0.86)
-  assert.equal(Sk.skin(K.resolve({ design: "shoji" }), 50).opacity, 0.5)
-  assert.equal(Sk.skin(K.resolve({ design: "shoji" }), 0).opacity, 0.86)
+  assert.equal(Sk.fromStyle(S.resolve({})).opacity, 0.86)
+  assert.equal(Sk.fromStyle(S.resolve({ panelOpacity: 50 })).opacity, 0.5)
 })
 test("kata K4: the season comes from the sun, right on the boundaries", () => {
   assert.equal(Sn.KO.length, 72); assert.equal(Sn.SEKKI.length, 24)
