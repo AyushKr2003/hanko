@@ -5,8 +5,8 @@ import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
 
 // Settings › Presets 型: every preset as a specimen, drawn live with your
-// data, in two groups (Style.js PRESET_GROUPS): the bars, then the four
-// right-side studies. A card is its number, name, kanji and blurb, the
+// data, as one list: the bars, then the four right-side studies
+// (Style.js PRESET_GROUPS gives the order and the numbering). A card is its number, name, kanji and blurb, the
 // settings that tell it apart, and the bar itself over the sample plate.
 // The one in use carries the red mark (red means you) and IN USE, with the
 // edits you made on top of it; a click on any other puts it on your bar.
@@ -31,7 +31,7 @@ Item {
     id: groups
     y: Type.px(22)
     width: parent.width
-    spacing: Type.px(30)
+    spacing: Type.px(12)
 
     Repeater {
       model: S.PRESET_GROUPS
@@ -52,18 +52,12 @@ Item {
         width: groups.width
         spacing: Type.px(12)
 
+        // One label over the whole list: the studies follow the bars
+        // without a head of their own.
         SectionLabel {
+          visible: group.index === 0
           jp: group.modelData.jp
-          text: group.modelData.title + " · " + group.shown.length
-        }
-        Text {
-          visible: group.index === 1
-          width: parent.width
-          wrapMode: Text.Wrap
-          text: "Your Hanko bar with its right side set four ways, each a cure for a crowded right zone: space between the groups, quiet until something changes, one brush line per reading, one ruled case. Each is also a Status value on Typesetting."
-          color: Ink.inkMuted
-          font.family: Type.text
-          font.pixelSize: Type.note
+          text: group.modelData.title + " · " + S.PRESET_NAMES.filter(function(n) { return Settings.presetMatches(n, root.query, S.PRESETS) }).length
         }
 
         Repeater {
