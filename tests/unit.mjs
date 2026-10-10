@@ -16,7 +16,7 @@ function load(file, names) {
 const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", "OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
-const Se = load("core/Settings.js", ["ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
+const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
@@ -592,7 +592,7 @@ test("settings: six cards hold every one of the twenty-three settings once", () 
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 10)   // Design went with the Shōji design (S5)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)   // Design went with the Shōji design (S5); Presets came
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -1582,5 +1582,19 @@ test("right side: short names and how full a reading is", () => {
   assert.equal(St.fill("volume", { level: 0.4 }), 0.4)
   assert.equal(St.fill("battery", { level: 1.4 }), 1)
   assert.equal(St.fill("battery", null), 0)
+})
+
+test("settings: a Presets 型 page, every preset with a kanji and its facts", () => {
+  const pages = Se.RAIL.flatMap(g => g.pages)
+  assert.deepEqual(pages.slice(1, 3).map(p => p.key), ["presets", "typesetting"])
+  assert.equal(Se.pageInfo("presets").page.jp, "型")
+  assert.equal(Se.pageInfo("nope").page.key, "typesetting")
+  assert.deepEqual(Object.keys(Se.PRESET_KANJI).sort(), [...S.PRESET_NAMES].sort())
+  assert.equal(Se.presetFacts(S.resolve({ preset: "Suji" })), "status suji · clock stacked · 40 px · surface solid · panels sheets")
+  assert.ok(Se.presetMatches("Inrō", "inro", S.PRESETS))
+  assert.ok(Se.presetMatches("Suji", "筋", S.PRESETS))
+  assert.ok(Se.presetMatches("Quiet", "glass", S.PRESETS))
+  assert.ok(!Se.presetMatches("Hanko", "glass", S.PRESETS))
+  assert.ok(Se.presetMatches("Hanko", "  ", S.PRESETS))
 })
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

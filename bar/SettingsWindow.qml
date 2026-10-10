@@ -112,8 +112,8 @@ FloatingWindow {
       onResetToPreset: { Typeset.draftReset(); Typeset.keep() }
       onUndo: Typeset.undo()
       onPagePicked: function(key) { win.page = key }
-      // A search shows Typesetting, unless you are searching the Widgets page.
-      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets") win.page = "typesetting" }
+      // A search shows Typesetting, unless you are searching Widgets or Presets.
+      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets" && win.page !== "presets") win.page = "typesetting" }
       onAdvancedToggled: function(on) { win.advanced = on }
       onMonitorCleared: function(name) { Typeset.draftClearMonitor(name); Typeset.keep() }
       onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value); Typeset.keep() }

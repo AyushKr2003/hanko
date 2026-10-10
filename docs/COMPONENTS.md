@@ -520,11 +520,12 @@ Hanko's settings open as their own window in the Ryoku Hub grammar: a numbered r
 | Group | Pages |
 |---|---|
 | `00 YOU` | Profile 印影 |
-| `01 BAR` | Typesetting 組版 · Colour 色 · Widgets 部品 |
+| `01 BAR` | Presets 型 · Typesetting 組版 · Colour 色 · Widgets 部品 |
 | `02 PANELS` | Sheets 紙 · Scroll 巻 (the scroll dividers, as a gallery) |
 | `03 FEEL` | Motion 動 · Keys 鍵 |
-| `04 SHARE` | Presets 型 |
-| `05 HANKO` | About 由来 · Credits 謝辞 |
+| `04 HANKO` | About 由来 · Credits 謝辞 |
+
+Presets 型 was first planned under a `04 SHARE` group; it was built as the first page of `01 BAR`, beside the settings it sets.
 
 There is a search field at the top and an **Advanced** switch at the foot (which shows `sealGlyph`, per-monitor overrides and raw JSON). Per-monitor overrides are set there too: pick a monitor, and every setting is listed with the value that monitor gets; a red tick marks one it sets for itself, and picking what the other screens get drops the override.
 
@@ -540,10 +541,14 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Motion 動** holds one switch outside the twenty-three settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
+**Presets 型** shows every preset as a specimen, drawn live with your data, seal glyph, type size and hidden parts, in two groups: *Bars* (Hanko, Sheet, Scroll, Quiet, Instrument, Islet, Shōji) and *Right-side studies* (Ma, Shizuka, Suji, Inrō). Each card is numbered 01–11 and gives the name, its kanji (判 帳 巻 素 計 島 障子 間 静 筋 印籠), a blurb, the five settings that tell it apart (status, clock, height, surface, panels) and the bar itself, at a screen's width scaled to the card, over the sample plate where glass or inset lets it through. The preset in use carries the red mark and IN USE, with how many edits sit on top of it; pointing at another shows USE ›, and a click puts it on your bar. The search field filters the cards (by name, kanji, blurb or any value they set). The action bar adds **Shuffle** and **Reset to preset**.
+
+![Presets](right-side/images/12-presets-page.webp)
+
 **Typesetting 組版**, the page drawn on sheets 01 and 02, holds every setting in this document:
 
 1. **Live preview**: your bar, on your theme, over a sample plate, updated as you click.
-2. **Preset gallery**: six cards; the current one inverted, with `*` when edited.
+2. **Preset line**: the preset this bar starts from, its kanji and how many edits are on top; ALL 11 PRESETS › opens Presets. (The gallery of preset cards that sat here moved to Presets 型.)
 3. **Six cards of segmented controls**, grouped the way the bar reads:
    - *Left · where you are*: Seal, Workspaces, Window title
    - *Centre · when*: Clock, Clock position, Now playing
@@ -551,7 +556,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
    - *Edge*: Bottom edge, Dividers
    - *Frame*: Height, Surface, Position
    - *Panels*: Panels open as, Seal glyph
-4. **Action bar**: Reset to preset (on Typesetting) · Undo. There is no Save: every change prints live on your bar and is written to `style.json` at once; Undo (or Ctrl+Z) puts the last one back, as many times as you changed something since the window opened.
+4. **Action bar**: Shuffle (on Presets) · Reset to preset (on Presets and Typesetting) · Undo. There is no Save: every change prints live on your bar and is written to `style.json` at once; Undo (or Ctrl+Z) puts the last one back, as many times as you changed something since the window opened.
 
 The same settings can be changed from a terminal:
 

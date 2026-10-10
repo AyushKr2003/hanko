@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-11, after the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
+Last updated: 2026-10-11, after Settings › Presets 型 (every preset as a live specimen, its own page; §9 "Presets 型, a page of their own") and the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -292,7 +292,8 @@ bar/
   overview/              OverviewView, OverviewPage (grid); DynamicView, DynamicCell,
                          DesktopStrip (dynamic, Ryoku's) — all pure
   SettingsWindow.qml     the settings window (see Phase 8 in §9)
-  settings/              SettingsPage, SettingsCard, Segmented, Plate (all pure); the
+  settings/              SettingsPage, SettingsCard, Segmented, Plate, PreviewBar,
+                         PresetsPage (all pure); the
                          plates ProfilePlate, AboutPlate, CreditsPlate with their art
                          (SealImpression, HangingScroll) and parts (PlateEyebrow,
                          PlateSpine, LeaderRow)
@@ -855,6 +856,13 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - Harness `right-side.json` and `right-side-light.json`: today's bar, each study at rest, reached and with a low battery, all four at 32 px, and `status: inro` on the Hanko preset with named stamps. Images `docs/right-side/images/10-built-dark.webp`, `11-built-light.webp`. Unit tests: 113.
 - **Harness note**: PySide6 6.12 resolves `Color` (qs.Commons stub) to something else and every colour comes out undefined (green renders, the motion probe fails); 6.10.1 renders as before. Pin `PySide6-Essentials==6.10.1` until the stub is renamed or qualified.
 
+### Presets 型, a page of their own ✅ (asked for: "the presets in the Typesetting tab all move to a new page named Presets, and add these 4 designs there too")
+- **`core/Settings.js`**: `RAIL` gains `presets` (Presets 型) as the first page of `01 BAR`; `pageInfo` falls back to Typesetting by key. `PRESET_KANJI` (判 帳 巻 素 計 島 障子 間 静 筋 印籠), `PRESET_FACTS` and `presetFacts(style)` (status, clock, height, surface, panels as one line), `presetMatches(name, query, PRESETS)` (name with or without the macron, kanji, blurb, any value set).
+- **`bar/settings/PresetsPage.qml`** (pure): `Style.PRESET_GROUPS` as two sections (Bars · 7, Right-side studies · 4, with a line on the studies), a card per preset: number, Fraunces name, kanji (red when in use), blurb, the facts in tracked caps, and a `PreviewBar` of `S.resolve(S.withPreset(doc, name))` laid out at 1600 px (`minDesign`) so a full bar never meets its clock, over the `Plate` only for glass and inset. In use: a red square, IN USE in bone, `N EDITS`; others: USE › on hover, a click emits `presetPicked` (the one in use ignores clicks). Filtered by the search field; "No preset matches" when nothing does.
+- **`bar/settings/PreviewBar.qml`**: the inline `PreviewBar` from SettingsPage, now a file with `barData` and `minDesign`.
+- **`SettingsPage`**: the preset grid is gone from Typesetting; in its place a preset line (PRESET Hanko 判 + N edits · ALL 11 PRESETS ›, which opens Presets). The eyebrow names the preset on both pages; the action bar shows Shuffle on Presets and Reset to preset on both. **`SettingsWindow`**: typing a search on Presets stays there (it filters the cards).
+- Harness `presets.json`, `presets-light.json` (Suji in use), `presets-narrow.json`, `presets-search.json` (`glass` leaves Quiet). Images `docs/right-side/images/12-presets-page.webp`, `13-presets-page-light.webp`. Unit tests: 114.
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
@@ -979,6 +987,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 32. **Shōji sheet hand to verify on hardware:** the rail slide between two cells on a Hanko bar (`Behavior on x` only runs while both are Shōji sheets; from another hand it jumps), the panel's side when the cell is near the middle, the Display panel's monitor pick and Arrange › (`omarchy-launch-editor`), the brush slider dragged on a real brightness (DDC can lag), and Tab from Power to Display. The Shōji preset (S4) on a real `style.json` that had `"design": "shoji"` (it should load straight into the preset, keep its height and Bluetooth, and open Shōji panels and the framed overview), and on a laptop (the brightness cell appears, which Shōji never had). Shōji's bar values (S3): the brush pointer following a real pointer across cells and leaving when it leaves the bar, names coming out on reach in `status: ink`, the carved seal's press when a letter arrives, the season clock's sekki at midnight on a change of term, washi grain on a 1x panel, and `notif: seal` with the seal hidden (the inbox must come back). `overview: framed` on a Hanko bar: the washi pages' opacity follows Panel opacity (Auto is the washi's 86%), keys and drag as on the grid.
 
 33. **Right-side studies to verify on hardware:** Shizuka's unfold on a real volume key (the reading must open on the change, hold two seconds and fold, and not open at login: `fresh` waits for `Motion.live`), the zone-wide `HoverHandler` unfolding everything without the cells jumping out from under the pointer (the zone grows to the left), Suji's dotted range at 1x, the Inrō case's height at 36 and 44 px and with `typeSize: large`, and `Status.short` on the user's real SSIDs and device names.
+
+34. **Presets page to verify on hardware:** eleven live `BarSurface` previews at once (scrolling cost; each binds the live data), the cards at the settings window's real 1320 px and at `typeSize: large`, and Shuffle from the Presets page (it edits on top of the preset in use, which the page then shows as `N EDITS`).
 
 ## 13. QML pitfalls already hit
 

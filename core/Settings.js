@@ -6,7 +6,8 @@
 
 var RAIL = [
   { group: "00 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" }] },
-  { group: "01 BAR",    pages: [{ key: "typesetting", label: "Typesetting", jp: "組版" },
+  { group: "01 BAR",    pages: [{ key: "presets", label: "Presets", jp: "型" },
+                                { key: "typesetting", label: "Typesetting", jp: "組版" },
                                 { key: "colour", label: "Colour", jp: "色" },
                                 { key: "widgets", label: "Widgets", jp: "部品" }] },
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
@@ -22,7 +23,7 @@ function pageInfo(key) {
   for (var g = 0; g < RAIL.length; g++)
     for (var p = 0; p < RAIL[g].pages.length; p++)
       if (RAIL[g].pages[p].key === key) return { group: RAIL[g].group, page: RAIL[g].pages[p] }
-  return { group: RAIL[1].group, page: RAIL[1].pages[0] }
+  return pageInfo("typesetting")
 }
 
 // Rail pages drawn as full plates (no title, no cards): Profile, About,
@@ -35,6 +36,34 @@ var PRESET_BLURBS = {
   "Shōji": "washi and the seasons",
   Ma: "room between the groups", Shizuka: "quiet until it changes",
   Suji: "five brush lines", "Inrō": "one case for everything"
+}
+
+// Each preset's kanji, for the Presets 型 page: what the bar is, in one
+// sign. The four studies keep the kanji they were drawn with.
+var PRESET_KANJI = {
+  Sheet: "帳", Scroll: "巻", Hanko: "判", Quiet: "素", Instrument: "計", Islet: "島",
+  "Shōji": "障子", Ma: "間", Shizuka: "静", Suji: "筋", "Inrō": "印籠"
+}
+
+// The settings a preset card names under its title: how the bar reads at
+// a glance (status, clock, height, surface, panels), as small caps.
+var PRESET_FACTS = ["status", "clock", "height", "surface", "panels"]
+function presetFacts(style) {
+  var st = style || {}
+  return PRESET_FACTS.map(function(k) {
+    return k === "height" ? st.height + " px" : k + " " + st[k]
+  }).join(" · ")
+}
+
+// A preset is shown on the Presets page when the query (any case) is in
+// its name, kanji, blurb or the values it sets.
+function presetMatches(name, query, presets) {
+  var q = String(query || "").trim().toLowerCase()
+  if (!q) return true
+  var p = (presets && presets[name]) || {}
+  var hay = [name, String(name).replace(/ō/g, "o"), PRESET_KANJI[name] || "", PRESET_BLURBS[name] || ""]
+  for (var k in p) hay.push(String(p[k]))
+  return hay.join(" ").toLowerCase().indexOf(q) >= 0
 }
 
 // Seal glyphs offered as one-tap choices; anything else is typed under
