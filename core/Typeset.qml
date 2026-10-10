@@ -156,7 +156,7 @@ QtObject {
   // What a reset keeps: the seal glyph, motion, type size, overview, hidden
   // parts and monitors (a reset is about Typeset edits).
   function _keep(from, into) {
-    var keys = ["sealGlyph", "motion", "typeSize", "season", "numerals", "grain", "overview", "panelOpacity", "sheetStyles", "hidden", "monitors"]
+    var keys = ["sealGlyph", "motion", "typeSize", "season", "numerals", "grain", "hours", "overview", "panelOpacity", "sheetStyles", "hidden", "monitors"]
     for (var i = 0; i < keys.length; i++) if (from[keys[i]] !== undefined) into[keys[i]] = from[keys[i]]
     return into
   }

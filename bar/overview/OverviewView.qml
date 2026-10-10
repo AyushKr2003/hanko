@@ -19,6 +19,7 @@ Item {
   property real aspect: 0.5625
   property string screenName: ""
   property date now: new Date()
+  property string timeFormat: "HH:mm"
   // Room the bar keeps at the top (or bottom) of the screen.
   property int topInset: 0
   property int bottomInset: 0
@@ -128,7 +129,7 @@ Item {
       spacing: Type.px(4)
       Text {
         anchors.right: parent.right
-        text: Qt.formatTime(root.now, "HH:mm")
+        text: Qt.formatTime(root.now, root.timeFormat)
         color: Ink.inkDim
         font.family: Type.display
         font.pixelSize: Type.px(22)

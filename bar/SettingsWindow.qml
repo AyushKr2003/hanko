@@ -91,6 +91,7 @@ FloatingWindow {
 
       sheetFeed: ({
         now: win.bar.now,
+        timeFormat: win.bar.timeFormat,
         zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
         timeShift: win.bar.timeShift,
         sound: Sound.reading,

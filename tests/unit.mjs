@@ -587,7 +587,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
 })
 
 test("settings: six cards hold every one of the twenty-three settings once", () => {
-  const beside = ["sealGlyph", "typeSize", "overview", "season", "numerals", "grain"]
+  const beside = ["sealGlyph", "typeSize", "overview", "season", "numerals", "grain", "hours"]
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => beside.indexOf(k) < 0)
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
@@ -601,6 +601,11 @@ test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.deepEqual(Se.optionsFor("motion", S.OPTIONS), S.MOTIONS)
   assert.deepEqual(Se.optionsFor("season", S.OPTIONS), ["off", "kanji", "english"])
   assert.deepEqual(Se.optionsFor("grain", S.OPTIONS), ["smooth", "fine", "toothy"])
+  assert.deepEqual(Se.optionsFor("hours", S.OPTIONS), ["auto", "24h", "12h"])
+  assert.equal(S.resolve({}).hours, "auto")
+  assert.equal(S.resolve({ hours: "12h" }).hours, "12h")
+  assert.equal(S.resolve({ hours: "13h" }).hours, "auto")
+  assert.equal(S.withSetting({}, "hours", "24h").hours, "24h")
   assert.equal(Se.selected("numerals", S.resolve({ numerals: "kanji" }), "鑑"), "kanji")
   assert.equal(Se.MOTION_ROWS.length, 8)
   assert.equal(Se.nameOf("clockAt"), "Clock position")

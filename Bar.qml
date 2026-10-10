@@ -63,10 +63,13 @@ Item {
     if (!written) transparent = next
   }
 
-  // 12- or 24-hour, from Omarchy's own clock (the `format` on omarchy.clock
-  // in shell.json). Only the hour style carries over: Hanko lays out the
-  // date itself.
+  // 12- or 24-hour: the `hours` setting, or on auto Omarchy's own clock (the
+  // `format` on omarchy.clock in shell.json). Only the hour style carries
+  // over: Hanko lays out the date itself.
   readonly property string timeFormat: {
+    var h = Typeset.current.hours
+    if (h === "24h") return "HH:mm"
+    if (h === "12h") return "h:mm AP"
     var f = omarchyClockFormat
     return /h/.test(f.replace(/HH?/g, "")) || /ap/i.test(f) ? "h:mm AP" : "HH:mm"
   }

@@ -369,7 +369,7 @@ Item {
     Text {
       width: parent.width
       elide: Text.ElideRight
-      text: "@" + P.fv(root.machine.host) + "   ·   " + Qt.formatTime(root.now, "HH:mm")
+      text: "@" + P.fv(root.machine.host) + "   ·   " + Qt.formatTime(root.now, root.barData.timeFormat || "HH:mm")
       color: Ink.inkMuted
       font.family: Type.mono
       font.pixelSize: Type.note

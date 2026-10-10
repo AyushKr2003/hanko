@@ -13,6 +13,7 @@ Item {
 
   property date now: new Date()
   property int shift: 0
+  property string timeFormat: "HH:mm"
   property var zones: []
   signal request(string what, var arg)
 
@@ -27,6 +28,17 @@ Item {
     }
     return out
   }
+  // The time down the lead slip: hours, minutes, and AM or PM on a 12-hour clock.
+  readonly property bool twelve: /AP/i.test(timeFormat)
+  readonly property var timeLines: {
+    var h = now.getHours(), two = function(n) { return (n < 10 ? "0" : "") + n }
+    var out = [two(twelve ? (h % 12 || 12) : h), two(now.getMinutes())]
+    if (twelve) out.push(h < 12 ? "AM" : "PM")
+    return out
+  }
+  // The slips are as long as the lead slip needs for the stacked time and
+  // the day's caption, never shorter than the other sheets' slips.
+  readonly property real reach: Math.max(Type.px(220), Math.ceil(lead.natural))
   readonly property real spent: (now.getHours() * 60 + now.getMinutes()) / 1440
 
   width: parent ? parent.width : 0
@@ -43,8 +55,10 @@ Item {
 
     TanzakuRail {
       LeadStrip {
+        id: lead
         mark: "時"
-        figure: Qt.formatTime(root.now, "HH:mm")
+        lines: root.timeLines
+        reach: root.reach
         caption: root.head.title + " · " + Qt.formatDate(root.now, "d MMM")
         level: root.spent
       }
@@ -53,6 +67,7 @@ Item {
         Tanzaku {
           required property var modelData
           mark: root.kanji[modelData.dow]
+          reach: root.reach
           name: modelData.today ? "Today" : modelData.month + " " + modelData.date
           foot: String(modelData.date)
           selected: modelData.today
@@ -63,24 +78,16 @@ Item {
       }
     }
 
-    // Elsewhen, under the rail.
+    // Elsewhen, under the rail: the week arrows held at the left, the cities
+    // set from the right and wrapping to a second line rather than pushing
+    // the arrows off the sheet.
     Item { width: 1; height: Type.px(12) }
-    Row {
+    Item {
       width: parent.width
-      layoutDirection: Qt.RightToLeft
-      spacing: Type.px(18)
-      Repeater {
-        model: root.zones
-        Text {
-          required property var modelData
-          text: modelData.label.toUpperCase() + "  " + modelData.time + "  " + modelData.rel
-          color: Ink.inkMuted
-          font.family: Type.mono
-          font.pixelSize: Type.tag
-          font.letterSpacing: Type.trackTag
-        }
-      }
+      height: Math.max(weekNav.implicitHeight, cities.implicitHeight)
+
       Text {
+        id: weekNav
         text: "‹ week ›"
         color: Ink.inkDim
         font.family: Type.mono
@@ -90,6 +97,24 @@ Item {
           anchors.fill: parent
           cursorShape: Qt.PointingHandCursor
           onClicked: function(m) { root.request("shift", root.shift + (m.x < parent.width / 2 ? -1 : 1)) }
+        }
+      }
+      Flow {
+        id: cities
+        anchors.right: parent.right
+        width: parent.width - weekNav.implicitWidth - Type.px(18)
+        layoutDirection: Qt.RightToLeft
+        spacing: Type.px(18)
+        Repeater {
+          model: root.zones
+          Text {
+            required property var modelData
+            text: modelData.label.toUpperCase() + "  " + modelData.time + "  " + modelData.rel
+            color: Ink.inkMuted
+            font.family: Type.mono
+            font.pixelSize: Type.tag
+            font.letterSpacing: Type.trackTag
+          }
         }
       }
     }

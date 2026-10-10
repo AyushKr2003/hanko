@@ -129,6 +129,7 @@ PanelWindow {
     aspect: Hypr.aspectFor(win.screenName)
     screenName: win.screenName
     now: win.bar.now
+    timeFormat: win.bar.timeFormat
     reveal: 0
     snapshot: win.open ? snapshotComponent : null
     skin: win.framed ? win.barWindow.skin : ({})

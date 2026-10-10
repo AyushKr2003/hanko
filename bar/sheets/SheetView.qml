@@ -192,6 +192,7 @@ Item {
     id: timeTanzaku
     TimeTanzaku {
       now: root.feed.now || new Date()
+      timeFormat: root.feed.timeFormat || "HH:mm"
       zones: root.feed.zones || []
       shift: root.feed.timeShift || 0
       onRequest: function(what, arg) { root.request("time", what, arg) }

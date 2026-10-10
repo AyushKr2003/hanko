@@ -82,6 +82,7 @@ var CARDS = [
     { key: "title", name: "Window title", detail: "Cell, byline, Shōji's ink or hidden" }] },
   { title: "Centre · when", rows: [
     { key: "clock", name: "Clock", detail: "Typeface of the time; season adds the solar term" },
+    { key: "hours", name: "Hours", detail: "24-hour or 12-hour; auto follows Omarchy's clock" },
     { key: "season", name: "Season", detail: "The solar term by the clock and in Shōji's Time" },
     { key: "clockAt", name: "Clock position", detail: "" },
     { key: "media", name: "Now playing", detail: "" }] },
@@ -120,7 +121,8 @@ var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
 var OVERVIEW_OPTIONS = ["grid", "dynamic", "framed"]
 // Shōji's touches, beside the twenty-three (Style.js SEASONS, NUMERALS, GRAINS).
-var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"] }
+var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
+                     hours: ["auto", "24h", "12h"] }
 
 // [name, what moves, Motion.qml property for its time]
 var MOTION_ROWS = [

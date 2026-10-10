@@ -86,7 +86,10 @@ function time(feed, now, lib) {
   var dim = new Date(y, mo + 1, 0).getDate()
   var dow = (now.getDay() + 6) % 7 // Monday 0
   var doy = T.dayOfYear(now), diy = T.daysInYear(y)
-  m.hero = { mark: "時", name: "Day", figure: T.pad2(now.getHours()) + ":" + T.pad2(now.getMinutes()), unit: "",
+  // 12-hour when the bar's clock is (feed.timeFormat, from the hours setting).
+  var twelve = /AP/i.test(String(feed.timeFormat || ""))
+  var hh = twelve ? String(now.getHours() % 12 || 12) : T.pad2(now.getHours())
+  m.hero = { mark: "時", name: "Day", figure: hh + ":" + T.pad2(now.getMinutes()), unit: twelve ? (now.getHours() < 12 ? "AM" : "PM") : "",
              line: head.title + ", " + now.getDate() + " " + T.MONTHS[mo], caption: T.leftInDay(now),
              red: false, level: mins / 1440, rank: true, set: null, min: 0, scales: 24 }
   m.levels = [

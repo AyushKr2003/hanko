@@ -151,11 +151,15 @@ function normalizeTypeSize(t) {
 //             the Shōji Time panel: off, in kanji, or in English
 //   numerals  workspace numbers in spaces: brush and the Shōji panels
 //   grain     the washi's fibres (surface: washi and the Shōji panels)
+// And the clock's hours, global the same way:
+//   hours     auto follows Omarchy's clock (its `format` in shell.json),
+//             24h or 12h set it here
 var SEASONS = ["off", "kanji", "english"]
 var NUMERALS = ["arabic", "kanji"]
 var GRAINS = ["smooth", "fine", "toothy"]
-var TOUCH_DEFAULTS = { season: "kanji", numerals: "arabic", grain: "fine" }
-var TOUCH_LISTS = { season: SEASONS, numerals: NUMERALS, grain: GRAINS }
+var HOURS = ["auto", "24h", "12h"]
+var TOUCH_DEFAULTS = { season: "kanji", numerals: "arabic", grain: "fine", hours: "auto" }
+var TOUCH_LISTS = { season: SEASONS, numerals: NUMERALS, grain: GRAINS, hours: HOURS }
 
 function normalizeTouch(key, v, legacy) {
   var list = TOUCH_LISTS[key]
@@ -341,7 +345,7 @@ function withoutKata(obj) {
 
 // A style document as stored in style.json:
 //   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, sheetStyles, hidden: [...], monitors: { "<name>": {...} },
-//     season, numerals, grain }
+//     season, numerals, grain, hours }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 //
 // A file from before Shōji was folded into Hanko may name a design. Shōji
@@ -387,6 +391,7 @@ function normalize(doc, warnings) {
     season: normalizeTouch("season", doc.season, doc.touches),
     numerals: normalizeTouch("numerals", doc.numerals, doc.touches),
     grain: normalizeTouch("grain", doc.grain, doc.touches),
+    hours: normalizeTouch("hours", doc.hours),
     overview: normalizeOverview(doc.overview),
     hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
@@ -430,6 +435,7 @@ function resolve(doc, monitor) {
   style.season = d.season
   style.numerals = d.numerals
   style.grain = d.grain
+  style.hours = d.hours
   style.overview = d.overview
   style.panelOpacity = d.panelOpacity || 0
   style.sheetStyles = sheetStylesOf(d)

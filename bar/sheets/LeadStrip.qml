@@ -12,6 +12,10 @@ Item {
 
   property string mark: ""
   property string figure: ""
+  // Set instead of figure to stack the reading down the slip, one part a
+  // line (the time: hours, minutes, then AM or PM); a part with no digit is
+  // set small, like the unit.
+  property var lines: []
   property string unit: ""
   property string caption: ""
   property real level: -1
@@ -22,6 +26,10 @@ Item {
   property real step: 0.05
 
   signal moved(real value)
+
+  // How long the slip needs to be for a stacked reading and its caption
+  // to fit whole, the caption following straight on from the reading.
+  readonly property real natural: stack.y + stack.height + Type.px(10) + cap.implicitWidth + Type.px(12)
 
   readonly property real cord: Type.px(12)
   readonly property real v: Math.max(0, Math.min(1, level))
@@ -68,6 +76,8 @@ Item {
       font.pixelSize: Type.px(40)
     }
     Row {
+      id: reading
+      visible: root.lines.length === 0
       anchors.horizontalCenter: parent.horizontalCenter
       y: big.y + big.height + Type.px(2)
       Text {
@@ -89,14 +99,44 @@ Item {
         font.pixelSize: Type.tag
       }
     }
-    // The caption, down the slip's foot.
+    Column {
+      id: stack
+      visible: root.lines.length > 0
+      anchors.horizontalCenter: parent.horizontalCenter
+      y: big.y + big.height + Type.px(2)
+      Repeater {
+        model: root.lines
+        Text {
+          required property var modelData
+          readonly property bool digits: /\d/.test(String(modelData))
+          readonly property int size: Type.px(28)
+          anchors.horizontalCenter: parent.horizontalCenter
+          text: String(modelData)
+          color: digits ? (root.red && root.muted ? Ink.seal : Ink.ink) : Ink.inkMuted
+          font.family: digits ? Type.display : Type.mono
+          font.pixelSize: digits ? size : Type.tag
+          font.letterSpacing: digits ? 0 : Type.trackTag
+          font.variableAxes: digits ? Type.axes(size) : ({})
+          font.features: { "tnum": 1, "lnum": 1 }
+          topPadding: digits ? 0 : Type.px(4)
+        }
+      }
+    }
+    // The caption, down the slip's foot; under a stacked reading it follows
+    // straight on from it instead, so no blank runs between the two.
     Item {
       anchors.horizontalCenter: parent.horizontalCenter
-      anchors.bottom: parent.bottom
-      anchors.bottomMargin: Type.px(10)
+      y: root.lines.length > 0 ? readingFoot + Type.px(10) : paper.height - Type.px(10) - height
       width: cap.implicitHeight
-      // Below the wash's edge only, so the caption never crosses it.
-      readonly property real room: paper.height - Type.px(20) - (root.level >= 0 ? Math.round(paper.height * root.v) : paper.height * 0.55)
+      // Below the reading, and on a slip you pull below the wash's edge too,
+      // so the caption never crosses where you grab. A wash you cannot pull
+      // (the day spent) lets the caption lie over it.
+      readonly property real readingFoot: root.lines.length > 0 ? stack.y + stack.height : reading.y + reading.height
+      readonly property real room: Math.min(
+        root.settable || root.level < 0
+          ? paper.height - Type.px(20) - (root.level >= 0 ? Math.round(paper.height * root.v) : paper.height * 0.55)
+          : paper.height,
+        paper.height - Type.px(20) - readingFoot)
       visible: room >= Type.px(28)
       height: Math.max(0, Math.min(cap.implicitWidth, room))
       Text {
