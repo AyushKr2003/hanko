@@ -27,10 +27,10 @@ PanelWindow {
 
   readonly property int barHeight: Type.px(style.height)
   readonly property bool atBottom: bar.position === "bottom"
-  // Inset floats 8 px off the screen's edges. Hyprland adds the margin on
+  // Float inset floats 8 px off the screen's edges. Hyprland adds the margin on
   // the anchored edge to the exclusive zone, so windows stay 8 px clear of
   // the frame too.
-  readonly property int gap: shown.surface === "inset" ? 8 : 0
+  readonly property int gap: shown.float === "inset" ? 8 : 0
 
   color: "transparent"
   implicitHeight: barHeight

@@ -114,10 +114,10 @@ Item {
 
   readonly property int barHeight: Type.px(style.height || 40)
   readonly property bool atBottom: style.position === "bottom"
-  // Inset: the window floats 8 px off the screen (BarWindow) and the paper
-  // carries a hairline frame. Glass: only the paper is translucent; the
+  // Float inset: the window floats 8 px off the screen (BarWindow) and the
+  // paper, whichever it is, carries a hairline frame. Glass: only the paper is translucent; the
   // seal, stamps and inverted plates draw their own opaque fills.
-  readonly property bool inset: style.surface === "inset"
+  readonly property bool inset: style.float === "inset"
 
   implicitHeight: barHeight
 
@@ -132,6 +132,7 @@ Item {
     Parts.Fibres {
       visible: root.style.surface === "washi"
       anchors.fill: parent
+      anchors.margins: root.inset ? 2 : 0
       level: Math.max(1, root.skin.grain || 0)
     }
   }

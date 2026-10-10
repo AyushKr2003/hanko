@@ -49,9 +49,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-three settings, 2,609,192,632,320 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 23)
-  assert.equal(S.combinations(), 2609192632320)
+test("twenty-four settings, 3,913,788,948,480 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 24)
+  assert.equal(S.combinations(), 3913788948480)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -303,6 +303,20 @@ test("edge marks stay on whole pixels inside the bar", () => {
   assert.equal(E.at(0, 1000, 2), 0)
   assert.equal(E.at(1, 1000, 2), 998)
   assert.equal(E.at(-3, 100, 1), 0)
+})
+
+test("float: flush or inset under any paper; a saved surface: inset floats solid paper", () => {
+  assert.deepEqual(S.OPTIONS.surface, ["solid", "glass", "washi"])
+  assert.deepEqual(S.OPTIONS.float, ["flush", "inset"])
+  assert.deepEqual(S.PRESET_NAMES.filter(p => S.resolve({ preset: p }).float === "inset"), ["Islet"])
+  const old = S.resolve({ preset: "Shōji", edits: { surface: "inset" } })
+  assert.deepEqual([old.surface, old.float], ["solid", "inset"])
+  const m = S.resolve({ monitors: { "DP-1": { surface: "inset" } } }, "DP-1")
+  assert.deepEqual([m.surface, m.float], ["solid", "inset"])
+  const d = S.withSetting({ preset: "Shōji" }, "surface", "inset")
+  assert.deepEqual(d.edits, { float: "inset" })
+  assert.equal(S.resolve(d).surface, "washi")
+  assert.equal(Se.nameOf("float"), "Float")
 })
 
 test("edge span: rod caps and inset frame hold the edge in", () => {
@@ -586,7 +600,7 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the twenty-three settings once", () => {
+test("settings: six cards hold every one of the twenty-four settings once", () => {
   const beside = ["sealGlyph", "typeSize", "overview", "season", "numerals", "grain", "hours"]
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => beside.indexOf(k) < 0)
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
@@ -791,7 +805,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 2609192632320)
+  assert.equal(S.combinations(), 3913788948480)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {

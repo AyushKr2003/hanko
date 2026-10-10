@@ -72,7 +72,7 @@ Rectangle {
           id: desk
           readonly property var style: S.resolve(modelData.doc || {})
           // Inset floats 8 px off the screen's edges, like BarWindow's margins.
-          readonly property int gap: style.surface === "inset" ? 8 : 0
+          readonly property int gap: style.float === "inset" ? 8 : 0
           readonly property bool atBottom: style.position === "bottom"
           width: parent.width
           height: bar.height + 2 + gap

@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the twenty-three settings into six cards, and the
+// Typesetting 組版 page groups the twenty-four settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -101,6 +101,7 @@ var CARDS = [
     { key: "height", name: "Height", detail: "px at font size 12" },
     { key: "typeSize", name: "Type size", detail: "Hanko's text over Omarchy's font size" },
     { key: "surface", name: "Surface", detail: "Washi is Shōji's paper, with fibres" },
+    { key: "float", name: "Float", detail: "Flush on the edge, or inset 8 px off it in a hairline frame" },
     { key: "grain", name: "Paper grain", detail: "The washi's fibres" },
     { key: "position", name: "Position", detail: "" }] },
   { title: "Panels", rows: [
@@ -113,14 +114,14 @@ var CARDS = [
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
-// The Motion 動 page: one switch outside the twenty-three (style.json `motion`),
+// The Motion 動 page: one switch outside the twenty-four (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
 var OVERVIEW_OPTIONS = ["grid", "dynamic", "framed"]
-// Shōji's touches, beside the twenty-three (Style.js SEASONS, NUMERALS, GRAINS).
+// Shōji's touches, beside the twenty-four (Style.js SEASONS, NUMERALS, GRAINS).
 var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
                      hours: ["auto", "24h", "12h"] }
 
@@ -273,7 +274,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// twenty-three that resolves differently, the seal glyph, and each monitor whose
+// twenty-four that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)

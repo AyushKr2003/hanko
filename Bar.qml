@@ -45,7 +45,7 @@ Item {
 
   // Omarchy's bar transparency (`omarchy-shell shell toggleBarTransparency`,
   // stored as bar.transparent in shell.json). Hanko shows it as glass: a
-  // solid surface turns to glass; glass and inset stay as they are.
+  // solid surface turns to glass; glass and washi stay as they are.
   property bool transparent: false
   onBarConfigChanged: transparent = !!(barConfig && barConfig.transparent === true)
 

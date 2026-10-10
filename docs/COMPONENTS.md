@@ -13,7 +13,7 @@ Twenty-three settings give **2,609,192,632,320** distinct bars before you even c
 ## Contents
 
 1. [The rules every option keeps](#1-the-rules-every-option-keeps)
-2. [The twenty-three settings](#2-the-twenty-three-settings)
+2. [The twenty-four settings](#2-the-twenty-four-settings)
 3. [How options interact](#3-how-options-interact)
 4. [Presets](#4-presets)
 5. [Counting the combinations](#5-counting-the-combinations)
@@ -39,7 +39,7 @@ These rules are what let any combination look designed rather than assembled.
 
 ---
 
-## 2. The twenty-three settings
+## 2. The twenty-four settings
 
 Each setting has a key (used in the config file), its options, the default (from the Kamon preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset; **Shōji** came from the Shōji design when it was folded into Hanko, drawn with its parts.
 
@@ -221,8 +221,14 @@ The name is in the same ink as the icon styles (red only for a recording or live
 |---|---|
 | **`solid`** (default) | Opaque paper. |
 | `glass` | Paper at 74 % over a background blur. The ink ramp does not change, so contrast holds. |
-| `inset` | Floats 8 px off the screen edges with a hairline frame and 3 px corners. |
 | `washi` | Shōji's paper: solid, with long faint fibres, as fine as `grain` sets them. | Shōji |
+
+#### Float `float`
+
+| Option | What it does |
+|---|---|
+| **`flush`** (default) | The bar sits on the screen's edge. |
+| `inset` | Floats 8 px off the screen edges with a hairline frame and 7 px corners, whatever the surface (washi or glass can float too). It was `surface: inset`; a saved one reads as `surface: solid`, `float: inset`, and `hanko style set surface inset` sets `float: inset`. |
 
 #### Position `position` 位
 
@@ -236,7 +242,7 @@ Position follows Omarchy's own `bar.position` when you have not set it in Hanko.
 
 #### Shōji's touches `season` 季, `numerals` 数, `grain` 繊
 
-Three switches beside the twenty-three (like `typeSize`: global, not per monitor, kept by presets, resets and shuffles, not counted in the combinations). They were the Shōji design's touches; a saved `touches` is read into them.
+Three switches beside the twenty-four (like `typeSize`: global, not per monitor, kept by presets, resets and shuffles, not counted in the combinations). They were the Shōji design's touches; a saved `touches` is read into them.
 
 | Key | Options | What it does |
 |---|---|---|
@@ -256,7 +262,7 @@ Sheets 20–25 show both on full desktops.
 
 #### Sheet hands `sheetStyles` 帳/短冊/将棋/算盤/縅/霞/障子
 
-Each cell's sheet can be drawn in one of seven hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-three: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+Each cell's sheet can be drawn in one of seven hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-four: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
 
 | Hand | What it does | After |
 |---|---|---|
@@ -415,7 +421,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/typeset/03-presets.webp)
 
-A preset sets all twenty-three settings at once. Change any setting afterwards and the settings page shows `PRESET · KAMON + EDITS`; **Reset to preset** puts it back.
+A preset sets all twenty-four settings at once. Change any setting afterwards and the settings page shows `PRESET · KAMON + EDITS`; **Reset to preset** puts it back.
 
 | Setting | Sheet | Scroll | **Kamon** | Quiet | Instrument | Islet | Shōji |
 |---|---|---|---|---|---|---|---|
@@ -539,7 +545,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Widgets 部品** shows or hides anything the bar can show, each row `shown | hidden`, in cards: *Left* (seal, workspaces, window title), *Centre* (clock, now playing), *Right · readings* (network, Bluetooth, volume, brightness, battery, notifications), *Marks · Hanko's own* (each indicator, the keyboard layout, the microphone, the tray, as your Omarchy layout has them), *Tray apps* (each app in the tray now), *Widgets · from your Omarchy bar* (every hosted widget, marked Omarchy or third-party) and *Edge*. A part its own setting leaves out (`seal: none`, `title: none`, `media: none`, `bluetooth: off`) reads hidden, and showing it sets it back to the preset's way. Show all puts every hidden part back. Hiding is for this bar only: the widget stays in Omarchy's layout. From a terminal: `hanko hide <part>`, `hanko show <part>`, or `hanko style set show:<part> hidden`.
 
-**Motion 動** holds one switch outside the twenty-three settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
+**Motion 動** holds one switch outside the twenty-four settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
 **Presets 型** shows every preset as a specimen, drawn live with your data, seal glyph, type size and hidden parts, as one list under a single *Bars* label: Kamon, Sheet, Scroll, Quiet, Instrument, Islet, Shōji, then the right-side studies Ma, Shizuka, Suji, Inrō. Each card is numbered 01–11 and gives the name, its kanji (家紋 帳 巻 素 計 島 障子 間 静 筋 印籠), a blurb, the five settings that tell it apart (status, clock, height, surface, panels) and the bar itself, at a screen's width scaled to the card, on bare paper. The preset in use carries the red mark and IN USE, with how many edits sit on top of it; pointing at another shows USE ›, and a click puts it on your bar. The search field filters the cards (by name, kanji, blurb or any value they set). The action bar adds **Shuffle** and **Reset to preset**.
 
@@ -595,7 +601,7 @@ Resolution order: preset → `edits` → `monitors[name]`. Unknown keys and inva
 In QML, the bar reads one resolved object:
 
 ```qml
-property var style: Typeset.current   // 23 settings
+property var style: Typeset.current   // 24 settings
 Seal   { mode: style.seal }
 Spaces { mode: style.spaces }
 Clock  { mode: style.clock; anchor: style.clockAt }

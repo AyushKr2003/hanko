@@ -1,6 +1,6 @@
 .pragma library
 
-// The twenty-three typesetting settings, the presets, and how a style document
+// The twenty-four typesetting settings, the presets, and how a style document
 // resolves into the one flat object the bar reads. Pure JavaScript with no
 // QML or Quickshell dependency, so tests/unit.mjs can run it under Node.
 // docs/COMPONENTS.md is the spec for every option below.
@@ -56,7 +56,11 @@ var OPTIONS = {
   rules:    ["on", "off"],
   pointer:  ["plain", "brush"],
   height:   [32, 36, 40, 44],
-  surface:  ["solid", "glass", "inset", "washi"],
+  surface:  ["solid", "glass", "washi"],
+  // Whether the bar sits flush on the screen's edge or floats 8 px off it
+  // in a hairline frame, whatever its paper. It was `surface: inset`; a
+  // saved one reads as solid paper, inset (cleanEdits).
+  float:    ["flush", "inset"],
   position: ["top", "bottom"],
   panels:   ["sheets", "scroll"],
   // What sits between two sections of the scroll (docs/revision1 on the
@@ -84,25 +88,25 @@ var OPTIONS = {
 var KEYS = Object.keys(OPTIONS)
 
 var PRESETS = {
-  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", pointer: "plain", height: 36, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai", sides: "bare", guides: "both" },
-  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki", sides: "curl", guides: "both" },
+  Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", pointer: "plain", height: 36, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai", sides: "bare", guides: "both" },
+  Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki", sides: "curl", guides: "both" },
   // Kamon 家紋, the family crest: the bar this plugin is known by, as the
   // user runs it (it was the Hanko preset; "hanko" still names it).
-  Kamon:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
-  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both" },
-  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", pointer: "plain", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare", guides: "both" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" },
+  Kamon:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
+  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both" },
+  Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", pointer: "plain", height: 44, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare", guides: "both" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" },
   // Shōji 障子: the Shōji design, folded into Hanko (HANDOFF §10). Its
   // values are drawn with Shōji's parts; picking it also puts every sheet
   // in the Shōji hand and frames the overview (PRESET_BESIDE).
-  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both" },
+  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both" },
   // The four right-side studies (docs/right-side): the Kamon bar with the
   // right zone set each way. The marks are stamps alone (their names on
   // hover), so the zone they cure is not crowded again by the indicators.
-  Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "curl", guides: "none" },
-  Shizuka:    { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "shizuka", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
-  Suji:       { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "suji", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
-  "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" }
+  Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "curl", guides: "none" },
+  Shizuka:    { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "shizuka", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
+  Suji:       { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "suji", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
+  "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" }
 }
 
 var PRESET_NAMES = ["Sheet", "Scroll", "Kamon", "Quiet", "Instrument", "Islet", "Shōji", "Ma", "Shizuka", "Suji", "Inrō"]
@@ -111,7 +115,7 @@ var PRESET_GROUPS = [
   { title: "Bars", jp: "版", names: ["Kamon", "Sheet", "Scroll", "Quiet", "Instrument", "Islet", "Shōji"] },
   { title: "Right-side studies", jp: "右", names: ["Ma", "Shizuka", "Suji", "Inrō"] }
 ]
-// What picking a preset also sets beside the twenty-three (only Shōji does:
+// What picking a preset also sets beside the twenty-four (only Shōji does:
 // its panels are a sheet hand and its overview is framed). Kept afterwards,
 // like anything beside the settings.
 var PRESET_BESIDE = {
@@ -123,7 +127,7 @@ function foldName(name) { return String(name || "").toLowerCase().replace(/ō/g,
 var DEFAULT_PRESET = "Kamon"
 var DEFAULT_SEAL_GLYPH = "鑑"
 
-// Motion 動 sits outside the twenty-three settings (no preset sets it and it is
+// Motion 動 sits outside the twenty-four settings (no preset sets it and it is
 // not counted): paper moves like paper, still cuts every transition to its
 // end frame. Omarchy's own reduced motion makes Hanko still as well.
 var MOTIONS = ["paper", "still"]
@@ -144,7 +148,7 @@ function normalizeTypeSize(t) {
   return TYPE_SIZES.indexOf(String(t)) >= 0 ? String(t) : DEFAULT_TYPE_SIZE
 }
 
-// Shōji's three touches, beside the twenty-three like type size (global, not
+// Shōji's three touches, beside the twenty-four like type size (global, not
 // per monitor; presets, resets and shuffles keep them). They were Kata's
 // `touches`; a saved `touches` is read into them.
 //   season    the solar term by the clock (clock: season) and the kō in
@@ -168,7 +172,7 @@ function normalizeTouch(key, v, legacy) {
   return TOUCH_DEFAULTS[key]
 }
 
-// Panel opacity 透け, beside the twenty-three like motion: how much of the
+// Panel opacity 透け, beside the twenty-four like motion: how much of the
 // desk shows through every panel (sheets, the scroll, Kata's panels), in
 // percent, 30 to 100. 0 (or no key) leaves it to the design: solid paper,
 // Shōji's washi at 86%.
@@ -180,7 +184,7 @@ function normalizeOpacity(o) {
   return Math.max(OPACITY_MIN, Math.min(100, n))
 }
 
-// Which workspace overview 一覧 opens, beside the twenty-three like motion:
+// Which workspace overview 一覧 opens, beside the twenty-four like motion:
 // grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
 // overview (only workspaces with windows, a + for a new one, desktops);
 // framed, the same grid as Shōji prints it: each page washi in a lattice
@@ -193,7 +197,7 @@ function normalizeOverview(o) {
 }
 
 // How each sheet is drawn (style.json `sheetStyles`, Settings › Sheets 紙),
-// beside the twenty-three like the overview: no preset sets them and a reset
+// beside the twenty-four like the overview: no preset sets them and a reset
 // keeps them. The hands for every cell's sheet:
 //   ledger  帳  the editorial page: eyebrow, serif title, `//` groups, rows
 //   tanzaku 短冊 the poem slips: each choice a paper strip hung from a rail,
@@ -232,7 +236,7 @@ function sheetStylesOf(d) {
 }
 
 // Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
-// page), beside the twenty-three like the seal glyph: no preset sets them and a
+// page), beside the twenty-four like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
 // clock, media, network, bluetooth, volume, brightness, battery, notif,
 // edge, keyboard, mic, tray, weather and endleaf (the scroll's two leaves);
@@ -311,6 +315,7 @@ function copyOf(obj) {
 function cleanEdits(edits, warnings) {
   var out = {}
   if (!edits || typeof edits !== "object") return out
+  edits = splitInset(edits)
   for (var k in edits) {
     var v = coerce(k, edits[k])
     if (v === undefined) {
@@ -319,6 +324,15 @@ function cleanEdits(edits, warnings) {
     }
     out[k] = v
   }
+  return out
+}
+
+// `surface: inset` from before `float`: solid paper, floating.
+function splitInset(edits) {
+  if (String(edits.surface) !== "inset") return edits
+  var out = copyOf(edits)
+  out.surface = "solid"
+  if (out.float === undefined) out.float = "inset"
   return out
 }
 
@@ -494,6 +508,7 @@ function withSetting(doc, key, value) {
     return d
   }
   if (String(key).indexOf("show:") === 0) return withShown(d, String(key).slice(5), value)
+  if (key === "surface" && String(value) === "inset") key = "float"
   var v = coerce(key, value)
   if (v === undefined) return null
   if (PRESETS[d.preset][key] === v) delete d.edits[key]
@@ -527,6 +542,7 @@ function withShown(doc, part, value) {
 function withMonitorSetting(doc, monitor, key, value) {
   var d = normalize(doc)
   var name = String(monitor || "").trim()
+  if (key === "surface" && String(value) === "inset") key = "float"
   var v = coerce(key, value)
   if (!name || v === undefined) return null
   var own = d.monitors[name] || {}

@@ -188,7 +188,7 @@ Item {
               x: card.pad
               y: facts.y + facts.height + Type.px(12)
               width: card.width - 2 * card.pad
-              readonly property int gap: card.style.surface === "inset" ? Type.px(8) : 0
+              readonly property int gap: card.style.float === "inset" ? Type.px(8) : 0
               height: preview.height + 2 + 2 * gap
               radius: 2
               color: "transparent"
