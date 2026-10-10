@@ -1,0 +1,382 @@
+{
+ "theme": {
+  "foreground": "#ddd5c7",
+  "background": "#0a0a09",
+  "red": "#d8452f"
+ },
+ "spaces": [
+  {
+   "id": 1,
+   "active": false,
+   "urgent": false,
+   "count": 2,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "active": false,
+   "urgent": false,
+   "count": 1,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1,
+     "focused": true
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "active": true,
+   "urgent": false,
+   "count": 3,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "active": false,
+   "urgent": true,
+   "count": 4,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "active": false,
+   "urgent": false,
+   "count": 0,
+   "windows": []
+  }
+ ],
+ "window": {
+  "cls": "Alacritty",
+  "title": "nvim /home/ayush/code/hanko/Bar.qml"
+ },
+ "media": {
+  "title": "Water Copy",
+  "artist": "Hiroshi Yoshimura",
+  "progress": 0.38,
+  "playing": true
+ },
+ "notifications": [
+  {
+   "app": "Signal",
+   "summary": "",
+   "timestamp": 3,
+   "urgent": false,
+   "glyph": "S",
+   "tilt": -3
+  },
+  {
+   "app": "Ghostty",
+   "summary": "",
+   "timestamp": 2,
+   "urgent": false,
+   "glyph": "G",
+   "tilt": 3
+  },
+  {
+   "app": "Firefox",
+   "summary": "",
+   "timestamp": 1,
+   "urgent": false,
+   "glyph": "火",
+   "tilt": -1.5
+  }
+ ],
+ "width": 1920,
+ "title": "The right side · Ma 間, Shizuka 静, Suji 筋, Inrō 印籠",
+ "volume": {
+  "percent": 10,
+  "level": 0.1,
+  "muted": false,
+  "needsYou": false
+ },
+ "brightness": {
+  "percent": 30,
+  "level": 0.3
+ },
+ "network": {
+  "kind": "wifi",
+  "name": "Infinix NOTE 50S 5G",
+  "signal": 80,
+  "bars": 4,
+  "off": false,
+  "needsYou": false
+ },
+ "battery": {
+  "percent": 81,
+  "level": 0.81,
+  "charging": false,
+  "needsYou": false
+ },
+ "bluetooth": {
+  "name": "OPPO Enco Buds2",
+  "enabled": true,
+  "connected": 1,
+  "level": 0.6,
+  "devices": [
+   {
+    "name": "OPPO Enco Buds2",
+    "kind": "Headphones",
+    "mark": "耳",
+    "level": 0.6,
+    "low": false
+   }
+  ],
+  "count": "01",
+  "needsYou": false
+ },
+ "indicators": [
+  {
+   "key": "awake",
+   "glyph": "目",
+   "title": "Stay awake",
+   "red": false,
+   "count": 0
+  },
+  {
+   "key": "night",
+   "glyph": "月",
+   "title": "Night",
+   "red": false,
+   "count": 0
+  }
+ ],
+ "strips": [
+  {
+   "label": "TODAY · HANKO (CELLS, TICKS, NAMED STAMPS)",
+   "doc": {
+    "preset": "Hanko",
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "MA 間 · THREE GROUPS HELD APART BY SPACE",
+   "doc": {
+    "preset": "Ma",
+    "edits": {},
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "MA 間 · POINTING AT VOLUME",
+   "doc": {
+    "preset": "Ma",
+    "edits": {},
+    "sealGlyph": "寛"
+   },
+   "pointAt": "volume"
+  },
+  {
+   "label": "SHIZUKA 静 · AT REST: NETWORK AND BATTERY, THE REST FOLDED",
+   "doc": {
+    "preset": "Shizuka",
+    "edits": {},
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "SHIZUKA 静 · VOLUME JUST MOVED: 耳 UNFOLDS FOR TWO SECONDS",
+   "doc": {
+    "preset": "Shizuka",
+    "edits": {},
+    "sealGlyph": "寛"
+   },
+   "pointAt": "volume"
+  },
+  {
+   "label": "SHIZUKA 静 · BATTERY UNDER 15%: RED AND OPEN UNTIL IT CLEARS",
+   "doc": {
+    "preset": "Shizuka",
+    "edits": {},
+    "sealGlyph": "寛"
+   },
+   "battery": {
+    "percent": 14,
+    "level": 0.14,
+    "charging": false,
+    "needsYou": true
+   }
+  },
+  {
+   "label": "SUJI 筋 · FIVE BRUSH LINES",
+   "doc": {
+    "preset": "Suji",
+    "edits": {},
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "SUJI 筋 · REACHING FOR BLUETOOTH: THE NAME IN PLACE OF THE LINE",
+   "doc": {
+    "preset": "Suji",
+    "edits": {},
+    "sealGlyph": "寛"
+   },
+   "pointAt": "bluetooth"
+  },
+  {
+   "label": "SUJI 筋 · BATTERY LOW",
+   "doc": {
+    "preset": "Suji",
+    "edits": {},
+    "sealGlyph": "寛"
+   },
+   "battery": {
+    "percent": 14,
+    "level": 0.14,
+    "charging": false,
+    "needsYou": true
+   }
+  },
+  {
+   "label": "INRŌ 印籠 · ONE CASE",
+   "doc": {
+    "preset": "Inrō",
+    "edits": {},
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "INRŌ 印籠 · POINTING AT BRIGHTNESS: A BONE PLATE",
+   "doc": {
+    "preset": "Inrō",
+    "edits": {},
+    "sealGlyph": "寛"
+   },
+   "pointAt": "brightness"
+  },
+  {
+   "label": "INRŌ 印籠 · BATTERY LOW",
+   "doc": {
+    "preset": "Inrō",
+    "edits": {},
+    "sealGlyph": "寛"
+   },
+   "battery": {
+    "percent": 14,
+    "level": 0.14,
+    "charging": false,
+    "needsYou": true
+   }
+  },
+  {
+   "label": "MA · 32 PX",
+   "doc": {
+    "preset": "Ma",
+    "edits": {
+     "height": 32
+    },
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "SHIZUKA · 32 PX",
+   "doc": {
+    "preset": "Shizuka",
+    "edits": {
+     "height": 32
+    },
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "SUJI · 32 PX",
+   "doc": {
+    "preset": "Suji",
+    "edits": {
+     "height": 32
+    },
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "INRŌ · 32 PX",
+   "doc": {
+    "preset": "Inrō",
+    "edits": {
+     "height": 32
+    },
+    "sealGlyph": "寛"
+   }
+  },
+  {
+   "label": "ON YOUR HANKO PRESET · status: inro, named stamps kept",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "status": "inro"
+    },
+    "sealGlyph": "寛"
+   }
+  }
+ ]
+}

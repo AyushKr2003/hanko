@@ -32,7 +32,9 @@ var PLATES = ["profile", "about", "credits"]
 var PRESET_BLURBS = {
   Sheet: "the printed bar", Scroll: "the handscroll", Hanko: "the two together",
   Quiet: "least on screen", Instrument: "most on screen", Islet: "floating, inset",
-  "Shōji": "washi and the seasons"
+  "Shōji": "washi and the seasons",
+  Ma: "room between the groups", Shizuka: "quiet until it changes",
+  Suji: "five brush lines", "Inrō": "one case for everything"
 }
 
 // Seal glyphs offered as one-tap choices; anything else is typed under
@@ -53,7 +55,7 @@ var CARDS = [
     { key: "clockAt", name: "Clock position", detail: "" },
     { key: "media", name: "Now playing", detail: "" }] },
   { title: "Right · how things are", rows: [
-    { key: "status", name: "Status", detail: "Cells, kanji glyphs, numerals, or Shōji's icons and ensō" },
+    { key: "status", name: "Status", detail: "Cells, glyphs, numerals, Shōji's ink; or the studies: ma's groups, shizuka's folding, suji's lines, the inrō case" },
     { key: "meters", name: "Meters", detail: "Ticks beside quantities" },
     { key: "notif", name: "Notifications", detail: "" },
     { key: "bluetooth", name: "Bluetooth", detail: "A BT 双 cell for your devices" },

@@ -13,7 +13,7 @@ function load(file, names) {
   return new Function(`${src}\nreturn { ${names.join(", ")} }`)()
 }
 
-const S = load("core/Style.js", ["SHEET_STYLES", "SHEET_KEYS", "OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
+const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", "OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
@@ -22,7 +22,7 @@ const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
-  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age"])
+  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age", "short", "fill"])
 const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
@@ -49,9 +49,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-three settings, 1,304,596,316,160 combinations (COMPONENTS.md §5)", () => {
+test("twenty-three settings, 2,609,192,632,320 combinations (COMPONENTS.md §5)", () => {
   assert.equal(S.KEYS.length, 23)
-  assert.equal(S.combinations(), 1304596316160)
+  assert.equal(S.combinations(), 2609192632320)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -60,8 +60,8 @@ test("indicators: all or only what is on; icon or kanji, alone or named; set per
   assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
   assert.equal(S.resolve({}).indicators, "active")
   assert.equal(S.resolve({}).indicatorStyle, "kanjiname")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "active", "active", "all", "active", "active"])
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "kanjiname", "icon", "iconname", "icon", "icon"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "active", "active", "all", "active", "active", "active", "active", "active", "active"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "kanjiname", "icon", "iconname", "icon", "icon", "kanji", "kanji", "kanji", "kanji"])
   assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "kanjiname")
   assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
@@ -786,7 +786,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 1304596316160)
+  assert.equal(S.combinations(), 2609192632320)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -947,7 +947,7 @@ test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () =
   assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
   assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
   assert.equal(S.resolve({}).endleaf, "koyomi")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu", "koyomi"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
   assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
   assert.equal(Se.endleafOf("iro").name, "Iro")
   assert.equal(Lf.kindOf("nope").key, "koyomi")
@@ -1101,14 +1101,15 @@ test("end leaf: notes you can tick, and the clipboard", () => {
 test("scroll sides: bare or curl, in place of the rollers", () => {
   assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
   assert.equal(S.resolve({}).sides, "curl")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl", "bare"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl", "bare", "curl", "curl", "curl", "curl"])
   assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
 })
 
 test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
   assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
   assert.equal(S.resolve({}).guides, "none")
-  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (p === "Hanko" ? "none" : "both")))
+  const yours = ["Hanko", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, and the four studies built on it
+  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (yours.indexOf(p) >= 0 ? "none" : "both")))
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
 })
@@ -1539,4 +1540,47 @@ test("hands: network, bluetooth, power, display and inbox", () => {
   assert.ok(i.levels[1].urgent)
 })
 
+
+test("right side: four studies as status values and presets on your Hanko bar", () => {
+  assert.deepEqual(S.OPTIONS.status, ["cells", "glyphs", "numerals", "ink", "ma", "shizuka", "suji", "inro"])
+  assert.deepEqual(S.PRESET_NAMES.slice(-4), ["Ma", "Shizuka", "Suji", "Inrō"])
+  const status = { Ma: "ma", Shizuka: "shizuka", Suji: "suji", "Inrō": "inro" }
+  const hanko = S.PRESETS.Hanko
+  for (const name in status) {
+    const p = S.PRESETS[name]
+    assert.equal(p.status, status[name])
+    assert.equal(p.indicatorStyle, "kanji")
+    assert.deepEqual(Object.keys(p).sort(), [...S.KEYS].sort())
+    // Only the right zone (and Ma's dividers and scroll joins) differs from your bar.
+    const diff = S.KEYS.filter(k => p[k] !== hanko[k])
+    const allowed = ["status", "meters", "indicatorStyle", "rules", "interlude"]
+    assert.ok(diff.every(k => allowed.indexOf(k) >= 0), name + " changes " + diff)
+  }
+  // Typed any case, with or without the macron.
+  assert.equal(S.withPreset({}, "inro").preset, "Inrō")
+  assert.equal(S.withPreset({}, "SHIZUKA").preset, "Shizuka")
+  assert.equal(S.resolve({ preset: "Hanko", edits: { status: "suji" } }).status, "suji")
+  assert.deepEqual(S.PRESET_GROUPS.flatMap(g => g.names).sort(), [...S.PRESET_NAMES].sort())
+})
+
+test("right side: short names and how full a reading is", () => {
+  assert.equal(St.short("OPPO Enco Buds2"), "Enco Buds2")
+  assert.equal(St.short("Infinix NOTE 50S 5G"), "Infinix")
+  assert.equal(St.short("WH-1000XM5"), "WH-1000XM5")
+  assert.equal(St.short("Kumo"), "Kumo")
+  assert.equal(St.short("  "), "")
+  assert.equal(St.short(null), "")
+  assert.equal(St.short("Supercalifragilistic"), "Supercalifrag…")
+  assert.equal(St.fill("network", { kind: "wifi", bars: 3 }), 0.75)
+  assert.equal(St.fill("network", { kind: "ethernet" }), 1)
+  assert.equal(St.fill("network", { off: true }), 0)
+  assert.equal(St.fill("bluetooth", { enabled: true, connected: 1, level: 0.6 }), 0.6)
+  assert.equal(St.fill("bluetooth", { enabled: true, connected: 1, level: -1 }), 1)
+  assert.equal(St.fill("bluetooth", { enabled: true, connected: 0, level: -1 }), 0)
+  assert.equal(St.fill("bluetooth", { enabled: false }), 0)
+  assert.equal(St.fill("volume", { level: 0.4, muted: true }), 0)
+  assert.equal(St.fill("volume", { level: 0.4 }), 0.4)
+  assert.equal(St.fill("battery", { level: 1.4 }), 1)
+  assert.equal(St.fill("battery", null), 0)
+})
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

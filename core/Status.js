@@ -131,3 +131,29 @@ function count2(n) {
   n = Math.max(0, Math.round(Number(n) || 0))
   return n > 99 ? "99" : (n < 10 ? "0" : "") + n
 }
+
+// A name cut to what a glance needs, for the narrow right-side styles (ma,
+// shizuka, suji, inro): a short all-caps brand in front is dropped (OPPO
+// Enco Buds2 → Enco Buds2), then the first word is kept, with the next
+// one when the first is too short to tell apart (Enco → Enco Buds2).
+// Infinix NOTE 50S 5G → Infinix. The full name stays in the sheet.
+function short(name) {
+  var words = String(name === undefined || name === null ? "" : name).trim().split(/\s+/).filter(function(w) { return w !== "" })
+  if (!words.length) return ""
+  if (words.length > 1 && /^[A-Z]{2,5}$/.test(words[0])) words = words.slice(1)
+  var out = words[0]
+  if (out.length < 5 && words.length > 1) out += " " + words[1]
+  return out.length > 14 ? out.slice(0, 13) + "…" : out
+}
+
+// How full a reading is, 0..1, for the styles that draw every reading as a
+// level (suji's line): network by its bars (wired is full, offline empty),
+// Bluetooth by the device's charge (full when it has none to tell, empty
+// when off or nothing is connected), volume empty when muted.
+function fill(key, src) {
+  var s = src || {}
+  if (key === "network") return s.off ? 0 : s.kind === "wifi" ? clamp01((s.bars || 0) / 4) : 1
+  if (key === "bluetooth") return !s.enabled || !(s.connected > 0) ? 0 : s.level >= 0 ? clamp01(s.level) : 1
+  if (key === "volume") return s.muted ? 0 : clamp01(s.level)
+  return clamp01(s.level)
+}

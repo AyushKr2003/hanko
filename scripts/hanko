@@ -11,6 +11,7 @@
 #   hanko style set --monitor NAME K V
 #                            change it on one monitor only (e.g. DP-2 height 32)
 #   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet | Shoji
+#                            | Ma | Shizuka | Suji | Inro
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
 #   hanko hide PART          take one part off the bar (e.g. tray, volume,

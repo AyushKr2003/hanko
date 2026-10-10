@@ -6,7 +6,7 @@ Typeset merges the two earlier directions into one bar. Sheet (the printed runni
 - **Scroll** is the Scroll design as drawn.
 - **Hanko** is the merge, and the default.
 
-Twenty-three settings give **1,304,596,316,160** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
+Twenty-three settings give **2,609,192,632,320** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
 ![The settings page](mockups/typeset/01-settings.webp)
 
@@ -118,6 +118,14 @@ The glyph used by `stamp` is a separate free-text setting, `sealGlyph` (鑑 漢 
 | `glyphs` | A boxed kanji is the icon and the number is the state. Solid red when it needs you; dashed when off. | Scroll |
 | `numerals` | Mono labels and numbers on one line (`VOL 62 · NET Kumo · BAT 91%`). | New |
 | `ink` | Shōji's: a line icon and a figure for each reading (Wi-Fi's name and the Bluetooth device's come out when you point at them), brightness a sun, the battery an ensō that closes as it fills, a bolt while charging. Meters do not apply. Red still means it needs you. | Shōji |
+| `ma` | 間 Three groups held apart by space, no lines: the links (`波 Infinix`, `双 Enco Buds2`, each name cut to a glance), a 30 px pause, the levels (`耳 10 · 光 30 · 力 81`, a two-pixel fill under each figure in place of ten ticks), then the marks. The kanji is the label. | Right side |
+| `shizuka` | 静 Quiet until something changes. Network and battery stay; Bluetooth, volume and brightness wait as faint kanji. When one moves it unfolds in place (figure and five ticks) for two seconds and folds back; pointing anywhere on the zone unfolds them all. A reading that needs you stays open, in red. | Right side |
+| `suji` | 筋 A kanji and one 30 px brush line each, its length the level (network by its bars, Bluetooth by the device's charge), the rest of the range dotted. The figure or name takes the line's place on reach (pointer or a change). | Right side |
+| `inro` | 印籠 One ruled case of compartments, kanji over value (`波 双 耳 光 力` over `Infinix · Enco Buds2 · 10 · 30 · 81`); the compartment under the pointer is a bone plate; at 32 px each is one line, the value alone. | Right side |
+
+The last four are the right-side studies ([right-side/README.md](right-side/README.md), sheets in `right-side/images/`), made to clear a crowded right zone: meters do not apply to them, and each has a preset of its own.
+
+![The right-side studies, built](right-side/images/10-built-dark.webp)
 
 #### Meters `meters` 目盛
 
@@ -443,6 +451,21 @@ A preset sets all twenty-three settings at once. Change any setting afterwards a
 - **Instrument**: the most on screen. Kanji pages, a mono clock on the right, every meter, 44 px.
 - **Islet**: a floating inset strip with kanji status and stamps.
 
+The four right-side studies are presets too: your Hanko bar with the right zone set each way, and the marks as stamps alone (their names on hover). Only these differ from Hanko:
+
+| Setting | **Hanko** | Ma | Shizuka | Suji | Inrō |
+|---|---|---|---|---|---|
+| status | cells | ma | shizuka | suji | inro |
+| meters | ticks | off | off | off | off |
+| indicatorStyle | kanjiname | kanji | kanji | kanji | kanji |
+| rules | on | off | on | on | on |
+| interlude | seal | ma | seal | seal | seal |
+
+- **Ma** 間: room between the groups; no dividers anywhere, so space does all the grouping.
+- **Shizuka** 静: quiet until it changes.
+- **Suji** 筋: five brush lines.
+- **Inrō** 印籠: one case for everything.
+
 ![Presets on four themes](mockups/typeset/05-presets-x-themes.webp)
 
 ---
@@ -457,7 +480,7 @@ A preset sets all twenty-three settings at once. Change any setting afterwards a
 | clock | 4 |
 | clockAt | 2 |
 | media | 4 |
-| status | 4 |
+| status | 8 |
 | meters | 2 |
 | notif | 3 |
 | bluetooth | 4 |
@@ -475,9 +498,9 @@ A preset sets all twenty-three settings at once. Change any setting afterwards a
 | sides | 2 |
 | guides | 4 |
 
-4 × 5 × 4 × 4 × 2 × 4 × 4 × 2 × 3 × 4 × 2 × 4 × 4 × 2 × 2 × 4 × 4 × 2 × 2 × 9 × 9 × 2 × 4 = **1,304,596,316,160** bars.
+4 × 5 × 4 × 4 × 2 × 4 × 8 × 2 × 3 × 4 × 2 × 4 × 4 × 2 × 2 × 4 × 4 × 2 × 2 × 9 × 9 × 2 × 4 = **2,609,192,632,320** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers, its end leaf, its sides and its guides, is 503,316,480 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers, its end leaf, its sides and its guides, is 1,006,632,960 combinations.
 
 ![Twelve random combinations](mockups/typeset/04-shuffle.webp)
 

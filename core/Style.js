@@ -19,13 +19,26 @@ var OPTIONS = {
   //   notif seal      the letter count on the seal; the inbox cell goes
   //   surface washi   paper with long fibres (style `grain`)
   //   pointer brush   a faint brush mark under the cell you point at
+  // The status values after `ink` are the four right-side studies
+  // (docs/right-side), each a cure for a crowded right zone:
+  //   ma       間 three groups held apart by space: links (network,
+  //            Bluetooth), levels (a figure with a hairline fill under it),
+  //            then the marks; the kanji is the label
+  //   shizuka  静 quiet until something changes: network and battery stay,
+  //            Bluetooth, volume and brightness wait as faint kanji and
+  //            unfold for two seconds when they move (or while you point
+  //            at the zone); anything that needs you stays open, in red
+  //   suji     筋 a kanji and one short brush line each, its length the
+  //            level; the figure comes out when you reach for it
+  //   inro     印籠 one ruled case of compartments, kanji over value
+  // None of the four draws meters; each carries its own level.
   seal:     ["stamp", "workspace", "carved", "none"],
   spaces:   ["folio", "layout", "kanji", "dots", "brush"],
   title:    ["cell", "byline", "ink", "none"],
   clock:    ["stacked", "inline", "mono", "season"],
   clockAt:  ["center", "right"],
   media:    ["cell", "underline", "ink", "none"],
-  status:   ["cells", "glyphs", "numerals", "ink"],
+  status:   ["cells", "glyphs", "numerals", "ink", "ma", "shizuka", "suji", "inro"],
   meters:   ["ticks", "off"],
   notif:    ["count", "stamps", "seal"],
   // A BT 双 cell for Bluetooth (only where there is an adapter):
@@ -80,10 +93,22 @@ var PRESETS = {
   // Shōji 障子: the Shōji design, folded into Hanko (HANDOFF §10). Its
   // values are drawn with Shōji's parts; picking it also puts every sheet
   // in the Shōji hand and frames the overview (PRESET_BESIDE).
-  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both" }
+  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both" },
+  // The four right-side studies (docs/right-side): your Hanko bar with the
+  // right zone set each way. The marks are stamps alone (their names on
+  // hover), so the zone they cure is not crowded again by the indicators.
+  Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "curl", guides: "none" },
+  Shizuka:    { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "shizuka", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
+  Suji:       { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "suji", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
+  "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" }
 }
 
-var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet", "Shōji"]
+var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet", "Shōji", "Ma", "Shizuka", "Suji", "Inrō"]
+// How the Presets 型 page groups them: the bars, then the right-side studies.
+var PRESET_GROUPS = [
+  { title: "Bars", jp: "版", names: ["Hanko", "Sheet", "Scroll", "Quiet", "Instrument", "Islet", "Shōji"] },
+  { title: "Right-side studies", jp: "右", names: ["Ma", "Shizuka", "Suji", "Inrō"] }
+]
 // What picking a preset also sets beside the twenty-three (only Shōji does:
 // its panels are a sheet hand and its overview is framed). Kept afterwards,
 // like anything beside the settings.

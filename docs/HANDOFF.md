@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-09, after the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
+Last updated: 2026-10-11, after the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -107,7 +107,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 
 ### The twenty-three settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
 
-Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with its parts in its skin.
+Values marked † are the right-side studies (`docs/right-side/`, §9 "The right side, four ways"). Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with its parts in its skin.
 
 | Zone | Key | Options |
 |---|---|---|
@@ -117,7 +117,7 @@ Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with
 | Centre | `clock` | **`stacked`**, `inline`, `mono`, `season`‡ |
 | Centre | `clockAt` | **`center`**, `right` |
 | Centre | `media` | `cell`, **`underline`**, `ink`‡, `none` |
-| Right | `status` | **`cells`**, `glyphs`, `numerals`, `ink`‡ |
+| Right | `status` | **`cells`**, `glyphs`, `numerals`, `ink`‡, `ma`†, `shizuka`†, `suji`†, `inro`† |
 | Right | `meters` | **`ticks`**, `off` |
 | Right | `notif` | `count`, **`stamps`**, `seal`‡ |
 | Right | `bluetooth` | **`device`**, `marks`, `count`, `off` (added after Typeset; `on` reads as `device`) |
@@ -162,6 +162,8 @@ Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with
 | endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu | koyomi |
 | sides | bare | curl | curl | bare | bare | curl | bare |
 | guides | both | both | none | both | both | both | both |
+
+The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Hanko column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off` and `interlude: ma`. COMPONENTS.md §4 has the table.
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -845,6 +847,14 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - COMPONENTS.md (defaults, preset table, the Hanko blurb) and §5 here follow. Five unit tests that pinned the old Hanko values were updated (a switch to Scroll now moves 13 settings, not 10). Unit tests: 111.
 - The user's `~/.config/hanko/style.json` still lists those six as edits; they now equal the preset, so they change nothing.
 
+### The right side, four ways ✅ (asked for: "the right side looks too cramped … research game principles, articles, papers … a better design with a Japanese touch; show me the design in images first", then "I like them all, add all")
+- **Design first**: six study sheets drawn in HTML (`docs/right-side/source/kit.html`, rendered with headless Chromium) on the user's real bar: a diagnosis (five identical cells, about thirty marks for five facts, ≈ 846 px) and four cures, Ma 間, Shizuka 静, Suji 筋 and Inrō 印籠, with the research (Tufte's data-ink and sparklines, Weiser and Brown's calm technology, game HUD minimalism and show-on-change, Gestalt proximity and common region, ma and kanso). `docs/right-side/README.md` has it all with sources.
+- **`core/Style.js`**: `status` gains `ma`, `shizuka`, `suji`, `inro` (2,609,192,632,320 combinations); four presets on the Hanko bar (`Ma`, `Shizuka`, `Suji`, `Inrō`; marks as kanji stamps, meters off; Ma also `rules: off`, `interlude: ma`); `PRESET_GROUPS` (Bars, Right-side studies) for the Presets page.
+- **`core/Status.js`**: `short(name)` (a short all-caps brand dropped, first word kept, the next when the first is under five letters: OPPO Enco Buds2 → Enco Buds2, Infinix NOTE 50S 5G → Infinix) and `fill(key, src)` (0..1 for every reading: network by bars, Bluetooth by charge or full when connected, volume empty when muted).
+- **`bar/StatusRow.qml`**: items carry `brief`, `fill`, `link`; the studies use the cells' order. `ma`: kanji + figure, signal bars for Wi-Fi, a 2 px fill under each level, a 30 px pause where links end. `shizuka`: a clipped body that draws out from under its kanji (180 ms in, 240 ms out), unfolded for network and battery, anything needing you, a fresh change (held 2 s instead of 0.9 s) or while a `HoverHandler` sees the pointer on the zone; five ticks while a level is open. `suji`: a 30 px line, 3 px stroke over a dotted range, the figure crossfading into its place on reach. `inro`: a hairline case (`caseHeight`) with 1 px walls, compartments `kanji over value`, a bone plate under the pointer, one line at 32 px. `reachKey` (the harness's `pointAt`) stands for the pointer in all four.
+- Harness `right-side.json` and `right-side-light.json`: today's bar, each study at rest, reached and with a low battery, all four at 32 px, and `status: inro` on the Hanko preset with named stamps. Images `docs/right-side/images/10-built-dark.webp`, `11-built-light.webp`. Unit tests: 113.
+- **Harness note**: PySide6 6.12 resolves `Color` (qs.Commons stub) to something else and every colour comes out undefined (green renders, the motion probe fails); 6.10.1 renders as before. Pin `PySide6-Essentials==6.10.1` until the stub is renamed or qualified.
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
@@ -967,6 +977,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 30. **Sheet hands:** pull the Tanzaku lead slip on hardware (drag and wheel), and each hand at the user's `typeSize` large (the sheets grow, they don't scroll).
 31. **Craft hands to verify on hardware:** Shōgi's square click and wheel on the master and an app (the wheel steps one file, 12.5%), Soroban's bead flick (a hundreds rod appears at 100%; clicking the units' first earth bead when one is counted takes it back to zero), Odoshi's scale click, Kasumi's drag along a band that drifts in from the right (it measures from the right edge), the 24-scale day lame at 1x, and each hand on the user's theme (light themes draw Kasumi's bands as ink and Shōgi's pieces as pale wood). The harness letter timestamps are UTC: render with `TZ=UTC` or the inbox reads "now" for every letter.
 32. **Shōji sheet hand to verify on hardware:** the rail slide between two cells on a Hanko bar (`Behavior on x` only runs while both are Shōji sheets; from another hand it jumps), the panel's side when the cell is near the middle, the Display panel's monitor pick and Arrange › (`omarchy-launch-editor`), the brush slider dragged on a real brightness (DDC can lag), and Tab from Power to Display. The Shōji preset (S4) on a real `style.json` that had `"design": "shoji"` (it should load straight into the preset, keep its height and Bluetooth, and open Shōji panels and the framed overview), and on a laptop (the brightness cell appears, which Shōji never had). Shōji's bar values (S3): the brush pointer following a real pointer across cells and leaving when it leaves the bar, names coming out on reach in `status: ink`, the carved seal's press when a letter arrives, the season clock's sekki at midnight on a change of term, washi grain on a 1x panel, and `notif: seal` with the seal hidden (the inbox must come back). `overview: framed` on a Hanko bar: the washi pages' opacity follows Panel opacity (Auto is the washi's 86%), keys and drag as on the grid.
+
+33. **Right-side studies to verify on hardware:** Shizuka's unfold on a real volume key (the reading must open on the change, hold two seconds and fold, and not open at login: `fresh` waits for `Motion.live`), the zone-wide `HoverHandler` unfolding everything without the cells jumping out from under the pointer (the zone grows to the left), Suji's dotted range at 1x, the Inrō case's height at 36 and 44 px and with `typeSize: large`, and `Status.short` on the user's real SSIDs and device names.
 
 ## 13. QML pitfalls already hit
 
