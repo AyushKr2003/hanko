@@ -7,7 +7,7 @@ import "../../core/Settings.js" as Settings
 // Settings › Presets 型: every preset as a specimen, drawn live with your
 // data, as one list: the bars, then the four right-side studies
 // (Style.js PRESET_GROUPS gives the order and the numbering). A card is its number, name, kanji and blurb, the
-// settings that tell it apart, and the bar itself over the sample plate.
+// settings that tell it apart, and the bar itself.
 // The one in use carries the red mark (red means you) and IN USE, with the
 // edits you made on top of it; a click on any other puts it on your bar.
 // Your seal glyph, type size and hidden parts show in every preview, as
@@ -182,25 +182,19 @@ Item {
               font.capitalization: Font.AllUppercase
             }
 
-            // The bar, over the sample plate (so glass and inset show).
+            // The bar, on bare paper.
             Rectangle {
               id: box
               x: card.pad
               y: facts.y + facts.height + Type.px(12)
               width: card.width - 2 * card.pad
               readonly property int gap: card.style.surface === "inset" ? Type.px(8) : 0
-              height: preview.height + 2 + 2 * gap + Type.px(card.style.surface === "solid" || card.style.surface === "washi" ? 0 : 18)
+              height: preview.height + 2 + 2 * gap
               radius: 2
               color: "transparent"
               border.width: 1
               border.color: Ink.lineSoft
               clip: true
-              Plate {
-                // Only where the paper lets it through: a solid bar hides it.
-                visible: card.style.surface === "glass" || card.style.surface === "inset"
-                anchors.fill: parent
-                anchors.margins: 1
-              }
               PreviewBar {
                 id: preview
                 x: 1 + box.gap

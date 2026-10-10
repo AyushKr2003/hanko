@@ -13,8 +13,7 @@ import "../scroll"
 // live bar data; the harness renders it still.
 //
 // Presets 型 shows every preset as a live specimen (PresetsPage.qml).
-// Typesetting 組版 holds every setting: a live preview of the bar over a
-// sample plate, a line naming the preset (a link to Presets), and six cards
+// Typesetting 組版 holds every setting: a live preview of the bar, a line naming the preset (a link to Presets), and six cards
 // of segmented controls.
 Rectangle {
   id: root
@@ -429,19 +428,15 @@ Rectangle {
 
           Item { width: 1; height: Type.px(16) }
 
-          // The live preview: your bar over a sample plate.
+          // The live preview: your bar, on bare paper.
           Rectangle {
             width: parent.width
-            height: Math.max(Type.px(108), preview.height + Type.px(40) + preview.y)
+            height: preview.y + preview.height + Type.px(30)
             radius: 3
             color: "transparent"
             border.width: 1
             border.color: Ink.line
             clip: true
-            Plate {
-              anchors.fill: parent
-              anchors.margins: 1
-            }
             Item {
               id: preview
               readonly property int gap: root.style.surface === "inset" ? Type.px(8) : 0
