@@ -81,11 +81,11 @@ test("every preset sets every setting to a valid option", () => {
   }
 })
 
-test("an empty or broken document resolves to the Hanko preset", () => {
+test("an empty or broken document resolves to the Kamon preset", () => {
   for (const doc of [undefined, null, {}, "x", { preset: "Nope" }]) {
     const s = S.resolve(doc)
-    assert.equal(s.preset, "Hanko")
-    for (const k of S.KEYS) assert.equal(s[k], S.PRESETS.Hanko[k])
+    assert.equal(s.preset, "Kamon")
+    for (const k of S.KEYS) assert.equal(s[k], S.PRESETS.Kamon[k])
     assert.equal(s.sealGlyph, "鑑")
     assert.equal(s.edited, false)
   }
@@ -625,8 +625,8 @@ test("settings: counting what the draft changes", () => {
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
   assert.equal(Se.status(0), "Saved · every change is kept as you make it")
   assert.equal(Se.status(2), "Saved · 2 changes · Ctrl+Z undoes")
-  assert.equal(Se.presetLine(two), "Preset · Hanko + edits")
-  assert.equal(Se.presetLine(saved), "Preset · Hanko")
+  assert.equal(Se.presetLine(two), "Preset · Kamon + edits")
+  assert.equal(Se.presetLine(saved), "Preset · Kamon")
 })
 
 test("settings: search finds rows by name, detail and option", () => {
@@ -1108,7 +1108,7 @@ test("scroll sides: bare or curl, in place of the rollers", () => {
 test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
   assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
   assert.equal(S.resolve({}).guides, "none")
-  const yours = ["Hanko", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, and the four studies built on it
+  const yours = ["Kamon", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, and the four studies built on it
   assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (yours.indexOf(p) >= 0 ? "none" : "both")))
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
@@ -1161,7 +1161,7 @@ test("profile: live readings and the small print", () => {
   assert.equal(v[2].level, 0.75)
   assert.equal(v[0].level, -1)
   const rows = Pr.specs(S.resolve({ edits: { clock: "mono" } }), S.normalize({ edits: { clock: "mono" } }), { theme: "Kanagawa", hyprland: "v0.52.1", uptime: 60 }, "0.1.0", S.OPTIONS, S.KEYS, S.combinations())
-  assert.deepEqual(rows[0], ["Preset", "Hanko + 1 edit"])
+  assert.deepEqual(rows[0], ["Preset", "Kamon + 1 edit"])
   assert.match(rows[1][1], /^No\. [\d,]+ of [\d,]+$/)
   assert.deepEqual(rows[3], ["Compositor", "Hyprland 0.52.1"])
   assert.deepEqual(rows[5], ["Uptime", "1 m"])
@@ -1545,7 +1545,7 @@ test("right side: four studies as status values and presets on your Hanko bar", 
   assert.deepEqual(S.OPTIONS.status, ["cells", "glyphs", "numerals", "ink", "ma", "shizuka", "suji", "inro"])
   assert.deepEqual(S.PRESET_NAMES.slice(-4), ["Ma", "Shizuka", "Suji", "Inrō"])
   const status = { Ma: "ma", Shizuka: "shizuka", Suji: "suji", "Inrō": "inro" }
-  const hanko = S.PRESETS.Hanko
+  const hanko = S.PRESETS.Kamon
   for (const name in status) {
     const p = S.PRESETS[name]
     assert.equal(p.status, status[name])
@@ -1594,7 +1594,21 @@ test("settings: a Presets 型 page, every preset with a kanji and its facts", ()
   assert.ok(Se.presetMatches("Inrō", "inro", S.PRESETS))
   assert.ok(Se.presetMatches("Suji", "筋", S.PRESETS))
   assert.ok(Se.presetMatches("Quiet", "glass", S.PRESETS))
-  assert.ok(!Se.presetMatches("Hanko", "glass", S.PRESETS))
-  assert.ok(Se.presetMatches("Hanko", "  ", S.PRESETS))
+  assert.ok(!Se.presetMatches("Kamon", "glass", S.PRESETS))
+  assert.ok(Se.presetMatches("Kamon", "  ", S.PRESETS))
+  assert.ok(Se.presetMatches("Kamon", "hanko", S.PRESETS))
+})
+
+test("Kamon 家紋 is the preset that was Hanko; the old name still loads it", () => {
+  assert.equal(S.DEFAULT_PRESET, "Kamon")
+  assert.equal(S.normalize({}).preset, "Kamon")
+  assert.equal(S.normalize({ preset: "Hanko", edits: { clock: "mono" } }).preset, "Kamon")
+  assert.equal(S.resolve({ preset: "Hanko", edits: { clock: "mono" } }).clock, "mono")
+  const w = []; S.normalize({ preset: "hanko" }, w); assert.deepEqual(w, [])
+  assert.equal(S.withPreset({}, "HANKO").preset, "Kamon")
+  assert.equal(S.normalize({ design: "classic" }).preset, "Kamon")
+  assert.ok(S.PRESET_NAMES.indexOf("Hanko") < 0)
+  assert.equal(Se.PRESET_KANJI.Kamon, "家紋")
+  assert.equal(Se.PRESET_BLURBS.Kamon, "the family crest")
 })
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

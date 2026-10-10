@@ -86,7 +86,9 @@ var KEYS = Object.keys(OPTIONS)
 var PRESETS = {
   Sheet:      { seal: "stamp", spaces: "folio", title: "cell", clock: "stacked", clockAt: "center", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "kanji", edge: "dayrule", rules: "on", pointer: "plain", height: 36, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "shimai", sides: "bare", guides: "both" },
   Scroll:     { seal: "workspace", spaces: "layout", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "off", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "kanji", edge: "rod", rules: "off", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "scroll", interlude: "kotoba", endleaf: "okugaki", sides: "curl", guides: "both" },
-  Hanko:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
+  // Kamon 家紋, the family crest: the bar this plugin is known by, as the
+  // user runs it (it was the Hanko preset; "hanko" still names it).
+  Kamon:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" },
   Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both" },
   Instrument: { seal: "stamp", spaces: "kanji", title: "cell", clock: "mono", clockAt: "right", media: "cell", status: "cells", meters: "ticks", notif: "count", bluetooth: "device", indicators: "all", indicatorStyle: "iconname", edge: "dayrule", rules: "on", pointer: "plain", height: 44, surface: "solid", position: "top", panels: "sheets", interlude: "folio", endleaf: "kiki", sides: "bare", guides: "both" },
   Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both" },
@@ -94,7 +96,7 @@ var PRESETS = {
   // values are drawn with Shōji's parts; picking it also puts every sheet
   // in the Shōji hand and frames the overview (PRESET_BESIDE).
   "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both" },
-  // The four right-side studies (docs/right-side): your Hanko bar with the
+  // The four right-side studies (docs/right-side): the Kamon bar with the
   // right zone set each way. The marks are stamps alone (their names on
   // hover), so the zone they cure is not crowded again by the indicators.
   Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "curl", guides: "none" },
@@ -103,10 +105,10 @@ var PRESETS = {
   "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none" }
 }
 
-var PRESET_NAMES = ["Sheet", "Scroll", "Hanko", "Quiet", "Instrument", "Islet", "Shōji", "Ma", "Shizuka", "Suji", "Inrō"]
+var PRESET_NAMES = ["Sheet", "Scroll", "Kamon", "Quiet", "Instrument", "Islet", "Shōji", "Ma", "Shizuka", "Suji", "Inrō"]
 // How the Presets 型 page groups them: the bars, then the right-side studies.
 var PRESET_GROUPS = [
-  { title: "Bars", jp: "版", names: ["Hanko", "Sheet", "Scroll", "Quiet", "Instrument", "Islet", "Shōji"] },
+  { title: "Bars", jp: "版", names: ["Kamon", "Sheet", "Scroll", "Quiet", "Instrument", "Islet", "Shōji"] },
   { title: "Right-side studies", jp: "右", names: ["Ma", "Shizuka", "Suji", "Inrō"] }
 ]
 // What picking a preset also sets beside the twenty-three (only Shōji does:
@@ -118,7 +120,7 @@ var PRESET_BESIDE = {
 }
 // A preset name as typed: any case, with or without the macron (shoji).
 function foldName(name) { return String(name || "").toLowerCase().replace(/ō/g, "o") }
-var DEFAULT_PRESET = "Hanko"
+var DEFAULT_PRESET = "Kamon"
 var DEFAULT_SEAL_GLYPH = "鑑"
 
 // Motion 動 sits outside the twenty-three settings (no preset sets it and it is
@@ -284,10 +286,14 @@ function isValid(key, value) {
   return coerce(key, value) !== undefined
 }
 
+// Names a preset had before, folded: a style.json or a command that uses
+// one gets the preset it became.
+var PRESET_ALIASES = { hanko: "Kamon" }
+
 function presetName(name) {
   for (var i = 0; i < PRESET_NAMES.length; i++)
     if (foldName(PRESET_NAMES[i]) === foldName(name)) return PRESET_NAMES[i]
-  return ""
+  return PRESET_ALIASES[foldName(name)] || ""
 }
 
 function copyOf(obj) {
@@ -346,11 +352,11 @@ function withoutKata(obj) {
 // the other design than the file's gets that preset's values as overrides.
 // `borrow` is dropped.
 var SHOJI_KEPT_EDITS = ["height", "position", "bluetooth"]
-function designOf(v) { var d = foldName(v); return d === "shoji" ? "Shōji" : d === "classic" || d === "hanko" ? "Hanko" : "" }
+function designOf(v) { var d = foldName(v); return d === "shoji" ? "Shōji" : d === "classic" || d === "hanko" ? "Kamon" : "" }
 
 function normalize(doc, warnings) {
   doc = doc && typeof doc === "object" ? doc : {}
-  var topDesign = designOf(doc.design) || "Hanko"
+  var topDesign = designOf(doc.design) || "Kamon"
   if (topDesign === "Shōji") doc = fromShojiDesign(doc)
   var preset = presetName(doc.preset)
   if (!preset) {

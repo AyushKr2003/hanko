@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-11, after Settings › Presets 型 (every preset as a live specimen, its own page; §9 "Presets 型, a page of their own") and the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
+Last updated: 2026-10-11, after the Hanko preset was renamed Kamon 家紋 (§9, "Kamon 家紋"), Settings › Presets 型 (every preset as a live specimen, its own page; §9 "Presets 型, a page of their own") and the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -105,7 +105,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The twenty-three settings (`core/Style.js` `OPTIONS`; **bold** = Hanko default)
+### The twenty-three settings (`core/Style.js` `OPTIONS`; **bold** = Kamon default)
 
 Values marked † are the right-side studies (`docs/right-side/`, §9 "The right side, four ways"). Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with its parts in its skin.
 
@@ -137,7 +137,7 @@ Values marked † are the right-side studies (`docs/right-side/`, §9 "The right
 
 ### Presets
 
-| Setting | Sheet | Scroll | **Hanko** (default) | Quiet | Instrument | Islet | Shōji |
+| Setting | Sheet | Scroll | **Kamon** (default) | Quiet | Instrument | Islet | Shōji |
 |---|---|---|---|---|---|---|---|
 | seal | stamp | workspace | stamp | stamp | stamp | workspace | carved |
 | spaces | folio | layout | kanji | dots | kanji | kanji | brush |
@@ -163,7 +163,7 @@ Values marked † are the right-side studies (`docs/right-side/`, §9 "The right
 | sides | bare | curl | curl | bare | bare | curl | bare |
 | guides | both | both | none | both | both | both | both |
 
-The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Hanko column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off` and `interlude: ma`. COMPONENTS.md §4 has the table.
+The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Kamon column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off` and `interlude: ma`. COMPONENTS.md §4 has the table.
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -862,6 +862,11 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - **`bar/settings/PreviewBar.qml`**: the inline `PreviewBar` from SettingsPage, now a file with `barData` and `minDesign`.
 - **`SettingsPage`**: the preset grid is gone from Typesetting; in its place a preset line (PRESET Hanko 判 + N edits · ALL 11 PRESETS ›, which opens Presets). The eyebrow names the preset on both pages; the action bar shows Shuffle on Presets and Reset to preset on both. **`SettingsWindow`**: typing a search on Presets stays there (it filters the cards).
 - Harness `presets.json`, `presets-light.json` (Suji in use), `presets-narrow.json`, `presets-search.json` (`glass` leaves Quiet). Images `docs/right-side/images/12-presets-page.webp`, `13-presets-page-light.webp`. Unit tests: 114.
+
+### Kamon 家紋, the preset that was Hanko ✅ (asked for: "I don't want the Hanko name on the preset", then picked Kamon from a list)
+- **`core/Style.js`**: the `Hanko` preset is `Kamon` (same values; `DEFAULT_PRESET`), first in `PRESET_GROUPS`. `PRESET_ALIASES` (`hanko` → `Kamon`) is read by `presetName`, so a style.json that says `"preset": "Hanko"`, `hanko style preset hanko` and the IPC load Kamon with no warning; a saved file is written back as Kamon on the next change. A file naming the old Classic/Hanko design loads as Kamon. The plugin, its settings window and About keep the name Hanko.
+- **`core/Settings.js`**: blurb "the family crest", kanji 家紋; searching "hanko" on Presets finds it.
+- Unit tests: one for the alias (115). Harness params that say `"preset": "Hanko"` were left as they are; they exercise the alias.
 
 ## 10. Instructions for the remaining phase (10)
 

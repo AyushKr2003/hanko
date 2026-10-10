@@ -31,7 +31,7 @@ function pageInfo(key) {
 var PLATES = ["profile", "about", "credits"]
 
 var PRESET_BLURBS = {
-  Sheet: "the printed bar", Scroll: "the handscroll", Hanko: "the two together",
+  Sheet: "the printed bar", Scroll: "the handscroll", Kamon: "the family crest",
   Quiet: "least on screen", Instrument: "most on screen", Islet: "floating, inset",
   "Shōji": "washi and the seasons",
   Ma: "room between the groups", Shizuka: "quiet until it changes",
@@ -41,7 +41,7 @@ var PRESET_BLURBS = {
 // Each preset's kanji, for the Presets 型 page: what the bar is, in one
 // sign. The four studies keep the kanji they were drawn with.
 var PRESET_KANJI = {
-  Sheet: "帳", Scroll: "巻", Hanko: "判", Quiet: "素", Instrument: "計", Islet: "島",
+  Sheet: "帳", Scroll: "巻", Kamon: "家紋", Quiet: "素", Instrument: "計", Islet: "島",
   "Shōji": "障子", Ma: "間", Shizuka: "静", Suji: "筋", "Inrō": "印籠"
 }
 
@@ -62,6 +62,8 @@ function presetMatches(name, query, presets) {
   if (!q) return true
   var p = (presets && presets[name]) || {}
   var hay = [name, String(name).replace(/ō/g, "o"), PRESET_KANJI[name] || "", PRESET_BLURBS[name] || ""]
+  // A preset's old name finds it too (hanko → Kamon).
+  if (name === "Kamon") hay.push("hanko")
   for (var k in p) hay.push(String(p[k]))
   return hay.join(" ").toLowerCase().indexOf(q) >= 0
 }

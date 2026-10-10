@@ -4,7 +4,7 @@ Typeset merges the two earlier directions into one bar. Sheet (the printed runni
 
 - **Sheet** is the Sheet design as drawn.
 - **Scroll** is the Scroll design as drawn.
-- **Hanko** is the merge, and the default.
+- **Kamon** 家紋 (the family crest; it was called Hanko) is the merge, and the default.
 
 Twenty-three settings give **2,609,192,632,320** distinct bars before you even change the seal glyph or the theme. Every one of them still reads as Hanko, because every option is drawn from the same three things: paper, four inks and one seal red.
 
@@ -41,7 +41,7 @@ These rules are what let any combination look designed rather than assembled.
 
 ## 2. The twenty-three settings
 
-Each setting has a key (used in the config file), its options, the default (from the Hanko preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset; **Shōji** came from the Shōji design when it was folded into Hanko, drawn with its parts.
+Each setting has a key (used in the config file), its options, the default (from the Kamon preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset; **Shōji** came from the Shōji design when it was folded into Hanko, drawn with its parts.
 
 ### Left: where you are
 
@@ -415,9 +415,9 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/typeset/03-presets.webp)
 
-A preset sets all twenty-three settings at once. Change any setting afterwards and the settings page shows `PRESET · HANKO + EDITS`; **Reset to preset** puts it back.
+A preset sets all twenty-three settings at once. Change any setting afterwards and the settings page shows `PRESET · KAMON + EDITS`; **Reset to preset** puts it back.
 
-| Setting | Sheet | Scroll | **Hanko** | Quiet | Instrument | Islet | Shōji |
+| Setting | Sheet | Scroll | **Kamon** | Quiet | Instrument | Islet | Shōji |
 |---|---|---|---|---|---|---|---|
 | seal | stamp | workspace | stamp | stamp | stamp | workspace | carved |
 | spaces | folio | layout | kanji | dots | kanji | kanji | brush |
@@ -445,15 +445,15 @@ A preset sets all twenty-three settings at once. Change any setting afterwards a
 
 - **Sheet**: the Sheet design, exactly. A spec table across the top of the page.
 - **Scroll**: the Scroll design, exactly. Calm type and a handscroll underneath.
-- **Hanko**: the merge. A stamped seal and kanji pages, Sheet's cells, meters and flush sheets, Scroll's byline and stamps, named kanji indicators shown only when on, and the roller that carries the day.
+- **Kamon** 家紋: the family crest, the bar Hanko is known by (this preset was called Hanko; `hanko` still names it, and a style.json that says Hanko loads it). The merge. A stamped seal and kanji pages, Sheet's cells, meters and flush sheets, Scroll's byline and stamps, named kanji indicators shown only when on, and the roller that carries the day.
 - **Shōji**: the Shōji design, folded into Hanko: washi, the carved seal carrying your letters, brush desks, the season by the clock, icons and an ensō for status, a brush mark where you point. Picking it also puts every sheet in the Shōji hand and frames the overview (kept afterwards, like anything beside the settings). A style.json that names the Shōji design loads as this preset.
 - **Quiet**: the least on screen. Dots, an inline clock, numerals, a hairline, on glass.
 - **Instrument**: the most on screen. Kanji pages, a mono clock on the right, every meter, 44 px.
 - **Islet**: a floating inset strip with kanji status and stamps.
 
-The four right-side studies are presets too: your Hanko bar with the right zone set each way, and the marks as stamps alone (their names on hover). Only these differ from Hanko:
+The four right-side studies are presets too: the Kamon bar with the right zone set each way, and the marks as stamps alone (their names on hover). Only these differ from Kamon:
 
-| Setting | **Hanko** | Ma | Shizuka | Suji | Inrō |
+| Setting | **Kamon** | Ma | Shizuka | Suji | Inrō |
 |---|---|---|---|---|---|
 | status | cells | ma | shizuka | suji | inro |
 | meters | ticks | off | off | off | off |
@@ -541,7 +541,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Motion 動** holds one switch outside the twenty-three settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
-**Presets 型** shows every preset as a specimen, drawn live with your data, seal glyph, type size and hidden parts, as one list under a single *Bars* label: Hanko, Sheet, Scroll, Quiet, Instrument, Islet, Shōji, then the right-side studies Ma, Shizuka, Suji, Inrō. Each card is numbered 01–11 and gives the name, its kanji (判 帳 巻 素 計 島 障子 間 静 筋 印籠), a blurb, the five settings that tell it apart (status, clock, height, surface, panels) and the bar itself, at a screen's width scaled to the card, over the sample plate where glass or inset lets it through. The preset in use carries the red mark and IN USE, with how many edits sit on top of it; pointing at another shows USE ›, and a click puts it on your bar. The search field filters the cards (by name, kanji, blurb or any value they set). The action bar adds **Shuffle** and **Reset to preset**.
+**Presets 型** shows every preset as a specimen, drawn live with your data, seal glyph, type size and hidden parts, as one list under a single *Bars* label: Kamon, Sheet, Scroll, Quiet, Instrument, Islet, Shōji, then the right-side studies Ma, Shizuka, Suji, Inrō. Each card is numbered 01–11 and gives the name, its kanji (家紋 帳 巻 素 計 島 障子 間 静 筋 印籠), a blurb, the five settings that tell it apart (status, clock, height, surface, panels) and the bar itself, at a screen's width scaled to the card, over the sample plate where glass or inset lets it through. The preset in use carries the red mark and IN USE, with how many edits sit on top of it; pointing at another shows USE ›, and a click puts it on your bar. The search field filters the cards (by name, kanji, blurb or any value they set). The action bar adds **Shuffle** and **Reset to preset**.
 
 ![Presets](right-side/images/12-presets-page.webp)
 
@@ -576,7 +576,7 @@ Hanko stores its style alongside the rest of Omarchy's bar settings, so `omarchy
 ```jsonc
 // ~/.config/hanko/style.json (outside the plugin folder, so updates never touch it)
 {
-  "preset": "Hanko",          // starting point
+  "preset": "Kamon",          // starting point
   "edits": {                  // only what differs from the preset
     "clock": "inline",
     "status": "glyphs"

@@ -133,6 +133,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 - ✅ **Margin and Leaf removed** (asked for): two designs are left, Hanko and Shōji, and with them borrowing, Surprise me and the borrow rows on Settings › Design; a style.json naming Margin or Leaf loads as Hanko and a saved `borrow` is ignored. Shōji renders exactly as before.
 - ✅ **The right side, four ways** (asked for: "the right side looks too cramped; research and come up with a better design with a Japanese touch", then "add all"): four `status` values and four presets on the Hanko bar, Ma 間 (groups held apart by space), Shizuka 静 (quiet until it changes), Suji 筋 (one brush line per reading) and Inrō 印籠 (one ruled case), from six study sheets and their research in [right-side/](right-side/README.md).
 - ✅ **Presets 型, a page of their own** (asked for: "move the presets from Typesetting to a new Presets page, with the 4 new designs there too"): the first page of `01 BAR`, every preset a numbered specimen with its kanji, blurb, telling settings and its bar drawn live, in one list (the bars, then the studies), filtered by search, with Shuffle and Reset; Typesetting keeps a one-line link to it.
+- ✅ **Kamon 家紋** (asked for: no "Hanko" on the preset): the default preset is renamed Kamon, the family crest; "Hanko" still loads it.
 
 ## Dev loop
 

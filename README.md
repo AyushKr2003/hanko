@@ -8,7 +8,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 
 ## What you get
 
-- **Every part is a setting:** 23 settings and 11 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet, Shōji, and the right-side studies Ma, Shizuka, Suji, Inrō). Shōji's bar is part of them: its carved seal, brush desks, season clock, ink status with the ensō battery, washi paper and brush pointer are values you can mix into any bar, with season, numerals and paper grain as switches.
+- **Every part is a setting:** 23 settings and 11 presets (Sheet, Scroll, Kamon 家紋 (your bar, the default; it was the Hanko preset), Quiet, Instrument, Islet, Shōji, and the right-side studies Ma, Shizuka, Suji, Inrō). Shōji's bar is part of them: its carved seal, brush desks, season clock, ink status with the ensō battery, washi paper and brush pointer are values you can mix into any bar, with season, numerals and paper grain as switches.
 - **Shōji, as part of Hanko:** the Shōji look (washi, brush and the seasons) is the Shōji preset, `hanko style preset shoji`: its bar values, its washi panels as a sheet hand sliding along their rail, and its framed overview, each also something you can mix into any other bar. Every change prints live and is kept at once, with Undo (there is no Save button). Settings › Sheets sets how see-through every panel is (30–100%).
 - **Hanko, finished by hand:** each sheet is numbered like a page, carries its kanji pressed faintly behind the title, and ends in a colophon strip; groups are underscored, sliders have a capped needle, and the paper casts a soft shadow with printer's crop marks.
 - **Left:** a seal, your workspaces and the window title.

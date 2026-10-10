@@ -35,7 +35,7 @@ Rectangle {
     id: classicBar
     width: parent.width
     height: implicitHeight
-    style: S.resolve({ preset: "Hanko" })
+    style: S.resolve({ preset: "Kamon" })
     now: new Date(sheet.p.now || "2026-10-07T21:44:00")
     spaces: sheet.p.spaces.filter(function(s) { return s.id <= 5 || s.count > 0 }).map(function(s) {
       return Object.assign({}, s, { active: s.id === sheet.o.active })
