@@ -7,11 +7,11 @@ import "settings"
 
 // Hanko's settings as an ordinary window (a Quickshell FloatingWindow, like
 // Omarchy's own dev gallery), so it tiles, floats and takes the keyboard
-// like any app. It edits Typeset's draft: the bar shows every change at
-// once, Save writes style.json, and closing the window without saving puts
-// the saved style back.
+// like any app. There is no Save: every change prints on the bar and is
+// kept at once (Typeset.keep() after each draft edit), and Undo puts the
+// last one back (Typeset.history, forgotten when the window closes).
 //
-// Keys: / searches, Ctrl+S saves, Esc clears the search, then closes.
+// Keys: / searches, Ctrl+Z undoes, Esc clears the search, then closes.
 FloatingWindow {
   id: win
 
@@ -20,6 +20,7 @@ FloatingWindow {
   property string page: "typesetting"
   property string query: ""
   property bool advanced: false
+
 
   title: "Hanko settings"
   visible: bar.settingsOpen
@@ -33,7 +34,7 @@ FloatingWindow {
   // The Profile plate's machine facts, read while the window is open.
   Binding { target: Machine; property: "wanted"; value: win.visible }
 
-  // Closed by the window manager (Super+W, the close button): like Cancel.
+  // Closed by the window manager (Super+W, the close button).
   onVisibleChanged: if (!visible && bar.settingsOpen) bar.closeSettings()
 
   Item {
@@ -42,7 +43,7 @@ FloatingWindow {
     focus: true
 
     Keys.onPressed: function(event) {
-      if (event.key === Qt.Key_S && (event.modifiers & Qt.ControlModifier)) { Typeset.save(); event.accepted = true }
+      if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { Typeset.undo(); event.accepted = true }
       else if (event.key === Qt.Key_Slash) { win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
       else if (event.key === Qt.Key_Escape) {
         if (win.query !== "") win.query = ""
@@ -56,6 +57,7 @@ FloatingWindow {
       anchors.fill: parent
       draft: Typeset.live
       saved: Typeset.doc
+      undoCount: Typeset.history.length
       page: win.page
       query: win.query
       advanced: win.advanced
@@ -87,23 +89,37 @@ FloatingWindow {
         dnd: Status.doNotDisturb
       })
 
+      sheetFeed: ({
+        now: win.bar.now,
+        timeFormat: win.bar.timeFormat,
+        zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
+        timeShift: win.bar.timeShift,
+        sound: Sound.reading,
+        network: Net.reading,
+        bluetooth: Blue.reading,
+        power: Power.reading,
+        display: Display.reading,
+        letters: Status.notifications,
+        dnd: Status.doNotDisturb
+      })
       onSettingPicked: function(key, value) {
         // "…" asks for a glyph of your own, under Advanced.
         if (key === "sealGlyph" && value === "…") { win.advanced = true; return }
         Typeset.draftSet(key, value)
+        // A dragged slider is one step of Undo, not one per pixel.
+        Typeset.keep(key === "panelOpacity" ? key : "")
       }
-      onPresetPicked: function(name) { Typeset.draftPreset(name) }
-      onResetToPreset: Typeset.draftReset()
-      onRevert: Typeset.revert()
-      onSave: Typeset.save()
+      onPresetPicked: function(name) { Typeset.draftPreset(name); Typeset.keep() }
+      onResetToPreset: { Typeset.draftReset(); Typeset.keep() }
+      onUndo: Typeset.undo()
       onPagePicked: function(key) { win.page = key }
-      // A search shows Typesetting, unless you are searching the Widgets page.
-      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets") win.page = "typesetting" }
+      // A search shows Typesetting, unless you are searching Widgets or Presets.
+      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets" && win.page !== "presets") win.page = "typesetting" }
       onAdvancedToggled: function(on) { win.advanced = on }
-      onMonitorCleared: function(name) { Typeset.draftClearMonitor(name) }
-      onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value) }
-      onShuffle: Typeset.draftShuffle()
-      onShowAll: Typeset.draftShowAll()
+      onMonitorCleared: function(name) { Typeset.draftClearMonitor(name); Typeset.keep() }
+      onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value); Typeset.keep() }
+      onShuffle: { Typeset.draftShuffle(); Typeset.keep() }
+      onShowAll: { Typeset.draftShowAll(); Typeset.keep() }
       onProfileTextEdited: function(field, value) { Dossier.setText(field, value) }
       onProfileBlockToggled: function(block) { Dossier.toggle(block) }
       onProfileReset: Dossier.reset()

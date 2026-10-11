@@ -33,13 +33,13 @@ function kind(icon) {
 
 function percent(b) { return b >= 0 ? Math.round(b * 100) : -1 }
 
-// One sheet row: { address, name, detail, note, connected, paired }.
+// One sheet row: { address, name, detail, note, connected, paired, level (0..100 or -1) }.
 function row(d) {
   var parts = []
   if (kind(d.icon)) parts.push(kind(d.icon))
   if (percent(d.battery) >= 0) parts.push(percent(d.battery) + "%")
   return { address: String(d.address || ""), name: String(d.name).trim(), detail: parts.join(" · "),
-           connected: !!d.connected, paired: !!d.paired,
+           connected: !!d.connected, paired: !!d.paired, level: percent(d.battery),
            note: d.pairing ? "Pairing" : d.connected ? "Connected" : d.paired ? "Paired" : "" }
 }
 

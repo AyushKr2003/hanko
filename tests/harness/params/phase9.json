@@ -182,28 +182,28 @@
    }
   },
   {
-   "label": "HANKO \u00b7 INDICATORS \u9332 \u92342 \u591c \u00b7 KEYBOARD DE \u00b7 MIC \u00b7 TRAY",
+   "label": "HANKO \u00b7 INDICATORS 写 予2 月 \u00b7 KEYBOARD DE \u00b7 MIC \u00b7 TRAY",
    "doc": {
     "preset": "Hanko"
    },
    "indicators": [
     {
      "key": "recording",
-     "glyph": "\u9332",
+     "glyph": "写",
      "title": "",
      "red": true,
      "count": 0
     },
     {
      "key": "reminder",
-     "glyph": "\u9234",
+     "glyph": "予",
      "title": "",
      "red": false,
      "count": 2
     },
     {
      "key": "night",
-     "glyph": "\u591c",
+     "glyph": "月",
      "title": "",
      "red": false,
      "count": 0
@@ -269,21 +269,21 @@
    "indicators": [
     {
      "key": "recording",
-     "glyph": "\u9332",
+     "glyph": "写",
      "title": "",
      "red": true,
      "count": 0
     },
     {
      "key": "reminder",
-     "glyph": "\u9234",
+     "glyph": "予",
      "title": "",
      "red": false,
      "count": 2
     },
     {
      "key": "night",
-     "glyph": "\u591c",
+     "glyph": "月",
      "title": "",
      "red": false,
      "count": 0
@@ -339,21 +339,21 @@
    "indicators": [
     {
      "key": "recording",
-     "glyph": "\u9332",
+     "glyph": "写",
      "title": "",
      "red": true,
      "count": 0
     },
     {
      "key": "reminder",
-     "glyph": "\u9234",
+     "glyph": "予",
      "title": "",
      "red": false,
      "count": 2
     },
     {
      "key": "night",
-     "glyph": "\u591c",
+     "glyph": "月",
      "title": "",
      "red": false,
      "count": 0
@@ -409,21 +409,21 @@
    "indicators": [
     {
      "key": "recording",
-     "glyph": "\u9332",
+     "glyph": "写",
      "title": "",
      "red": true,
      "count": 0
     },
     {
      "key": "reminder",
-     "glyph": "\u9234",
+     "glyph": "予",
      "title": "",
      "red": false,
      "count": 2
     },
     {
      "key": "night",
-     "glyph": "\u591c",
+     "glyph": "月",
      "title": "",
      "red": false,
      "count": 0
@@ -475,21 +475,21 @@
    "indicators": [
     {
      "key": "recording",
-     "glyph": "\u9332",
+     "glyph": "写",
      "title": "",
      "red": true,
      "count": 0
     },
     {
      "key": "reminder",
-     "glyph": "\u9234",
+     "glyph": "予",
      "title": "",
      "red": false,
      "count": 2
     },
     {
      "key": "night",
-     "glyph": "\u591c",
+     "glyph": "月",
      "title": "",
      "red": false,
      "count": 0

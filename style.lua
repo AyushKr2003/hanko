@@ -17,7 +17,7 @@
 --     Nothing here picks its own colour.
 --   * Frames are 1 px hairlines. The focused window is framed in ink, the
 --     others in Ink.line (the foreground at 22%), as the bar's dividers are.
---   * Corners are square, like the solid bar. With `surface: inset` the bar
+--   * Corners are square, like the flush bar. With `float: inset` the bar
 --     floats 8 px off the screen with 7 px corners, and the windows take the
 --     same gap and radius so their edges line up with its frame.
 --   * Windows lie on the desk like sheets of paper: a short, tight black
@@ -66,21 +66,21 @@ local seal = rgba(palette.red, 1)
 local clear = rgba(palette.background, 0)
 
 -- ── The bar's style (style.json) ────────────────────────────────────────────
--- Only the two settings the windows care about: the surface and the motion.
--- The preset → surface table mirrors core/Style.js PRESETS; keep them in step.
+-- Only the two settings the windows care about: the float and the motion.
+-- The preset → float table mirrors core/Style.js PRESETS; keep them in step.
+-- A `surface: inset` from before `float` still floats.
 
-local preset_surface = {
-  Sheet = "solid", Scroll = "solid", Hanko = "solid",
-  Quiet = "glass", Instrument = "solid", Islet = "inset",
-}
+local preset_float = { Islet = "inset" }
 
 local style = read(config_home .. "/hanko/style.json") or ""
 local edits = style:match('"edits"%s*:%s*(%b{})') or ""
-local preset = style:match('"preset"%s*:%s*"(%w+)"') or "Hanko"
-local surface = edits:match('"surface"%s*:%s*"(%w+)"') or preset_surface[preset] or "solid"
+local preset = style:match('"preset"%s*:%s*"(%w+)"') or "Kamon"
+local float = edits:match('"float"%s*:%s*"(%w+)"')
+  or (edits:match('"surface"%s*:%s*"inset"') and "inset")
+  or preset_float[preset] or "flush"
 local still = style:match('"motion"%s*:%s*"still"') ~= nil
 
-local inset = surface == "inset"
+local inset = float == "inset"
 
 -- ── Frame ───────────────────────────────────────────────────────────────────
 
@@ -183,3 +183,18 @@ hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.4, bezier = "hankoInk
 hl.animation({ leaf = "fadeShadow", enabled = true, speed = 1.4, bezier = "hankoInk" })
 -- Workspaces pan like the scroll does between sections (260 ms).
 hl.animation({ leaf = "workspaces", enabled = true, speed = 2.6, bezier = "hankoPan", style = "slide" })
+
+-- The overview is already animated by QML; keep Hyprland from sliding its
+-- full-screen layer in as well.
+hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, animation = "none" })
+
+-- ── Settings window ─────────────────────────────────────────────────────────
+-- Hanko's settings open as a floating sheet in the middle of the screen,
+-- never tiled. Matched on class and title so no other Quickshell window
+-- picks this up.
+
+o.window({ class = "^org\\.quickshell$", title = "^Hanko settings$" }, {
+  float = true,
+  center = true,
+  size = { 1320, 980 },
+})

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../core"
 import "../core/Spaces.js" as SpacesJs
+import "parts" as Parts
 
 // Workspaces 頁, in four styles (docs/COMPONENTS.md):
 //   folio   page numbers; the live one inverts with a // lead; dots count windows
@@ -9,6 +10,9 @@ import "../core/Spaces.js" as SpacesJs
 //   layout  each workspace drawn as its real tiling, focused window filled
 //   kanji   壱 弐 参 with window dots; the live one inverts
 //   dots    one dot each; the live one a short bar
+//   brush   Shōji's: numerals (`numerals`: arabic or 一 二 三), a brush mark
+//           (the PointerMark part) sliding under the live one, a dot when
+//           busy, the 未 stamp (the UnreadMark part) when urgent
 // `spaces` is Hypr.spacesFor(): [{ id, active, urgent, count, windows }].
 Item {
   id: root
@@ -16,6 +20,10 @@ Item {
   property string mode: "layout"
   property var spaces: []
   property int barHeight: 40
+  // brush: Shōji's skin and how its numbers are written.
+  property var skin: ({})
+  property string numerals: "arabic"
+  readonly property var kanjiNumerals: ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 
   signal activated(int id)
   signal stepped(int delta)
@@ -50,10 +58,19 @@ Item {
     Behavior on width { enabled: Motion.live; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
   }
 
+  // brush: the live desk's mark, a brush stroke under it.
+  Parts.PointerMark {
+    visible: root.mode === "brush"
+    anchors.fill: parent
+    skin: root.skin
+    target: root.liveCell ? Qt.rect(row.x + root.liveCell.x, 0, root.liveCell.width, root.barHeight) : Qt.rect(0, 0, 0, 0)
+    lineY: root.barHeight + Type.px(5)
+  }
+
   Row {
     id: row
     anchors.verticalCenter: parent.verticalCenter
-    spacing: root.mode === "folio" ? Type.px(2) : root.mode === "kanji" ? Type.px(3) : Type.px(7)
+    spacing: root.mode === "folio" ? Type.px(2) : root.mode === "kanji" ? Type.px(3) : root.mode === "brush" ? 0 : Type.px(7)
 
     Repeater {
       model: root.spaces
@@ -76,6 +93,7 @@ Item {
           sourceComponent: root.mode === "folio" ? folioCell
             : root.mode === "kanji" ? kanjiCell
             : root.mode === "dots" ? dotCell
+            : root.mode === "brush" ? brushCell
             : glyphCell
           onLoaded: item.ws = Qt.binding(function() { return cell.modelData })
         }
@@ -175,7 +193,7 @@ Item {
         radius: 2
         color: "transparent"
         border.width: 1
-        border.color: lc.on ? Ink.ink : Ink.line
+        border.color: lc.on ? Ink.ink : Ink.lineSoft
 
         Repeater {
           model: lc.ws ? lc.ws.windows : []
@@ -187,9 +205,10 @@ Item {
             width: Math.max(1, Math.round(modelData.w * (frame.width - 2)) - 2)
             height: Math.max(1, Math.round(modelData.h * (frame.height - 2)) - 2)
             radius: 1
-            color: live && modelData.focused ? Ink.ink : live ? Ink.alpha(Ink.ink, 0.22) : Ink.lineSoft
-            border.width: 1
-            border.color: live && modelData.focused ? Ink.ink : live ? Ink.inkMuted : Ink.line
+            // Windows are solid tiles, not outlined boxes: the page you are
+            // on in ink, the others a faint print of their layout.
+            color: live && modelData.focused ? Ink.ink : live ? Ink.alpha(Ink.ink, 0.38) : Ink.alpha(Ink.ink, 0.16)
+            border.width: 0
           }
         }
       }
@@ -257,6 +276,43 @@ Item {
     }
   }
 
+  // ------------------------------------------------------------ brush
+  Component {
+    id: brushCell
+
+    Item {
+      id: bc
+      property var ws: null
+      readonly property bool on: !!(ws && ws.active)
+      readonly property bool kanji: root.numerals === "kanji"
+      implicitWidth: Type.px(26)
+      implicitHeight: root.barHeight
+
+      Text {
+        anchors.centerIn: parent
+        text: !bc.ws ? "" : bc.kanji ? root.kanjiNumerals[bc.ws.id] || String(bc.ws.id) : String(bc.ws.id)
+        color: bc.on ? Ink.ink : bc.ws && bc.ws.count > 0 ? Ink.ink2 : Ink.ink3
+        font.family: bc.kanji ? Type.jp : Type.text
+        font.pixelSize: Type.px(13)
+        font.weight: bc.on ? Font.DemiBold : Font.Normal
+      }
+      Rectangle {
+        visible: !!bc.ws && !bc.on && bc.ws.count > 0 && !bc.ws.urgent
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.barHeight / 2 + Type.px(9)
+        width: 3; height: 3; radius: 1.5
+        color: Ink.ink3
+      }
+      Parts.UnreadMark {
+        visible: !!(bc.ws && bc.ws.urgent)
+        anchors.centerIn: parent
+        width: Type.px(26); height: Type.px(24)
+        skin: root.skin
+        small: true
+      }
+    }
+  }
+
   component WindowDots: Row {
     id: dots
     property int count: 0
@@ -270,11 +326,12 @@ Item {
 
   component UrgentDot: Rectangle {
     property bool ring: false
-    width: Type.px(ring ? 5 : 4)
+    // Sized to be seen at 1x: the ringed dot was 5 px with a 2 px ring, a 1 px red speck.
+    width: Type.px(ring ? 7 : 5)
     height: width
     radius: width / 2
     color: Ink.seal
-    border.width: ring ? 2 : 0
+    border.width: ring ? 1.5 : 0
     border.color: Ink.paper
   }
 }

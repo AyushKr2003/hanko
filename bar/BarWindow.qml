@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import "../core"
 import "../core/Sheets.js" as Sheets
 import "../core/Scroll.js" as Scroll
+import "../core/Skin.js" as Skin
 import "../services"
 
 // One layer-shell bar per screen. It reserves its own height and, when the
@@ -26,10 +27,10 @@ PanelWindow {
 
   readonly property int barHeight: Type.px(style.height)
   readonly property bool atBottom: bar.position === "bottom"
-  // Inset floats 8 px off the screen's edges. Hyprland adds the margin on
+  // Float inset floats 8 px off the screen's edges. Hyprland adds the margin on
   // the anchored edge to the exclusive zone, so windows stay 8 px clear of
   // the frame too.
-  readonly property int gap: shown.surface === "inset" ? 8 : 0
+  readonly property int gap: shown.float === "inset" ? 8 : 0
 
   color: "transparent"
   implicitHeight: barHeight
@@ -54,7 +55,10 @@ PanelWindow {
   }
 
   readonly property string screenName: screen ? screen.name : ""
-  readonly property alias surface: surface
+  // Shōji's skin (core/Skin.js) for this screen's style: the Shōji sheet
+  // hand and the framed overview wear it, as the bar's Shōji values do.
+  readonly property var skin: Skin.fromStyle(shown)
+  readonly property Item surface: classicSurface
 
   Component.onCompleted: bar.registerWindow(screenName, win)
   Component.onDestruction: bar.unregisterWindow(screenName, win)
@@ -81,7 +85,7 @@ PanelWindow {
   }
 
   BarSurface {
-    id: surface
+    id: classicSurface
     anchors.fill: parent
     style: win.shown
     now: win.bar.now
@@ -137,6 +141,6 @@ PanelWindow {
   SheetWindow {
     bar: win.bar
     barWindow: win
-    surface: surface
+    surface: win.surface
   }
 }

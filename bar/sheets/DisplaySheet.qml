@@ -31,6 +31,7 @@ Item {
     bottomPadding: Type.px(20)
 
     SheetHead {
+      sheet: "display"
       jp: "明"
       label: "Display · Hyprland"
       title: root.display ? root.display.title : "Display"
@@ -49,16 +50,31 @@ Item {
         width: parent.width - Type.px(4)
         spacing: Type.px(16)
 
-        Text {
+        Item {
           id: big
-          width: Type.px(66)
+          width: Type.px(78)
+          height: bigText.height
           anchors.verticalCenter: parent.verticalCenter
-          text: root.light ? String(root.light.percent) : "—"
-          color: root.light ? Ink.ink : Ink.inkFaint
-          font.family: Type.display
-          font.pixelSize: Type.title
-          font.weight: Font.Normal
-          font.variableAxes: Type.axes(Type.title)
+          Text {
+            id: bigText
+            text: root.light ? String(root.light.percent) : "—"
+            color: root.light ? Ink.ink : Ink.inkFaint
+            font.family: Type.display
+            font.pixelSize: Type.title
+            font.weight: Font.Normal
+            font.variableAxes: Type.axes(Type.title)
+            font.features: { "tnum": 1 }
+          }
+          // The unit set small and high, as on the Sound sheet.
+          Text {
+            visible: !!root.light
+            x: bigText.width + Type.px(3)
+            y: Type.px(6)
+            text: "%"
+            color: Ink.inkMuted
+            font.family: Type.mono
+            font.pixelSize: Type.label
+          }
         }
         Ruler {
           anchors.verticalCenter: parent.verticalCenter

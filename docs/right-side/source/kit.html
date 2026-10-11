@@ -1,0 +1,250 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Fraunces;src:url(../../../assets/fonts/Fraunces.ttf)}
+@font-face{font-family:Fraunces;font-style:italic;src:url(../../../assets/fonts/Fraunces-Italic.ttf)}
+@font-face{font-family:Grot;src:url(../../../assets/fonts/SpaceGrotesk.ttf)}
+:root{
+  --paper:#1a1b26; --ink:#c9cfe8; --dim:#a3a9c4; --muted:#7c829e; --faint:#5d6280; --hair:#34374b;
+  --red:#f7768e; --page:#101118;
+  --mono:"JetBrainsMono Nerd Font",monospace; --serif:Fraunces,serif; --sans:Grot,sans-serif; --jp:"Noto Serif CJK JP",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font-family:var(--sans);width:2048px;padding:56px 64px 64px}
+.kick{font:500 11px var(--mono);letter-spacing:.28em;color:var(--muted);text-transform:uppercase;display:flex;gap:14px;align-items:center}
+.kick b{color:var(--red);font-weight:400}
+.kick::after{content:"";flex:1;height:1px;background:var(--hair)}
+h1{font:400 64px/1.05 var(--serif);margin:26px 0 8px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:22px}
+h1 .k{font:600 56px var(--jp);color:var(--red)}
+h1 i{font-style:italic;color:var(--dim);font-size:44px}
+.lede{font:400 19px/1.55 var(--sans);color:var(--dim);max-width:1240px}
+.lede em{color:var(--ink);font-style:normal}
+.lab{font:500 10.5px var(--mono);letter-spacing:.26em;color:var(--muted);text-transform:uppercase;margin:40px 0 12px;display:flex;gap:12px;align-items:center}
+.lab .w{margin-left:auto;color:var(--faint);letter-spacing:.16em}
+.lab .w b{color:var(--ink);font-weight:500}
+.lab .w b.r{color:var(--red)}
+/* desktop strip */
+.desk{width:1920px;height:96px;overflow:hidden;position:relative;border:1px solid var(--hair);
+  background:radial-gradient(120% 140% at 70% 120%,#c43a7a 0%,#7a3a9e 35%,#4a2f86 60%,#2c2459 100%)}
+.desk.short{height:auto}
+/* bar */
+.bar{height:40px;background:var(--paper);display:flex;align-items:center;position:relative;padding:0 10px 0 6px;white-space:nowrap}
+.bar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--hair)}
+.rule{position:absolute;left:0;right:0;bottom:0;height:5px;
+  background:repeating-linear-gradient(90deg,var(--hair) 0 1px,transparent 1px 80px);opacity:.9}
+.now{position:absolute;bottom:0;width:1.5px;height:7px;background:var(--red);left:1675px}
+.seal{width:26px;height:26px;background:var(--red);color:var(--paper);font:700 17px/26px var(--jp);text-align:center;border-radius:2px;margin-right:12px;opacity:.92}
+.div{width:1px;height:22px;background:var(--hair);margin:0 12px}
+.ws{display:flex;gap:9px;font:400 15px var(--jp);color:var(--dim)}
+.ws span{width:22px;text-align:center;position:relative}
+.ws span.on{background:var(--ink);color:var(--paper);border-radius:2px}
+.ws span.d::after{content:"";position:absolute;left:9px;bottom:-6px;width:3px;height:3px;border-radius:50%;background:var(--muted)}
+.title{font:italic 400 16px var(--serif);color:var(--ink);margin-left:2px}
+.title + .sub{font:400 13.5px var(--sans);color:var(--dim);margin-left:9px}
+.clock{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px}
+.clock .t{font:300 24px var(--serif);letter-spacing:.01em}
+.clock .d{font:500 10px/1.45 var(--mono);letter-spacing:.18em;color:var(--dim)}
+.right{margin-left:auto;display:flex;align-items:center;height:100%}
+/* shared primitives */
+.mono{font:500 9.5px var(--mono);letter-spacing:.22em;color:var(--muted)}
+.val{font:400 13.5px var(--sans);color:var(--ink)}
+.num{font:400 14px var(--sans);color:var(--ink);font-variant-numeric:tabular-nums}
+.pct{font:400 9px var(--mono);color:var(--muted);margin:0 6px 0 2px}
+.kj{font:500 10px var(--jp);color:var(--muted)}
+.ticks{display:inline-flex;gap:2px;align-items:flex-end;height:10px}
+.ticks i{width:2px;height:10px;background:var(--ink)}
+.ticks i.o{background:var(--faint);opacity:.55}
+.sig{display:inline-flex;gap:1.5px;align-items:flex-end;height:10px;margin-left:5px}
+.sig i{width:2.5px;background:var(--ink)}
+.cell{display:flex;flex-direction:column;justify-content:center;padding:0 12px}
+.cell .top{display:flex;gap:7px;align-items:center;margin-bottom:2px}
+.cell .bot{display:flex;align-items:center}
+.ind{display:flex;align-items:center;gap:6px;margin-left:8px}
+.stamp{width:17px;height:17px;border:1px solid var(--dim);font:500 11px/15px var(--jp);text-align:center;color:var(--ink);border-radius:1.5px}
+.stamp.inv{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.inbox{display:flex;align-items:center;gap:7px}
+.inbox .box{width:19px;height:19px;border:1.5px solid var(--red);border-radius:2px;position:relative}
+.inbox .box::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1.5px solid var(--red)}
+.inbox .c{font:500 10.5px var(--mono);color:var(--dim);letter-spacing:.1em}
+/* zoom */
+.zoomwrap{width:1920px;display:flex;justify-content:flex-end;overflow:hidden;border:1px solid var(--hair);background:var(--paper)}
+.zoom{transform-origin:right center;transform:scale(2);height:80px;display:flex;align-items:center}
+.zoom .bar{width:auto;padding-right:10px;padding-left:14px}
+.zoom .bar::after,.zoom .rule,.zoom .now{display:none}
+/* notes */
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:40px;border-top:1px solid var(--hair);padding-top:26px}
+.notes h3{font:500 10.5px var(--mono);letter-spacing:.26em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.notes h3 b{color:var(--red);font-weight:400}
+.notes p,.notes li{font:400 15.5px/1.55 var(--sans);color:var(--dim)}
+.notes ul{list-style:none}
+.notes li{padding-left:18px;position:relative;margin-bottom:6px}
+.notes li::before{content:"//";position:absolute;left:0;color:var(--faint);font:500 11px/24px var(--mono)}
+.notes em{font-style:normal;color:var(--ink)}
+.foot{margin-top:34px;font:500 10px var(--mono);letter-spacing:.24em;color:var(--faint);display:flex;justify-content:space-between}
+/* annotations */
+.ann{position:relative;height:56px;width:1920px}
+.ann .br{position:absolute;top:10px;height:10px;border:1px solid var(--red);border-top:none;opacity:.8}
+.ann .tx{position:absolute;top:28px;font:500 10px var(--mono);letter-spacing:.18em;color:var(--red);text-transform:uppercase;white-space:nowrap}
+/* ----- concept specific ----- */
+/* A Ma */
+.grp{display:flex;align-items:center;gap:14px}
+.gap{width:30px}
+.one{display:flex;align-items:baseline;gap:6px}
+.one .g{font:500 13px var(--jp);color:var(--muted)}
+.lvl{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.lvl .r{display:flex;align-items:baseline;gap:5px}
+.fill{height:2px;width:26px;background:var(--faint);opacity:.6;position:relative}
+.fill i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+/* B Shizuka */
+.ghost{font:500 13px var(--jp);color:var(--faint)}
+.unfold{display:flex;align-items:center;gap:8px;padding:0 10px;height:28px;border-left:1px solid var(--hair);border-right:1px solid var(--hair)}
+/* C Suji */
+.suji{display:flex;align-items:center;gap:20px}
+.sj{display:flex;align-items:center;gap:7px}
+.sj .g{font:500 14px var(--jp);color:var(--dim)}
+.line{position:relative;height:3px;width:var(--w);}
+.line::before{content:"";position:absolute;left:0;right:0;top:1px;height:1px;background:repeating-linear-gradient(90deg,var(--faint) 0 2px,transparent 2px 4px)}
+.line i{position:absolute;left:0;top:0;height:3px;background:var(--ink);border-radius:2px 1px 1px 2px}
+.sj.red .g{color:var(--red)} .sj.red .line i{background:var(--red)}
+.tip{position:absolute;top:44px;background:var(--ink);color:var(--paper);font:500 11px var(--mono);letter-spacing:.12em;padding:4px 8px;border-radius:1px}
+/* D Inro */
+.inro{display:grid;grid-template-columns:repeat(5,auto);grid-template-rows:auto auto;column-gap:0;border:1px solid var(--hair);height:32px;align-items:center}
+.inro > div{padding:0 9px;text-align:center;line-height:1}
+.inro .h{font:500 10.5px var(--jp);color:var(--muted);padding-top:2px}
+.inro .v{font:400 12px var(--sans);color:var(--ink);font-variant-numeric:tabular-nums;padding-bottom:1px}
+.inro > div:not(:nth-child(5n+1)){border-left:1px solid var(--hair)}
+.inro .v.red{color:var(--red)}
+.inro .h.red{color:var(--red)}
+/* compare */
+.cmp .lab{margin-top:26px}
+</style></head>
+<body>
+<script>
+const P = new URLSearchParams(location.search), C = P.get('c') || '0';
+const T = n => `<span class="ticks">${Array.from({length:10},(_,i)=>`<i class="${i<n?'':'o'}"></i>`).join('')}</span>`;
+const SIG = n => `<span class="sig">${[4,6,8,10].map((h,i)=>`<i style="height:${h}px;${i>=n?'background:var(--faint)':''}"></i>`).join('')}</span>`;
+const left = `
+  <div class="seal">寛</div><div class="div" style="margin-left:0"></div>
+  <div class="ws"><span>壱</span><span>弐</span><span class="on">参</span><span class="d">肆</span><span>伍</span></div>
+  <div class="div"></div>
+  <span class="title">Float</span><span class="sub">▸ Doodles ( LoFi , Happy ) - HolíznaCC0 | clamp</span>
+  <div class="clock"><span class="t">20:59</span><span class="d">SAT<br>10 OCT</span></div>`;
+const cell = (lab, kj, bot) => `<div class="cell"><div class="top"><span class="mono">${lab}</span><span class="kj">${kj}</span></div><div class="bot">${bot}</div></div>`;
+const inbox = `<div class="div" style="margin:0 12px 0 10px"></div><div class="inbox"><div class="box"></div><span class="c">01</span></div>`;
+const R = {
+ now: `${cell('NET','波',`<span class="val">Infinix NOTE 50S 5G</span>${SIG(4)}`)}
+   ${cell('BT','双',`<span class="val">OPPO Enco Buds2</span><span style="margin-left:6px">${'<i style="display:inline-block;width:2px;height:10px;background:var(--ink);margin-right:2px"></i>'.repeat(4)}</span>`)}
+   ${cell('VOL','耳',`<span class="num">10</span><span class="pct">%</span>${T(1)}`)}
+   ${cell('LUM','光',`<span class="num">30</span><span class="pct">%</span>${T(3)}`)}
+   ${cell('BAT','力',`<span class="num">81</span><span class="pct">%</span>${T(8)}`)}
+   <div class="div" style="margin:0 4px 0 6px"></div>
+   <div class="ind"><span class="stamp">目</span><span class="mono" style="color:var(--dim)">STAY AWAKE</span><span class="stamp">月</span><span class="mono" style="color:var(--dim)">NI</span></div>
+   ${inbox}`,
+ ma: `<div class="grp">
+     <div class="one"><span class="g">波</span><span class="val">Infinix</span>${SIG(4)}</div>
+     <div class="one"><span class="g">双</span><span class="val">Enco Buds2</span></div></div>
+   <div class="gap"></div>
+   <div class="grp" style="gap:16px">
+     ${[['音',10],['光',30],['力',81]].map(([g,n])=>`<div class="lvl"><div class="r"><span class="kj" style="font-size:11px">${g}</span><span class="num">${n}</span></div><div class="fill"><i style="width:${n}%"></i></div></div>`).join('')}</div>
+   <div class="gap"></div>
+   <div class="grp" style="gap:6px"><span class="stamp">目</span><span class="stamp">月</span></div>
+   ${inbox}`,
+ shizuka: (st) => {
+   const vol = st==='vol' ? `<div class="unfold"><span class="mono">VOL</span><span class="kj">音</span><span class="num" style="margin-left:4px">10</span><span class="pct">%</span>${T(1)}</div>` : `<span class="ghost">音</span>`;
+   const bat = st==='low' ? `<div class="one"><span class="g" style="color:var(--red)">力</span><span class="num" style="color:var(--red)">14</span><span class="pct" style="color:var(--red)">%</span></div>` : `<div class="one"><span class="g">力</span><span class="num">81</span></div>`;
+   return `<div class="grp" style="gap:18px">
+     <div class="one"><span class="g">波</span><span class="val">Infinix</span>${SIG(4)}</div>
+     <span class="ghost">双</span>${vol}<span class="ghost">光</span>
+     ${bat}
+     <span class="stamp" style="margin-left:4px">目</span>
+   </div>${inbox}`;},
+ suji: (st) => {
+   const s = (g,w,f,cls='') => `<div class="sj ${cls}"><span class="g">${g}</span><span class="line" style="--w:${w}px"><i style="width:${f}%"></i></span></div>`;
+   return `<div class="suji">
+     ${s('波',30,100)}${s('双',30,100)}${s('音',30,10)}${s('光',30,30)}${st==='low'?s('力',30,14,'red'):s('力',30,81)}
+     <span style="display:flex;gap:6px"><span class="stamp">目</span><span class="stamp">月</span></span>
+   </div>${inbox}`;},
+ inro: (st) => `<div class="inro">
+     ${['波','双','音','光','力'].map((g,i)=>`<div class="h ${st==='low'&&i==4?'red':''}">${g}</div>`).join('')}
+     ${['Infinix','Enco','10','30',st==='low'?'14':'81'].map((v,i)=>`<div class="v ${st==='low'&&i==4?'red':''}">${v}</div>`).join('')}
+   </div>
+   <span style="display:flex;gap:6px;margin-left:14px"><span class="stamp">目</span><span class="stamp">月</span></span>
+   ${inbox}`,
+};
+const bar = (right) => `<div class="bar">${left}<div class="right">${right}</div><div class="rule"></div><div class="now"></div></div>`;
+const desk = (right, h=96) => `<div class="desk" style="height:${h}px">${bar(right)}</div>`;
+const zoom = (right) => `<div class="zoomwrap"><div class="zoom"><div class="bar"><div class="right">${right}</div></div></div></div>`;
+const notes = (a,b,c) => `<div class="notes"><div><h3><b>01</b> &nbsp;What changes</h3>${a}</div><div><h3><b>02</b> &nbsp;Why (research)</h3>${b}</div><div><h3><b>03</b> &nbsp;How it behaves</h3>${c}</div></div>`;
+const head = (n, k, name, sub, lede) => `<div class="kick"><b>右</b> Hanko · the right side · ${n} / 05</div>
+  <h1><span class="k">${k}</span>${name} <i>${sub}</i></h1><p class="lede">${lede}</p>`;
+const foot = `<div class="foot"><span>HANKO · RIGHT-SIDE STUDIES · 2026-10-11</span><span>SAME THEME · SAME LEFT AND CENTRE · ONLY THE RIGHT CHANGES</span></div>`;
+
+let html = '';
+if (C === '0') {
+  html = head('00','診','Diagnosis','why the right side feels cramped',
+   'Your running bar, drawn at real size. The left and centre breathe; the right is <em>five identical label-over-value cells</em>, each carrying a mono label, a kanji gloss, a value and its own ten-tick meter, then two named stamps and the seal. Everything has the same weight, so nothing reads first.') +
+   `<div class="lab">Your bar · as it is <span class="w">right side ≈ <b class="r">846 px</b> of 1920</span></div>` + desk(R.now) +
+   `<div class="lab">The right side · ×2</div>` + zoom(R.now) +
+   notes(`<ul><li><em>Five cells, five labels, five kanji, three meters</em>: about 30 separate marks for five facts.</li><li>Device names (“Infinix NOTE 50S 5G”, “OPPO Enco Buds2”) take <em>~45%</em> of the width and they almost never change.</li><li>Number <em>and</em> ten ticks say the same thing twice.</li><li>Indicator names (“STAY AWAKE”, “NI…”) get cut off.</li></ul>`,
+     `<ul><li><em>Tufte, data-ink</em>: erase ink that repeats data. A meter beside its number is redundant ink.</li><li><em>Weiser &amp; Brown, Calm Technology (1995)</em>: a status display should live in the periphery and move to the centre only when something is unusual.</li><li><em>HUD research (Fagerholt &amp; Lorentzon; recent HUD-minimalism studies)</em>: modern games drop always-on dense overlays for <em>state-dependent</em> ones.</li></ul>`,
+     `<ul><li><em>Ma 間</em>: the pause between things gives them meaning. The right side has dividers but no pauses.</li><li><em>Kanso 簡素</em>: keep what is essential and remove the rest.</li><li>The next four sheets each fix this a different way, from mild (01) to radical (04). The left and centre stay exactly as they are.</li></ul>`) + foot;
+}
+if (C === '1') {
+  html = head('01','間','Ma','three groups with room to breathe',
+   'The mildest change. The five cells become <em>three groups separated by empty space instead of hairlines</em>: what you are connected to, how much you have, and which modes are on. Labels go and the kanji is the label. The ten-tick meter becomes a two-pixel fill rule under each number.') +
+   `<div class="lab">Ma · at rest <span class="w">right side ≈ <b>500 px</b> &nbsp;(−41%)</span></div>` + desk(R.ma) +
+   `<div class="lab">The right side · ×2</div>` + zoom(R.ma) +
+   notes(`<ul><li>Connections: <em>波 Infinix</em>, <em>双 Enco Buds2</em>, first word of the name only.</li><li>Levels: <em>音 10 · 光 30 · 力 81</em>, each with a hairline fill under it.</li><li>Modes: the stamps alone (目 awake, 月 night). The name shows on hover.</li><li>Seal and inbox unchanged.</li></ul>`,
+     `<ul><li><em>Gestalt proximity</em>: space groups things more strongly than lines do, so the hairline dividers can go.</li><li><em>Tufte</em>: one fill rule instead of number plus ten ticks keeps the information and drops about 80% of the ink.</li><li><em>Ma 間</em>: the 30 px gaps are the design.</li></ul>`,
+     `<ul><li>Hover a group and its cells open into today’s label-over-value form, in place.</li><li>Scroll on a level changes it; the fill rule moves live.</li><li>Click still drops the sheet (Sound, Display, Power…).</li><li>Fits every existing setting; could ship as <em>status: ma</em>.</li></ul>`) + foot;
+}
+if (C === '2') {
+  html = head('02','静','Shizuka','quiet until something changes',
+   'Borrowed from game HUDs that hide health until you take damage. At rest the bar shows <em>only what you glance at: network, battery and the seal</em>. Bluetooth, volume and brightness wait as faint kanji. When one changes it <em>unfolds in place</em>, holds for two seconds, then folds back. An alert stays open in red until it clears.') +
+   `<div class="lab">Shizuka · at rest <span class="w">right side ≈ <b>345 px</b> &nbsp;(−59%)</span></div>` + desk(R.shizuka('rest')) +
+   `<div class="lab">Volume key pressed · 音 unfolds for two seconds</div>` + desk(R.shizuka('vol'),40) +
+   `<div class="lab">Battery under 15% · 力 turns red and stays</div>` + desk(R.shizuka('low'),40) +
+   `<div class="lab">The right side at rest · ×2</div>` + zoom(R.shizuka('rest')) +
+   notes(`<ul><li>Always shown: <em>波 network</em>, <em>力 battery</em>, active stamps, the seal.</li><li>Folded to a faint kanji: <em>双 音 光</em>. They are there, just quiet.</li><li>Folded items keep their order, so they never jump around.</li></ul>`,
+     `<ul><li><em>HUD “show on change”</em>: vitals appear only when they move (Dynamic HUD, “Show on Change” mods; HUD-minimalism research found players link minimal HUDs with immersion and prefer them).</li><li><em>Weiser &amp; Brown</em>: the periphery holds many things calmly, and only the unusual moves to the centre.</li><li><em>Shizuka 静</em>: stillness as the normal state.</li></ul>`,
+     `<ul><li>Unfold on change: 180 ms ink-in, 2 s hold, 240 ms fold, using Hanko’s existing paper motion.</li><li>Hover anywhere on the right and everything unfolds; leave and it folds.</li><li>Per item, you choose <em>always / on change / never</em> (replaces <em>hidden</em>).</li><li>Red rule unchanged: only alerts unfold in red.</li></ul>`) + foot;
+}
+if (C === '3') {
+  html = head('03','筋','Suji','five brush lines, no numbers',
+   'The most typographic idea, taken from Tufte’s sparklines: <em>a graphic the size of a word</em>. Each status is a kanji followed by one short ink line whose length is the level. No labels, no numbers and no ticks at rest. You read five lengths in a single glance, and the number appears only when you reach for it.') +
+   `<div class="lab">Suji · at rest <span class="w">right side ≈ <b>469 px</b> &nbsp;(−45%)</span></div>` + desk(R.suji('rest')) +
+   `<div class="lab">Battery low · the line and its kanji go red</div>` + desk(R.suji('low'),40) +
+   `<div class="lab">The right side · ×2 &nbsp;·&nbsp; dotted = the empty part of the range</div>` + zoom(R.suji('rest')) +
+   notes(`<ul><li><em>波</em> signal, <em>双</em> connected, <em>音</em> volume, <em>光</em> brightness, <em>力</em> battery, each a 30 px line.</li><li>Solid ink is the level and dots are the rest of the range (Tufte’s range frame).</li><li>Device names live only in the hover chip and the sheet.</li></ul>`,
+     `<ul><li><em>Tufte, sparklines</em>: “small, intense, simple, word-sized graphics” with a data-ink ratio of 1, and no frames or tick marks.</li><li><em>Pre-attentive length</em>: comparing lengths is the fastest quantity judgment the eye makes (Cleveland &amp; McGill), faster than reading digits.</li><li>The line is a brush stroke, <em>fude</em>, not a progress bar.</li></ul>`,
+     `<ul><li>Hover a line: a bone chip below gives <em>VOL 10%</em> or <em>NET Infinix · 5G</em>.</li><li>Scroll on a line: it grows or shrinks like ink drawn along it.</li><li>When the bar is 32 px tall nothing changes, because it is already one line.</li><li>Best paired with <em>meters: off</em>, which this replaces.</li></ul>`) + foot;
+}
+if (C === '4') {
+  html = head('04','印籠','Inrō','one small case holds everything',
+   'An <em>inrō</em> is the little nested case a samurai hung from the belt: many compartments in one object. Here the five statuses become <em>one ruled case of five compartments</em>, with the kanji on top and the value below. It reads like a scorecard. One frame replaces five cells, so the edge of the bar is calm and orderly.') +
+   `<div class="lab">Inrō · at rest <span class="w">right side ≈ <b>333 px</b> &nbsp;(−61%)</span></div>` + desk(R.inro('rest')) +
+   `<div class="lab">Battery low · its compartment goes red</div>` + desk(R.inro('low'),40) +
+   `<div class="lab">The right side · ×2</div>` + zoom(R.inro('rest')) +
+   notes(`<ul><li>One frame, five compartments: <em>波 双 音 光 力</em> over <em>Infinix · Enco · 10 · 30 · 81</em>.</li><li>Values are short by rule: the first word of a name, numbers without “%”.</li><li>Stamps and seal sit outside the case.</li></ul>`,
+     `<ul><li><em>Common region (Gestalt)</em>: one enclosure says “these belong together” more strongly than five dividers.</li><li><em>Game instrument clusters</em>: racing and flight HUDs group gauges in a single cluster so the eye goes to one place.</li><li>Shared header row means no repeated labels (Tufte’s “erase redundant ink”).</li></ul>`,
+     `<ul><li>Click a compartment to drop its sheet from exactly under it.</li><li>Scroll on 音 or 光 to change it; the digit rolls like a counter.</li><li>Hover the case and the compartment under the pointer becomes a bone plate (Hanko’s inversion rule).</li><li>The width is fixed, so the clock never shifts.</li></ul>`) + foot;
+}
+if (C === '5') {
+  html = `<div class="cmp">` + head('05','比','Side by side','same bar, five right sides',
+   'Left and centre unchanged. Pick one, or mix: for example, <em>Shizuka’s folding with Suji’s lines</em> works well, and so does <em>Ma’s groups inside the Inrō case</em>.') +
+   `<div class="lab">00 · today <span class="w"><b class="r">≈ 846 px</b></span></div>` + desk(R.now,40) +
+   `<div class="lab">01 · 間 Ma · three groups <span class="w"><b>≈ 500 px</b></span></div>` + desk(R.ma,40) +
+   `<div class="lab">02 · 静 Shizuka · quiet until changed <span class="w"><b>≈ 345 px</b></span></div>` + desk(R.shizuka('rest'),40) +
+   `<div class="lab">03 · 筋 Suji · five brush lines <span class="w"><b>≈ 469 px</b></span></div>` + desk(R.suji('rest'),40) +
+   `<div class="lab">04 · 印籠 Inrō · one case <span class="w"><b>≈ 333 px</b></span></div>` + desk(R.inro('rest'),40) +
+   `</div><div style="height:30px"></div>` + foot;
+}
+document.body.innerHTML = html;
+// measure the right zone and write it in place of the estimate
+document.fonts.ready.then(()=>{
+  const rs=[...document.querySelectorAll('.desk .right')].map(r=>Math.round(r.getBoundingClientRect().width+10));
+  document.title = document.body.scrollHeight;
+  document.body.dataset.ready=1;
+});
+</script>
+</body></html>

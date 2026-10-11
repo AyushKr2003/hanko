@@ -1,0 +1,10 @@
+{
+ "scene": "Parts",
+ "width": 900,
+ "title": "Shōji's parts in QML",
+ "theme": {
+  "foreground": "#ddd5c7",
+  "background": "#0a0a09",
+  "red": "#d8452f"
+ }
+}

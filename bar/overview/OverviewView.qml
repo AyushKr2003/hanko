@@ -19,11 +19,14 @@ Item {
   property real aspect: 0.5625
   property string screenName: ""
   property date now: new Date()
+  property string timeFormat: "HH:mm"
   // Room the bar keeps at the top (or bottom) of the screen.
   property int topInset: 0
   property int bottomInset: 0
   // Builds a window's live snapshot (OverviewWindow); null draws ink.
   property Component snapshot: null
+  // A Kata design's skin, handed to each page; empty for Classic.
+  property var skin: ({})
   // 0..1: the sheet and the pages print in.
   property real reveal: 1
 
@@ -126,7 +129,7 @@ Item {
       spacing: Type.px(4)
       Text {
         anchors.right: parent.right
-        text: Qt.formatTime(root.now, "HH:mm")
+        text: Qt.formatTime(root.now, root.timeFormat)
         color: Ink.inkDim
         font.family: Type.display
         font.pixelSize: Type.px(22)
@@ -159,14 +162,16 @@ Item {
         required property int index
         readonly property var box: root.boxOf(pageItem.modelData)
         x: pageItem.box.x
-        y: pageItem.box.y + (1 - root.reveal) * Type.px(10)
+        y: pageItem.box.y
         width: pageItem.box.w
         height: pageItem.box.h
         opacity: Math.max(0, Math.min(1, root.reveal * 1.6 - pageItem.index * 0.05))
+        scale: 0.97 + 0.03 * root.reveal
         page: pageItem.modelData
         headH: root.headH
         view: root
         snapshot: root.snapshot
+        skin: root.skin
         hot: root.dragging && root.dragOver === pageItem.modelData.id && root.dragOver !== root.dragFrom
       }
     }

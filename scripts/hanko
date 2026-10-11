@@ -10,7 +10,8 @@
 #   hanko style set K V      change one setting (e.g. clock mono)
 #   hanko style set --monitor NAME K V
 #                            change it on one monitor only (e.g. DP-2 height 32)
-#   hanko style preset NAME  Sheet | Scroll | Hanko | Quiet | Instrument | Islet
+#   hanko style preset NAME  Sheet | Scroll | Kamon | Quiet | Instrument | Islet | Shoji
+#                            | Ma | Shizuka | Suji | Inro
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
 #   hanko hide PART          take one part off the bar (e.g. tray, volume,
@@ -135,19 +136,27 @@ cmd_style() {
   esac
 }
 
+
 # Omarchy reads menu additions from ~/.config/omarchy/extensions/omarchy-menu.jsonc
 # (a JSONC object of entries). Hanko's entry is one line carrying a marker,
 # put right after the opening brace so it never depends on the entry before
 # it having a trailing comma; remove deletes exactly that line.
 MENU_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/extensions/omarchy-menu.jsonc"
-MENU_LINE='  "setup.hanko": {"icon":"印","label":"Hanko","action":"omarchy-shell hanko settings"}, // hanko.bar'
+MENU_LINE='  "setup.hanko": {"icon":"鑑","label":"Hanko","action":"omarchy-shell hanko settings"}, // hanko.bar'
 
 cmd_menu() {
   case "${1:-}" in
     add)
       mkdir -p "$(dirname "$MENU_FILE")"
       [[ -s $MENU_FILE ]] || printf '{\n}\n' > "$MENU_FILE"
-      if grep -q '// hanko.bar$' "$MENU_FILE"; then say "Hanko is already in the menu."; return; fi
+      if grep -qF "$MENU_LINE" "$MENU_FILE"; then say "Hanko is already in the menu."; return; fi
+      # An older entry (the 印 icon before 鑑): swap it for this one in place.
+      if grep -q '// hanko.bar$' "$MENU_FILE"; then
+        cp "$MENU_FILE" "$MENU_FILE.bak"
+        awk -v line="$MENU_LINE" '/\/\/ hanko\.bar$/ { print line; next } { print }' "$MENU_FILE.bak" > "$MENU_FILE"
+        say "Updated Setup › Hanko in the Omarchy menu ($MENU_FILE; the old file is at .bak)."
+        return
+      fi
       grep -q '^[[:space:]]*{' "$MENU_FILE" || fail "$MENU_FILE has no opening brace; add the entry by hand"
       cp "$MENU_FILE" "$MENU_FILE.bak"
       awk -v line="$MENU_LINE" '!done && /^[[:space:]]*\{/ { print; print line; done = 1; next } { print }' "$MENU_FILE.bak" > "$MENU_FILE"
@@ -194,6 +203,6 @@ case "${1:-}" in
   scroll) ipc scroll >/dev/null ;;
   menu) shift; cmd_menu "$@" ;;
   doctor) cmd_doctor ;;
-  -h|--help|"") sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+  -h|--help|"") sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;
 esac

@@ -1,0 +1,10 @@
+{
+ "scene": "Parts",
+ "width": 900,
+ "title": "Shōji's parts, Rosé Pine Dawn",
+ "theme": {
+  "foreground": "#575279",
+  "background": "#faf4ed",
+  "red": "#b4637a"
+ }
+}

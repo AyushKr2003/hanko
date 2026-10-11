@@ -28,6 +28,7 @@ Item {
     bottomPadding: Type.px(22)
 
     SheetHead {
+      sheet: "power"
       jp: root.power && root.power.charging ? "充" : "電"
       label: "Power · UPower"
       title: root.power && root.power.percent >= 0 ? root.power.percent + "%" : "Plugged in"

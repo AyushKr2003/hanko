@@ -34,6 +34,7 @@ QtObject {
   readonly property var live: draft || doc
   readonly property var current: S.resolve(live)
 
+
   // True when position comes from Hanko rather than Omarchy's bar.position.
   readonly property bool ownsPosition: live.edits.position !== undefined
 
@@ -64,7 +65,12 @@ QtObject {
   // Back to the preset the draft is on, edits dropped (monitors, the seal
   // glyph, motion and hidden parts kept, as reset() does).
   function draftReset() {
-    draft = S.normalize({ preset: live.preset, sealGlyph: live.sealGlyph, motion: live.motion, typeSize: live.typeSize, overview: live.overview, hidden: live.hidden, monitors: live.monitors })
+    draft = S.normalize(_keep(live, { preset: live.preset }))
+  }
+  function _draftWith(next) {
+    if (!next) return false
+    draft = S.normalize(next)
+    return true
   }
   function draftClearMonitor(name) {
     var next = S.normalize(live)
@@ -85,6 +91,41 @@ QtObject {
     _commit(next)
   }
   function revert() { draft = null }
+
+  // The settings window has no Save: every change it makes is kept at once
+  // (keep() after each draft edit) and remembered here, so Undo (Ctrl+Z)
+  // can put the one before back. Forgotten when the window closes.
+  property var history: []
+  // `tag` names a continuous edit (a slider being dragged): repeats of the
+  // same tag within 1.5 s are one step of the history, not one per pixel.
+  property string _lastTag: ""
+  property real _lastAt: 0
+  function keep(tag) {
+    if (!draft) return
+    var next = draft
+    draft = null
+    if (JSON.stringify(next) === JSON.stringify(doc)) return
+    var now = Date.now()
+    var merge = !!tag && tag === _lastTag && now - _lastAt < 1500 && history.length > 0
+    _lastTag = tag || ""
+    _lastAt = now
+    if (merge) { _commit(next); return }
+    var h = history.slice()
+    h.push(doc)
+    if (h.length > 50) h.shift()
+    history = h
+    _commit(next)
+  }
+  function undo() {
+    if (!history.length) return false
+    var h = history.slice()
+    var previous = h.pop()
+    history = h
+    draft = null
+    _commit(previous)
+    return true
+  }
+  function forget() { history = [] }
 
   // One setting for one monitor, saved at once (the CLI's --monitor).
   function setFor(monitor, key, value) {
@@ -109,7 +150,21 @@ QtObject {
   }
 
   function reset() {
-    _commit(S.normalize({ sealGlyph: doc.sealGlyph, motion: doc.motion, typeSize: doc.typeSize, overview: doc.overview, hidden: doc.hidden, monitors: doc.monitors }))
+    _commit(S.normalize(_keep(doc, {})))
+  }
+
+  // What a reset keeps: the seal glyph, motion, type size, overview, hidden
+  // parts and monitors (a reset is about Typeset edits).
+  function _keep(from, into) {
+    var keys = ["sealGlyph", "motion", "typeSize", "season", "numerals", "grain", "hours", "overview", "panelOpacity", "sheetStyles", "hidden", "monitors"]
+    for (var i = 0; i < keys.length; i++) if (from[keys[i]] !== undefined) into[keys[i]] = from[keys[i]]
+    return into
+  }
+
+  function _commitWith(next) {
+    if (!next) return false
+    _commit(S.normalize(next))
+    return true
   }
 
   function setSealGlyph(glyph) {

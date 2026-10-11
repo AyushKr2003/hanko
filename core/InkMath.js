@@ -65,3 +65,24 @@ function ramp(fg, bg) {
     inkFaint: tier(fg, bg, TIERS.inkFaint)
   }
 }
+
+// Kata's tones (core/Kata.js, docs/kata): one ink diluted toward the paper
+// to a contrast, plus the opaque mixes the parts are cut from.
+//   ink2  quiet text, 7:1 (or 80% of the theme's own contrast, at least 5.6)
+//   ink3  secondary text and icons at rest, 4.6:1 (AA at 12px)
+//   ink4  frames, ticks, disabled; never text you must read, 2:1
+//   line  lattice and hairlines; lift  cards; paper2  sheets beneath, slots;
+//   sunk  the room behind a panel
+function kata(fg, bg) {
+  var light = isLight(bg)
+  var top = contrast(fg, bg)
+  return {
+    ink2: tier(fg, bg, Math.max(5.6, Math.min(7, top * 0.8))),
+    ink3: tier(fg, bg, 4.6),
+    ink4: tier(fg, bg, 2.05),
+    line: mix(fg, bg, light ? 0.14 : 0.12),
+    lift: mix(fg, bg, light ? 0.035 : 0.045),
+    paper2: light ? mix(fg, bg, 0.055) : mix("#000000", bg, 0.32),
+    sunk: light ? mix(fg, bg, 0.025) : mix("#000000", bg, 0.45)
+  }
+}

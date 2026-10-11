@@ -44,7 +44,7 @@ Item {
 
   readonly property bool showKeyboard: !!keyboard && keyboard.count > 1
   // How wide the marks are with the tray unfolded.
-  readonly property real fullWidth: fixedPart.implicitWidth
+  readonly property real fullWidth: fixedPart.implicitWidth + tray.length * (Type.px(16) + row.spacing)
   // The name hovering opens is drawn left of the marks, outside them; the
   // bar keeps a blank of nameWidth there (BarSurface). Were it inside, the
   // stamps would shift a frame before the bar moved them back, the pointer
@@ -52,7 +52,6 @@ Item {
   // bar has spare for it.
   property real nameRoom: 100000
   readonly property real nameWidth: nameClip.width
-    + tray.length * (Type.px(16) + row.spacing)
   readonly property int glyphSize: Type.px(13)
 
   // Hovering the stamps straightens them, like the inbox's.
@@ -262,10 +261,13 @@ Item {
     property var mark: ({})
     readonly property bool on: mark.on !== false
     // Kanji stamps are small seals, like the one at the far left, when on;
-    // off, they are faint outlines like the icon stamps. Icon stamps keep
-    // red for "now".
+    // off, they are faint outlines like the icon stamps. A seal is carved in
+    // ink, and only one that means "now" (recording) is red: with the seal,
+    // the letters and a few marks on, red everywhere stopped meaning anything.
     readonly property bool seal: root.kanjiMarks || !mark.icon
     readonly property bool solid: on && (seal || !!mark.red)
+    readonly property color plate: mark.red ? Ink.seal : Ink.bone
+    readonly property color plateInk: mark.red ? Ink.paper : Ink.boneInk
     // 0 = held above the bar, oversized and tilted; 1 = pressed and settled.
     property real press: 1
 
@@ -294,9 +296,9 @@ Item {
       height: width
       radius: 2
       antialiasing: true
-      color: ind.solid ? Ink.seal : "transparent"
+      color: ind.solid ? ind.plate : "transparent"
       border.width: 1.5
-      border.color: ind.solid ? Ink.seal : ind.on ? Ink.inkMuted : Ink.line
+      border.color: ind.solid ? ind.plate : ind.on ? Ink.inkMuted : Ink.line
 
       // The inner rule of a carved seal, as on bar/Seal.qml.
       Rectangle {
@@ -306,7 +308,7 @@ Item {
         radius: 1
         color: "transparent"
         border.width: 1
-        border.color: Ink.alpha(Ink.paper, 0.5)
+        border.color: Ink.alpha(ind.plateInk, 0.45)
       }
       rotation: ind.on && !hover.hovered ? StatusJs.tilt(ind.mark.key) : 0
       Behavior on rotation { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
@@ -323,7 +325,7 @@ Item {
         anchors.centerIn: parent
         anchors.verticalCenterOffset: kanji ? -0.5 : 0
         text: kanji ? ind.mark.glyph || "" : ind.mark.icon
-        color: ind.solid ? Ink.paper : ind.on ? Ink.ink : Ink.inkFaint
+        color: ind.solid ? ind.plateInk : ind.on ? Ink.ink : Ink.inkFaint
         font.family: kanji ? Type.jpSerif : Type.mono
         font.weight: kanji ? Font.Medium : Font.Normal
         font.pixelSize: Type.px(kanji ? 10.5 : 11)

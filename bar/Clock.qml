@@ -1,11 +1,14 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import "../core"
+import "../core/Season.js" as Season
 
 // The clock 時, in three faces (docs/COMPONENTS.md):
 //   stacked  serif time, the day and date stacked in small mono beside it
 //   inline   serif time with a red colon and a small-caps date on one line
 //   mono     all mono, for an instrument look
+//   season   Shōji's: serif time, the date, and the solar term (`season`:
+//            off | kanji | english; off leaves the time and the date)
 // timeFormat follows Omarchy's own clock (`format` on omarchy.clock in
 // shell.json), so a 12-hour setting carries over.
 Item {
@@ -15,6 +18,8 @@ Item {
   property date now: new Date()
   property int barHeight: 40
   property string timeFormat: "HH:mm"
+  property string season: "kanji"
+  readonly property string seasonLabel: Season.label(now, season)
 
   signal clicked()
 
@@ -38,7 +43,7 @@ Item {
     id: face
     anchors.centerIn: parent
     anchors.verticalCenterOffset: -1
-    sourceComponent: root.mode === "inline" ? inlineFace : root.mode === "mono" ? monoFace : stackedFace
+    sourceComponent: root.mode === "inline" ? inlineFace : root.mode === "mono" ? monoFace : root.mode === "season" ? seasonFace : stackedFace
   }
 
   MouseArea {
@@ -64,6 +69,8 @@ Item {
         font.weight: Font.Normal
         font.variableAxes: Type.axes(Type.px(root.compact ? 18 : root.tall ? 24 : 22))
         font.letterSpacing: 0.2
+        // Tabular figures: the time doesn't shift as its digits change.
+        font.features: { "tnum": 1, "lnum": 1 }
       }
 
       Column {
@@ -119,6 +126,7 @@ Item {
         font.weight: Font.Normal
         font.variableAxes: Type.axes(Type.px(root.compact ? 18 : root.tall ? 24 : 22))
         font.letterSpacing: 0.3
+        font.features: { "tnum": 1, "lnum": 1 }
       }
 
       Text {
@@ -159,6 +167,40 @@ Item {
         font.pixelSize: Type.label
         font.weight: Type.labelWeight
         font.letterSpacing: Type.trackLabel
+      }
+    }
+  }
+
+  // ------------------------------------------------------------ season
+  Component {
+    id: seasonFace
+
+    Row {
+      spacing: Type.px(10)
+      FadeText {
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: 1
+        text: root.time
+        color: Ink.ink
+        font.family: Type.display; font.pixelSize: Type.px(20); font.weight: Font.Normal
+        font.variableAxes: Type.axes(Type.px(20), 400)
+        font.features: { "tnum": 1, "lnum": 1 }
+      }
+      Text {
+        anchors.verticalCenter: parent.verticalCenter
+        text: Qt.formatDate(root.now, "ddd d MMM")
+        color: Ink.ink3
+        font.family: Type.text; font.pixelSize: Type.px(13)
+      }
+      Rectangle { visible: root.seasonLabel !== ""; anchors.verticalCenter: parent.verticalCenter; width: 1; height: Type.px(14); color: Ink.kLine }
+      Text {
+        visible: root.seasonLabel !== ""
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.seasonLabel
+        color: Ink.ink2
+        font.family: root.season === "kanji" ? Type.jp : Type.text
+        font.pixelSize: Type.px(13)
+        font.letterSpacing: root.season === "kanji" ? Type.px(1) : 0
       }
     }
   }

@@ -32,6 +32,7 @@ Item {
     bottomPadding: Type.px(20)
 
     SheetHead {
+      sheet: "inbox"
       jp: "報"
       label: "Inbox · " + StatusJs.count2(root.letters.length)
       title: "Inbox"

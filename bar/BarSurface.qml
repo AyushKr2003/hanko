@@ -2,6 +2,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../core"
 import "../core/Style.js" as S
+import "../core/Skin.js" as Sk
+import "parts" as Parts
 
 // Everything drawn inside the bar window, for one screen. Pure QtQuick: it
 // takes the resolved style and plain data, so tests/harness can render it
@@ -37,6 +39,15 @@ Item {
   property var keyboard: null
   property var mic: null
   property var tray: []
+
+  // Shōji's skin (core/Skin.js) for the values that come from it (seal
+  // carved, spaces brush, status ink, surface washi, pointer brush), with
+  // the style's season, numerals and grain.
+  readonly property var skin: Sk.fromStyle(style)
+  // notif: seal puts the letter count on the seal, so the inbox cell goes
+  // (unless there is no seal to carry it).
+  readonly property bool lettersOnSeal: style.notif === "seal" && seal.visible
+  readonly property int unread: notifications ? notifications.length : 0
 
   // Parts you hid on the Widgets page (style.hidden, core/Style.js).
   function shown(part) { return !style.hidden || style.hidden.indexOf(part) < 0 }
@@ -84,7 +95,7 @@ Item {
   // can drop from under it; null when the cell isn't showing.
   function anchorFor(cell) {
     var item = cell === "clock" ? (clockRight ? rightClock : centreClock)
-      : cell === "notif" ? inbox
+      : cell === "notif" ? (lettersOnSeal ? seal : inbox)
       : status.cellFor(cell)
     if (!item || !item.visible) return null
     var p = item.mapToItem(root, 0, 0)
@@ -103,10 +114,10 @@ Item {
 
   readonly property int barHeight: Type.px(style.height || 40)
   readonly property bool atBottom: style.position === "bottom"
-  // Inset: the window floats 8 px off the screen (BarWindow) and the paper
-  // carries a hairline frame. Glass: only the paper is translucent; the
+  // Float inset: the window floats 8 px off the screen (BarWindow) and the
+  // paper, whichever it is, carries a hairline frame. Glass: only the paper is translucent; the
   // seal, stamps and inverted plates draw their own opaque fills.
-  readonly property bool inset: style.surface === "inset"
+  readonly property bool inset: style.float === "inset"
 
   implicitHeight: barHeight
 
@@ -117,6 +128,13 @@ Item {
     radius: root.inset ? 7 : 0
     border.width: root.inset ? 1 : 0
     border.color: Ink.line
+    // washi: Shōji's paper, its long fibres as fine as the grain.
+    Parts.Fibres {
+      visible: root.style.surface === "washi"
+      anchors.fill: parent
+      anchors.margins: root.inset ? 2 : 0
+      level: Math.max(1, root.skin.grain || 0)
+    }
   }
 
   readonly property bool ruled: style.rules !== "off"
@@ -135,15 +153,28 @@ Item {
       id: seal
       anchors.verticalCenter: parent.verticalCenter
       mode: root.shown("seal") ? root.style.seal || "stamp" : "none"
-      glyph: root.style.sealGlyph || "印"
+      glyph: root.style.sealGlyph || "鑑"
       workspace: root.workspace
       size: root.barHeight <= Type.px(32) ? Type.px(22) : Type.px(26)
+      skin: root.skin
+      count: root.style.notif === "seal"
+      letters: root.unread
+      dnd: root.dnd
 
       MouseArea {
         anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: function(mouse) { root.sealClicked(mouse.button) }
+        // Carrying the letters, the seal is the inbox (as on Shōji's bar):
+        // a click opens them, middle-click is do not disturb, and a
+        // right-click keeps the Omarchy menu.
+        onClicked: function(mouse) {
+          if (root.lettersOnSeal) {
+            if (mouse.button === Qt.LeftButton) root.inboxAction("click")
+            else if (mouse.button === Qt.MiddleButton) root.inboxAction("middle")
+            else root.sealClicked(Qt.LeftButton)
+          } else if (mouse.button !== Qt.MiddleButton) root.sealClicked(mouse.button)
+        }
         onWheel: function(wheel) { root.workspaceStepped(wheel.angleDelta.y > 0 ? -1 : 1) }
       }
     }
@@ -156,6 +187,8 @@ Item {
       mode: root.shown("spaces") ? root.style.spaces || "layout" : "none"
       spaces: root.spaces
       barHeight: root.barHeight
+      skin: root.skin
+      numerals: root.style.numerals || "arabic"
       onActivated: function(id) { root.workspaceActivated(id) }
       onStepped: function(delta) { root.workspaceStepped(delta) }
       onOverviewRequested: root.overviewRequested()
@@ -185,10 +218,10 @@ Item {
     Rectangle {
       visible: divider.ruled
       anchors.horizontalCenter: parent.horizontalCenter
-      y: Type.px(8)
+      anchors.verticalCenter: parent.verticalCenter
       width: 1
-      height: parent.height - Type.px(18)
-      color: Ink.line
+      height: Math.round(parent.height * 0.42)
+      color: Ink.alpha(Ink.bone, Ink.light ? 0.16 : 0.13)
     }
   }
 
@@ -224,6 +257,7 @@ Item {
     mode: root.style.clock || "stacked"
     now: root.now
     timeFormat: root.timeFormat
+    season: root.style.season || "off"
     barHeight: root.barHeight
     onClicked: root.clockClicked()
   }
@@ -261,6 +295,8 @@ Item {
       meters: root.style.meters || "ticks"
       ruled: root.ruled
       barHeight: root.barHeight
+      skin: root.skin
+      reachKey: root.pointAt
       volume: root.shown("volume") ? root.volume : null
       network: root.shown("network") ? root.network : null
       battery: root.shown("battery") ? root.battery : null
@@ -347,9 +383,9 @@ Item {
 
     Inbox {
       id: inbox
-      visible: root.shown("notif")
+      visible: root.shown("notif") && !root.lettersOnSeal
       anchors.verticalCenter: parent.verticalCenter
-      mode: root.style.notif || "stamps"
+      mode: root.style.notif === "seal" ? "count" : root.style.notif || "stamps"
       notifications: root.notifications
       dnd: root.dnd
       barHeight: root.barHeight
@@ -365,6 +401,7 @@ Item {
       mode: root.style.clock || "stacked"
       now: root.now
       timeFormat: root.timeFormat
+      season: root.style.season || "off"
       barHeight: root.barHeight
       onClicked: root.clockClicked()
     }
@@ -384,5 +421,53 @@ Item {
     atBottom: root.atBottom
     inset: root.inset
     onPulled: function(x) { root.edgePulled(x) }
+  }
+
+  // pointer: brush, Shōji's faint brush mark under the cell you point at
+  // (the PointerMark part), above the bar's edge.
+  HoverHandler { id: pointerHover; enabled: root.style.pointer === "brush" }
+  // The harness can point at a cell, as it can't hover: seal | spaces |
+  // title | clock | media | notif | a status key (volume, network, ...).
+  property string pointAt: ""
+  function pointedCell(name) {
+    var known = status._cells   // a dependency: the cells report themselves late
+    if (!known) return Qt.rect(0, 0, 0, 0)
+    var it = name === "seal" ? seal : name === "spaces" ? spacesView : name === "title" ? titleView
+      : name === "clock" ? (clockRight ? rightClock : centreClock) : name === "media" ? media
+      : name === "notif" ? inbox : status.cellFor(name)
+    if (!it || !it.visible) return Qt.rect(0, 0, 0, 0)
+    var deps = left.x + right.x + right.width + centreClock.x + width
+    var p = it.mapToItem(root, deps * 0, 0)
+    return Qt.rect(p.x, 0, it.width, barHeight)
+  }
+  readonly property var pointables: {
+    var out = [seal, spacesView, titleView, centreClock, media, inbox, rightClock]
+    var cells = status.visible ? status.items : []
+    for (var i = 0; i < cells.length; i++) {
+      var c = status.cellFor(cells[i].key)
+      if (c) out.push(c)
+    }
+    return out
+  }
+  function pointedRect(px) {
+    // Read the layout's positions so the mark follows it (mapToItem is not
+    // a binding dependency).
+    var deps = left.x + right.x + right.width + centreClock.x + width
+    for (var i = 0; i < pointables.length; i++) {
+      var it = pointables[i]
+      if (!it || !it.visible || it.width <= 0) continue
+      var p = it.mapToItem(root, deps * 0, 0)
+      if (px >= p.x && px < p.x + it.width) return Qt.rect(p.x, 0, it.width, barHeight)
+    }
+    return Qt.rect(0, 0, 0, 0)
+  }
+  Parts.PointerMark {
+    visible: root.style.pointer === "brush"
+    anchors.fill: parent
+    z: 10
+    skin: root.skin
+    target: pointerHover.hovered ? root.pointedRect(pointerHover.point.position.x)
+      : root.pointAt !== "" ? root.pointedCell(root.pointAt) : Qt.rect(0, 0, 0, 0)
+    lineY: root.atBottom ? Type.px(17) : root.barHeight
   }
 }

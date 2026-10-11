@@ -1,0 +1,13 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Hanko · Kata</title>
+<link rel="stylesheet" href="kata.css"><style>body{display:grid;place-items:center;min-height:100vh}#s{width:1600px;height:900px}</style></head>
+<body><div id="s"></div>
+<script type="module">
+import { resolve, desk, settingsPage, params, docFromParams, ready } from './kata.js';
+const o = params(); if (o.still) document.body.classList.add('still');
+const st = resolve(docFromParams(o)), el = document.getElementById('s');
+el.dataset.theme = o.theme || 'hanko';
+desk(el, st, { theme: o.theme, panel: o.panel !== 'settings' ? o.panel : undefined, hover: o.hover, windows: o.windows !== '0' });
+if (o.panel === 'settings') settingsPage(el, st);
+ready();
+</script></body></html>

@@ -13,16 +13,16 @@ function load(file, names) {
   return new Function(`${src}\nreturn { ${names.join(", ")} }`)()
 }
 
-const S = load("core/Style.js", ["OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
+const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", "OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
-const Se = load("core/Settings.js", ["ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
+const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
-const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight"])
+const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
-  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age"])
+  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age", "short", "fill"])
 const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
@@ -40,26 +40,29 @@ const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "key
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
+const Sn = load("core/Season.js", ["SEKKI", "KO", "sunLongitude", "koIndex", "at", "label"])
+const Sk = load("core/Skin.js", ["skin", "fromStyle", "SHOJI", "TEMPOS", "RADII", "OPACITY"])
+const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
 
 let passed = 0
 function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-two settings, 61,917,364,224 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 22)
-  assert.equal(S.combinations(), 61917364224)
+test("twenty-four settings, 3,913,788,948,480 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 24)
+  assert.equal(S.combinations(), 3913788948480)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
   assert.deepEqual(S.OPTIONS.indicators, ["all", "active"])
   assert.deepEqual(S.OPTIONS.indicatorStyle, ["icon", "kanji", "iconname", "kanjiname"])
   assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
-  assert.equal(S.resolve({}).indicators, "all")
-  assert.equal(S.resolve({}).indicatorStyle, "icon")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "all", "active", "all", "active"])
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "icon", "icon", "iconname", "icon"])
-  assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "icon")
+  assert.equal(S.resolve({}).indicators, "active")
+  assert.equal(S.resolve({}).indicatorStyle, "kanjiname")
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "active", "active", "all", "active", "active", "active", "active", "active", "active"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "kanjiname", "icon", "iconname", "icon", "icon", "kanji", "kanji", "kanji", "kanji"])
+  assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "kanjiname")
   assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
 
@@ -78,12 +81,12 @@ test("every preset sets every setting to a valid option", () => {
   }
 })
 
-test("an empty or broken document resolves to the Hanko preset", () => {
+test("an empty or broken document resolves to the Kamon preset", () => {
   for (const doc of [undefined, null, {}, "x", { preset: "Nope" }]) {
     const s = S.resolve(doc)
-    assert.equal(s.preset, "Hanko")
-    for (const k of S.KEYS) assert.equal(s[k], S.PRESETS.Hanko[k])
-    assert.equal(s.sealGlyph, "印")
+    assert.equal(s.preset, "Kamon")
+    for (const k of S.KEYS) assert.equal(s[k], S.PRESETS.Kamon[k])
+    assert.equal(s.sealGlyph, "鑑")
     assert.equal(s.edited, false)
   }
 })
@@ -129,7 +132,7 @@ test("applying a preset clears edits but keeps monitors and glyph", () => {
 test("seal glyph keeps one character, surrogate pairs included", () => {
   assert.equal(S.resolve({ sealGlyph: "侍たち" }).sealGlyph, "侍")
   assert.equal(S.resolve({ sealGlyph: "𠮷x" }).sealGlyph, "𠮷")
-  assert.equal(S.resolve({ sealGlyph: "  " }).sealGlyph, "印")
+  assert.equal(S.resolve({ sealGlyph: "  " }).sealGlyph, "鑑")
 })
 
 test("shuffle never moves the bar or changes how panels open", () => {
@@ -139,7 +142,7 @@ test("shuffle never moves the bar or changes how panels open", () => {
     const d = S.shuffled({ preset: "Hanko", edits: { position: "bottom" } }, rng)
     const s = S.resolve(d)
     assert.equal(s.position, "bottom")
-    assert.equal(s.panels, "scroll")
+    assert.equal(s.panels, "sheets")
     for (const k of S.KEYS) assert.ok(S.OPTIONS[k].includes(s[k]))
   }
 })
@@ -300,6 +303,20 @@ test("edge marks stay on whole pixels inside the bar", () => {
   assert.equal(E.at(0, 1000, 2), 0)
   assert.equal(E.at(1, 1000, 2), 998)
   assert.equal(E.at(-3, 100, 1), 0)
+})
+
+test("float: flush or inset under any paper; a saved surface: inset floats solid paper", () => {
+  assert.deepEqual(S.OPTIONS.surface, ["solid", "glass", "washi"])
+  assert.deepEqual(S.OPTIONS.float, ["flush", "inset"])
+  assert.deepEqual(S.PRESET_NAMES.filter(p => S.resolve({ preset: p }).float === "inset"), ["Islet"])
+  const old = S.resolve({ preset: "Shōji", edits: { surface: "inset" } })
+  assert.deepEqual([old.surface, old.float], ["solid", "inset"])
+  const m = S.resolve({ monitors: { "DP-1": { surface: "inset" } } }, "DP-1")
+  assert.deepEqual([m.surface, m.float], ["solid", "inset"])
+  const d = S.withSetting({ preset: "Shōji" }, "surface", "inset")
+  assert.deepEqual(d.edits, { float: "inset" })
+  assert.equal(S.resolve(d).surface, "washi")
+  assert.equal(Se.nameOf("float"), "Float")
 })
 
 test("edge span: rod caps and inset frame hold the edge in", () => {
@@ -554,7 +571,7 @@ test("scroll: nine interludes, each with a kanji, presets pick one", () => {
   assert.equal(S.resolve({ preset: "Hanko", edits: { interlude: "dither" } }).interlude, "seal")
   const labels = Se.interludeLabels()
   assert.deepEqual(Object.keys(labels), S.OPTIONS.interlude)
-  assert.equal(labels.seal, "印")
+  assert.equal(labels.seal, "鑑")
   assert.equal(new Set(Object.values(labels)).size, 9)
   assert.equal(Se.interludeOf("tsugime").name, "Tsugime")
   assert.equal(Se.interludeOf("nope").key, "ma")
@@ -583,25 +600,35 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the twenty-two settings once", () => {
-  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => k !== "sealGlyph" && k !== "typeSize" && k !== "overview")
+test("settings: six cards hold every one of the twenty-four settings once", () => {
+  const beside = ["sealGlyph", "typeSize", "overview", "season", "numerals", "grain", "hours"]
+  const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => beside.indexOf(k) < 0)
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)   // Design went with the Shōji design (S5); Presets came
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.deepEqual(Se.optionsFor("height", S.OPTIONS), ["32", "36", "40", "44"])
-  assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["印", "力", "侍", "A", "…"])
+  assert.deepEqual(Se.optionsFor("sealGlyph", S.OPTIONS), ["鑑", "漢", "観", "寛", "…"])
   assert.deepEqual(Se.optionsFor("motion", S.OPTIONS), S.MOTIONS)
+  assert.deepEqual(Se.optionsFor("season", S.OPTIONS), ["off", "kanji", "english"])
+  assert.deepEqual(Se.optionsFor("grain", S.OPTIONS), ["smooth", "fine", "toothy"])
+  assert.deepEqual(Se.optionsFor("hours", S.OPTIONS), ["auto", "24h", "12h"])
+  assert.equal(S.resolve({}).hours, "auto")
+  assert.equal(S.resolve({ hours: "12h" }).hours, "12h")
+  assert.equal(S.resolve({ hours: "13h" }).hours, "auto")
+  assert.equal(S.withSetting({}, "hours", "24h").hours, "24h")
+  assert.equal(Se.selected("numerals", S.resolve({ numerals: "kanji" }), "鑑"), "kanji")
   assert.equal(Se.MOTION_ROWS.length, 8)
   assert.equal(Se.nameOf("clockAt"), "Clock position")
   assert.equal(Se.nameOf("bluetooth"), "Bluetooth")
   assert.ok(S.KEYS.every((k) => Se.nameOf(k) !== k))
   const st = S.resolve({})
-  assert.equal(Se.selected("height", st, "印"), "40")
-  assert.equal(Se.selected("sealGlyph", st, "侍"), "侍")
+  assert.equal(Se.selected("height", st, "鑑"), "40")
+  assert.equal(Se.selected("sealGlyph", st, "観"), "観")
+  assert.equal(Se.selected("sealGlyph", st, "侍"), "…")
   assert.equal(Se.selected("sealGlyph", st, "鷹"), "…")
 })
 
@@ -611,14 +638,14 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 10)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 13)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
-  assert.equal(Se.status(0), "Saved · as on your bar")
-  assert.equal(Se.status(2), "Edited · live on your bar · 2 changes")
-  assert.equal(Se.presetLine(two), "Preset · Hanko + edits")
-  assert.equal(Se.presetLine(saved), "Preset · Hanko")
+  assert.equal(Se.status(0), "Saved · every change is kept as you make it")
+  assert.equal(Se.status(2), "Saved · 2 changes · Ctrl+Z undoes")
+  assert.equal(Se.presetLine(two), "Preset · Kamon + edits")
+  assert.equal(Se.presetLine(saved), "Preset · Kamon")
 })
 
 test("settings: search finds rows by name, detail and option", () => {
@@ -669,7 +696,7 @@ test("togglePanelAt counts hosted widgets in their place", () => {
 test("own marks: only the indicators that are on, red only for now", () => {
   assert.deepEqual(X.indicators({}), [])
   const all = X.indicators({ recording: true, dictation: "recording", reminders: 2, awake: true, night: true })
-  assert.deepEqual(all.map(i => i.glyph), ["録", "書", "鈴", "醒", "夜"])
+  assert.deepEqual(all.map(i => i.glyph), ["写", "言", "予", "目", "月"])
   assert.deepEqual(all.map(i => i.red), [true, true, false, false, false])
   assert.equal(all[2].count, 2)
   assert.equal(X.indicators({ dictation: "transcribing" })[0].red, false)
@@ -778,7 +805,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Sheet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 61917364224)
+  assert.equal(S.combinations(), 3913788948480)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -939,7 +966,7 @@ test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () =
   assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
   assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
   assert.equal(S.resolve({}).endleaf, "koyomi")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
   assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
   assert.equal(Se.endleafOf("iro").name, "Iro")
   assert.equal(Lf.kindOf("nope").key, "koyomi")
@@ -1093,18 +1120,19 @@ test("end leaf: notes you can tick, and the clipboard", () => {
 test("scroll sides: bare or curl, in place of the rollers", () => {
   assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
   assert.equal(S.resolve({}).sides, "curl")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl", "bare", "curl", "curl", "curl", "curl"])
   assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
 })
 
 test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
   assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
-  assert.equal(S.resolve({}).guides, "both")
-  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === "both"))
+  assert.equal(S.resolve({}).guides, "none")
+  const yours = ["Kamon", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, and the four studies built on it
+  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (yours.indexOf(p) >= 0 ? "none" : "both")))
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
-  assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "both")
+  assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
 })
-const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE"])
+const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE", "CREDIT_GROUPS", "creditsIn"])
 
 test("profile: the machine probe's lines become facts", () => {
   const m = Pr.parseMachine("user=ayush\nhost=kumo\nkernel=6.18\nuptime=187420.5\ntheme=Unknown\npackages=1184\nnoise\nbogus=1")
@@ -1148,8 +1176,11 @@ test("profile: live readings and the small print", () => {
   assert.equal(v[2].sub, "Wi-Fi · 3 of 4 bars")
   assert.equal(v[3].sub, "Signal last")
   assert.equal(Pr.vitals({}).length, 1)
+  assert.equal(v[1].level, 0.62)
+  assert.equal(v[2].level, 0.75)
+  assert.equal(v[0].level, -1)
   const rows = Pr.specs(S.resolve({ edits: { clock: "mono" } }), S.normalize({ edits: { clock: "mono" } }), { theme: "Kanagawa", hyprland: "v0.52.1", uptime: 60 }, "0.1.0", S.OPTIONS, S.KEYS, S.combinations())
-  assert.deepEqual(rows[0], ["Preset", "Hanko + 1 edit"])
+  assert.deepEqual(rows[0], ["Preset", "Kamon + 1 edit"])
   assert.match(rows[1][1], /^No\. [\d,]+ of [\d,]+$/)
   assert.deepEqual(rows[3], ["Compositor", "Hyprland 0.52.1"])
   assert.deepEqual(rows[5], ["Uptime", "1 m"])
@@ -1158,6 +1189,10 @@ test("profile: live readings and the small print", () => {
 test("about and credits: every line is whole, links are https", () => {
   for (const p of Pr.PROJECTS) { assert.ok(p.name && p.role); assert.ok(p.url === "" || p.url.startsWith("https://")) }
   for (const p of Pr.PROOFREADERS) assert.ok(p.url.startsWith("https://github.com/"))
+  // Every credit sits in one of the groups, and the groups hold them all.
+  const keys = Pr.CREDIT_GROUPS.map(g => g.key)
+  for (const p of Pr.PROJECTS) assert.ok(keys.includes(p.group), p.name)
+  assert.equal(keys.reduce((n, k) => n + Pr.creditsIn(k).length, 0), Pr.PROJECTS.length)
   const f = Pr.facts("0.1.0", 10, "22", 6)
   assert.equal(f.length, 8)
   assert.equal(f[f.length - 1][2], "https://github.com/AyushKr2003/hanko")
@@ -1255,7 +1290,344 @@ test("overview layout is a setting beside the counted ones", () => {
   assert.equal(d.overview, "dynamic")
   assert.equal(S.withPreset(d, "Quiet").overview, "dynamic")
   assert.equal(S.withSetting({}, "overview", "tiles"), null)
-  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic"])
+  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic", "framed"])
+  // Shōji's framed pages are a choice on any bar.
+  assert.equal(S.resolve(S.withSetting({}, "overview", "framed")).overview, "framed")
 })
 
+// ── Shōji, folded into Hanko: the preset, the migration, its skin ──────
+test("shōji: a saved Shōji design loads as the Shōji preset; touches become settings", () => {
+  const doc = { preset: "Quiet", edits: { clock: "mono", height: 36 }, design: "shoji", borrow: { slider: "ruler" },
+    touches: { season: "english" }, sheetStyles: { inbox: "tanzaku" },
+    monitors: { "DP-2": { height: 32, design: "classic", touches: { grain: "toothy" } }, "HDMI-A-1": { design: "shoji" } } }
+  const n = S.normalize(doc, [])
+  assert.equal(n.preset, "Shōji"); assert.deepEqual(n.edits, { height: 36 })      // only what Shōji's bar honoured
+  assert.equal(n.design, undefined); assert.equal(n.borrow, undefined); assert.equal(n.touches, undefined)
+  assert.deepEqual([n.season, n.numerals, n.grain], ["english", "arabic", "fine"])
+  assert.equal(n.overview, "framed")
+  assert.equal(n.sheetStyles.inbox, "tanzaku"); assert.equal(n.sheetStyles.sound, "shoji")  // a hand you picked stays
+  // A monitor in the other design gets that preset's values, under its own.
+  assert.equal(n.monitors["DP-2"].seal, "stamp"); assert.equal(n.monitors["DP-2"].height, 32)
+  assert.equal(n.monitors["DP-2"].design, undefined)
+  assert.deepEqual(n.monitors["HDMI-A-1"], {})
+  assert.equal(S.resolve(doc, "DP-2").status, "cells"); assert.equal(S.resolve(doc).status, "ink")
+  const w = []; S.normalize(doc, w); assert.deepEqual(w, [])
+  assert.deepEqual(S.normalize(n), n)                                    // the migration settles
+  // On a Hanko file, a monitor that was Shōji gets Shōji's values.
+  assert.equal(S.resolve({ monitors: { "DP-2": { design: "shoji" } } }, "DP-2").surface, "washi")
+  assert.equal(JSON.stringify(S.normalize({})).includes("design"), false)
+  assert.equal(S.withSetting(n, "clock", "mono").preset, "Shōji")
+})
+
+test("the Shōji preset: picked by any spelling, it puts every sheet in the Shōji hand and frames the overview", () => {
+  for (const name of ["Shōji", "shoji", "SHOJI", "shōji"]) assert.equal(S.withPreset({}, name).preset, "Shōji")
+  const d = S.withPreset({ sheetStyles: { time: "kasumi" }, overview: "dynamic" }, "shoji")
+  assert.ok(S.SHEET_KEYS.every(k => S.resolve(d).sheetStyles[k] === "shoji"))
+  assert.equal(d.overview, "framed")
+  // Kept afterwards, like anything beside the settings.
+  const h = S.withPreset(d, "Hanko"); assert.equal(h.overview, "framed"); assert.equal(h.sheetStyles.time, "shoji")
+  const st = S.resolve(d)
+  assert.deepEqual([st.seal, st.spaces, st.status, st.notif, st.surface, st.pointer, st.panels], ["carved", "brush", "ink", "seal", "washi", "brush", "sheets"])
+})
+
+test("kata K2: the inks are solved by contrast in every theme", () => {
+  for (const [fg, bg] of [["#e9e1d2", "#0e0d0b"], ["#c0caf5", "#1a1b26"], ["#d4be98", "#282828"], ["#575279", "#faf4ed"], ["#100f0f", "#fffcf0"]]) {
+    const k = I.kata(fg, bg)
+    assert.ok(Math.abs(I.contrast(k.ink3, bg) - 4.6) < 0.1, `ink3 ${fg} on ${bg}: ${I.contrast(k.ink3, bg)}`)
+    assert.ok(Math.abs(I.contrast(k.ink4, bg) - 2.05) < 0.1)
+    assert.ok(I.contrast(k.ink2, bg) >= 5.5)
+    for (const c of Object.values(k)) assert.match(c, /^#[0-9a-f]{6}$/)
+  }
+})
+test("kata K2: a skin carries Shōji's tokens", () => {
+  const s = Sk.fromStyle(S.resolve({}))
+  assert.deepEqual([s.radius, s.radiusRow, s.radiusChip], [0, 0, 0])
+  assert.deepEqual([s.open, s.leave], [340, 160])
+  assert.equal(s.opacity, 0.86); assert.equal(s.travels, true); assert.equal(s.joints, true); assert.equal(s.season, "kanji")
+  assert.equal(s.gap, 6); assert.equal(s.grain, 1); assert.equal(s.kanjiNumerals, false)
+  assert.equal(s.soft, undefined); assert.equal(s.dividerWidth, undefined)
+  assert.deepEqual(Object.keys(Sk.TEMPOS), ["johakyu"]); assert.deepEqual(Object.keys(Sk.RADII), ["cut"]); assert.deepEqual(Object.keys(Sk.OPACITY), ["washi"])
+  assert.equal(Sk.skin({}).design, "classic")
+  // The style's touches and panel opacity reach the skin.
+  const t = Sk.fromStyle(S.resolve({ season: "english", numerals: "kanji", grain: "toothy", panelOpacity: 50 }))
+  assert.deepEqual([t.season, t.kanjiNumerals, t.grain, t.opacity], ["english", true, 2, 0.5])
+  assert.equal(Sk.fromStyle(null).season, "kanji")
+})
+test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () => {
+  const a = Br.stroke(120, 16, 4), b = Br.stroke(120, 16, 4)
+  assert.equal(a, b); assert.match(a, /^M [\d. -]+ Q [\d. -]+( L [\d. -]+)+ Z$/)
+  assert.notEqual(Br.stroke(120, 16, 5), a)
+  assert.equal(Br.kasure(30, 9, 4).length, 0); assert.equal(Br.kasure(120, 16, 4).length, 4)
+  const e = Br.enso(0.91, 118, 11, 9)
+  assert.match(e, /^M [\d. -]+( L [\d. -]+)+ Z$/)
+  assert.equal(e.split(" L ").length, 242)                 // 121 points out, 121 back
+  assert.ok(Br.enso(0, 20).length > 0 && Br.enso(2, 20).length > 0)   // clamped, never empty
+})
+
+test("kata K6: the second wave: Shōji's rows, framed pages and brush-stroke hold", () => {
+  const s = Sk.fromStyle(S.resolve({}))
+  assert.deepEqual([s.notify, s.overview, s.hold], ["rows", "framed", "stroke"])
+  assert.equal(Object.keys(Sk.SHOJI).length, 15)
+})
+test("panel opacity: 30..100 or the design's own, kept beside the edits and through presets", () => {
+  assert.equal(S.normalize({}).panelOpacity, undefined)
+  assert.equal(S.resolve({}).panelOpacity, 0)
+  assert.equal(S.normalize({ panelOpacity: 72 }).panelOpacity, 72)
+  assert.equal(S.normalize({ panelOpacity: 5 }).panelOpacity, 30)
+  assert.equal(S.normalize({ panelOpacity: 140 }).panelOpacity, 100)
+  assert.equal(S.normalize({ panelOpacity: "nope" }).panelOpacity, undefined)
+  const d = S.withSetting({}, "panelOpacity", "64")
+  assert.equal(S.resolve(d).panelOpacity, 64)
+  assert.deepEqual(d.edits, {})
+  assert.equal(S.withSetting(d, "panelOpacity", "auto").panelOpacity, undefined)
+  assert.equal(S.withSetting(d, "panelOpacity", "x"), null)
+  assert.equal(S.withPreset(d, "Quiet").panelOpacity, 64)
+  assert.equal(Sk.fromStyle(S.resolve({})).opacity, 0.86)
+  assert.equal(Sk.fromStyle(S.resolve({ panelOpacity: 50 })).opacity, 0.5)
+})
+test("kata K4: the season comes from the sun, right on the boundaries", () => {
+  assert.equal(Sn.KO.length, 72); assert.equal(Sn.SEKKI.length, 24)
+  const s = Sn.at(new Date("2026-10-08T16:14:00Z"))
+  assert.equal(s.koKanji, "鴻雁来"); assert.equal(s.koName, "Wild geese return"); assert.equal(s.sekkiKanji, "寒露")
+  assert.equal(Sn.at(new Date("2026-02-04T12:00:00Z")).koKanji, "東風解凍")
+  assert.equal(Sn.at(new Date("2026-03-21T12:00:00Z")).koKanji, "雀始巣")
+  // the 2027 June solstice is at 14:11 UTC: noon is still the kō before
+  assert.equal(Sn.at(new Date("2027-06-21T12:00:00Z")).koKanji, "梅子黄")
+  assert.equal(Sn.at(new Date("2027-06-21T16:00:00Z")).koKanji, "乃東枯")
+  assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "kanji"), "寒露")
+  assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "english"), "Cold dew")
+  assert.equal(Sn.label(new Date("2026-10-08T12:00:00Z"), "off"), "")
+})
+
+test("sheet styles: two hands per sheet, stored only where not a ledger", () => {
+  assert.deepEqual(S.SHEET_STYLES, ["ledger", "tanzaku", "shogi", "soroban", "odoshi", "kasumi", "shoji"])
+  assert.equal(S.resolve({}).sheetStyles.sound, "ledger")
+  let d = S.withSetting({}, "sheetStyle:sound", "tanzaku")
+  assert.deepEqual(d.sheetStyles, { sound: "tanzaku" })
+  assert.equal(S.resolve(d).sheetStyles.sound, "tanzaku")
+  // A dial saved before the Tanzaku hand replaced it carries over.
+  assert.deepEqual(S.normalize({ sheetStyles: { time: "dial" } }).sheetStyles, { time: "tanzaku" })
+  assert.equal(S.resolve(d).sheetStyles.time, "ledger")
+  d = S.withSetting(d, "sheetStyle:all", "tanzaku")
+  assert.equal(Object.keys(d.sheetStyles).length, S.SHEET_KEYS.length)
+  d = S.withSetting(d, "sheetStyle:all", "ledger")
+  assert.equal(d.sheetStyles, undefined)
+  assert.equal(S.withSetting({}, "sheetStyle:sound", "fancy"), null)
+  assert.equal(S.withSetting({}, "sheetStyle:nope", "tanzaku"), null)
+  // A preset change keeps them, like the overview.
+  const p = S.withPreset(S.withSetting({}, "sheetStyle:time", "tanzaku"), "Quiet")
+  assert.deepEqual(p.sheetStyles, { time: "tanzaku" })
+  assert.deepEqual(S.normalize({ sheetStyles: { time: "ledger", sound: "x", inbox: "tanzaku" } }).sheetStyles, { inbox: "tanzaku" })
+  // Prose was taken out: a sheet saved in it is a ledger again.
+  assert.equal(S.normalize({ sheetStyles: { inbox: "prose" } }).sheetStyles, undefined)
+  // So was Mon.
+  assert.equal(S.normalize({ sheetStyles: { sound: "mon" } }).sheetStyles, undefined)
+  assert.equal(S.withSetting({}, "sheetStyle:sound", "mon"), null)
+  // The four craft hands are kept like Tanzaku.
+  for (const h of ["shogi", "soroban", "odoshi", "kasumi", "shoji"]) {
+    const e = S.withSetting({}, "sheetStyle:all", h)
+    assert.equal(S.resolve(e).sheetStyles.inbox, h)
+    assert.deepEqual(S.normalize(e).sheetStyles, e.sheetStyles)
+  }
+})
+
+test("Shōji's bar parts are Hanko values (S3)", () => {
+  const shoji = { seal: "carved", spaces: "brush", title: "ink", clock: "season", media: "ink", status: "ink", notif: "seal", surface: "washi", pointer: "brush" }
+  for (const k in shoji) {
+    assert.ok(S.OPTIONS[k].includes(shoji[k]), k)
+    assert.equal(S.resolve(S.withSetting({}, k, shoji[k]))[k], shoji[k])
+  }
+  // The values that leave a part out stay last.
+  for (const k of ["seal", "title", "media"]) assert.equal(S.OPTIONS[k][S.OPTIONS[k].length - 1], "none")
+  // Every Typeset preset keeps the plain pointer; Hanko itself is unchanged.
+  for (const n of S.PRESET_NAMES) assert.equal(S.PRESETS[n].pointer, n === "Shōji" ? "brush" : "plain")
+  // The touches are kept through a preset change and a shuffle.
+  const d = S.withSetting(S.withSetting({}, "season", "off"), "numerals", "kanji")
+  assert.equal(S.withPreset(d, "Quiet").season, "off")
+  assert.equal(S.shuffled(d, () => 0.5).numerals, "kanji")
+})
+
+// ---- the craft hands' model (core/Hands.js)
+const Hd = load("core/Hands.js", ["HANDS", "model", "ranks", "setArg", "FRESH_MS"])
+const handLib = {
+  T: load("core/Time.js", ["WEEKDAYS", "MONTHS", "pad2", "startOfDay", "dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading"]),
+  St: St,
+  B: load("core/Blue.js", ["KIND_MARKS", "LOW", "action", "kind"]),
+}
+const handNow = new Date(2026, 9, 6, 21, 44)
+const handFeed = {
+  zones: [{ label: "Tokyo", time: "06:44", rel: "+9", ready: true }],
+  sound: { master: { percent: 62, level: 0.62, muted: false },
+           outputs: [{ id: 41, name: "usb", label: "Studio Monitors", current: true, note: "Live" },
+                     { id: 52, name: "bt", label: "WH-1000XM5", current: false, note: "Paired" }],
+           streams: [{ id: 7, name: "spotify", label: "Spotify", level: 0.8, percent: 80, muted: false },
+                     { id: 8, name: "firefox", label: "Firefox", level: 0.45, percent: 45, muted: true }],
+           input: "Input · Shure MV7", inputMuted: false },
+  network: { current: { kind: "wifi", label: "Kumo", detail: "Wi-Fi" }, radio: true, offline: false,
+             networks: [{ ssid: "Kumo", current: true, saved: true, secure: true, signal: 82, note: "Connected" },
+                        { ssid: "Library", current: false, saved: false, secure: false, signal: 22, note: "Open" }] },
+  bluetooth: { title: "WH-1000XM5", blurb: "Headphones · 80%", present: true, enabled: true, scanning: false,
+               connected: [{ address: "A", name: "WH-1000XM5", detail: "Headphones · 80%", connected: true, paired: true, level: 80 }],
+               known: [{ address: "B", name: "MX Keys", detail: "Keyboard", connected: false, paired: true, level: -1 }], found: [] },
+  power: { percent: 12, low: true, charging: false, blurb: "40m left",
+           details: [{ name: "State", value: "On battery" }, { name: "Cycles", value: "112" }, { name: "Charge limit", value: "80%" }],
+           profiles: [{ name: "balanced", label: "Balanced", active: true }, { name: "power-saver", label: "Power saver", active: false }] },
+  display: { title: "Built-in", blurb: "2880×1800", monitors: [
+               { name: "eDP-1", label: "Built-in", internal: true, enabled: true, focused: true, current: true },
+               { name: "HDMI-A-1", label: "TV", internal: false, enabled: false, focused: false, current: false }],
+             brightness: { percent: 70, level: 0.7 }, night: false },
+  letters: [{ app: "Signal", summary: "Mika", body: "See  you\nat 8", timestamp: handNow.getTime() - 60000, urgent: false, glyph: "信" },
+            { app: "System", summary: "Battery low", body: "", timestamp: handNow.getTime() - Hd.FRESH_MS * 2, urgent: true, glyph: "S" }],
+  dnd: false,
+}
+
+test("hands: every sheet gives a whole model, with data and without", () => {
+  for (const sheet of S.SHEET_KEYS) {
+    for (const feed of [handFeed, {}]) {
+      const m = Hd.model(sheet, feed, handNow, handLib)
+      assert.equal(m.sheet, sheet)
+      for (const k of ["levels", "choices", "tally", "lines", "buttons"]) assert.ok(Array.isArray(m[k]), sheet + " " + k)
+      assert.equal(typeof m.hero.figure, "string")
+      for (const r of m.levels.concat(m.choices)) {
+        assert.ok(r.level <= 1, sheet + " level")
+        assert.equal(typeof r.selected, "boolean")
+      }
+    }
+  }
+  assert.deepEqual(Hd.HANDS, ["shogi", "soroban", "odoshi", "kasumi"])
+})
+
+test("hands: sound sets the master and each app, outputs are the choices", () => {
+  const m = Hd.model("sound", handFeed, handNow, handLib)
+  assert.equal(m.hero.figure, "62")
+  assert.deepEqual(m.hero.set, { what: "master" })
+  const r = Hd.ranks(m)
+  assert.equal(r[0].key, "hero")
+  assert.equal(r.length, 3)
+  assert.deepEqual(Hd.setArg(r[1].set, 0.5), { id: 7, name: "spotify", value: 0.5 })
+  assert.equal(Hd.setArg(r[0].set, 0.5), 0.5)
+  assert.ok(r[2].muted)
+  assert.equal(m.choices[0].selected, true)
+  assert.equal(m.choices[0].click, null)
+  assert.deepEqual(m.choices[1].click, { what: "output", arg: { id: 52, name: "bt" } })
+  assert.deepEqual(m.keys.step, { what: "master", min: 0, level: 0.62 })
+})
+
+test("hands: time is the day, week, month and year, and a week of days", () => {
+  const m = Hd.model("time", { zones: handFeed.zones }, handNow, handLib)
+  assert.equal(m.hero.figure, "21:44")
+  assert.equal(m.hero.scales, 24)
+  assert.deepEqual(m.levels.map(r => r.key), ["week", "month", "year"])
+  assert.equal(m.choices.length, 7)
+  assert.equal(m.choices.filter(c => c.selected).length, 1)
+  assert.equal(m.choices[1].selected, true) // a Tuesday: Monday first
+  assert.equal(m.choices[0].dashed, true)
+  assert.equal(m.choices[1].click, null)
+  assert.deepEqual(m.tally.map(t => t.n), [21, 44, 6])
+  assert.deepEqual(m.lines, ["Tokyo  06:44  +9"])
+  const later = Hd.model("time", { timeShift: 2 }, handNow, handLib)
+  assert.equal(later.choices.filter(c => c.selected).length, 0)
+  assert.deepEqual(later.choices[0].click, { what: "shift", arg: 0 })
+  assert.deepEqual(later.keys.left, { what: "shift", arg: 1 })
+})
+
+test("hands: network, bluetooth, power, display and inbox", () => {
+  const n = Hd.model("network", handFeed, handNow, handLib)
+  assert.equal(n.hero.level, 0.82)
+  assert.equal(n.levels[0].click, null)
+  assert.equal(n.levels[1].click.arg.ssid, "Library")
+  assert.equal(Hd.model("network", { network: { radio: false, networks: [] } }, handNow, handLib).hint, "Wi-Fi is off")
+  const b = Hd.model("bluetooth", handFeed, handNow, handLib)
+  assert.equal(b.levels.length, 1) // has a charge
+  assert.equal(b.choices[0].name, "MX Keys") // doesn't
+  assert.equal(b.levels[0].mark, "耳")
+  assert.equal(b.choices[0].click.what, "device")
+  const p = Hd.model("power", handFeed, handNow, handLib)
+  assert.ok(p.hero.red)
+  assert.deepEqual(p.tally.map(t => t.n), [12, 112])
+  assert.equal(p.choices[1].click.arg, "power-saver")
+  const d = Hd.model("display", handFeed, handNow, handLib)
+  assert.equal(d.hero.min, 0.01)
+  assert.equal(d.choices[1].dashed, true)
+  assert.equal(d.choices[1].click, null)
+  const i = Hd.model("inbox", handFeed, handNow, handLib)
+  assert.equal(i.hero.figure, "02")
+  assert.equal(i.hero.caption, "1 needs you")
+  assert.ok(i.levels[0].level > 0.9)
+  assert.equal(i.levels[1].level, 0.08)
+  assert.equal(i.levels[0].detail, "See you at 8")
+  assert.ok(i.levels[1].urgent)
+})
+
+
+test("right side: four studies as status values and presets on your Hanko bar", () => {
+  assert.deepEqual(S.OPTIONS.status, ["cells", "glyphs", "numerals", "ink", "ma", "shizuka", "suji", "inro"])
+  assert.deepEqual(S.PRESET_NAMES.slice(-4), ["Ma", "Shizuka", "Suji", "Inrō"])
+  const status = { Ma: "ma", Shizuka: "shizuka", Suji: "suji", "Inrō": "inro" }
+  const hanko = S.PRESETS.Kamon
+  for (const name in status) {
+    const p = S.PRESETS[name]
+    assert.equal(p.status, status[name])
+    assert.equal(p.indicatorStyle, "kanji")
+    assert.deepEqual(Object.keys(p).sort(), [...S.KEYS].sort())
+    // Only the right zone (and Ma's dividers and scroll joins) differs from your bar.
+    const diff = S.KEYS.filter(k => p[k] !== hanko[k])
+    const allowed = ["status", "meters", "indicatorStyle", "rules", "interlude"]
+    assert.ok(diff.every(k => allowed.indexOf(k) >= 0), name + " changes " + diff)
+  }
+  // Typed any case, with or without the macron.
+  assert.equal(S.withPreset({}, "inro").preset, "Inrō")
+  assert.equal(S.withPreset({}, "SHIZUKA").preset, "Shizuka")
+  assert.equal(S.resolve({ preset: "Hanko", edits: { status: "suji" } }).status, "suji")
+  assert.deepEqual(S.PRESET_GROUPS.flatMap(g => g.names).sort(), [...S.PRESET_NAMES].sort())
+})
+
+test("right side: short names and how full a reading is", () => {
+  assert.equal(St.short("OPPO Enco Buds2"), "Enco Buds2")
+  assert.equal(St.short("Infinix NOTE 50S 5G"), "Infinix")
+  assert.equal(St.short("WH-1000XM5"), "WH-1000XM5")
+  assert.equal(St.short("Kumo"), "Kumo")
+  assert.equal(St.short("  "), "")
+  assert.equal(St.short(null), "")
+  assert.equal(St.short("Supercalifragilistic"), "Supercalifrag…")
+  assert.equal(St.fill("network", { kind: "wifi", bars: 3 }), 0.75)
+  assert.equal(St.fill("network", { kind: "ethernet" }), 1)
+  assert.equal(St.fill("network", { off: true }), 0)
+  assert.equal(St.fill("bluetooth", { enabled: true, connected: 1, level: 0.6 }), 0.6)
+  assert.equal(St.fill("bluetooth", { enabled: true, connected: 1, level: -1 }), 1)
+  assert.equal(St.fill("bluetooth", { enabled: true, connected: 0, level: -1 }), 0)
+  assert.equal(St.fill("bluetooth", { enabled: false }), 0)
+  assert.equal(St.fill("volume", { level: 0.4, muted: true }), 0)
+  assert.equal(St.fill("volume", { level: 0.4 }), 0.4)
+  assert.equal(St.fill("battery", { level: 1.4 }), 1)
+  assert.equal(St.fill("battery", null), 0)
+})
+
+test("settings: a Presets 型 page, every preset with a kanji and its facts", () => {
+  const pages = Se.RAIL.flatMap(g => g.pages)
+  assert.deepEqual(pages.slice(1, 3).map(p => p.key), ["presets", "typesetting"])
+  assert.equal(Se.pageInfo("presets").page.jp, "型")
+  assert.equal(Se.pageInfo("nope").page.key, "typesetting")
+  assert.deepEqual(Object.keys(Se.PRESET_KANJI).sort(), [...S.PRESET_NAMES].sort())
+  assert.equal(Se.presetFacts(S.resolve({ preset: "Suji" })), "status suji · clock stacked · 40 px · surface solid · panels sheets")
+  assert.ok(Se.presetMatches("Inrō", "inro", S.PRESETS))
+  assert.ok(Se.presetMatches("Suji", "筋", S.PRESETS))
+  assert.ok(Se.presetMatches("Quiet", "glass", S.PRESETS))
+  assert.ok(!Se.presetMatches("Kamon", "glass", S.PRESETS))
+  assert.ok(Se.presetMatches("Kamon", "  ", S.PRESETS))
+  assert.ok(Se.presetMatches("Kamon", "hanko", S.PRESETS))
+})
+
+test("Kamon 家紋 is the preset that was Hanko; the old name still loads it", () => {
+  assert.equal(S.DEFAULT_PRESET, "Kamon")
+  assert.equal(S.normalize({}).preset, "Kamon")
+  assert.equal(S.normalize({ preset: "Hanko", edits: { clock: "mono" } }).preset, "Kamon")
+  assert.equal(S.resolve({ preset: "Hanko", edits: { clock: "mono" } }).clock, "mono")
+  const w = []; S.normalize({ preset: "hanko" }, w); assert.deepEqual(w, [])
+  assert.equal(S.withPreset({}, "HANKO").preset, "Kamon")
+  assert.equal(S.normalize({ design: "classic" }).preset, "Kamon")
+  assert.ok(S.PRESET_NAMES.indexOf("Hanko") < 0)
+  assert.equal(Se.PRESET_KANJI.Kamon, "家紋")
+  assert.equal(Se.PRESET_BLURBS.Kamon, "the family crest")
+})
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

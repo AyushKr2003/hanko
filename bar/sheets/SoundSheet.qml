@@ -32,6 +32,7 @@ Item {
     bottomPadding: Type.px(4) + Type.px(16)
 
     SheetHead {
+      sheet: "sound"
       jp: "音"
       label: "Sound · Pipewire"
       title: "Sound"
@@ -50,16 +51,31 @@ Item {
         width: parent.width - Type.px(4)
         spacing: Type.px(16)
 
-        Text {
+        Item {
           id: big
-          width: Type.px(66)
+          width: Type.px(78)
+          height: bigText.height
           anchors.verticalCenter: parent.verticalCenter
-          text: root.master ? String(root.master.percent) : "—"
-          color: root.master && root.master.muted ? Ink.seal : Ink.ink
-          font.family: Type.display
-          font.pixelSize: Type.title
-          font.weight: Font.Normal
-          font.variableAxes: Type.axes(Type.title)
+          Text {
+            id: bigText
+            text: root.master ? String(root.master.percent) : "—"
+            color: root.master && root.master.muted ? Ink.seal : Ink.ink
+            font.family: Type.display
+            font.pixelSize: Type.title
+            font.weight: Font.Normal
+            font.variableAxes: Type.axes(Type.title)
+            font.features: { "tnum": 1 }
+          }
+          // The unit set small and high, as a figure's superscript.
+          Text {
+            visible: !!root.master
+            x: bigText.width + Type.px(3)
+            y: Type.px(6)
+            text: "%"
+            color: Ink.inkMuted
+            font.family: Type.mono
+            font.pixelSize: Type.label
+          }
         }
         Ruler {
           anchors.verticalCenter: parent.verticalCenter

@@ -34,6 +34,7 @@ Item {
     bottomPadding: Type.px(20)
 
     SheetHead {
+      sheet: "bluetooth"
       jp: "藍"
       label: "Bluetooth · BlueZ"
       title: root.blue ? root.blue.title : "Bluetooth"

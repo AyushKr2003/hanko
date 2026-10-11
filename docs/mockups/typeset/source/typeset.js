@@ -40,7 +40,7 @@ function hbHTML(o, s) {
   const R = o.rules === 'on' ? '<div class="rule"></div>' : '<div class="gap"></div>';
   const RF = o.rules === 'on' ? '<div class="rule full"></div>' : '<div class="gap"></div>';
   // seal
-  const seal = o.seal === 'none' ? '' : `<div class="z" style="padding:0 10px 0 4px"><span class="seal">${o.seal === 'workspace' ? KNUM[s.active] : (o.sealGlyph || '印')}</span></div>${RF}`;
+  const seal = o.seal === 'none' ? '' : `<div class="z" style="padding:0 10px 0 4px"><span class="seal">${o.seal === 'workspace' ? KNUM[s.active] : (o.sealGlyph || '鑑')}</span></div>${RF}`;
   // spaces
   let sp = '';
   if (o.spaces === 'folio') sp = `<div class="folio" style="padding:0 6px">${s.ws.map((w, i) => { const st = w.on ? 'on' : (w.win && w.win.length ? 'occ' : ''); const dots = w.win && !w.on ? `<span class="dots">${'<i></i>'.repeat(w.win.length)}</span>` : ''; return `<span class="ws ${st}">${w.on ? '<span class="lead">//</span>' : ''}${String(i + 1).padStart(2, '0')}${dots}${w.urg ? '<span class="urg"></span>' : ''}</span>`; }).join('')}</div>`;

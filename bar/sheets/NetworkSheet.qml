@@ -35,6 +35,7 @@ Item {
     bottomPadding: Type.px(20)
 
     SheetHead {
+      sheet: "network"
       jp: "網"
       label: "Network · NetworkManager"
       title: root.current.label

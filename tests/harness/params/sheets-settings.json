@@ -1,5 +1,5 @@
 {
- "title": "",
+ "title": "Settings · Sheets",
  "scene": "Settings",
  "width": 1600,
  "theme": {
@@ -134,7 +134,13 @@
   "muted": false,
   "needsYou": false
  },
- "bluetooth": { "name": "WH-1000XM5", "enabled": true, "connected": 1, "level": 0.8, "needsYou": false },
+ "bluetooth": {
+  "name": "WH-1000XM5",
+  "enabled": true,
+  "connected": 1,
+  "level": 0.8,
+  "needsYou": false
+ },
  "network": {
   "kind": "wifi",
   "name": "Kumo",
@@ -172,17 +178,73 @@
    "summary": "",
    "timestamp": 1,
    "urgent": false,
-   "glyph": "\u706b",
+   "glyph": "火",
    "tilt": -1.5
   }
  ],
  "settings": {
   "saved": {
-   "preset": "Hanko"
+   "preset": "Hanko",
+   "sheetStyles": {
+    "time": "shogi",
+    "sound": "kasumi",
+    "network": "tanzaku",
+    "power": "soroban",
+    "display": "odoshi",
+    "inbox": "shoji"
+   }
   },
-  "draft": {
-   "preset": "Hanko"
-  },
-  "page": "presets"
- }
+  "page": "sheets",
+  "undo": 3,
+  "width": 1600,
+  "height": 1100,
+  "sheetFeed": {
+   "sound": {
+    "master": {
+     "percent": 62,
+     "level": 0.62,
+     "muted": false
+    },
+    "outputs": [
+     {
+      "id": 41,
+      "name": "usb",
+      "label": "Studio Monitors",
+      "detail": "USB · Focusrite 2i2 · 48 kHz",
+      "current": true,
+      "note": "Live"
+     },
+     {
+      "id": 52,
+      "name": "bt",
+      "label": "WH-1000XM5",
+      "detail": "Bluetooth · LDAC",
+      "current": false,
+      "note": "Paired"
+     }
+    ],
+    "streams": [
+     {
+      "id": 7,
+      "name": "spotify",
+      "label": "Spotify",
+      "level": 0.8,
+      "percent": 80,
+      "muted": false
+     },
+     {
+      "id": 8,
+      "name": "firefox",
+      "label": "Firefox",
+      "level": 0.45,
+      "percent": 45,
+      "muted": false
+     }
+    ],
+    "input": "Input · Shure MV7",
+    "inputMuted": false
+   }
+  }
+ },
+ "now": "2026-10-08T21:44:00"
 }

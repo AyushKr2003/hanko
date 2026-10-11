@@ -6,13 +6,15 @@ import "../../core/Edge.js" as E
 import "../../core/Profile.js" as P
 
 // Profile 印影, the seal register: the plate people screenshot to show their
-// desk. Your seal glyph pressed large and worn, bleeding off the right; your
-// name monumental in Fraunces over the glyph's own watermark; the bar's live
-// readings pinned to the impression by hairline leaders; the dossier's
-// small print (preset, which of the combinations this bar is, theme,
-// kernel, uptime) at the foot with the six inks you are set in, and the day
-// as a rule. Ink on paper; the seal is the only red. EDIT lets you rename
-// it, give it a line and hide any block (core/Dossier.qml).
+// desk, laid out like the certificate a seal is registered on (印鑑登録証明書)
+// on a modular grid. Left, the holder: your name monumental in Fraunces, the
+// line under it and the register's small print. Right, the work: your seal
+// glyph written large in ink on a calligraphy practice grid (田字格) and
+// signed with a rakkan, two small seals under your name (Shikishi.qml), in
+// a ruled box with crop marks and its caption. Along the foot, the bar's live readings as
+// a row of stats (a game's status screen, kept to ink), then the edition and
+// the day as a rule. Ink on paper; the seal is the only red. EDIT lets you
+// rename it, give it a line and hide any block (core/Dossier.qml).
 Item {
   id: root
 
@@ -43,29 +45,34 @@ Item {
   readonly property string tagline: profile.tagline || ("Set in ink on " + (machine.theme || "your theme") + ".")
 
   // Two layouts, and nothing ever sits on top of the type in either:
-  //  poster   the identity top left, the small print bottom left, the live
-  //           readings beside it and the seal in the room left on the right,
-  //           sized to that room (never under the readings, EDIT or the day);
+  //  poster   the certificate: holder left, impression right, readings in
+  //           a row across the foot, edition and day under them;
   //  stacked  one column, the seal set beside (or above) the readings, for
-  //           narrow windows and when the seal would come out too small.
+  //           narrow windows and when the impression would come out small.
   // A window too short for either scrolls instead of piling blocks up.
   readonly property int margin: poster ? Type.px(56) : width < Type.px(560) ? Type.px(20) : Type.px(32)
   readonly property int posterMargin: Type.px(56)
-  readonly property real vitalsX: posterMargin + Type.px(420)
   readonly property real vitalsW: Type.px(170)
-  readonly property real vitalsTop: posterMargin + posterHead.height + Type.px(40)
   // EDIT's strip takes its own band under the page, so nothing scrolls
   // beneath it.
   readonly property real stripRoom: editing && !grabbing ? Type.px(46) + 2 * Type.px(12) : 0
-  readonly property real posterNeed: vitalsTop + Math.max(posterFoot.height, vitals.length * Type.px(56)) + posterMargin
+
+  // The poster's grid: two columns over a band of readings and a foot.
+  readonly property real contentW: width - 2 * posterMargin
+  readonly property real gutter: Type.px(64)
+  readonly property real leftW: Math.min(Type.px(640), contentW * 0.54)
+  readonly property real boxTop: posterMargin + Type.px(58)
+  readonly property real captionH: Type.px(30)
+  readonly property real leftBottom: posterMargin + posterHead.height + Type.px(40) + posterFoot.height
+  readonly property real posterBox: Math.floor(Math.max(Type.px(240), Math.min(contentW - leftW - gutter, leftBottom - boxTop - captionH, Type.px(560))))
+  readonly property real liveH: Type.px(124)
+  readonly property real footH: Type.px(52)
+  readonly property real posterNeed: Math.max(leftBottom, boxTop + posterBox + captionH) + Type.px(48) + liveH + Type.px(32) + footH + posterMargin
   readonly property real posterH: Math.max(flick.height, posterNeed)
-  // The seal's room: right of the readings and their leaders, under EDIT,
-  // over the day rule. Turned 5°, its box is about 9% bigger than its face.
-  readonly property real sealLeft: vitalsX + vitalsW + Type.px(64)
-  readonly property real sealTop: posterMargin + Type.px(30) + Type.px(28)
-  readonly property real sealBottom: posterH - posterMargin - (shown("day") || editing ? Type.px(52) + Type.px(36) : Type.px(8))
-  readonly property real posterSeal: Math.floor(Math.min((width - sealLeft) / 0.84, (sealBottom - sealTop) / 1.09, Type.px(720)))
-  readonly property bool poster: width >= Type.px(1000) && posterSeal >= Type.px(280)
+  // The band and the foot sit on the page's floor; extra height opens up
+  // above them, between the holder and the readings.
+  readonly property real liveTop: posterH - posterMargin - footH - Type.px(32) - liveH
+  readonly property bool poster: width >= Type.px(1000) && contentW - leftW - gutter >= Type.px(260)
 
   function shown(block) { return (profile.hidden || []).indexOf(block) < 0 }
   function visibleBlock(block) { return shown(block) || editing }
@@ -117,39 +124,6 @@ Item {
       visible: root.poster
       anchors.fill: parent
 
-      // The glyph's watermark, between the columns.
-      Text {
-        visible: root.visibleBlock("watermark")
-        opacity: root.blockOpacity("watermark")
-        x: root.width * 0.42 - width / 2
-        anchors.verticalCenter: parent.verticalCenter
-        text: root.style.sealGlyph || "印"
-        color: Ink.alpha(Ink.ink, 0.05)
-        font.family: Type.jpSerif
-        font.pixelSize: Math.min(root.posterH * 0.66, Type.px(560))
-      }
-
-      SealImpression {
-        id: seal
-        visible: root.visibleBlock("seal")
-        readonly property real size: Math.max(0, root.posterSeal)
-        width: size
-        height: size
-        x: root.width - size * 0.8
-        y: (root.sealTop + root.sealBottom) / 2 - size / 2
-        rotation: -5
-        opacity: root.blockOpacity("seal")
-        glyph: root.style.sealGlyph || "印"
-        seed: Number(root.edition) / 1000
-        // A point on the impression, as the page sees it (the seal is turned).
-        function at(fx, fy) {
-          var a = rotation * Math.PI / 180
-          var dx = (fx - 0.5) * width, dy = (fy - 0.5) * height
-          return { x: x + width / 2 + dx * Math.cos(a) - dy * Math.sin(a), y: y + height / 2 + dx * Math.sin(a) + dy * Math.cos(a) }
-        }
-      }
-      EyeChip { block: "seal"; x: Math.max(root.sealLeft, seal.x + Type.px(20)); y: seal.y - height - Type.px(4) }
-
       PlateSpine {
         visible: root.visibleBlock("spine") && length <= root.posterH - 2 * Type.px(24)
         opacity: root.blockOpacity("spine")
@@ -158,86 +132,54 @@ Item {
         text: root.spineText
       }
 
+      // The holder.
       Head {
         id: posterHead
         x: root.posterMargin
         y: root.posterMargin
-        // Clear of EDIT, and of the seal where the window is narrow.
-        width: Math.min(Type.px(600), root.width - 2 * root.posterMargin - Type.px(120))
+        width: root.leftW
         nameSize: Type.px(104)
         nameHeight: Type.px(112)
       }
 
-      // The live readings, pinned to the seal by hairline leaders.
-      Item {
-        id: live
-        visible: root.visibleBlock("vitals")
-        opacity: root.blockOpacity("vitals")
-        anchors.fill: parent
-        readonly property real gap: Math.max(Type.px(56), Math.min(Type.px(78), (root.posterH - root.posterMargin - root.vitalsTop) / Math.max(1, root.vitals.length)))
-        // Where each reading touches the seal.
-        readonly property var pins: [[0.30, 0.22], [0.22, 0.42], [0.30, 0.62], [0.46, 0.80], [0.62, 0.30]]
-
-        LiveHead {
-          id: liveHead
-          x: root.vitalsX
-          y: root.vitalsTop - Type.px(24)
-        }
-        EyeChip { block: "vitals"; x: root.vitalsX + liveHead.width + Type.px(10); anchors.verticalCenter: liveHead.verticalCenter }
-
-        Canvas {
-          id: leaders
-          visible: seal.visible && seal.size > 0
-          anchors.fill: parent
-          readonly property var key: [root.vitalsTop, live.gap, seal.x, seal.y, seal.size, root.vitals.length, Ink.ink]
-          onKeyChanged: requestPaint()
-          onPaint: {
-            var ctx = getContext("2d")
-            ctx.reset()
-            for (var i = 0; i < root.vitals.length && i < live.pins.length; i++) {
-              var p = seal.at(live.pins[i][0], live.pins[i][1])
-              var sx = root.vitalsX + root.vitalsW, sy = root.vitalsTop + i * live.gap + Type.px(26)
-              ctx.strokeStyle = Ink.alpha(Ink.ink, 0.3)
-              ctx.lineWidth = 1
-              ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(p.x, p.y); ctx.stroke()
-              ctx.fillStyle = Ink.ink
-              ctx.beginPath(); ctx.arc(p.x, p.y, Type.px(2.6), 0, 2 * Math.PI); ctx.fill()
-            }
-          }
-        }
-
-        Repeater {
-          model: root.vitals
-          Callout {
-            required property var modelData
-            required property int index
-            x: root.vitalsX
-            y: root.vitalsTop + index * live.gap
-            width: root.vitalsW
-            reading: modelData
-            sub: live.gap >= Type.px(66)
-          }
-        }
-      }
-
-      // The small print, bottom left.
+      // The register's small print, under the holder.
       Column {
         id: posterFoot
         x: root.posterMargin
-        y: root.posterH - root.posterMargin - height
-        width: Math.min(Type.px(380), root.vitalsX - root.posterMargin - Type.px(40))
-        // The readings sit right beside it, so EDIT's eyes go on the
-        // blocks' corners, with room made for them.
-        spacing: root.editing ? Type.px(34) : Type.px(14)
-        SpecsBlock { width: parent.width; beside: false }
-        PaletteBlock { width: parent.width; beside: false }
-        EditionLine { width: parent.width }
+        y: posterHead.y + posterHead.height + Type.px(40)
+        width: Math.min(Type.px(520), root.leftW)
+        spacing: root.editing ? Type.px(34) : Type.px(18)
+        SectionLabel { jp: "登録"; text: "Register" }
+        SpecsBlock { width: parent.width; beside: true }
+        PaletteBlock { width: parent.width; beside: true }
       }
 
+      // The impression, right.
+      Impression {
+        x: root.width - root.posterMargin - width
+        y: root.boxTop
+        side: root.posterBox
+      }
+
+      // The bar's live readings, a row across the foot.
+      LiveBand {
+        x: root.posterMargin
+        y: root.liveTop
+        width: root.contentW
+        height: root.liveH
+      }
+
+      // The foot: the edition left, the day right.
+      Rectangle { x: root.posterMargin; y: root.posterH - root.posterMargin - root.footH - Type.px(14); width: root.contentW; height: 1; color: Ink.lineSoft }
+      EditionLine {
+        x: root.posterMargin
+        y: root.posterH - root.posterMargin - root.footH
+        width: root.contentW - Type.px(340)
+      }
       DayRule {
         x: root.width - root.posterMargin - width
         y: root.posterH - root.posterMargin - height
-        width: Type.px(260)
+        width: Type.px(300)
       }
     }
 
@@ -258,59 +200,34 @@ Item {
         nameHeight: Type.px(stack.twoUp ? 80 : 60)
       }
 
-      // The readings beside the seal when there is room, under it if not.
-      Item {
-        id: art
-        visible: root.visibleBlock("vitals") || root.visibleBlock("seal")
+      // The impression, then the readings as stats, two to a row.
+      Impression {
+        side: Math.min(stack.width, Type.px(stack.twoUp ? 360 : 300))
+      }
+
+      Column {
+        visible: root.visibleBlock("vitals")
         width: parent.width
-        readonly property real sealSize: !root.visibleBlock("seal") ? 0
-          : stack.twoUp ? Math.min(Type.px(340), width - root.vitalsW - Type.px(48))
-          : Math.min(width, Type.px(280)) / 1.1
-        readonly property real sealBox: sealSize * 1.1
-        height: stack.twoUp ? Math.max(sealBox, stackLive.visible ? stackLive.height : 0)
-                            : (sealSize > 0 ? sealBox + Type.px(24) : 0) + (stackLive.visible ? stackLive.height : 0)
-
-        Item {
-          visible: art.sealSize > 0
-          x: stack.twoUp ? art.width - width : (art.width - width) / 2
-          width: art.sealBox
-          height: art.sealBox
-          SealImpression {
-            anchors.centerIn: parent
-            width: art.sealSize
-            height: art.sealSize
-            rotation: -5
-            opacity: root.blockOpacity("seal")
-            glyph: root.style.sealGlyph || "印"
-            seed: Number(root.edition) / 1000
-          }
-          EyeChip { block: "seal"; anchors.right: parent.right; y: -height - Type.px(4) }
+        spacing: Type.px(14)
+        Row {
+          spacing: Type.px(10)
+          LiveHead { }
+          EyeChip { block: "vitals"; anchors.verticalCenter: parent.verticalCenter }
         }
-
-        Column {
-          id: stackLive
-          visible: root.visibleBlock("vitals")
+        Grid {
+          id: stackStats
           opacity: root.blockOpacity("vitals")
-          y: stack.twoUp ? Math.max(0, (art.sealBox - height) / 2) : (art.sealSize > 0 ? art.sealBox + Type.px(24) : 0)
-          width: stack.twoUp ? root.vitalsW : art.width
-          spacing: Type.px(14)
-          Row {
-            spacing: Type.px(10)
-            LiveHead { id: stackLiveHead }
-            EyeChip { block: "vitals"; anchors.verticalCenter: parent.verticalCenter }
-          }
-          Grid {
-            columns: stack.twoUp ? 1 : 2
-            columnSpacing: Type.px(24)
-            rowSpacing: Type.px(10)
-            Repeater {
-              model: root.vitals
-              Callout {
-                required property var modelData
-                width: stack.twoUp ? root.vitalsW : (stackLive.width - Type.px(24)) / 2
-                reading: modelData
-                sub: true
-              }
+          columns: stack.twoUp ? 3 : 2
+          rowSpacing: Type.px(18)
+          Repeater {
+            model: root.vitals
+            StatCell {
+              required property var modelData
+              required property int index
+              width: stack.width / stackStats.columns
+              height: Type.px(96)
+              reading: modelData
+              first: index % stackStats.columns === 0
             }
           }
         }
@@ -452,7 +369,7 @@ Item {
     Text {
       width: parent.width
       elide: Text.ElideRight
-      text: "@" + P.fv(root.machine.host) + "   ·   " + Qt.formatTime(root.now, "HH:mm")
+      text: "@" + P.fv(root.machine.host) + "   ·   " + Qt.formatTime(root.now, root.barData.timeFormat || "HH:mm")
       color: Ink.inkMuted
       font.family: Type.mono
       font.pixelSize: Type.note
@@ -490,38 +407,6 @@ Item {
       font.family: Type.mono
       font.pixelSize: Type.tag
       font.letterSpacing: Type.trackEyebrow
-    }
-  }
-
-  // One live reading: its kanji and name, the figure, a line under it.
-  component Callout: Column {
-    id: callout
-    property var reading: ({})
-    property bool sub: true
-    spacing: 0
-    Row {
-      spacing: Type.px(6)
-      Text { text: callout.reading.jp || ""; color: Ink.inkFaint; font.family: Type.jp; font.pixelSize: Type.tag }
-      Text { text: callout.reading.name || ""; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
-    }
-    Text {
-      width: parent.width
-      elide: Text.ElideRight
-      text: callout.reading.big || ""
-      color: Ink.ink
-      font.family: Type.text
-      font.pixelSize: Type.px(28)
-      font.weight: Font.Medium
-      font.features: ({ "tnum": 1 })
-    }
-    Text {
-      visible: callout.sub
-      width: parent.width
-      elide: Text.ElideRight
-      text: callout.reading.sub || ""
-      color: Ink.inkDim
-      font.family: Type.mono
-      font.pixelSize: Type.tag
     }
   }
 
@@ -662,6 +547,188 @@ Item {
         height: Type.px(16)
         color: Ink.seal
       }
+    }
+  }
+
+  // The work: your glyph written in ink and signed with two small seals,
+  // in a ruled square on a calligraphy practice grid (田字格: a frame, its
+  // halves dashed), crop marks set off its corners, its caption under.
+  component Impression: Item {
+    id: imp
+    property real side: Type.px(400)
+    width: side
+    height: side + root.captionH
+    visible: root.visibleBlock("seal")
+
+    Item {
+      id: box
+      width: imp.side
+      height: imp.side
+      opacity: root.blockOpacity("seal")
+
+      Rectangle { anchors.fill: parent; color: "transparent"; border.width: 1; border.color: Ink.line }
+
+      // The practice grid: two dashed halves and two dotted diagonals,
+      // as on the paper a hand learns its strokes on.
+      Item {
+        anchors.fill: parent
+        visible: root.visibleBlock("watermark")
+        opacity: root.blockOpacity("watermark")
+        Repeater {
+          model: Math.floor(box.width / Type.px(10))
+          Rectangle { required property int index; x: index * Type.px(10); y: box.height / 2; width: Type.px(5); height: 1; color: Ink.lineSoft }
+        }
+        Repeater {
+          model: Math.floor(box.height / Type.px(10))
+          Rectangle { required property int index; y: index * Type.px(10); x: box.width / 2; width: 1; height: Type.px(5); color: Ink.lineSoft }
+        }
+        Canvas {
+          anchors.fill: parent
+          readonly property var key: [width, height, Ink.ink]
+          onKeyChanged: requestPaint()
+          onPaint: {
+            var ctx = getContext("2d")
+            ctx.reset()
+            ctx.strokeStyle = Ink.alpha(Ink.ink, 0.08)
+            ctx.lineWidth = 1
+            ctx.setLineDash([1, 6])
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(width, height); ctx.moveTo(width, 0); ctx.lineTo(0, height); ctx.stroke()
+          }
+        }
+      }
+
+      Shikishi {
+        anchors.fill: parent
+        glyph: root.style.sealGlyph || "鑑"
+        name: root.name
+        date: root.machine.since || ""
+      }
+
+      // Crop marks, set off each corner.
+      Repeater {
+        model: 4
+        Item {
+          id: mark
+          required property int index
+          readonly property int sx: index % 2 === 0 ? -1 : 1
+          readonly property int sy: index < 2 ? -1 : 1
+          x: sx < 0 ? 0 : box.width - 1
+          y: sy < 0 ? 0 : box.height - 1
+          Rectangle { x: mark.sx < 0 ? -Type.px(16) : Type.px(6); width: Type.px(10); height: 1; color: Ink.lineStrong }
+          Rectangle { y: mark.sy < 0 ? -Type.px(16) : Type.px(6); width: 1; height: Type.px(10); color: Ink.lineStrong }
+        }
+      }
+    }
+    Row {
+      visible: root.editing && !root.grabbing
+      x: 0
+      y: imp.height + Type.px(8)
+      spacing: Type.px(8)
+      EyeChip { block: "seal"; x: 0; y: 0 }
+      EyeChip { block: "watermark"; x: 0; y: 0 }
+    }
+
+    // The caption under the impression.
+    Text {
+      y: imp.side + Type.px(12)
+      width: imp.side - impNo.implicitWidth - Type.px(14)
+      elide: Text.ElideRight
+      text: "書  ·  INK ON PAPER  ·  SIGNED WITH TWO SEALS"
+      color: Ink.inkMuted
+      font.family: Type.mono
+      font.pixelSize: Type.tag
+      font.letterSpacing: Type.trackTag
+    }
+    Text {
+      id: impNo
+      y: imp.side + Type.px(12)
+      anchors.right: parent.right
+      text: "NO. " + root.edition
+      color: Ink.inkDim
+      font.family: Type.mono
+      font.pixelSize: Type.tag
+      font.letterSpacing: Type.trackTag
+    }
+  }
+
+  // The live readings as a row of stats, each with its gauge.
+  component LiveBand: Item {
+    id: band
+    visible: root.visibleBlock("vitals")
+    readonly property int n: Math.max(1, root.vitals.length)
+    Item {
+      anchors.fill: parent
+      opacity: root.blockOpacity("vitals")
+      LiveHead { id: bandHead }
+      Rectangle {
+        x: bandHead.width + Type.px(14)
+        y: bandHead.height / 2
+        width: Math.max(0, band.width - x)
+        height: 1
+        color: Ink.lineSoft
+      }
+      Repeater {
+        model: root.vitals
+        StatCell {
+          required property var modelData
+          required property int index
+          x: index * band.width / band.n
+          y: Type.px(30)
+          width: band.width / band.n
+          height: band.height - Type.px(30)
+          reading: modelData
+          first: index === 0
+        }
+      }
+    }
+    EyeChip { block: "vitals"; x: band.width - width; y: -height - Type.px(8) }
+  }
+
+  // One stat: kanji and name, the figure in Fraunces, a note, a gauge.
+  component StatCell: Item {
+    id: stat
+    property var reading: ({})
+    property bool first: false
+    Rectangle { visible: !stat.first; width: 1; height: parent.height; color: Ink.lineSoft }
+    Column {
+      x: stat.first ? 0 : Type.px(20)
+      width: parent.width - x - Type.px(20)
+      spacing: Type.px(4)
+      Row {
+        spacing: Type.px(7)
+        Text { text: stat.reading.jp || ""; color: Ink.inkMuted; font.family: Type.jp; font.pixelSize: Type.label }
+        Text { anchors.verticalCenter: parent.verticalCenter; text: stat.reading.name || ""; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackEyebrow }
+      }
+      Text {
+        width: parent.width
+        elide: Text.ElideRight
+        text: stat.reading.big || ""
+        color: Ink.ink
+        font.family: Type.display
+        font.pixelSize: Type.px(40)
+        font.weight: Font.Normal
+        font.variableAxes: Type.axes(Type.px(40))
+        font.features: ({ "tnum": 1, "lnum": 1 })
+        lineHeight: 1.05
+      }
+      Text {
+        width: parent.width
+        elide: Text.ElideRight
+        text: stat.reading.sub || ""
+        color: Ink.inkDim
+        font.family: Type.mono
+        font.pixelSize: Type.tag
+      }
+    }
+    // The gauge: a hairline track, the level inked.
+    Item {
+      visible: (stat.reading.level === undefined ? -1 : stat.reading.level) >= 0
+      x: stat.first ? 0 : Type.px(20)
+      anchors.bottom: parent.bottom
+      width: Math.min(Type.px(140), parent.width - x - Type.px(20))
+      height: 2
+      Rectangle { y: 1; width: parent.width; height: 1; color: Ink.line }
+      Rectangle { width: parent.width * Math.max(0, stat.reading.level || 0); height: 2; color: Ink.inkDim }
     }
   }
 

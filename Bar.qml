@@ -45,7 +45,7 @@ Item {
 
   // Omarchy's bar transparency (`omarchy-shell shell toggleBarTransparency`,
   // stored as bar.transparent in shell.json). Hanko shows it as glass: a
-  // solid surface turns to glass; glass and inset stay as they are.
+  // solid surface turns to glass; glass and washi stay as they are.
   property bool transparent: false
   onBarConfigChanged: transparent = !!(barConfig && barConfig.transparent === true)
 
@@ -63,10 +63,13 @@ Item {
     if (!written) transparent = next
   }
 
-  // 12- or 24-hour, from Omarchy's own clock (the `format` on omarchy.clock
-  // in shell.json). Only the hour style carries over: Hanko lays out the
-  // date itself.
+  // 12- or 24-hour: the `hours` setting, or on auto Omarchy's own clock (the
+  // `format` on omarchy.clock in shell.json). Only the hour style carries
+  // over: Hanko lays out the date itself.
   readonly property string timeFormat: {
+    var h = Typeset.current.hours
+    if (h === "24h") return "HH:mm"
+    if (h === "12h") return "h:mm AP"
     var f = omarchyClockFormat
     return /h/.test(f.replace(/HH?/g, "")) || /ap/i.test(f) ? "h:mm AP" : "HH:mm"
   }
@@ -158,7 +161,9 @@ Item {
       if (what === "dnd") Status.act("notif", "right")
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
       // `clear` forgets the history, `dismissAll` the toasts still on screen.
-      else if (what === "clear") Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
+      else if (what === "clear") {
+        Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
+      }
     } else if (key === "leaf") leafRequest(what, arg)
   }
 
@@ -272,12 +277,13 @@ Item {
 
   // ------------------------------------------------------------- settings
   //
-  // The settings window edits Typeset's draft; closing it unsaved drops
-  // the draft, so the bar goes back to what style.json holds.
+  // The settings window keeps every change as it is made (no Save); its
+  // undo history is forgotten when it closes.
   property bool settingsOpen: false
   function openSettings() { settingsOpen = true }
   function closeSettings() {
     Typeset.revert()
+    Typeset.forget()
     settingsOpen = false
   }
 

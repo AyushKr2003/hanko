@@ -30,10 +30,21 @@ Item {
   width: parent ? parent.width : 0
   implicitHeight: Math.max(minHeight, texts.implicitHeight + Type.px(14))
 
+  readonly property bool hot: hover.containsMouse && root.interactive
+
   Rectangle {
     anchors.fill: parent
     radius: 2
-    color: root.selected ? Ink.bone : hover.containsMouse && root.interactive ? Ink.lineSoft : "transparent"
+    color: root.selected ? Ink.bone : root.hot ? Ink.alpha(Ink.bone, 0.06) : "transparent"
+  }
+  // A row you can pick shows an ink bar at its leading edge under the
+  // pointer, where the selected row's `//` would stand.
+  Rectangle {
+    anchors.verticalCenter: parent.verticalCenter
+    width: 2
+    height: root.hot ? parent.height - Type.px(16) : 0
+    color: Ink.ink
+    Behavior on height { enabled: !Motion.still; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
   }
 
   Rectangle {

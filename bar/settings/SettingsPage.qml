@@ -12,8 +12,9 @@ import "../scroll"
 // foot. Pure QtQuick: bar/SettingsWindow.qml feeds it Typeset's draft and
 // live bar data; the harness renders it still.
 //
-// Typesetting 組版 holds every setting: a live preview of the bar over a
-// sample plate, the six presets, and six cards of segmented controls.
+// Presets 型 shows every preset as a live specimen (PresetsPage.qml).
+// Typesetting 組版 holds every setting: a live preview of the bar, a line naming the preset (a link to Presets), and six cards
+// of segmented controls.
 Rectangle {
   id: root
 
@@ -30,6 +31,8 @@ Rectangle {
   // media, volume, network, battery, brightness, notifications, dnd,
   // timeFormat }.
   property var barData: ({})
+  // The sheets' plain data, for the Sheets page's live preview.
+  property var sheetFeed: ({})
   // For the plates: services/Machine.qml info, core/Dossier.qml doc, the
   // plugin's version and where Profile saves an image.
   property var machine: ({ user: "", host: "", kernel: "", uptime: 0, theme: "", omarchy: "", hyprland: "", packages: 0, since: "", machine: "" })
@@ -46,8 +49,9 @@ Rectangle {
   signal settingPicked(string key, string value)
   signal presetPicked(string name)
   signal resetToPreset()
-  signal revert()
-  signal save()
+  // Every change is saved as it is made; Undo walks this visit's back.
+  property int undoCount: 0
+  signal undo()
   signal pagePicked(string key)
   signal queryEdited(string text)
   signal advancedToggled(bool on)
@@ -76,12 +80,10 @@ Rectangle {
   // `/` from the window: put the cursor in the search field.
   function focusSearch() { (compact ? pageSearch : railSearch).input.forceActiveFocus() }
   readonly property int changes: Settings.changes(saved, draft, S.resolve)
-  readonly property var pageInfo: {
-    for (var g = 0; g < Settings.RAIL.length; g++)
-      for (var p = 0; p < Settings.RAIL[g].pages.length; p++)
-        if (Settings.RAIL[g].pages[p].key === root.page) return { group: Settings.RAIL[g].group, page: Settings.RAIL[g].pages[p] }
-    return { group: "01 BAR", page: Settings.RAIL[0].pages[0] }
-  }
+  readonly property var rail: Settings.RAIL
+  // Which rail entry the open page is; looked up in the whole rail, so the
+  // title never depends on what the rail currently hides.
+  readonly property var pageInfo: Settings.pageInfo(root.page)
 
   color: Ink.paper
   implicitWidth: Type.px(1600)
@@ -139,7 +141,7 @@ Rectangle {
             color: Ink.seal
             Text {
               anchors.centerIn: parent
-              text: root.draft.sealGlyph || "印"
+              text: root.draft.sealGlyph || "鑑"
               color: Ink.paper
               font.family: Type.jpSerif
               font.pixelSize: Type.px(19)
@@ -163,11 +165,11 @@ Rectangle {
       Item { width: 1; height: Type.px(2) }
 
       Repeater {
-        model: Settings.RAIL
+        model: root.rail
         Column {
           id: group
           required property var modelData
-          readonly property var pages: modelData.pages.filter(function(p) { return Settings.pageMatches(p, root.query) || root.query === "" })
+          readonly property var pages: !modelData ? [] : modelData.pages.filter(function(p) { return Settings.pageMatches(p, root.query) || root.query === "" })
           width: parent.width
           visible: pages.length > 0
 
@@ -178,8 +180,8 @@ Rectangle {
               id: groupName
               y: Type.px(16)
               // Folded, a group keeps only its number.
-              text: root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
-              color: group.modelData.group === root.pageInfo.group ? Ink.inkDim : Ink.inkFaint
+              text: !group.modelData ? "" : root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
+              color: group.modelData && group.modelData.group === root.pageInfo.group ? Ink.bone : Ink.inkFaint
               font.family: Type.mono
               font.pixelSize: Type.label
               font.letterSpacing: Type.trackLabel
@@ -331,7 +333,7 @@ Rectangle {
         SearchField { id: pageSearch; visible: root.compact; width: parent.width }
         Item { width: 1; height: Type.px(14); visible: root.compact }
 
-        // Eyebrow: 印 BAR ───── hanko.bar · omarchy
+        // Eyebrow: 鑑 BAR ───── hanko.bar · omarchy
         Item {
           width: parent.width
           height: Type.px(16)
@@ -339,12 +341,12 @@ Rectangle {
             id: eyebrow
             anchors.verticalCenter: parent.verticalCenter
             spacing: Type.px(10)
-            Text { anchors.verticalCenter: parent.verticalCenter; text: "印"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(13) }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: Typeset.current.sealGlyph || "鑑"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(13) }
             Text {
               anchors.verticalCenter: parent.verticalCenter
               width: Math.min(implicitWidth, pageColumn.width - Type.px(24))
               elide: Text.ElideRight
-              text: root.pageInfo.group.replace(/^\d+ /, "") + (root.page === "typesetting" ? " · " + Settings.presetLine(root.draft) : "")
+              text: root.pageInfo.group.replace(/^\d+ /, "") + (root.page === "typesetting" || root.page === "presets" ? " · " + Settings.presetLine(root.draft) : "")
               color: Ink.inkMuted
               font.family: Type.mono
               font.pixelSize: Type.eyebrow
@@ -388,13 +390,35 @@ Rectangle {
           width: parent.width
           wrapMode: Text.Wrap
           text: root.page === "typesetting"
-            ? "Choose how each part of the bar is set. Every change prints live on your desktop; Save keeps it."
+            ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
             : root.page === "presets"
-              ? "A preset is a starting point: pick one, then change any single setting on Typesetting."
-              : root.placeholders[root.page] || ""
+            ? "A preset sets all twenty-four settings at once; tune any of them afterwards on Typesetting. Each bar below is drawn live with your data, seal and type size. Your sheets, motion and hidden parts stay as they are."
+            : root.placeholders[root.page] || ""
           color: Ink.inkMuted
           font.family: Type.text
           font.pixelSize: Type.row
+        }
+
+        // ------------------------------------------------ Presets
+        PresetsPage {
+          visible: root.page === "presets"
+          width: parent.width
+          doc: root.draft
+          barData: root.barData
+          query: root.query
+          compact: root.compact
+          onPresetPicked: function(name) { root.presetPicked(name) }
+        }
+
+        // ------------------------------------------------ Sheets
+        SheetsPage {
+          visible: root.page === "sheets"
+          width: parent.width
+          doc: root.draft
+          feed: root.sheetFeed
+          compact: root.compact
+          onStylePicked: function(sheet, style) { root.settingPicked("sheetStyle:" + sheet, style) }
+          onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
         }
 
         // ------------------------------------------------ Typesetting
@@ -404,22 +428,18 @@ Rectangle {
 
           Item { width: 1; height: Type.px(16) }
 
-          // The live preview: your bar over a sample plate.
+          // The live preview: your bar, on bare paper.
           Rectangle {
             width: parent.width
-            height: Math.max(Type.px(108), preview.height + Type.px(40) + preview.y)
+            height: preview.y + preview.height + Type.px(30)
             radius: 3
             color: "transparent"
             border.width: 1
             border.color: Ink.line
             clip: true
-            Plate {
-              anchors.fill: parent
-              anchors.margins: 1
-            }
             Item {
               id: preview
-              readonly property int gap: root.style.surface === "inset" ? Type.px(8) : 0
+              readonly property int gap: root.style.float === "inset" ? Type.px(8) : 0
               x: 1 + gap
               y: 1 + gap
               width: parent.width - 2 - 2 * gap
@@ -428,6 +448,7 @@ Rectangle {
                 id: previewBar
                 width: parent.width
                 style: root.style
+                barData: root.barData
               }
             }
             Text {
@@ -445,59 +466,55 @@ Rectangle {
 
           Item { width: 1; height: Type.px(14) }
 
-          // The six presets; the one in use inverted, `*` when edited. One
-          // row of six, or two of three, or three of two on a narrow page.
-          Grid {
-            id: presetRow
+          // The preset this bar starts from, and the way to the others.
+          Rectangle {
             width: parent.width
-            spacing: Type.px(8)
-            columns: width >= Type.px(900) ? 6 : width >= Type.px(440) ? 3 : 2
-            Repeater {
-              model: S.PRESET_NAMES
-              Rectangle {
-                id: preset
-                required property string modelData
-                readonly property bool on: modelData === root.draft.preset
-                width: (presetRow.width - (presetRow.columns - 1) * presetRow.spacing) / presetRow.columns
-                height: presetText.height + 2 * Type.px(10)
-                radius: 3
-                color: on ? Ink.bone : presetHover.containsMouse ? Ink.lineSoft : "transparent"
-                border.width: 1
-                border.color: on ? Ink.bone : Ink.line
-                Column {
-                  id: presetText
-                  x: Type.px(12)
-                  width: parent.width - 2 * x
-                  anchors.verticalCenter: parent.verticalCenter
-                  spacing: Type.px(4)
-                  Text {
-                    width: parent.width
-                    elide: Text.ElideRight
-                    text: preset.modelData.toUpperCase() + (preset.on && root.style.edited ? " *" : "")
-                    color: preset.on ? Ink.boneInk : Ink.ink
-                    font.family: Type.mono
-                    font.pixelSize: Type.px(11)
-                    font.weight: Font.Medium
-                    font.letterSpacing: Type.px(1.8)
-                  }
-                  Text {
-                    width: parent.width
-                    elide: Text.ElideRight
-                    text: Settings.PRESET_BLURBS[preset.modelData]
-                    color: preset.on ? Ink.boneInk : Ink.inkMuted
-                    opacity: preset.on ? 0.7 : 1
-                    font.family: Type.text
-                    font.pixelSize: Type.note
-                  }
-                }
-                MouseArea {
-                  id: presetHover
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.presetPicked(preset.modelData)
-                }
+            height: presetLine.implicitHeight + 2 * Type.px(11)
+            radius: 3
+            color: presetLink.containsMouse ? Ink.lineSoft : "transparent"
+            border.width: 1
+            border.color: Ink.line
+            Row {
+              id: presetLine
+              x: Type.px(14)
+              anchors.verticalCenter: parent.verticalCenter
+              spacing: Type.px(10)
+              Text { anchors.verticalCenter: parent.verticalCenter; text: "PRESET"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
+              Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: root.draft.preset
+                color: Ink.ink
+                font.family: Type.display
+                font.pixelSize: Type.px(18)
+                font.weight: Font.Normal
+                font.variableAxes: Type.axes(Type.px(18))
               }
+              Text { anchors.verticalCenter: parent.verticalCenter; text: Settings.PRESET_KANJI[root.draft.preset] || ""; color: Ink.inkMuted; font.family: Type.jp; font.pixelSize: Type.px(15) }
+              Text {
+                visible: root.style.edited
+                anchors.verticalCenter: parent.verticalCenter
+                text: "+ " + Object.keys(root.draft.edits).length + (Object.keys(root.draft.edits).length === 1 ? " edit" : " edits")
+                color: Ink.inkMuted
+                font.family: Type.text
+                font.pixelSize: Type.note
+              }
+            }
+            Text {
+              anchors.right: parent.right
+              anchors.rightMargin: Type.px(14)
+              anchors.verticalCenter: parent.verticalCenter
+              text: "ALL " + S.PRESET_NAMES.length + " PRESETS ›"
+              color: presetLink.containsMouse ? Ink.ink : Ink.inkDim
+              font.family: Type.mono
+              font.pixelSize: Type.tag
+              font.letterSpacing: Type.trackLabel
+            }
+            MouseArea {
+              id: presetLink
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: root.pagePicked("presets")
             }
           }
 
@@ -706,7 +723,7 @@ Rectangle {
                   }
                 }
 
-                // The document Save would write.
+                // The document as style.json holds it.
                 Text {
                   width: parent.width
                   text: JSON.stringify(root.draft, null, 2)
@@ -1053,75 +1070,14 @@ Rectangle {
             }
           }
         }
-
-        // ------------------------------------------------ Presets
-        Column {
-          visible: root.page === "presets"
-          width: parent.width
-          topPadding: Type.px(22)
-          spacing: Type.px(24)
-
-          Repeater {
-            model: S.PRESET_NAMES
-            Column {
-              id: strip
-              required property string modelData
-              width: parent.width
-              spacing: Type.px(6)
-              Row {
-                spacing: Type.px(12)
-                Text {
-                  anchors.baseline: blurbText.baseline
-                  text: strip.modelData
-                  color: Ink.ink
-                  font.family: Type.display
-                  font.pixelSize: Type.px(22)
-                  font.weight: Font.Normal
-                  font.variableAxes: Type.axes(Type.px(22))
-                }
-                Text {
-                  id: blurbText
-                  text: Settings.PRESET_BLURBS[strip.modelData].toUpperCase()
-                  color: Ink.inkMuted
-                  font.family: Type.mono
-                  font.pixelSize: Type.label
-                  font.letterSpacing: Type.trackLabel
-                }
-              }
-              Rectangle {
-                width: parent.width
-                height: stripBar.height + 2
-                radius: 3
-                color: "transparent"
-                border.width: 1
-                border.color: strip.modelData === root.draft.preset ? Ink.ink : Ink.line
-                PreviewBar {
-                  id: stripBar
-                  x: 1; y: 1
-                  width: parent.width - 2
-                  style: S.resolve({ preset: strip.modelData, sealGlyph: root.draft.sealGlyph })
-                }
-                MouseArea {
-                  anchors.fill: parent
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.presetPicked(strip.modelData)
-                }
-              }
-            }
-          }
-          SmallButton {
-            label: "Shuffle · one of " + S.combinations().toLocaleString(Qt.locale("en_US"), "f", 0)
-            onClicked: root.shuffle()
-          }
-        }
       }
     }
 
     // ------------------------------------------------ action bar
     Item {
       id: actions
-      // On a plate only while there is something to save.
-      visible: !root.onPlate || root.changes > 0
+      // On a plate only while there is something to undo.
+      visible: !root.onPlate || root.undoCount > 0
       anchors.bottom: parent.bottom
       width: parent.width
       height: Type.px(56)
@@ -1130,13 +1086,13 @@ Rectangle {
         x: root.pad
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(12)
-        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(7); height: width; color: root.changes ? Ink.ink : Ink.inkFaint }
+        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(7); height: width; color: root.undoCount ? Ink.ink : Ink.inkFaint }
         Text {
           anchors.verticalCenter: parent.verticalCenter
           // Never under the buttons.
           width: Math.max(0, Math.min(implicitWidth, buttons.x - root.pad - Type.px(7 + 12 + 16)))
           elide: Text.ElideRight
-          text: Settings.status(root.changes).toUpperCase()
+          text: Settings.status(root.undoCount).toUpperCase()
           color: Ink.inkDim
           font.family: Type.mono
           font.pixelSize: Type.px(10)
@@ -1149,9 +1105,9 @@ Rectangle {
         anchors.rightMargin: root.pad
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(root.compact ? 8 : 12)
-        SmallButton { label: root.compact ? "Reset" : "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
-        SmallButton { label: "Revert"; faint: root.changes === 0; onClicked: root.revert() }
-        SmallButton { label: "Save"; plate: true; faint: root.changes === 0; onClicked: root.save() }
+        SmallButton { visible: root.page === "presets"; label: "Shuffle"; onClicked: root.shuffle() }
+        SmallButton { visible: root.page === "typesetting" || root.page === "presets"; label: root.compact ? "Reset" : "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
+        SmallButton { label: "Undo"; plate: true; faint: root.undoCount === 0; onClicked: if (root.undoCount > 0) root.undo() }
       }
     }
   }
@@ -1160,10 +1116,10 @@ Rectangle {
   readonly property var placeholders: ({
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
     widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
-    sheets: "Sheets drop flush from the cell you click. Choose them under Panels on Typesetting; their own settings come later.",
+    sheets: "Sheets drop flush from the cell you click. Pick the hand that draws each one: the ledger's page, slips hung like tanzaku, a shōgi board, an abacus, armour lacing, bands of gold mist or Shōji's washi panels on their rail. Every change is kept at once.",
     scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
-    keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+S saves. Rebinding comes later."
+    keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. Rebinding comes later."
   })
 
   Component {
@@ -1260,37 +1216,6 @@ Rectangle {
       color: Ink.inkMuted
       font.family: Type.mono
       font.pixelSize: Type.px(10)
-    }
-  }
-
-  // A bar on the page, drawn from the live data with a given style. It is
-  // laid out at least a desktop's width and scaled down to fit, so a narrow
-  // page shows the bar as it looks on a screen instead of a crushed one.
-  component PreviewBar: Item {
-    id: previewItem
-    property var style: ({})
-    readonly property real design: Math.max(width, Type.px(1240))
-    height: Math.round(surface.implicitHeight * width / design)
-    BarSurface {
-      id: surface
-      width: previewItem.design
-      height: implicitHeight
-      scale: previewItem.width / previewItem.design
-      transformOrigin: Item.TopLeft
-      style: previewItem.style
-      now: root.barData.now || new Date()
-      spaces: root.barData.spaces || []
-      activeWindow: root.barData.activeWindow || null
-      home: root.barData.home || ""
-      media: root.barData.media || null
-      timeFormat: root.barData.timeFormat || "HH:mm"
-      volume: root.barData.volume || null
-      network: root.barData.network || null
-      bluetooth: root.barData.bluetooth || null
-      battery: root.barData.battery || null
-      brightness: root.barData.brightness || null
-      notifications: root.barData.notifications || []
-      dnd: !!root.barData.dnd
     }
   }
 }

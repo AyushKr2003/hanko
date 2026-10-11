@@ -12,6 +12,8 @@ Rectangle {
   property string selected: ""
   // What a segment shows, when not the option itself (value -> label).
   property var labels: ({})
+  // A width to fill, the segments sharing it evenly (0: each its own width).
+  property real fill: 0
   // Jp-looking options (seal glyphs) use the CJK face.
   signal picked(string value)
 
@@ -58,7 +60,7 @@ Rectangle {
         onOnChanged: root.note(seg, seg.on)
         Component.onCompleted: root.note(seg, seg.on)
         Component.onDestruction: if (root.chosen === seg) root.chosen = null
-        width: label.implicitWidth + 2 * Type.px(8)
+        width: Math.max(label.implicitWidth + 2 * Type.px(8), (root.fill - 2) / Math.max(1, root.options.length))
         height: row.height
         color: !on && hover.containsMouse ? Ink.lineSoft : "transparent"
         Rectangle { visible: seg.index > 0; width: 1; height: parent.height; color: Ink.line }

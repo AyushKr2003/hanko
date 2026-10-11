@@ -12,6 +12,14 @@ Item {
   width: parent ? parent.width : 0
   implicitHeight: Math.max(right.height, noteText.height) + Type.px(24)
 
+  // The foot is a colophon: a shade darker (lighter on light paper) than
+  // the sheet, so the actions sit on their own strip.
+  Rectangle {
+    anchors.fill: parent
+    anchors.leftMargin: 1
+    anchors.rightMargin: 1
+    color: Ink.alpha(Ink.bone, Ink.light ? 0.05 : 0.035)
+  }
   Rectangle { width: parent.width; height: 1; color: Ink.line }
 
   // The note gives way to the buttons.

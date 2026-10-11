@@ -31,8 +31,10 @@ PanelWindow {
   readonly property int strip: barWindow.barHeight + barWindow.gap
   readonly property int activeId: monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : 1
   // Which overview (style.json `overview`): grid, Hanko's pages; dynamic,
-  // Ryoku's (bar/overview/DynamicView.qml).
-  readonly property bool dynamic: Typeset.current.overview === "dynamic"
+  // Ryoku's (bar/overview/DynamicView.qml); framed, the grid in Shōji's
+  // `overview` part (washi pages in lattice frames).
+  readonly property bool framed: Typeset.current.overview === "framed"
+  readonly property bool dynamic: !framed && Typeset.current.overview === "dynamic"
   // This screen's workspaces, for the dynamic overview.
   readonly property var screenSpaces: Hypr.workspaces.filter(function(w) { return w.id > 0 && (!w.monitor || w.monitor === win.screenName) })
 
@@ -127,8 +129,10 @@ PanelWindow {
     aspect: Hypr.aspectFor(win.screenName)
     screenName: win.screenName
     now: win.bar.now
+    timeFormat: win.bar.timeFormat
     reveal: 0
     snapshot: win.open ? snapshotComponent : null
+    skin: win.framed ? win.barWindow.skin : ({})
 
     Behavior on reveal {
       NumberAnimation {
@@ -162,7 +166,7 @@ PanelWindow {
     allIds: Hypr.workspaces.filter(function(w) { return w.id > 0 }).map(function(w) { return w.id })
     activeId: win.activeId
     aspect: Hypr.aspectFor(win.screenName)
-    glyph: Typeset.current.sealGlyph || "印"
+    glyph: Typeset.current.sealGlyph || "鑑"
     wallpaper: "file://" + Quickshell.env("HOME") + "/.local/state/omarchy/current/background"
     snapshot: win.open && win.dynamic ? snapshotComponent : null
     iconFor: function(cls) {

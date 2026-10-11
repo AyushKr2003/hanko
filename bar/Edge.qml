@@ -107,19 +107,42 @@ Item {
       width: root.span.width
       height: 2
 
+      // rod: a roller, solid end to end. rodrule: the hours still to come
+      // are a hairline that thins away at both ends, so the bar's foot ends
+      // like a brush lifting, not like a cut.
       Rectangle {
+        visible: root.mode === "rod"
         anchors.fill: parent
         radius: 1
         color: drag.pressed ? Ink.ink : Ink.lineStrong
       }
+      Rectangle {
+        visible: root.mode === "rodrule"
+        y: 1
+        width: parent.width
+        height: 1
+        gradient: Gradient {
+          orientation: Gradient.Horizontal
+          GradientStop { position: 0; color: Ink.alpha(Ink.bone, 0) }
+          GradientStop { position: 0.06; color: drag.pressed ? Ink.ink : Ink.lineStrong }
+          GradientStop { position: 0.94; color: drag.pressed ? Ink.ink : Ink.lineStrong }
+          GradientStop { position: 1; color: Ink.alpha(Ink.bone, 0) }
+        }
+      }
 
-      // The spent part of the day, wound onto the rod.
+      // The spent part of the day as one stroke of ink: faint where the
+      // morning went by, darkest where it reaches now, as fresh ink is.
       Rectangle {
         visible: root.mode === "rodrule"
         width: E.at(root.dayFraction, rod.width, 0)
         height: rod.height
         radius: 1
-        color: Ink.inkMuted
+        gradient: Gradient {
+          orientation: Gradient.Horizontal
+          GradientStop { position: 0; color: Ink.alpha(Ink.bone, 0) }
+          GradientStop { position: 0.35; color: Ink.alpha(Ink.bone, 0.35) }
+          GradientStop { position: 1; color: Ink.inkDim }
+        }
       }
 
       Repeater {
@@ -131,13 +154,14 @@ Item {
           y: -height
           width: 1
           height: rodTick.modelData.major ? 5 : 3
-          color: Ink.lineStrong
+          // Hours not yet come are marked more lightly than those gone.
+          color: rodTick.modelData.fraction <= root.dayFraction ? Ink.lineStrong : Ink.line
         }
       }
 
-      // End caps.
+      // End caps (the roller only; rodrule's ends fade out instead).
       Repeater {
-        model: 2
+        model: root.mode === "rod" ? 2 : 0
         Rectangle {
           id: cap
           required property int index
@@ -159,8 +183,11 @@ Item {
       }
 
       // The grip: a small paper plate on the rod's centre that lifts when
-      // the pointer comes near.
+      // the pointer comes near. On the rodrule it only shows then: a handle
+      // you need when you reach for it, not one drawn all day.
       Rectangle {
+        opacity: root.mode === "rod" || drag.containsMouse || drag.pressed ? 1 : 0
+        Behavior on opacity { enabled: !Motion.still; NumberAnimation { duration: 160 } }
         x: Math.round((rod.width - width) / 2)
         y: drag.containsMouse || drag.pressed ? -3 : -1
         width: 34

@@ -29,7 +29,7 @@ h1{font-family:var(--display);font-variation-settings:'opsz' 144;font-weight:400
 applyTheme(document.getElementById('p'),'hanko');mountBar(document.getElementById('hb'),{});
 const sp=(hover)=>`<span class="seal" style="margin-right:6px">参</span><div class="spaces" style="margin:0">${DEF.ws.map((w,i)=>glyph(Object.assign({},w,hover&&i===2?{big:false}:{}))).join('')}</div>`;
 const C=[
- ['01','Seal','印','The seal is the workspace you are on, in its kanji numeral. Click for the Omarchy menu; scroll on it to walk workspaces.',
+ ['01','Seal','鑑','The seal is the workspace you are on, in its kanji numeral. Click for the Omarchy menu; scroll on it to walk workspaces.',
   `<div class="z"><span class="seal" style="margin:0">参</span></div>`,`<div class="z"><span class="seal" style="margin:0;transform:scale(.92) rotate(-3deg)">肆</span></div><span class="tip">SCROLL ↓ · STAMPS 肆</span>`],
  ['02','Layout glyphs','窓','Each workspace is drawn as its real tiling. The live one is outlined, the focused window filled. Hover and it opens into names.',
   `<div class="z">${DEF.ws.map(glyph).join('')}</div>`,

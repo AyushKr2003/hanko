@@ -387,6 +387,16 @@
    }
   },
   {
+   "label": "WASHI \u00b7 INSET",
+   "doc": {
+    "preset": "Hanko",
+    "edits": {
+     "surface": "washi",
+     "float": "inset"
+    }
+   }
+  },
+  {
    "label": "PRESET SHEET",
    "doc": {
     "preset": "Sheet"

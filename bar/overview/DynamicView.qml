@@ -22,7 +22,7 @@ Item {
   property real aspect: 0.5625
   property int topInset: 0
   property int bottomInset: 0
-  property string glyph: "印"
+  property string glyph: "鑑"
   // file:// wallpaper, a window's snapshot builder, an app's icon (null in
   // the harness).
   property string wallpaper: ""

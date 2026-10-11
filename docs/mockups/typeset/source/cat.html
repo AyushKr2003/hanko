@@ -14,7 +14,7 @@ h1{font-family:var(--display);font-variation-settings:'opsz' 144;font-weight:400
 const q=new URLSearchParams(location.search);const PAGE=q.get('page');const TH=q.get('theme')||'hanko';
 applyTheme(document.getElementById('root'),TH);document.body.style.background=THEMES[TH].background;
 const DESC={
- seal:{stamp:'A fixed seal glyph (印 by default, any character you like). Click for the Omarchy menu.',workspace:'The seal is the active workspace as a kanji numeral. Scroll it to walk workspaces.',none:'No seal; the bar starts with your workspaces.'},
+ seal:{stamp:'A fixed seal glyph (鑑 by default, any character you like). Click for the Omarchy menu.',workspace:'The seal is the active workspace as a kanji numeral. Scroll it to walk workspaces.',none:'No seal; the bar starts with your workspaces.'},
  spaces:{folio:'Page numbers. The live one inverts with a // lead; dots count windows.',layout:'Each workspace drawn as its real tiling, focused window filled.',kanji:'Kanji numerals 壱 弐 参 … with window dots; the live one inverts.',dots:'The quietest: dots, the live one a short bar.'},
  title:{cell:'App as a tracked label over the title, like a spec cell.',byline:'App in serif italic, title in grotesk, path receding.',none:'No window title at all.'},
  clock:{stacked:'Serif time, day and date stacked in mono beside it.',inline:'Serif time with a red colon and a small-caps date.',mono:'All mono, for an instrument look.'},
@@ -29,9 +29,9 @@ const DESC={
  surface:{solid:'Opaque paper.',glass:'Paper at 74% over a blur.',inset:'Floats 8 px off the edges with a hairline frame.'},
  position:{top:'Top edge.',bottom:'Bottom edge; the edge detail flips to the top.'},
 };
-const NAMES={seal:['Seal','印'],spaces:['Workspaces','頁'],title:['Window title','窓'],clock:['Clock','時'],clockAt:['Clock position','中'],media:['Now playing','再生'],status:['Status','音'],meters:['Meters','目盛'],notif:['Notifications','報'],edge:['Bottom edge','軸'],rules:['Dividers','罫'],height:['Height','高'],surface:['Surface','面'],position:['Position','位']};
+const NAMES={seal:['Seal','鑑'],spaces:['Workspaces','頁'],title:['Window title','窓'],clock:['Clock','時'],clockAt:['Clock position','中'],media:['Now playing','再生'],status:['Status','音'],meters:['Meters','目盛'],notif:['Notifications','報'],edge:['Bottom edge','軸'],rules:['Dividers','罫'],height:['Height','高'],surface:['Surface','面'],position:['Position','位']};
 const PAGES={
- identity:{t:'Seal and workspaces',e:'印 · IDENTITY',l:'The left end says where you are. Pick how the seal and workspaces read; everything else stays on the Hanko preset.',axes:['seal','spaces']},
+ identity:{t:'Seal and workspaces',e:'鑑 · IDENTITY',l:'The left end says where you are. Pick how the seal and workspaces read; everything else stays on the Hanko preset.',axes:['seal','spaces']},
  time:{t:'Title and clock',e:'時 · TITLE, CLOCK',l:'What you are looking at, and when. Three title styles, three clocks, two clock positions.',axes:['title','clock','clockAt']},
  status:{t:'Status and meters',e:'音 · STATUS',l:'Network, sound and battery. Every status style works with or without tick meters, so this sheet shows all six pairs.',axes:['statusxmeters']},
  signals:{t:'Media and notifications',e:'報 · SIGNALS',l:'What is playing and what is waiting.',axes:['media','notif']},

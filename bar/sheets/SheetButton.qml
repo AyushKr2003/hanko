@@ -18,10 +18,13 @@ Rectangle {
 
   implicitWidth: label.implicitWidth + Type.px(24)
   implicitHeight: label.implicitHeight + Type.px(14)
-  radius: 3
-  color: inverted ? Ink.bone : hover.containsMouse ? Ink.lineSoft : "transparent"
+  radius: 2
+  color: inverted ? (hover.containsMouse ? Ink.alpha(Ink.bone, 0.86) : Ink.bone)
+    : hover.containsMouse ? Ink.alpha(Ink.bone, 0.08) : "transparent"
   border.width: 1
-  border.color: inverted ? Ink.bone : ghost ? Ink.line : Ink.lineStrong
+  border.color: inverted ? Ink.bone : hover.containsMouse ? Ink.inkMuted : ghost ? Ink.line : Ink.lineStrong
+  // Pressed, it sinks a pixel like a key.
+  transform: Translate { y: hover.pressed ? 1 : 0 }
 
   Text {
     id: label

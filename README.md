@@ -4,17 +4,24 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 
 ![The Typesetting settings page](docs/mockups/typeset/01-settings.webp)
 
+![The Shōji preset on the Hanko bar](docs/revision2/images/r2-shoji-preset.webp)
+
 ## What you get
 
-- **Every part is a setting:** 22 settings and 6 presets (Sheet, Scroll, Hanko, Quiet, Instrument, Islet).
+- **Every part is a setting:** 24 settings and 11 presets (Sheet, Scroll, Kamon 家紋 (your bar, the default; it was the Hanko preset), Quiet, Instrument, Islet, Shōji, and the right-side studies Ma, Shizuka, Suji, Inrō). Shōji's bar is part of them: its carved seal, brush desks, season clock, ink status with the ensō battery, washi paper and brush pointer are values you can mix into any bar, with season, numerals and paper grain as switches.
+- **Shōji, as part of Hanko:** the Shōji look (washi, brush and the seasons) is the Shōji preset, `hanko style preset shoji`: its bar values, its washi panels as a sheet hand sliding along their rail, and its framed overview, each also something you can mix into any other bar. Every change prints live and is kept at once, with Undo (there is no Save button). Settings › Sheets sets how see-through every panel is (30–100%).
+- **Hanko, finished by hand:** each sheet is numbered like a page, carries its kanji pressed faintly behind the title, and ends in a colophon strip; groups are underscored, sliders have a capped needle, and the paper casts a soft shadow with printer's crop marks.
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
 - **Right:** sound, network, Bluetooth, battery, brightness, notifications, and Omarchy's six indicators as small stamps (icons or kanji, named when on).
+- **A calm right side, four ways:** Ma 間 (groups held apart by space), Shizuka 静 (quiet until something changes, like a game HUD that shows health only when you're hit), Suji 筋 (one brush line per reading, its length the level) and Inrō 印籠 (one ruled case of compartments). Each is a `status` value and a preset, and every preset has a live specimen on Settings › Presets 型; the research and the study sheets are in [docs/right-side/](docs/right-side/README.md).
+- **Seven hands for every sheet:** each cell's sheet can be a Ledger 帳 (the editorial page), Tanzaku 短冊 (each choice a poem slip hung from a rail, as long as its level), Shōgi 将棋 (each level a piece on a rank of nine squares, choices on the piece stand), Soroban 算盤 (the figures counted in abacus beads), Odoshi 縅 (each level a lame of armour scales laced as far as it goes), Kasumi 霞 (each level a band of gold-leaf mist) or Shōji 障子 (Shōji's washi panels, sliding along a rail under the bar, now on the Hanko bar too, with a Display panel of their own); pick per sheet on Settings › Sheets. The research behind them is in [docs/revision2/sheet-hands.md](docs/revision2/sheet-hands.md).
 - **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
-- **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch, a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top.
+- **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch, a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top; or Shōji's framed pages, washi in lattice frames.
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
+- **Written, not typeset:** every kanji is drawn in a brush face (Yuji Boku, bundled), and your seal is 鑑 by default, or 漢, 観 or 寛 from Settings › Typesetting.
 - **Follows your theme,** light or dark, and switches with it live.
-- **A profile plate to show off your desk:** Profile 印影 in the settings window presses your seal large beside your name, your bar's live readings and your machine's small print; EDIT renames it, hides any block and saves it as an image. About 由来 and Credits 謝辞 sit beside it.
+- **A profile plate to show off your desk:** Profile 印影 in the settings window is laid out like a seal registration certificate: your name and your machine's small print, your seal glyph written large in ink and signed with two small seals, and your bar's live readings as a row of stats; EDIT renames it, hides any block and saves it as an image. About 由来 and Credits 謝辞 sit beside it.
 - **Safe to try:** if Hanko fails to load, Omarchy puts its own bar back.
 
 ## Requirements
