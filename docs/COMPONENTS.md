@@ -423,39 +423,38 @@ Most settings are independent. These are the places where one setting changes ho
 
 A preset sets all twenty-four settings at once. Change any setting afterwards and the settings page shows `PRESET · KAMON + EDITS`; **Reset to preset** puts it back.
 
-| Setting | Sheet | Scroll | **Kamon** | Quiet | Instrument | Islet | Shōji |
-|---|---|---|---|---|---|---|---|
-| seal | stamp | workspace | stamp | stamp | stamp | workspace | carved |
-| spaces | folio | layout | kanji | dots | kanji | kanji | brush |
-| title | cell | byline | byline | none | cell | byline | ink |
-| clock | stacked | inline | stacked | inline | mono | inline | season |
-| clockAt | center | center | center | center | right | center | center |
-| media | cell | underline | underline | none | cell | underline | ink |
-| status | cells | glyphs | cells | numerals | cells | glyphs | ink |
-| meters | ticks | off | ticks | off | ticks | ticks | off |
-| notif | count | stamps | stamps | count | count | stamps | seal |
-| bluetooth | device | marks | device | off | device | marks | device |
-| indicators | all | active | active | active | all | active | active |
-| indicatorStyle | kanji | kanji | kanjiname | icon | iconname | icon | icon |
-| edge | dayrule | rod | rodrule | hairline | dayrule | rodrule | hairline |
-| rules | on | off | on | off | on | off | off |
-| pointer | plain | plain | plain | plain | plain | plain | brush |
-| height | 36 | 40 | 40 | 32 | 44 | 36 | 40 |
-| surface | solid | solid | solid | glass | solid | inset | washi |
-| position | top | top | top | top | top | top | top |
-| panels | sheets | scroll | sheets | sheets | sheets | scroll | sheets |
-| interlude | folio | kotoba | seal | ma | folio | fuda | ma |
-| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu | koyomi |
-| sides | bare | curl | curl | bare | bare | curl | bare |
-| guides | both | both | none | both | both | both | both |
+| Setting | Quiet | Islet | Shōji | **Kamon** |
+|---|---|---|---|---|
+| seal | stamp | workspace | carved | stamp |
+| spaces | dots | kanji | brush | kanji |
+| title | none | byline | ink | byline |
+| clock | inline | inline | season | stacked |
+| clockAt | center | center | center | center |
+| media | none | underline | ink | underline |
+| status | numerals | glyphs | ink | cells |
+| meters | off | ticks | off | ticks |
+| notif | count | stamps | seal | stamps |
+| bluetooth | off | marks | device | device |
+| indicators | active | active | active | active |
+| indicatorStyle | icon | icon | icon | kanjiname |
+| edge | hairline | rodrule | hairline | rodrule |
+| rules | off | off | off | on |
+| pointer | plain | plain | brush | plain |
+| height | 32 | 36 | 40 | 40 |
+| surface | glass | inset | washi | solid |
+| position | top | top | top | top |
+| panels | sheets | scroll | sheets | sheets |
+| interlude | ma | fuda | ma | seal |
+| endleaf | batsu | dougu | koyomi | koyomi |
+| sides | bare | curl | bare | curl |
+| guides | both | both | both | none |
 
-- **Sheet**: the Sheet design, exactly. A spec table across the top of the page.
-- **Scroll**: the Scroll design, exactly. Calm type and a handscroll underneath.
 - **Kamon** 家紋: the family crest, the bar Hanko is known by (this preset was called Hanko; `hanko` still names it, and a style.json that says Hanko loads it). The merge. A stamped seal and kanji pages, Sheet's cells, meters and flush sheets, Scroll's byline and stamps, named kanji indicators shown only when on, and the roller that carries the day.
 - **Shōji**: the Shōji design, folded into Hanko: washi, the carved seal carrying your letters, brush desks, the season by the clock, icons and an ensō for status, a brush mark where you point. Picking it also puts every sheet in the Shōji hand and frames the overview (kept afterwards, like anything beside the settings). A style.json that names the Shōji design loads as this preset.
 - **Quiet**: the least on screen. Dots, an inline clock, numerals, a hairline, on glass.
-- **Instrument**: the most on screen. Kanji pages, a mono clock on the right, every meter, 44 px.
 - **Islet**: a floating inset strip with kanji status and stamps.
+
+Sheet, Scroll and Instrument were presets once and were taken out; a style.json or `hanko style preset` that names one gets Kamon (Sheet, Instrument) or Islet (Scroll).
 
 The four right-side studies are presets too: the Kamon bar with the right zone set each way, and the marks as stamps alone (their names on hover). Only these differ from Kamon:
 
@@ -465,9 +464,10 @@ The four right-side studies are presets too: the Kamon bar with the right zone s
 | meters | ticks | off | off | off | off |
 | indicatorStyle | kanjiname | kanji | kanji | kanji | kanji |
 | rules | on | off | on | on | on |
-| interlude | seal | ma | seal | seal | seal |
+| height | 40 | 36 | 40 | 40 | 40 |
+| interlude | seal | fuda | seal | seal | seal |
 
-- **Ma** 間: room between the groups; no dividers anywhere, so space does all the grouping.
+- **Ma** 間: room between the groups; no dividers anywhere, so space does all the grouping. It is the bar the user runs: 36 px, with index tabs (`fuda`) between the scroll's sections.
 - **Shizuka** 静: quiet until it changes.
 - **Suji** 筋: five brush lines.
 - **Inrō** 印籠: one case for everything.
@@ -547,7 +547,7 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 **Motion 動** holds one switch outside the twenty-four settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
-**Presets 型** shows every preset as a specimen, drawn live with your data, seal glyph, type size and hidden parts, as one list under a single *Bars* label: Kamon, Sheet, Scroll, Quiet, Instrument, Islet, Shōji, then the right-side studies Ma, Shizuka, Suji, Inrō. Each card is numbered 01–11 and gives the name, its kanji (家紋 帳 巻 素 計 島 障子 間 静 筋 印籠), a blurb, the five settings that tell it apart (status, clock, height, surface, panels) and the bar itself, at a screen's width scaled to the card, on bare paper. The preset in use carries the red mark and IN USE, with how many edits sit on top of it; pointing at another shows USE ›, and a click puts it on your bar. The search field filters the cards (by name, kanji, blurb or any value they set). The action bar adds **Shuffle** and **Reset to preset**.
+**Presets 型** shows every preset as a specimen, drawn live with your data, seal glyph, type size and hidden parts, as one list under a single *Bars* label: Quiet, Islet, Shōji, Kamon, then the right-side studies Ma, Shizuka, Suji, Inrō. Each card is numbered 01–08 and gives the name, its kanji (素 島 障子 家紋 間 静 筋 印籠), a blurb, the five settings that tell it apart (status, clock, height, surface, panels) and the bar itself, at a screen's width scaled to the card, on bare paper. The preset in use carries the red mark and IN USE, with how many edits sit on top of it; pointing at another shows USE ›, and a click puts it on your bar. The search field filters the cards (by name, kanji, blurb or any value they set). The action bar adds **Shuffle** and **Reset to preset**.
 
 ![Presets](right-side/images/12-presets-page.webp)
 
@@ -569,7 +569,7 @@ The same settings can be changed from a terminal:
 ```sh
 hanko style get                 # print the current style
 hanko style set clock mono      # change one setting
-hanko style preset Instrument   # apply a preset
+hanko style preset Islet        # apply a preset
 hanko style shuffle             # random combination
 ```
 

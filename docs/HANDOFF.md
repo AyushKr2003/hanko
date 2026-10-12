@@ -137,33 +137,33 @@ Values marked † are the right-side studies (`docs/right-side/`, §9 "The right
 
 ### Presets
 
-| Setting | Sheet | Scroll | **Kamon** (default) | Quiet | Instrument | Islet | Shōji |
-|---|---|---|---|---|---|---|---|
-| seal | stamp | workspace | stamp | stamp | stamp | workspace | carved |
-| spaces | folio | layout | kanji | dots | kanji | kanji | brush |
-| title | cell | byline | byline | none | cell | byline | ink |
-| clock | stacked | inline | stacked | inline | mono | inline | season |
-| clockAt | center | center | center | center | right | center | center |
-| media | cell | underline | underline | none | cell | underline | ink |
-| status | cells | glyphs | cells | numerals | cells | glyphs | ink |
-| meters | ticks | off | ticks | off | ticks | ticks | off |
-| notif | count | stamps | stamps | count | count | stamps | seal |
-| bluetooth | device | marks | device | off | device | marks | device |
-| indicators | all | active | active | active | all | active | active |
-| indicatorStyle | kanji | kanji | kanjiname | icon | iconname | icon | icon |
-| edge | dayrule | rod | rodrule | hairline | dayrule | rodrule | hairline |
-| rules | on | off | on | off | on | off | off |
-| pointer | plain | plain | plain | plain | plain | plain | brush |
-| height | 36 | 40 | 40 | 32 | 44 | 36 | 40 |
-| surface | solid | solid | solid | glass | solid | inset | washi |
-| position | top | top | top | top | top | top | top |
-| panels | sheets | scroll | sheets | sheets | sheets | scroll | sheets |
-| interlude | folio | kotoba | seal | ma | folio | fuda | ma |
-| endleaf | shimai | okugaki | koyomi | batsu | kiki | dougu | koyomi |
-| sides | bare | curl | curl | bare | bare | curl | bare |
-| guides | both | both | none | both | both | both | both |
+| Setting | Quiet | Islet | Shōji | **Kamon** (default) |
+|---|---|---|---|---|
+| seal | stamp | workspace | carved | stamp |
+| spaces | dots | kanji | brush | kanji |
+| title | none | byline | ink | byline |
+| clock | inline | inline | season | stacked |
+| clockAt | center | center | center | center |
+| media | none | underline | ink | underline |
+| status | numerals | glyphs | ink | cells |
+| meters | off | ticks | off | ticks |
+| notif | count | stamps | seal | stamps |
+| bluetooth | off | marks | device | device |
+| indicators | active | active | active | active |
+| indicatorStyle | icon | icon | icon | kanjiname |
+| edge | hairline | rodrule | hairline | rodrule |
+| rules | off | off | off | on |
+| pointer | plain | plain | brush | plain |
+| height | 32 | 36 | 40 | 40 |
+| surface | glass | inset | washi | solid |
+| position | top | top | top | top |
+| panels | sheets | scroll | sheets | sheets |
+| interlude | ma | fuda | ma | seal |
+| endleaf | batsu | dougu | koyomi | koyomi |
+| sides | bare | curl | bare | curl |
+| guides | both | both | both | none |
 
-The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Kamon column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off` and `interlude: ma`. COMPONENTS.md §4 has the table.
+The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Kamon column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off`, `height: 36` and `interlude: fuda` (the user's own bar). Sheet, Scroll and Instrument were taken out (aliases: Sheet and Instrument load Kamon, Scroll loads Islet). COMPONENTS.md §4 has the table.
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -867,6 +867,10 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - **`core/Style.js`**: the `Hanko` preset is `Kamon` (same values; `DEFAULT_PRESET`), first in `PRESET_GROUPS`. `PRESET_ALIASES` (`hanko` → `Kamon`) is read by `presetName`, so a style.json that says `"preset": "Hanko"`, `hanko style preset hanko` and the IPC load Kamon with no warning; a saved file is written back as Kamon on the next change. A file naming the old Classic/Hanko design loads as Kamon. The plugin, its settings window and About keep the name Hanko.
 - **`core/Settings.js`**: blurb "the family crest", kanji 家紋; searching "hanko" on Presets finds it.
 - Unit tests: one for the alias (115). Harness params that say `"preset": "Hanko"` were left as they are; they exercise the alias.
+
+### Fewer presets; Ma is the user's bar ✅ (asked for: "remove Instrument and sheet and scroll ... update the ma with my current settings ... move the kamon to last")
+- **`core/Style.js`**: Sheet, Scroll and Instrument are gone (eight presets). `PRESET_ALIASES` maps `sheet` and `instrument` to Kamon and `scroll` to Islet, so old style.json files and harness params still load. Ma takes the user's edits: `height: 36`, `interlude: fuda`. Order: Quiet, Islet, Shōji, Kamon, then Ma, Shizuka, Suji, Inrō.
+- **`core/Settings.js`**: their blurbs and kanji removed. Unit tests updated (116).
 
 ## 10. Instructions for the remaining phase (10)
 

@@ -60,8 +60,8 @@ test("indicators: all or only what is on; icon or kanji, alone or named; set per
   assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
   assert.equal(S.resolve({}).indicators, "active")
   assert.equal(S.resolve({}).indicatorStyle, "kanjiname")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "active", "active", "all", "active", "active", "active", "active", "active", "active"])
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "kanjiname", "icon", "iconname", "icon", "icon", "kanji", "kanji", "kanji", "kanji"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), Array(8).fill("active"))
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["icon", "icon", "icon", "kanjiname", "kanji", "kanji", "kanji", "kanji"])
   assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "kanjiname")
   assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
@@ -70,7 +70,7 @@ test("bluetooth styles: device, marks, count, off; an older \"on\" reads as devi
   assert.deepEqual(S.OPTIONS.bluetooth, ["device", "marks", "count", "off"])
   assert.equal(S.coerce("bluetooth", "on"), "device")
   assert.equal(S.resolve({ edits: { bluetooth: "on" } }).bluetooth, "device")
-  assert.equal(S.resolve({ preset: "Scroll" }).bluetooth, "marks")
+  assert.equal(S.resolve({ preset: "Islet" }).bluetooth, "marks")
 })
 
 test("every preset sets every setting to a valid option", () => {
@@ -113,7 +113,7 @@ test("invalid and unknown edits are dropped with a warning", () => {
 })
 
 test("setting a value equal to the preset removes the edit", () => {
-  let d = S.withSetting({ preset: "Sheet" }, "clock", "mono")
+  let d = S.withSetting({ preset: "Kamon" }, "clock", "mono")
   assert.deepEqual(d.edits, { clock: "mono" })
   d = S.withSetting(d, "clock", "stacked")
   assert.deepEqual(d.edits, {})
@@ -121,7 +121,7 @@ test("setting a value equal to the preset removes the edit", () => {
 })
 
 test("applying a preset clears edits but keeps monitors and glyph", () => {
-  const d = S.withPreset({ preset: "Sheet", edits: { clock: "mono" }, sealGlyph: "侍", monitors: { A: { height: 32 } } }, "islet")
+  const d = S.withPreset({ preset: "Quiet", edits: { clock: "mono" }, sealGlyph: "侍", monitors: { A: { height: 32 } } }, "islet")
   assert.equal(d.preset, "Islet")
   assert.deepEqual(d.edits, {})
   assert.equal(d.sealGlyph, "侍")
@@ -565,7 +565,7 @@ test("scroll: centring a section, and landing a pan on the nearest", () => {
 test("scroll: nine interludes, each with a kanji, presets pick one", () => {
   assert.deepEqual(S.OPTIONS.interlude, ["ma", "hairline", "folio", "kotoba", "tsugime", "seal", "jiku", "fuda", "su"])
   assert.equal(S.resolve({}).interlude, "seal")
-  assert.equal(S.resolve({ preset: "Scroll" }).interlude, "kotoba")
+  assert.equal(S.resolve({ preset: "Ma" }).interlude, "fuda")
   assert.equal(S.resolve({ preset: "Islet" }).interlude, "fuda")
   assert.equal(S.resolve({ preset: "Quiet" }).interlude, "ma")
   assert.equal(S.resolve({ preset: "Hanko", edits: { interlude: "dither" } }).interlude, "seal")
@@ -605,7 +605,7 @@ test("settings: six cards hold every one of the twenty-four settings once", () =
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => beside.indexOf(k) < 0)
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
-  assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
+  assert.deepEqual(Object.keys(Se.PRESET_BLURBS).sort(), [...S.PRESET_NAMES].sort())
   assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)   // Design went with the Shōji design (S5); Presets came
 })
 
@@ -638,7 +638,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 13)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Islet"), S.resolve), 12)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -802,7 +802,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(d.motion, "still")
   assert.deepEqual(d.edits, {})
   assert.equal(S.withSetting({}, "motion", "fast"), null)
-  assert.equal(S.withPreset(d, "Sheet").motion, "still")
+  assert.equal(S.withPreset(d, "Quiet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
   assert.equal(S.combinations(), 3913788948480)
@@ -815,7 +815,7 @@ test("type size sits beside motion: small, regular or large, kept through preset
   assert.equal(d.typeSize, "large")
   assert.deepEqual(d.edits, {})
   assert.equal(S.withSetting({}, "typeSize", "tiny"), null)
-  assert.equal(S.withPreset(d, "Sheet").typeSize, "large")
+  assert.equal(S.withPreset(d, "Quiet").typeSize, "large")
   assert.equal(S.shuffled(d, () => 0.5).typeSize, "large")
   assert.deepEqual(S.TYPE_SIZES.map((t) => S.TYPE_SCALE[t]), [0.9, 1, 1.15])
   assert.deepEqual(Se.optionsFor("typeSize", S.OPTIONS), S.TYPE_SIZES)
@@ -840,7 +840,7 @@ test("hidden parts: shown or hidden per part, kept through presets, shuffles and
   assert.equal(S.withSetting({}, "show:nonsense", "hidden"), null)
   assert.equal(S.withSetting({}, "show:tray:", "hidden"), null)
   assert.deepEqual(S.withSetting({}, "show:tray:nm-applet", "hidden").hidden, ["tray:nm-applet"])
-  assert.deepEqual(S.withPreset(d, "Sheet").hidden, d.hidden)
+  assert.deepEqual(S.withPreset(d, "Quiet").hidden, d.hidden)
   assert.deepEqual(S.shuffled(d, () => 0.5).hidden, d.hidden)
   assert.equal(S.shows({}, "seal"), true)
 })
@@ -854,7 +854,7 @@ test("hidden parts: a part its setting leaves out reads hidden, and showing it s
   assert.equal(S.resolve(t).title, "cell")
   assert.equal(S.withSetting({ preset: "Quiet" }, "show:bluetooth", "shown").edits.bluetooth, "device")
   // The preset's own way comes back when it draws the part.
-  const s = S.withSetting({ preset: "Sheet", edits: { seal: "none" } }, "show:seal", "shown")
+  const s = S.withSetting({ preset: "Quiet", edits: { seal: "none" } }, "show:seal", "shown")
   assert.equal(S.resolve(s).seal, "stamp")
   assert.deepEqual(s.edits, {})
   // Picking a way to draw a hidden part shows it again.
@@ -966,7 +966,7 @@ test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () =
   assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
   assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
   assert.equal(S.resolve({}).endleaf, "koyomi")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["batsu", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
   assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
   assert.equal(Se.endleafOf("iro").name, "Iro")
   assert.equal(Lf.kindOf("nope").key, "koyomi")
@@ -1120,7 +1120,7 @@ test("end leaf: notes you can tick, and the clipboard", () => {
 test("scroll sides: bare or curl, in place of the rollers", () => {
   assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
   assert.equal(S.resolve({}).sides, "curl")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl", "bare", "curl", "curl", "curl", "curl"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "bare", "curl", "curl", "curl", "curl", "curl"])
   assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
 })
 
@@ -1570,9 +1570,9 @@ test("right side: four studies as status values and presets on your Hanko bar", 
     assert.equal(p.status, status[name])
     assert.equal(p.indicatorStyle, "kanji")
     assert.deepEqual(Object.keys(p).sort(), [...S.KEYS].sort())
-    // Only the right zone (and Ma's dividers and scroll joins) differs from your bar.
+    // Only the right zone (and Ma's dividers, height and scroll joins) differs from your bar.
     const diff = S.KEYS.filter(k => p[k] !== hanko[k])
-    const allowed = ["status", "meters", "indicatorStyle", "rules", "interlude"]
+    const allowed = ["status", "meters", "indicatorStyle", "rules", "interlude"].concat(name === "Ma" ? ["height"] : [])
     assert.ok(diff.every(k => allowed.indexOf(k) >= 0), name + " changes " + diff)
   }
   // Typed any case, with or without the macron.

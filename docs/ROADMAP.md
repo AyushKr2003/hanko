@@ -144,3 +144,4 @@ tests/run                  # node unit tests + qmllint + offscreen renders into 
 ```
 
 On a machine without Omarchy, `tests/run` still runs the unit tests, lint and renders (it needs Node and `pip install PySide6-Essentials`).
+- ✅ **Fewer presets:** Sheet, Scroll and Instrument taken out (aliased to Kamon and Islet); Ma carries the user's bar (36 px, fuda); Kamon is last of the bars.

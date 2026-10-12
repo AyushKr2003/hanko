@@ -31,8 +31,8 @@ function pageInfo(key) {
 var PLATES = ["profile", "about", "credits"]
 
 var PRESET_BLURBS = {
-  Sheet: "the printed bar", Scroll: "the handscroll", Kamon: "the family crest",
-  Quiet: "least on screen", Instrument: "most on screen", Islet: "floating, inset",
+  Kamon: "the family crest",
+  Quiet: "least on screen", Islet: "floating, inset",
   "Shōji": "washi and the seasons",
   Ma: "room between the groups", Shizuka: "quiet until it changes",
   Suji: "five brush lines", "Inrō": "one case for everything"
@@ -41,7 +41,7 @@ var PRESET_BLURBS = {
 // Each preset's kanji, for the Presets 型 page: what the bar is, in one
 // sign. The four studies keep the kanji they were drawn with.
 var PRESET_KANJI = {
-  Sheet: "帳", Scroll: "巻", Kamon: "家紋", Quiet: "素", Instrument: "計", Islet: "島",
+  Kamon: "家紋", Quiet: "素", Islet: "島",
   "Shōji": "障子", Ma: "間", Shizuka: "静", Suji: "筋", "Inrō": "印籠"
 }
 
