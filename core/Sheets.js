@@ -27,6 +27,12 @@ var SHEETS = [
     omarchy: [] }
 ]
 
+// No. 00, every sheet on one (Inkan 印, docs/shell-concepts/inkan): what a
+// press on the seal prints. Not one of the bar's sheets (it has no hand of
+// its own and no cell), so it is kept out of SHEETS; byKey() and step()
+// know it, and the bar's seal is its anchor.
+var ALL = { key: "all", no: "00", jp: "鑑", label: "ALL SHEETS", width: 440, anchors: ["seal"], omarchy: [] }
+
 // Kept clear of the screen's sides, as the mockups do.
 var SCREEN_MARGIN = 8
 // A sheet from the right zone hangs mostly to the left of its cell and
@@ -37,6 +43,7 @@ var OVERHANG = 40
 var TEAR_REACH = 8
 
 function byKey(key) {
+  if (key === ALL.key) return ALL
   for (var i = 0; i < SHEETS.length; i++) if (SHEETS[i].key === key) return SHEETS[i]
   return null
 }
@@ -62,8 +69,9 @@ function omarchyIdForCell(cell) {
 }
 
 // Tab and Shift+Tab: the next sheet among those that can open, wrapping.
+// No. 00 comes first when `available` lists it.
 function step(key, delta, available) {
-  var keys = []
+  var keys = available && available.indexOf(ALL.key) >= 0 ? [ALL.key] : []
   for (var i = 0; i < SHEETS.length; i++)
     if (!available || available.indexOf(SHEETS[i].key) >= 0) keys.push(SHEETS[i].key)
   if (!keys.length) return ""

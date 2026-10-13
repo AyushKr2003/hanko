@@ -4,6 +4,8 @@ import Quickshell
 import Quickshell.Wayland
 import "../core"
 import "../core/Sheets.js" as Sheets
+import "../core/Inkan.js" as Inkan
+import "../core/Spaces.js" as SpacesJs
 import "../services"
 import "sheets"
 
@@ -25,9 +27,18 @@ PanelWindow {
 
   readonly property string screenName: screen ? screen.name : ""
   readonly property bool open: bar.sheet !== "" && bar.sheetScreen === screenName
-  readonly property bool atBottom: bar.position === "bottom"
+  // Inkan 印 (form: inkan): no strip; sheets print from the seal in its
+  // corner (bar/SealWindow.qml), away from the edge it shares.
+  readonly property bool inkan: barWindow.inkan
+  readonly property var sealWin: barWindow.seal
+  readonly property string corner: Inkan.cornerOf(barWindow.shown.inkanAt)
+  readonly property bool sealTop: corner.indexOf("top") === 0
+  readonly property int screenW: barWindow.screen ? barWindow.screen.width : width
+  readonly property int screenH: barWindow.screen ? barWindow.screen.height : height
+  readonly property var sealRect: Inkan.place(corner, screenW, screenH, sealWin.size, sealWin.margin)
+  readonly property bool atBottom: inkan ? !sealTop : bar.position === "bottom"
   // The bar's strip on this screen: its height plus the inset gap.
-  readonly property int strip: barWindow.barHeight + barWindow.gap
+  readonly property int strip: inkan ? 0 : barWindow.barHeight + barWindow.gap
   property bool primed: false
   // The sheet on show; kept through the un-print after it closes.
   property string shownSheet: ""
@@ -47,12 +58,30 @@ PanelWindow {
     power: Power.reading,
     display: Display.reading,
     letters: Status.notifications,
-    dnd: Status.doNotDisturb
+    dnd: Status.doNotDisturb,
+    // No. 00's own (Inkan): a row per sheet, the pages, the window, the song.
+    all: win.bar.sheet === "all" ? {
+      glyph: barWindow.shown.sealGlyph,
+      rows: Inkan.rows({ volume: Status.volume, network: Status.network, bluetooth: Blue.cell,
+                         battery: Status.battery, brightness: Status.brightness,
+                         notifications: Status.notifications, dnd: Status.doNotDisturb }),
+      spaces: Hypr.spacesFor(win.screenName),
+      window: Hypr.activeWindow,
+      home: Hypr.home,
+      media: Media.now
+    } : ({})
   })
   function cycle(delta) { bar.cycleSheet(delta) }
 
   function place() {
     if (!open) return
+    if (inkan) {
+      var at = Inkan.sheetPlace(win.corner, win.screenW, win.screenH, win.sealRect, view.width, view.height,
+                                Type.px(Inkan.SHEET_GAP), Sheets.SCREEN_MARGIN)
+      placed = { x: at.x, y: at.y, tearX: 0, tearWidth: 0 }
+      classicView.side = win.corner.indexOf("left") > 0 ? -1 : 1
+      return
+    }
     var info = Sheets.byKey(shownSheet)
     var a = null
     for (var i = 0; info && !a && i < info.anchors.length; i++) a = surface.anchorFor(info.anchors[i])
@@ -87,7 +116,8 @@ PanelWindow {
     right: true
   }
 
-  // Everything but the bar strip takes clicks.
+  // Everything but the bar strip (under Inkan, the seal) takes clicks, so
+  // a click there reaches the bar, or lifts the sheet off the seal.
   mask: Region {
     x: 0
     y: 0
@@ -95,10 +125,10 @@ PanelWindow {
     height: win.height
     Region {
       intersection: Intersection.Subtract
-      x: 0
-      y: win.atBottom ? win.height - win.strip : 0
-      width: win.width
-      height: win.strip
+      x: win.inkan ? win.sealRect.x : 0
+      y: win.inkan ? win.sealRect.y : win.atBottom ? win.height - win.strip : 0
+      width: win.inkan ? win.sealRect.width : win.width
+      height: win.inkan ? win.sealRect.height : win.strip
     }
   }
 
@@ -153,6 +183,7 @@ PanelWindow {
     styles: win.barWindow.shown.sheetStyles || ({})
     skin: win.skin
     onWidthChanged: Qt.callLater(win.place)
+    onHeightChanged: if (win.inkan) Qt.callLater(win.place)
     // A Shōji sheet hangs on its rail a little below the bar and slides
     // along it to the next cell; the other hands print flush and jump.
     readonly property int railGap: rail ? (win.skin.gap || 0) : 0
@@ -161,7 +192,7 @@ PanelWindow {
       enabled: classicView.rail && !!win.skin.travels && win.open && !Motion.still
       NumberAnimation { duration: win.skin.open || 360; easing.type: Easing.BezierSpline; easing.bezierCurve: win.skin.openCurve || [0.16, 1, 0.3, 1, 1, 1] }
     }
-    y: win.atBottom ? win.height - win.strip - height - railGap : win.strip + railGap
+    y: win.inkan ? win.placed.y : win.atBottom ? win.height - win.strip - height - railGap : win.strip + railGap
     sheet: win.shownSheet
     open: win.open
     atBottom: win.atBottom
@@ -179,6 +210,35 @@ PanelWindow {
       anchors.fill: parent
       acceptedButtons: Qt.AllButtons
     }
+  }
+
+  // A sheet opened from No. 00 carries the way back: a crumb on the side
+  // away from the seal, and Backspace.
+  Text {
+    id: crumb
+    readonly property bool shown: win.open && win.bar.sheetFrom === "all" && win.bar.sheet !== "all"
+    visible: shown
+    x: classicView.x
+    y: win.atBottom ? classicView.y - height - Type.px(16) : classicView.y + classicView.height + Type.px(16)
+    text: "‹ NO. 00"
+    color: crumbHit.containsMouse ? Ink.ink : Ink.inkDim
+    font.family: Type.mono
+    font.pixelSize: Type.tag
+    font.weight: Type.labelWeight
+    font.letterSpacing: Type.trackTag
+    MouseArea {
+      id: crumbHit
+      anchors.fill: parent
+      anchors.margins: -Type.px(6)
+      hoverEnabled: true
+      cursorShape: Qt.PointingHandCursor
+      onClicked: win.bar.backSheet()
+    }
+  }
+  Shortcut {
+    sequence: "Backspace"
+    enabled: crumb.shown
+    onActivated: win.bar.backSheet()
   }
 
   // Other screens get a clear twin while the sheet is open, so a click on

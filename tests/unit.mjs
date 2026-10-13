@@ -23,7 +23,7 @@ const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
   "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age", "short", "fill"])
-const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
+const Sh = load("core/Sheets.js", ["SHEETS", "ALL", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
 const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs", "streams", "master", "inputNote", "sheet"])
@@ -356,6 +356,12 @@ test("Tab walks the sheets that can open, wrapping", () => {
   assert.equal(Sh.step("power", 1), "display")
   assert.equal(Sh.step("time", 1, ["time", "inbox"]), "inbox")
   assert.equal(Sh.step("nope", 1, ["sound"]), "sound")
+  // No. 00 (Inkan) walks first when it can open, and is never a bar sheet.
+  assert.equal(Sh.step("inbox", 1, ["all", "time", "inbox"]), "all")
+  assert.equal(Sh.step("all", 1, ["all", "time", "inbox"]), "time")
+  assert.equal(Sh.step("inbox", 1), "time")
+  assert.equal(Sh.byKey("all").no, "00")
+  assert.ok(Sh.SHEETS.every(x => x.key !== "all"))
 })
 
 test("togglePanelAt right N counts distinct Omarchy panels on the right", () => {

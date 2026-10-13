@@ -94,7 +94,8 @@ Item {
   // Where a cell sits along the bar ({ x, width } in this item), so a sheet
   // can drop from under it; null when the cell isn't showing.
   function anchorFor(cell) {
-    var item = cell === "clock" ? (clockRight ? rightClock : centreClock)
+    var item = cell === "seal" ? seal
+      : cell === "clock" ? (clockRight ? rightClock : centreClock)
       : cell === "notif" ? (lettersOnSeal ? seal : inbox)
       : status.cellFor(cell)
     if (!item || !item.visible) return null

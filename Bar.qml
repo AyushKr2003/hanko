@@ -38,7 +38,9 @@ Item {
     return p === "bottom" ? "bottom" : "top"
   }
   readonly property bool vertical: false
-  readonly property int barSize: barHidden ? 0 : Type.px(Typeset.current.height)
+  // Under Inkan (form: inkan) there is no strip: Omarchy is told 0, so its
+  // OSD and toasts sit as they would with no bar.
+  readonly property int barSize: barHidden || Typeset.current.form === "inkan" ? 0 : Type.px(Typeset.current.height)
   readonly property string fontFamily: Type.mono
 
   property alias now: clock.date
@@ -92,8 +94,10 @@ Item {
   property string sheetScreen: ""
   // Weeks the Time sheet's ribbon is moved from today.
   property int timeShift: 0
-  // The sheets that can open.
-  readonly property var sheetsReady: ["time", "sound", "network", "bluetooth", "power", "display", "inbox"]
+  // The sheets that can open (all = No. 00, Inkan's sheet of every sheet).
+  readonly property var sheetsReady: ["all", "time", "sound", "network", "bluetooth", "power", "display", "inbox"]
+  // "all" while the open sheet was opened from No. 00, so it can go back.
+  property string sheetFrom: ""
 
   function sheetReady(key) { return !!key && sheetsReady.indexOf(key) >= 0 }
 
@@ -103,27 +107,39 @@ Item {
     return Quickshell.screens.length ? Quickshell.screens[0].name : ""
   }
 
-  function openSheet(key, screenName) {
+  function openSheet(key, screenName, from) {
     if (!sheetReady(key) || barHidden) return false
     closeScroll()
     closeOverview()
     closeHostedPopout()
     if (key !== sheet) timeShift = 0
     sheetScreen = screenName || focusedScreen()
+    sheetFrom = key === "all" ? "" : from || ""
     sheet = key
     return true
   }
-  function closeSheet() { sheet = "" }
+  function closeSheet() { sheet = ""; sheetFrom = "" }
+  // Backspace or the crumb on a sheet opened from No. 00.
+  function backSheet() { if (sheet && sheetFrom === "all") openSheet("all", sheetScreen) }
   function toggleSheet(key, screenName) {
     if (sheet === key && sheetScreen === screenName) closeSheet()
     else openSheet(key, screenName)
   }
+  // Tab walks the sheets; No. 00 is among them only under Inkan.
   function cycleSheet(delta) {
-    if (sheet) openSheet(Sheets.step(sheet, delta, sheetsReady), sheetScreen)
+    if (!sheet) return
+    var ready = inkanOn(sheetScreen) ? sheetsReady : sheetsReady.filter(function(k) { return k !== "all" })
+    openSheet(Sheets.step(sheet, delta, ready), sheetScreen, sheetFrom)
   }
   // Something a sheet asked for: pages, values, devices.
   function sheetRequest(key, what, arg) {
-    if (key === "time" && what === "shift") timeShift = Number(arg) || 0
+    if (key === "all") {
+      if (what === "open") openSheet(String(arg), sheetScreen, "all")
+      else if (what === "workspace") { closeSheet(); Hypr.focusWorkspace(Number(arg)) }
+      else if (what === "media") Media.act(String(arg))
+      else if (what === "menu") { closeSheet(); Hypr.openMenu() }
+      else if (what === "settings") { closeSheet(); openSettings() }
+    } else if (key === "time" && what === "shift") timeShift = Number(arg) || 0
     else if (key === "sound") {
       if (what === "master") Sound.setMaster(Number(arg))
       else if (what === "mute") Sound.toggleMute()
@@ -357,6 +373,23 @@ Item {
 
   onBarHiddenChanged: if (barHidden) { closeSheet(); closeScroll() }
 
+  // ------------------------------------------------------------- inkan
+  //
+  // Inkan 印 (form: inkan, bar/SealWindow.qml): a press on the seal, or
+  // `omarchy-shell hanko press`, prints No. 00 from it (every sheet on
+  // one), or unrolls the scroll under panels: scroll; again, it lifts off.
+  function inkanOn(screenName) { return Typeset.styleFor(screenName || focusedScreen()).form === "inkan" }
+  // Whether something printed from the seal is out on this screen.
+  function inkanPrinted(screenName) {
+    return (sheet !== "" && sheetScreen === screenName) || (scrollOpen && scrollScreen === screenName)
+  }
+  function pressSeal(screenName) {
+    var name = screenName || focusedScreen()
+    if (inkanPrinted(name)) { closeSheet(); closeScroll(); return "closed" }
+    if (panelsFor(name) === "scroll") return openScroll("", name) ? "open" : "hidden"
+    return openSheet("all", name) ? "open" : "hidden"
+  }
+
   Binding { target: Zones; property: "barConfig"; value: root.barConfig }
   // Data for a sheet is gathered while it is open; the scroll shows every
   // section at once, so all of it while the scroll is out.
@@ -522,6 +555,9 @@ Item {
       if (root.scrollOpen) { root.closeScroll(); return "closed" }
       return root.openScroll("", root.focusedScreen()) ? "open" : "hidden"
     }
+    // A press on the seal (Inkan), for a keybinding: prints No. 00, or
+    // lifts it off.
+    function press(): string { return root.pressSeal(root.focusedScreen()) }
     function scrollTo(name: string): string {
       return Scroll.indexOf(name) >= 0 && root.openScroll(name, root.focusedScreen()) ? "open" : "unknown"
     }

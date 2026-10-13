@@ -383,20 +383,16 @@
    "hover": true
   },
   {
-   "label": "TOP-LEFT · 寛 · PRESSED",
+   "label": "NO. 00 · PRESSED · THE SEAL BOTTOM RIGHT",
    "doc": {
-    "preset": "Inkan",
-    "sealGlyph": "寛",
-    "edits": {
-     "inkanAt": "top-left"
-    }
+    "preset": "Inkan"
    },
    "data": {
     "battery": {
-     "percent": 70,
-     "level": 0.7,
+     "percent": 14,
+     "level": 0.14,
      "charging": false,
-     "needsYou": false
+     "needsYou": true
     },
     "network": {
      "kind": "wifi",
@@ -405,44 +401,89 @@
      "bars": 4,
      "off": false,
      "needsYou": false
-    }
-   },
-   "pressed": true
-  },
-  {
-   "label": "TOP-RIGHT · QUIET · POINTER ON THE SEAL",
-   "doc": {
-    "preset": "Inkan",
-    "edits": {
-     "inkanAt": "top-right"
-    }
-   },
-   "data": {
-    "network": {
-     "kind": "wifi",
-     "name": "Kumo",
-     "signal": 82,
-     "bars": 4,
-     "off": false,
-     "needsYou": false
     },
-    "dnd": true,
+    "volume": {
+     "percent": 62,
+     "level": 0.62,
+     "muted": false
+    },
     "notifications": [
      {
       "app": "Signal",
-      "summary": "hi",
+      "summary": "Are we on?",
+      "body": "",
       "urgent": false,
-      "timestamp": 0
+      "timestamp": 1791323040000
      },
      {
-      "app": "Signal",
-      "summary": "hi",
+      "app": "GitHub",
+      "summary": "CI passed on dev",
+      "body": "",
       "urgent": false,
-      "timestamp": 0
+      "timestamp": 1791322000000
      }
-    ]
+    ],
+    "bluetooth": {
+     "enabled": true,
+     "connected": 1,
+     "name": "WH-1000XM5",
+     "level": 0.8,
+     "needsYou": false
+    },
+    "brightness": {
+     "percent": 70
+    },
+    "workspace": 2
    },
-   "hover": true
+   "sheet": "all",
+   "height": 720
   }
- ]
+ ],
+ "spaces": [
+  {
+   "id": 1,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1,
+     "focused": true
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "urgent": true,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1
+    }
+   ]
+  }
+ ],
+ "window": {
+  "cls": "nvim",
+  "title": "Bar.qml - ~/code/hanko - NVIM"
+ },
+ "media": {
+  "title": "Midnight City",
+  "artist": "M83",
+  "progress": 0.38,
+  "playing": true
+ }
 }
