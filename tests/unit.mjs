@@ -1698,6 +1698,11 @@ test("inkan: chips for letters, an outline when quiet, a broken rule offline", (
   assert.ok(Ik.carving({ seal: "carved" }, {}).outline)
   assert.ok(!Ik.carving({ seal: "carved" }, { notifications: one }).outline)
   assert.equal(Ik.carving({ seal: "none" }, {}).glyph, "鑑")
+  // Recording or dictation rings the seal, and leads the reading in red.
+  const rec = [{ key: "recording", on: true }, { key: "night", on: true }]
+  assert.ok(Ik.carving({}, { indicators: rec }).live)
+  assert.ok(!Ik.carving({}, { indicators: [{ key: "recording", on: false }, { key: "night", on: true }] }).live)
+  assert.deepEqual(Ik.reading({ indicators: rec }, "9:41")[1], { jp: "写", text: "recording", red: true })
 })
 
 test("inkan: the hover reading and No. 00's rows", () => {

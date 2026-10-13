@@ -136,7 +136,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 - ✅ **Presets 型, a page of their own** (asked for: "move the presets from Typesetting to a new Presets page, with the 4 new designs there too"): the first page of `01 BAR`, every preset a numbered specimen with its kanji, blurb, telling settings and its bar drawn live, in one list (the bars, then the studies), filtered by search, with Shuffle and Reset; Typesetting keeps a one-line link to it.
 - ✅ **Kamon 家紋** (asked for: no "Hanko" on the preset): the default preset is renamed Kamon, the family crest; "Hanko" still loads it.
 
-- 🔨 **Inkan 印, the seal only** (asked for: "now I want to work on this Inkan", shell concept 04, then "go with your idea and all"): a `form` setting that takes the bar away and leaves one seal in a corner, its carving the status; pressed, it prints the whole shell as one sheet, No. 00. Design and timings in [shell-concepts/inkan/](shell-concepts/inkan/README.md). Steps, each its own commit:
+- ✅ **Inkan 印, the seal only** (asked for: "now I want to work on this Inkan", shell concept 04, then "go with your idea and all"): a `form` setting that takes the bar away and leaves one seal in a corner, its carving the status; pressed, it prints the whole shell as one sheet, No. 00. Design and timings in [shell-concepts/inkan/](shell-concepts/inkan/README.md). Steps, each its own commit:
   - ✅ **I0 · Design sheets**: the seal's states, No. 00, the four corners and per monitor, the ink-press, a light theme.
   - ✅ **I1 · The model**: `form` and `inkanAt` in `Style.js`, the Inkan preset, `core/Inkan.js` (wear, specks, chips, placement, No. 00 rows) with tests.
   - ✅ **I2 · The seal that reads**: `bar/InkanSeal.qml`, harness scene and params.
@@ -144,7 +144,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **I4 · No. 00**: `bar/sheets/AllSheet.qml`, printing from the seal, rows into their sheets and back, Omarchy's panel hotkeys at the corner, the scroll from the seal.
   - ✅ **I5 · The ink-press**: press, bloom, print out, lift off.
   - ✅ **I6 · Settings, CLI and keys**: Form and Corner rows, the Inkan specimen on Presets, `hanko press`, README.
-  - ⬜ **I7 · Drag to a corner** and the recording ring.
+  - ✅ **I7 · Drag to a corner** and the recording ring.
 
 ## Dev loop
 

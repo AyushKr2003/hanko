@@ -48,8 +48,30 @@ PanelWindow {
     volume: Status.volume,
     notifications: Status.notifications,
     dnd: Status.doNotDisturb,
+    indicators: Extras.indicators,
     workspace: win.workspace
   })
+
+  // Dragging the seal: it follows the pointer inside its layer, and on
+  // release snaps to the corner nearest where the pointer let go, kept for
+  // this monitor (for the whole style when there is only one screen).
+  property bool dragging: false
+  property point grab: Qt.point(0, 0)
+  property point drag: Qt.point(0, 0)
+  readonly property int screenW: screen ? screen.width : width
+  readonly property int screenH: screen ? screen.height : height
+  // The window's own corner on the screen, to turn its points into the screen's.
+  readonly property point origin: Qt.point(left ? 0 : screenW - width, top ? 0 : screenH - height)
+  property string target: corner
+  function dragTo(mx, my) {
+    drag = Qt.point(mx - grab.x, my - grab.y)
+    target = Inkan.nearest(origin.x + mx, origin.y + my, screenW, screenH)
+  }
+  function drop() {
+    dragging = false
+    drag = Qt.point(0, 0)
+    if (target !== corner) bar.moveSeal(screenName, target)
+  }
 
   property bool hovered: false
 
@@ -94,10 +116,12 @@ PanelWindow {
 
   InkanReading {
     id: reading
-    parts: Inkan.reading(win.readings, Qt.formatTime(win.bar.now, win.bar.timeFormat))
+    parts: win.dragging
+      ? [{ text: win.target === win.corner ? "stays " + win.corner : "to " + win.target, red: win.target !== win.corner }]
+      : Inkan.reading(win.readings, Qt.formatTime(win.bar.now, win.bar.timeFormat))
     y: win.sealY + (win.size - height) / 2
     x: win.left ? win.sealX + win.size + Type.px(14) : win.sealX - Type.px(14) - width
-    opacity: win.hovered && !win.bar.inkanPrinted(win.screenName) ? 1 : 0
+    opacity: (win.hovered || win.dragging) && !win.bar.inkanPrinted(win.screenName) ? 1 : 0
     visible: opacity > 0
     Behavior on opacity {
       enabled: Motion.live
@@ -107,8 +131,8 @@ PanelWindow {
 
   InkanSeal {
     id: seal
-    x: win.sealX
-    y: win.sealY
+    x: Math.max(0, Math.min(win.width - win.size, win.sealX + win.drag.x))
+    y: Math.max(0, Math.min(win.height - win.size, win.sealY + win.drag.y))
     size: win.size
     carving: Inkan.carving(win.style, win.readings)
     hovered: win.hovered
@@ -126,7 +150,18 @@ PanelWindow {
     cursorShape: Qt.PointingHandCursor
     onEntered: win.hovered = true
     onExited: win.hovered = false
+    // Points in the window's coordinates (the area sits at the seal).
+    onPressed: function(mouse) { if (mouse.button === Qt.LeftButton) win.grab = Qt.point(win.sealX + mouse.x, win.sealY + mouse.y) }
+    onPositionChanged: function(mouse) {
+      if (!pressed || !(mouse.buttons & Qt.LeftButton)) return
+      var dx = win.sealX + mouse.x - win.grab.x, dy = win.sealY + mouse.y - win.grab.y
+      if (!win.dragging && Math.abs(dx) + Math.abs(dy) > Type.px(8)) win.dragging = true
+      if (win.dragging) win.dragTo(win.sealX + mouse.x, win.sealY + mouse.y)
+    }
+    onReleased: function(mouse) { if (win.dragging) win.drop() }
+    onCanceled: { win.dragging = false; win.drag = Qt.point(0, 0) }
     onClicked: function(mouse) {
+      if (win.dragging) return
       if (mouse.button === Qt.RightButton) Hypr.openMenu()
       else if (mouse.button === Qt.MiddleButton) Hypr.openTerminal()
       else win.bar.pressSeal(win.screenName)

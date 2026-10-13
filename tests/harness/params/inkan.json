@@ -315,6 +315,45 @@
     },
     "preset": "Inkan"
    }
+  },
+  {
+   "label": "Recording",
+   "doc": {
+    "preset": "Inkan"
+   },
+   "data": {
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "off": false
+    },
+    "indicators": [
+     {
+      "key": "recording",
+      "on": true
+     }
+    ]
+   }
+  },
+  {
+   "label": "Dictation, one letter",
+   "doc": {
+    "preset": "Inkan"
+   },
+   "data": {
+    "notifications": [
+     {
+      "urgent": false
+     }
+    ],
+    "indicators": [
+     {
+      "key": "dictation",
+      "on": true
+     }
+    ]
+   }
   }
  ],
  "desks": [

@@ -103,6 +103,8 @@ function chipSize(deep) { return deep ? 0.34 : 0.22 }
 // glyph: the seal glyph, or the workspace numeral under seal: workspace.
 // outline: quiet (do not disturb), or seal: carved resting with no letters.
 // broken: offline (the inner rule breaks along the foot).
+// live: recording the screen or taking dictation (Extras.indicators): a
+// thin red ring is drawn around the seal while it lasts.
 function carving(style, d) {
   var s = style || {}, data = d || {}
   var ws = Number(data.workspace)
@@ -117,8 +119,20 @@ function carving(style, d) {
     deep: ch.deep,
     outline: !!data.dnd || (s.seal === "carved" && ch.count === 0),
     broken: !!(data.network && data.network.off),
-    low: !!(data.battery && data.battery.needsYou)
+    low: !!(data.battery && data.battery.needsYou),
+    live: live(data.indicators)
   }
+}
+
+// Whether the screen is being recorded or dictation is running, from the
+// indicator marks (core/Extras.js indicators(): { key, on }).
+var LIVE = ["recording", "dictation"]
+function live(indicators) {
+  for (var i = 0; i < count(indicators); i++) {
+    var m = indicators[i]
+    if (m && m.on && LIVE.indexOf(m.key) >= 0) return true
+  }
+  return false
 }
 
 // ------------------------------------------------------------ the reading
@@ -127,6 +141,11 @@ function carving(style, d) {
 // network, the inbox, a muted master; each part { text, jp, red }.
 function reading(d, time) {
   var data = d || {}, out = [{ text: String(time || ""), time: true }]
+  for (var i = 0; i < count(data.indicators); i++) {
+    var m = data.indicators[i]
+    if (m && m.on && m.key === "recording") out.push({ jp: "写", text: "recording", red: true })
+    if (m && m.on && m.key === "dictation") out.push({ jp: "言", text: "dictation", red: true })
+  }
   var b = data.battery
   if (b) out.push({ jp: "電", text: b.percent + "%" + (b.charging ? " · charging" : ""), red: !!b.needsYou })
   var n = data.network
@@ -172,6 +191,7 @@ function rows(d) {
 }
 
 // ------------------------------------------------------------ geometry
+// (count and anyUrgent above take any list with a length.)
 
 // The seal's square on a screen w × h: `size` from the corner's two edges,
 // `margin` in.

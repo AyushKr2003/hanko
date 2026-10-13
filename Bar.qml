@@ -383,6 +383,12 @@ Item {
   function inkanPrinted(screenName) {
     return (sheet !== "" && sheetScreen === screenName) || (scrollOpen && scrollScreen === screenName)
   }
+  // A seal dragged to another corner: kept for that monitor, or for the
+  // whole style when there is only the one screen.
+  function moveSeal(screenName, corner) {
+    if (Quickshell.screens.length > 1) Typeset.setFor(screenName, "inkanAt", corner)
+    else Typeset.set("inkanAt", corner)
+  }
   function pressSeal(screenName) {
     var name = screenName || focusedScreen()
     if (inkanPrinted(name)) { closeSheet(); closeScroll(); return "closed" }

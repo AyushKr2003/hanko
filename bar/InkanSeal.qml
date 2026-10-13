@@ -11,6 +11,7 @@ import "../core/Inkan.js" as Inkan
 //            deeper when one is urgent
 //   outline  quiet: only an outline in ink, no plate
 //   broken   offline: the inner rule breaks along the foot
+//   live     recording or dictation: a thin red ring around it, breathing
 // `hovered` straightens its slight rest tilt; `pressed` sinks it on the
 // stamp curve; `bloom` (0..1) is the ink spreading under it as it presses.
 Item {
@@ -56,6 +57,24 @@ Item {
         target: Ink
         function onSealChanged() { pool.requestPaint() }
       }
+    }
+  }
+
+  // Recording or dictation: a ring a few pixels out, breathing slowly.
+  Rectangle {
+    id: ring
+    visible: !!root.carving.live
+    anchors.fill: parent
+    anchors.margins: -Math.max(3, Math.round(root.size * 0.09))
+    radius: Math.max(3, root.size * 0.12)
+    color: "transparent"
+    border.width: 1
+    border.color: Ink.seal
+    SequentialAnimation on opacity {
+      running: ring.visible && Motion.live
+      loops: Animation.Infinite
+      NumberAnimation { from: 1; to: 0.35; duration: 900; easing.type: Easing.InOutSine }
+      NumberAnimation { from: 0.35; to: 1; duration: 900; easing.type: Easing.InOutSine }
     }
   }
 

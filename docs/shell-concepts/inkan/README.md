@@ -12,6 +12,8 @@ Inkan is not a new design. It is a **form** of the Hanko bar: `form: inkan` take
 | `images/04-press.webp` | The ink-press: hover, press, bloom, print, open, lift-off, with timings |
 | `images/05-light.webp` | The same on a light theme |
 
+What was built, from the harness (`tests/harness/params/inkan*.json`, scene `Inkan.qml`): `images/10-built-dark.webp` and `11-built-light.webp` (every state, the hover reading, No. 00 and a sheet opened from it in two corners), `12-presets.webp` (the Inkan card on Settings › Presets).
+
 ## The rules it keeps
 
 - **Colour:** the plate is the theme's red, the carving its paper, the outline its ink. Wear is drawn as specks of the plate's own red over the carving, so it reads on any theme and needs no mask.
@@ -27,7 +29,7 @@ Inkan is not a new design. It is a **form** of the Hanko bar: `form: inkan` take
 
 ## Hands on it
 
-Click prints No. 00 (or, under `panels: scroll`, unrolls the scroll from the seal's edge). Right-click: Omarchy's menu. Middle: a terminal. Wheel: step workspaces. Hover: one line of reading toward the screen. Drag: follows the pointer and snaps to the nearest corner, saved for that monitor. `omarchy-shell hanko press` does what a click does, for a keybinding.
+Click prints No. 00 (or, under `panels: scroll`, unrolls the scroll from the seal's edge). Right-click: Omarchy's menu. Middle: a terminal. Wheel: step workspaces. Hover: one line of reading toward the screen. Drag: follows the pointer and snaps to the nearest corner, saved for that monitor. While the screen is recorded or dictation runs, a thin red ring breathes around the seal. `omarchy-shell hanko press` does what a click does, for a keybinding.
 
 ## Source
 
