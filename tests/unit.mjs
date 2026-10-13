@@ -17,13 +17,14 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
-  "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
+  "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
   "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age", "short", "fill"])
-const Sh = load("core/Sheets.js", ["SHEETS", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
+const Sh = load("core/Sheets.js", ["SHEETS", "ALL", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
 const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs", "streams", "master", "inputNote", "sheet"])
@@ -42,6 +43,8 @@ const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 const Sn = load("core/Season.js", ["SEKKI", "KO", "sunLongitude", "koIndex", "at", "label"])
 const Sk = load("core/Skin.js", ["skin", "fromStyle", "SHOJI", "TEMPOS", "RADII", "OPACITY"])
+const Ik = load("core/Inkan.js", ["SIZE", "MARGIN", "CORNERS", "ROWS", "NUMERALS", "wear", "specks", "worn", "chips", "chipSize", "carving",
+  "reading", "rows", "place", "sheetPlace", "nearest", "cornerOf"])
 const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
 
 let passed = 0
@@ -49,9 +52,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-four settings, 3,913,788,948,480 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 24)
-  assert.equal(S.combinations(), 3913788948480)
+test("twenty-six settings, 31,310,311,587,840 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 26)
+  assert.equal(S.combinations(), 31310311587840)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -60,8 +63,8 @@ test("indicators: all or only what is on; icon or kanji, alone or named; set per
   assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
   assert.equal(S.resolve({}).indicators, "active")
   assert.equal(S.resolve({}).indicatorStyle, "kanjiname")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), ["all", "active", "active", "active", "all", "active", "active", "active", "active", "active", "active"])
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["kanji", "kanji", "kanjiname", "icon", "iconname", "icon", "icon", "kanji", "kanji", "kanji", "kanji"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), Array(9).fill("active"))
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["icon", "icon", "icon", "kanjiname", "kanjiname", "kanji", "kanji", "kanji", "kanji"])
   assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "kanjiname")
   assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
@@ -70,7 +73,7 @@ test("bluetooth styles: device, marks, count, off; an older \"on\" reads as devi
   assert.deepEqual(S.OPTIONS.bluetooth, ["device", "marks", "count", "off"])
   assert.equal(S.coerce("bluetooth", "on"), "device")
   assert.equal(S.resolve({ edits: { bluetooth: "on" } }).bluetooth, "device")
-  assert.equal(S.resolve({ preset: "Scroll" }).bluetooth, "marks")
+  assert.equal(S.resolve({ preset: "Islet" }).bluetooth, "marks")
 })
 
 test("every preset sets every setting to a valid option", () => {
@@ -113,7 +116,7 @@ test("invalid and unknown edits are dropped with a warning", () => {
 })
 
 test("setting a value equal to the preset removes the edit", () => {
-  let d = S.withSetting({ preset: "Sheet" }, "clock", "mono")
+  let d = S.withSetting({ preset: "Kamon" }, "clock", "mono")
   assert.deepEqual(d.edits, { clock: "mono" })
   d = S.withSetting(d, "clock", "stacked")
   assert.deepEqual(d.edits, {})
@@ -121,7 +124,7 @@ test("setting a value equal to the preset removes the edit", () => {
 })
 
 test("applying a preset clears edits but keeps monitors and glyph", () => {
-  const d = S.withPreset({ preset: "Sheet", edits: { clock: "mono" }, sealGlyph: "侍", monitors: { A: { height: 32 } } }, "islet")
+  const d = S.withPreset({ preset: "Quiet", edits: { clock: "mono" }, sealGlyph: "侍", monitors: { A: { height: 32 } } }, "islet")
   assert.equal(d.preset, "Islet")
   assert.deepEqual(d.edits, {})
   assert.equal(d.sealGlyph, "侍")
@@ -354,6 +357,12 @@ test("Tab walks the sheets that can open, wrapping", () => {
   assert.equal(Sh.step("power", 1), "display")
   assert.equal(Sh.step("time", 1, ["time", "inbox"]), "inbox")
   assert.equal(Sh.step("nope", 1, ["sound"]), "sound")
+  // No. 00 (Inkan) walks first when it can open, and is never a bar sheet.
+  assert.equal(Sh.step("inbox", 1, ["all", "time", "inbox"]), "all")
+  assert.equal(Sh.step("all", 1, ["all", "time", "inbox"]), "time")
+  assert.equal(Sh.step("inbox", 1), "time")
+  assert.equal(Sh.byKey("all").no, "00")
+  assert.ok(Sh.SHEETS.every(x => x.key !== "all"))
 })
 
 test("togglePanelAt right N counts distinct Omarchy panels on the right", () => {
@@ -565,7 +574,7 @@ test("scroll: centring a section, and landing a pan on the nearest", () => {
 test("scroll: nine interludes, each with a kanji, presets pick one", () => {
   assert.deepEqual(S.OPTIONS.interlude, ["ma", "hairline", "folio", "kotoba", "tsugime", "seal", "jiku", "fuda", "su"])
   assert.equal(S.resolve({}).interlude, "seal")
-  assert.equal(S.resolve({ preset: "Scroll" }).interlude, "kotoba")
+  assert.equal(S.resolve({ preset: "Ma" }).interlude, "fuda")
   assert.equal(S.resolve({ preset: "Islet" }).interlude, "fuda")
   assert.equal(S.resolve({ preset: "Quiet" }).interlude, "ma")
   assert.equal(S.resolve({ preset: "Hanko", edits: { interlude: "dither" } }).interlude, "seal")
@@ -605,8 +614,9 @@ test("settings: six cards hold every one of the twenty-four settings once", () =
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => beside.indexOf(k) < 0)
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
-  assert.deepEqual(Object.keys(Se.PRESET_BLURBS), S.PRESET_NAMES)
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)   // Design went with the Shōji design (S5); Presets came
+  assert.deepEqual(Object.keys(Se.PRESET_BLURBS).sort(), [...S.PRESET_NAMES].sort())
+  // Typesetting, Presets, Parts, Colour, Screens · Sheets, Scroll, Overview · Motion, Keys · Profile, About, Credits
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 13)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -638,7 +648,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Scroll"), S.resolve), 13)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Islet"), S.resolve), 12)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -802,10 +812,10 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(d.motion, "still")
   assert.deepEqual(d.edits, {})
   assert.equal(S.withSetting({}, "motion", "fast"), null)
-  assert.equal(S.withPreset(d, "Sheet").motion, "still")
+  assert.equal(S.withPreset(d, "Quiet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 3913788948480)
+  assert.equal(S.combinations(), 31310311587840)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -815,7 +825,7 @@ test("type size sits beside motion: small, regular or large, kept through preset
   assert.equal(d.typeSize, "large")
   assert.deepEqual(d.edits, {})
   assert.equal(S.withSetting({}, "typeSize", "tiny"), null)
-  assert.equal(S.withPreset(d, "Sheet").typeSize, "large")
+  assert.equal(S.withPreset(d, "Quiet").typeSize, "large")
   assert.equal(S.shuffled(d, () => 0.5).typeSize, "large")
   assert.deepEqual(S.TYPE_SIZES.map((t) => S.TYPE_SCALE[t]), [0.9, 1, 1.15])
   assert.deepEqual(Se.optionsFor("typeSize", S.OPTIONS), S.TYPE_SIZES)
@@ -840,7 +850,7 @@ test("hidden parts: shown or hidden per part, kept through presets, shuffles and
   assert.equal(S.withSetting({}, "show:nonsense", "hidden"), null)
   assert.equal(S.withSetting({}, "show:tray:", "hidden"), null)
   assert.deepEqual(S.withSetting({}, "show:tray:nm-applet", "hidden").hidden, ["tray:nm-applet"])
-  assert.deepEqual(S.withPreset(d, "Sheet").hidden, d.hidden)
+  assert.deepEqual(S.withPreset(d, "Quiet").hidden, d.hidden)
   assert.deepEqual(S.shuffled(d, () => 0.5).hidden, d.hidden)
   assert.equal(S.shows({}, "seal"), true)
 })
@@ -854,7 +864,7 @@ test("hidden parts: a part its setting leaves out reads hidden, and showing it s
   assert.equal(S.resolve(t).title, "cell")
   assert.equal(S.withSetting({ preset: "Quiet" }, "show:bluetooth", "shown").edits.bluetooth, "device")
   // The preset's own way comes back when it draws the part.
-  const s = S.withSetting({ preset: "Sheet", edits: { seal: "none" } }, "show:seal", "shown")
+  const s = S.withSetting({ preset: "Quiet", edits: { seal: "none" } }, "show:seal", "shown")
   assert.equal(S.resolve(s).seal, "stamp")
   assert.deepEqual(s.edits, {})
   // Picking a way to draw a hidden part shows it again.
@@ -966,7 +976,7 @@ test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () =
   assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
   assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
   assert.equal(S.resolve({}).endleaf, "koyomi")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["shimai", "okugaki", "koyomi", "batsu", "kiki", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["batsu", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
   assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
   assert.equal(Se.endleafOf("iro").name, "Iro")
   assert.equal(Lf.kindOf("nope").key, "koyomi")
@@ -1120,14 +1130,14 @@ test("end leaf: notes you can tick, and the clipboard", () => {
 test("scroll sides: bare or curl, in place of the rollers", () => {
   assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
   assert.equal(S.resolve({}).sides, "curl")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "curl", "bare", "bare", "curl", "bare", "curl", "curl", "curl", "curl"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "bare", "curl", "curl", "curl", "curl", "curl", "curl"])
   assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
 })
 
 test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
   assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
   assert.equal(S.resolve({}).guides, "none")
-  const yours = ["Kamon", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, and the four studies built on it
+  const yours = ["Kamon", "Inkan", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, Inkan and the four studies built on it
   assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (yours.indexOf(p) >= 0 ? "none" : "both")))
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
@@ -1570,9 +1580,9 @@ test("right side: four studies as status values and presets on your Hanko bar", 
     assert.equal(p.status, status[name])
     assert.equal(p.indicatorStyle, "kanji")
     assert.deepEqual(Object.keys(p).sort(), [...S.KEYS].sort())
-    // Only the right zone (and Ma's dividers and scroll joins) differs from your bar.
+    // Only the right zone (and Ma's dividers, height and scroll joins) differs from your bar.
     const diff = S.KEYS.filter(k => p[k] !== hanko[k])
-    const allowed = ["status", "meters", "indicatorStyle", "rules", "interlude"]
+    const allowed = ["status", "meters", "indicatorStyle", "rules", "interlude"].concat(name === "Ma" ? ["height"] : [])
     assert.ok(diff.every(k => allowed.indexOf(k) >= 0), name + " changes " + diff)
   }
   // Typed any case, with or without the macron.
@@ -1605,7 +1615,7 @@ test("right side: short names and how full a reading is", () => {
 
 test("settings: a Presets 型 page, every preset with a kanji and its facts", () => {
   const pages = Se.RAIL.flatMap(g => g.pages)
-  assert.deepEqual(pages.slice(1, 3).map(p => p.key), ["presets", "typesetting"])
+  assert.deepEqual(pages.slice(0, 2).map(p => p.key), ["typesetting", "presets"])
   assert.equal(Se.pageInfo("presets").page.jp, "型")
   assert.equal(Se.pageInfo("nope").page.key, "typesetting")
   assert.deepEqual(Object.keys(Se.PRESET_KANJI).sort(), [...S.PRESET_NAMES].sort())
@@ -1630,4 +1640,195 @@ test("Kamon 家紋 is the preset that was Hanko; the old name still loads it", (
   assert.equal(Se.PRESET_KANJI.Kamon, "家紋")
   assert.equal(Se.PRESET_BLURBS.Kamon, "the family crest")
 })
+test("inkan: form and its corner are settings; the Inkan preset is Kamon as a seal", () => {
+  assert.deepEqual(S.OPTIONS.form, ["bar", "inkan"])
+  assert.deepEqual(S.OPTIONS.inkanAt, Ik.CORNERS)
+  assert.equal(S.resolve({}).form, "bar")
+  assert.equal(S.resolve({}).inkanAt, "bottom-right")
+  const diff = S.KEYS.filter(k => S.PRESETS.Inkan[k] !== S.PRESETS.Kamon[k])
+  assert.deepEqual(diff, ["form"])
+  assert.equal(S.withPreset({}, "inkan").preset, "Inkan")
+  // Per monitor: a laptop all seal beside a full bar.
+  const d = S.withMonitorSetting({}, "eDP-1", "form", "inkan")
+  assert.equal(S.resolve(d, "eDP-1").form, "inkan")
+  assert.equal(S.resolve(d, "DP-2").form, "bar")
+  // A shuffle never takes the bar away or moves the seal.
+  for (let i = 0; i < 20; i++) {
+    let n = i
+    const sh = S.shuffled({ edits: { inkanAt: "top-left" } }, () => ((n = (n * 7919 + 13) % 997) / 997))
+    assert.equal(S.resolve(sh).form, "bar")
+    assert.equal(S.resolve(sh).inkanAt, "top-left")
+  }
+  assert.ok(Se.CARDS.some(c => c.rows.some(r => r.key === "form")))
+  assert.equal(Se.PRESET_KANJI.Inkan, "印")
+  assert.equal(Se.presetFacts(S.resolve({ preset: "Inkan" })), "form inkan · seal bottom-right · panels sheets")
+})
+
+test("inkan: the battery wears the carving, always in the same places", () => {
+  assert.equal(Ik.wear(null), 1)
+  assert.equal(Ik.wear({ percent: 90 }), 1)
+  assert.equal(Ik.wear({ percent: 60 }), 1)
+  assert.equal(Ik.wear({ percent: 10, charging: true }), 1)
+  assert.ok(Ik.wear({ percent: 45 }) > Ik.wear({ percent: 30 }))
+  assert.ok(Ik.wear({ percent: 30 }) > Ik.wear({ percent: 14 }))
+  assert.equal(Ik.wear({ percent: 0 }), 0.3)
+  assert.deepEqual(Ik.specks(), Ik.specks())
+  const all = Ik.specks()
+  assert.ok(all.length > 60 && all.every(p => p.x > 0 && p.x < 1 && p.y > 0 && p.y < 1 && p.t <= 1))
+  assert.equal(Ik.worn(all, 1).length, 0)
+  const low = Ik.worn(all, Ik.wear({ percent: 14 })), mid = Ik.worn(all, Ik.wear({ percent: 40 }))
+  assert.ok(low.length > mid.length && mid.length > 0)
+  // Wearing further only adds specks.
+  assert.ok(mid.every(p => low.indexOf(p) >= 0))
+})
+
+test("inkan: chips for letters, an outline when quiet, a broken rule offline", () => {
+  const one = [{ urgent: false }], three = [{}, {}, { urgent: true }]
+  assert.deepEqual(Ik.chips([], false), { count: 0, deep: false })
+  assert.deepEqual(Ik.chips(one, false), { count: 1, deep: false })
+  assert.deepEqual(Ik.chips(three, false), { count: 2, deep: true })
+  assert.deepEqual(Ik.chips(three, true), { count: 0, deep: false })
+  assert.ok(Ik.chipSize(true) > Ik.chipSize(false))
+  // A list QML hands over need not be a JS Array: counted by its length.
+  assert.deepEqual(Ik.chips({ length: 2, 0: {}, 1: { urgent: true } }, false), { count: 1, deep: true })
+  const c = Ik.carving({ seal: "stamp", sealGlyph: "寛" }, { notifications: one, network: { off: true }, battery: { percent: 12, needsYou: true } })
+  assert.equal(c.glyph, "寛")
+  assert.equal(c.chips, 1)
+  assert.ok(c.broken && c.low && c.wear < 1 && !c.outline)
+  assert.equal(Ik.carving({ seal: "workspace" }, { workspace: 3 }).glyph, "参")
+  assert.ok(Ik.carving({ seal: "stamp" }, { dnd: true }).outline)
+  assert.ok(Ik.carving({ seal: "carved" }, {}).outline)
+  assert.ok(!Ik.carving({ seal: "carved" }, { notifications: one }).outline)
+  assert.equal(Ik.carving({ seal: "none" }, {}).glyph, "鑑")
+  // Recording or dictation rings the seal, and leads the reading in red.
+  const rec = [{ key: "recording", on: true }, { key: "night", on: true }]
+  assert.ok(Ik.carving({}, { indicators: rec }).live)
+  assert.ok(!Ik.carving({}, { indicators: [{ key: "recording", on: false }, { key: "night", on: true }] }).live)
+  assert.deepEqual(Ik.reading({ indicators: rec }, "9:41")[1], { jp: "写", text: "recording", red: true })
+})
+
+test("inkan: the hover reading and No. 00's rows", () => {
+  const d = { battery: St.battery(14, false, true), network: St.network("wifi\tKumo\t82\t5180"),
+              volume: St.volume(0.62, false, true), notifications: [{}, { urgent: true }], dnd: false,
+              bluetooth: { enabled: true, connected: 1, name: "WH-1000XM5", level: 0.8, needsYou: false },
+              brightness: { percent: 70 } }
+  const r = Ik.reading(d, "21:44")
+  assert.equal(r[0].text, "21:44")
+  assert.deepEqual(r.slice(1).map(p => [p.jp || "", p.text, !!p.red]), [["電", "14%", true], ["", "Kumo", false], ["報", "2", true]])
+  const rows = Ik.rows(d)
+  assert.deepEqual(rows.map(x => x.key), ["sound", "network", "bluetooth", "power", "display", "inbox"])
+  assert.deepEqual(rows.map(x => x.value), ["62%", "Kumo · 82%", "WH-1000XM5 · 80%", "14%", "70%", "2 letters"])
+  assert.deepEqual(rows.filter(x => x.red).map(x => x.key), ["power", "inbox"])
+  // A desktop: no Power, Display or Bluetooth rows; quiet inbox.
+  const desk = Ik.rows({ volume: St.volume(0.5, true, true), network: St.network(""), notifications: [{}], dnd: true })
+  assert.deepEqual(desk.map(x => [x.key, x.value, x.red]), [["sound", "Muted", true], ["network", "Offline", true], ["inbox", "Quiet", false]])
+  // Each row's kanji is its sheet's.
+  for (const row of Ik.ROWS) assert.equal(row.jp, Sh.byKey(row.key).jp, row.key)
+})
+
+test("inkan: the seal in its corner, the sheet printed away from the edge it shares", () => {
+  assert.deepEqual(Ik.place("bottom-right", 1920, 1080, 46, 18), { x: 1856, y: 1016, width: 46, height: 46 })
+  assert.deepEqual(Ik.place("top-left", 1920, 1080, 46, 18), { x: 18, y: 18, width: 46, height: 46 })
+  assert.equal(Ik.cornerOf("middle"), "bottom-right")
+  const br = Ik.sheetPlace("bottom-right", 1920, 1080, Ik.place("bottom-right", 1920, 1080, 46, 18), 440, 560, 18, 8)
+  assert.deepEqual(br, { x: 1462, y: 438, origin: "bottom-right" })
+  const tl = Ik.sheetPlace("top-left", 1920, 1080, Ik.place("top-left", 1920, 1080, 46, 18), 440, 560, 18, 8)
+  assert.deepEqual(tl, { x: 18, y: 82, origin: "top-left" })
+  // A sheet taller than the room above stays on screen.
+  assert.equal(Ik.sheetPlace("bottom-left", 800, 500, Ik.place("bottom-left", 800, 500, 46, 18), 440, 560, 18, 8).y, 8)
+  assert.equal(Ik.nearest(100, 900, 1920, 1080), "bottom-left")
+  assert.equal(Ik.nearest(1500, 100, 1920, 1080), "top-right")
+})
+
+
+test("settings: the proof sets every setting once, on its part or on the Scroll page", () => {
+  const onProof = Se.PROOF.flatMap(p => p.cast.concat(p.also))
+  const onScroll = Se.PANELS_CARD.rows.map(r => r.key).concat(["interlude", "endleaf"])
+  const all = onProof.concat(onScroll)
+  assert.equal(new Set(all).size, all.length)
+  const want = S.KEYS.concat(["sealGlyph", "numerals", "hours", "season", "grain", "typeSize", "overview"])
+  for (const k of want) assert.ok(all.includes(k), k)
+  assert.deepEqual(Se.PROOF.map(p => p.no), ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"])
+  // Every way a cast setting can take has a specimen name and line.
+  for (const p of Se.PROOF) for (const k of p.cast)
+    for (const v of Se.optionsFor(k, S.OPTIONS)) assert.ok(Se.WAYS[k][v] && Se.wayOf(k, v).line, k + " " + v)
+  for (const p of Se.PROOF) for (const k of p.also) assert.ok(Se.ALSO[k], k)
+})
+
+test("settings: the proof's parts, edits, search and stepping", () => {
+  assert.equal(Se.proofPartOf("hours").key, "clock")
+  assert.equal(Se.proofPartOf("inkanAt").key, "frame")
+  assert.equal(Se.proofPartOf("interlude"), null)
+  assert.equal(Se.proofPart("nope").key, "seal")
+  const doc = S.normalize({ preset: "Ma", edits: { clock: "inline", hours: "24h", form: "inkan" } })
+  assert.deepEqual(Se.proofEdits(Se.proofPart("clock"), doc), ["clock"])
+  assert.deepEqual(Se.proofEdits(Se.proofPart("frame"), doc), ["form"])
+  assert.ok(Se.proofMatches(Se.proofPart("status"), "brush line", S.OPTIONS))
+  assert.ok(Se.proofMatches(Se.proofPart("clock"), "solar", S.OPTIONS))
+  assert.ok(!Se.proofMatches(Se.proofPart("seal"), "solar", S.OPTIONS))
+  assert.ok(Se.proofMatches(Se.proofPart("frame"), "glass", S.OPTIONS))
+  assert.equal(Se.proofStep("frame", 1), "seal")
+  assert.equal(Se.proofStep("seal", -1), "frame")
+  assert.equal(Se.wayOf("status", "inro").name, "Inrō 印籠")
+})
+
+test("settings: the last change in words, and every rail page has a line", () => {
+  const a = S.normalize({ preset: "Ma" })
+  assert.equal(Se.describeChange(a, S.withSetting(a, "clock", "inline"), S.resolve), "Clock · stacked → inline")
+  assert.equal(Se.describeChange(a, S.withPreset(a, "Kamon"), S.resolve), "Preset · Ma → Kamon")
+  assert.equal(Se.describeChange(a, S.withSetting(a, "show:seal", "hidden"), S.resolve), "Seal set aside")
+  assert.equal(Se.describeChange(a, S.withSetting(a, "show:indicator:night", "hidden"), S.resolve), "Night light set aside")
+  assert.equal(Se.describeChange(a, S.withMonitorSetting(a, "DP-2", "height", 32), S.resolve), "DP-2 · Height 32")
+  assert.equal(Se.describeChange(a, a, S.resolve), "")
+  assert.equal(Se.pageInfo("widgets").page.key, "parts")
+  for (const g of Se.RAIL) for (const p of g.pages)
+    assert.ok(Se.PLATES.includes(p.key) || Se.PAGE_LINES[p.key], p.key)
+})
+
+test("settings: what a preset would change, in the proof's order", () => {
+  const doc = S.normalize({ preset: "Ma", edits: { clock: "inline" } })
+  const toKamon = Se.presetDiff(doc, "Kamon", S)
+  const keys = toKamon.map(r => r.key)
+  assert.ok(keys.indexOf("clock") < keys.indexOf("status"))
+  assert.deepEqual(toKamon.find(r => r.key === "clock"), { key: "clock", name: "Clock", no: "04", part: "Clock", from: "inline", to: "stacked" })
+  assert.equal(toKamon.find(r => r.key === "status").to, "cells")
+  assert.equal(toKamon.find(r => r.key === "interlude").no, "—")
+  assert.deepEqual(Se.presetDiff(S.normalize({ preset: "Ma" }), "Ma", S), [])
+  assert.ok(Se.presetDiff(doc, "Shōji", S).some(r => r.key === "sheetStyles"))
+})
+
+test("settings: the parts tray holds every part once, each a known part", () => {
+  const ctx = { own: { indicators: true, keyboard: true, mic: true, tray: true },
+    indicators: [{ key: "night", glyph: "月", title: "Night light" }],
+    tray: [{ id: "nm-applet", title: "Network", letter: "N" }],
+    hosted: [{ id: "omarchy.weather", name: "Weather", firstParty: true }] }
+  const parts = Se.partsTray(ctx).flatMap(g => g.sorts.map(s => s.part))
+  assert.equal(new Set(parts).size, parts.length)
+  for (const p of parts) assert.ok(S.withSetting(S.normalize({}), "show:" + p, "hidden"), p)
+  assert.ok(parts.includes("indicator:night") && parts.includes("tray:nm-applet") && parts.includes("hosted:omarchy.weather"))
+  assert.ok(!Se.partsTray({}).flatMap(g => g.sorts).some(s => s.kind === "stamp"))
+})
+
+test("settings: the timesheet has every motion, the keymap lights its keys", () => {
+  assert.deepEqual(Se.MOTION_SHEET.map(m => m.prop), Se.MOTION_ROWS.map(r => r[2]))
+  for (const m of Se.MOTION_SHEET) assert.equal(m.curve.length, 4)
+  const sheet = Se.KEYMAP.find(c => c.key === "sheet")
+  const lit = Se.keysLit(sheet)
+  assert.ok(lit.Esc && lit.Tab && lit.M && lit["↑"] && !lit.H)
+  const scroll = Se.keysLit(Se.KEYMAP.find(c => c.key === "scroll"))
+  assert.ok(scroll["1"] && scroll["8"] && !scroll["9"] && !scroll["0"])
+  const overview = Se.keysLit(Se.KEYMAP.find(c => c.key === "overview"))
+  assert.ok(overview["0"] && overview["9"] && overview.J)
+  const settings = Se.keysLit(Se.KEYMAP[0])
+  assert.ok(settings["1"] && settings["0"] && settings["5"])
+  assert.equal(Se.keyDoes(sheet, "M"), "Sound: mute")
+  assert.equal(Se.keyDoes(sheet, "Q"), "")
+  for (const b of Se.BINDINGS) {
+    const code = Se.bindingCode(b)
+    assert.ok(code.startsWith('hl.unbind("' + b.keys + '")\n'), code)
+    assert.ok(code.includes('o.bind("' + b.keys + '", "' + b.name + '", "omarchy-shell hanko '))
+  }
+  assert.equal(Se.bindingsCode().split("hl.unbind").length - 1, Se.BINDINGS.length)
+})
+
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

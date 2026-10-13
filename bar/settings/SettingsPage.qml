@@ -3,36 +3,36 @@ import QtQuick
 import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
-import "../../core/Leaf.js" as LeafJs
 import ".."
-import "../scroll"
 
-// Hanko's settings (docs/COMPONENTS.md §6), in the Ryoku Hub grammar: a
-// numbered rail on the left, the page on the right, an action bar at the
-// foot. Pure QtQuick: bar/SettingsWindow.qml feeds it Typeset's draft and
-// live bar data; the harness renders it still.
-//
-// Presets 型 shows every preset as a live specimen (PresetsPage.qml).
-// Typesetting 組版 holds every setting: a live preview of the bar, a line naming the preset (a link to Presets), and six cards
-// of segmented controls.
+// Hanko's settings (docs/COMPONENTS.md §6; docs/settings-kosei): a numbered
+// rail on the left, the open page on the right, an action bar at the foot.
+// Every page is its own file, built only while it is open, and keeps one
+// rule: the thing itself first, pictures of its choices second, words last.
+// Pure QtQuick: bar/SettingsWindow.qml feeds it Typeset's draft and live
+// bar data; the harness renders it still.
 Rectangle {
   id: root
 
   // The draft document and what is saved (style.json shapes).
   property var draft: S.normalize({})
   property var saved: S.normalize({})
-  // Rail page key (Settings.RAIL).
+  // Rail page key (Settings.RAIL; old keys through PAGE_ALIASES).
   property string page: "typesetting"
+  readonly property string pageKey: Settings.pageInfo(page).page.key
   property string query: ""
-  property bool advanced: false
-  // Screen names, for per-monitor overrides under Advanced.
+  // Screen names, and the screens with their geometry (Screens 画面).
   property var monitors: []
-  // Live data for the preview bars: { now, spaces, activeWindow, home,
-  // media, volume, network, battery, brightness, notifications, dnd,
-  // timeFormat }.
+  property var screens: []
+  // Live data for the bars drawn here: { now, spaces, activeWindow, home,
+  // media, volume, network, bluetooth, battery, brightness, notifications,
+  // dnd, timeFormat, indicators, screenWidth }.
   property var barData: ({})
   // The sheets' plain data, for the Sheets page's live preview.
   property var sheetFeed: ({})
+  // Omarchy's themes and the one in use (Colour 色): [{ slug, name, bg, fg, red, light }].
+  property var themes: []
+  property string theme: ""
   // For the plates: services/Machine.qml info, core/Dossier.qml doc, the
   // plugin's version and where Profile saves an image.
   property var machine: ({ user: "", host: "", kernel: "", uptime: 0, theme: "", omarchy: "", hyprland: "", packages: 0, since: "", machine: "" })
@@ -41,59 +41,85 @@ Rectangle {
   property string picturesDir: ""
   // Opens Profile in EDIT (the harness).
   property bool profileEditing: false
-  readonly property bool onPlate: Settings.PLATES.indexOf(page) >= 0
-  // What the Widgets page lists besides Hanko's own parts
+  readonly property bool onPlate: Settings.PLATES.indexOf(pageKey) >= 0
+  // What the Parts page lists besides Hanko's own parts
   // (Settings.visibilityCards ctx: own, indicators, tray, hosted).
   property var visibility: ({})
+  // How many changes Undo can walk back, and the last one in words.
+  property int undoCount: 0
+  property string lastChange: ""
 
   signal settingPicked(string key, string value)
   signal presetPicked(string name)
   signal resetToPreset()
-  // Every change is saved as it is made; Undo walks this visit's back.
-  property int undoCount: 0
   signal undo()
   signal pagePicked(string key)
   signal queryEdited(string text)
-  signal advancedToggled(bool on)
   signal monitorCleared(string name)
   signal monitorPicked(string monitor, string key, string value)
   signal shuffle()
+  signal showAll()
+  signal themePicked(string slug)
+  // Keys: a binding to put on the clipboard.
+  signal copyText(string text)
   // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
   // core/Profile.js BLOCKS.
   signal profileTextEdited(string field, string value)
   signal profileBlockToggled(string block)
   signal profileReset()
-  signal showAll()
 
   readonly property var style: S.resolve(draft)
 
-  // Advanced: the monitor whose overrides are shown (the first by default),
-  // how it resolves, and which settings it sets for itself.
+  // ------------------------------------------------- Typesetting's proof
+  // The open part (Settings.PROOF key). A click on the galley or the
+  // index, Left/Right or 1-0 from the window change it.
+  property string part: "seal"
+  signal partPicked(string key)
+  onPartPicked: function(key) { part = key }
+  function stepPart(delta) { part = Settings.proofStep(partShown, delta) }
+  function pickPartAt(n) { if (n >= 0 && n < Settings.PROOF.length) part = Settings.PROOF[n].key }
+  // A specimen under the pointer is tried on the galley ({ key, value }).
+  property var trial: null
+  readonly property var proofStyle: {
+    if (!trial) return style
+    var s = Object.assign({}, style)
+    s[trial.key] = trial.key === "height" ? Number(trial.value) : trial.value
+    return s
+  }
+  readonly property var litParts: String(query).trim() === "" ? []
+    : Settings.PROOF.filter(function(p) { return Settings.proofMatches(p, root.query, S.OPTIONS) }).map(function(p) { return p.key })
+  readonly property string partShown: litParts.length && litParts.indexOf(part) < 0 ? litParts[0] : part
+  readonly property var editedParts: Settings.PROOF.filter(function(p) { return Settings.proofEdits(p, root.draft).length > 0 }).map(function(p) { return p.key })
+  // The bar data, with indicators to show: yours when any is on, else two
+  // lit, so the part has a face.
+  readonly property var proofData: {
+    var d = Object.assign({}, barData)
+    var inds = barData.indicators || []
+    var anyOn = false
+    for (var i = 0; i < inds.length; i++) if (inds[i].on) anyOn = true
+    if (!anyOn) d.indicators = Settings.SAMPLE_INDICATORS
+    return d
+  }
+
+  // Presets: the pattern open in the book ("" = the one in use).
+  property string presetView: ""
+  // Screens: the one picked (the first by default).
   property string overrideMonitor: ""
-  readonly property string monitorShown: monitors.indexOf(overrideMonitor) >= 0 ? overrideMonitor : (monitors[0] || "")
-  readonly property var monitorStyle: S.resolve(draft, monitorShown)
-  readonly property var monitorOwn: Object.keys(draft.monitors[monitorShown] || {})
 
-  // Scroll the page to its foot (the Advanced card), as the harness does.
+  // Scroll the page to its foot, as the harness does.
   function scrollToEnd() { scroller.contentY = Math.max(0, scroller.contentHeight - scroller.height) }
-
   // `/` from the window: put the cursor in the search field.
   function focusSearch() { (compact ? pageSearch : railSearch).input.forceActiveFocus() }
-  readonly property int changes: Settings.changes(saved, draft, S.resolve)
   readonly property var rail: Settings.RAIL
-  // Which rail entry the open page is; looked up in the whole rail, so the
-  // title never depends on what the rail currently hides.
   readonly property var pageInfo: Settings.pageInfo(root.page)
 
   color: Ink.paper
   implicitWidth: Type.px(1600)
   implicitHeight: Type.px(900)
 
-  // The window can be any size (a tiled window ignores the minimum), so the
-  // page reflows: the rail narrows, then folds to its glyphs with the search
-  // moving onto the page; cards, presets and overrides drop columns.
+  // The window can be any size, so the page reflows: the rail narrows, then
+  // folds to its glyphs with the search moving onto the page.
   readonly property bool compact: width < Type.px(760)
-  // Side margin of the page and the action bar.
   readonly property int pad: compact ? Type.px(16) : Type.px(32)
 
   // ================================================================ rail
@@ -104,8 +130,6 @@ Rectangle {
 
     Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: Ink.line }
 
-    // The rail's own scroll, so a short window never runs the pages under
-    // the Advanced switch.
     Flickable {
       id: railScroller
       x: root.compact ? Type.px(8) : Type.px(20)
@@ -117,180 +141,167 @@ Rectangle {
       clip: true
       boundsBehavior: Flickable.StopAtBounds
 
-    Column {
-      id: railColumn
-      width: railScroller.width
+      Column {
+        id: railColumn
+        width: railScroller.width
 
-      // The masthead: a seal and HANKO //SETTINGS_
-      Rectangle {
-        width: parent.width
-        height: mast.height + 2 * Type.px(root.compact ? 6 : 14)
-        radius: 3
-        color: "transparent"
-        border.width: root.compact ? 0 : 1
-        border.color: Ink.lineStrong
-        Row {
-          id: mast
-          x: root.compact ? (parent.width - width) / 2 : Type.px(14)
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: Type.px(12)
-          Rectangle {
-            width: Type.px(34)
-            height: Type.px(34)
-            radius: 3
-            color: Ink.seal
-            Text {
-              anchors.centerIn: parent
-              text: root.draft.sealGlyph || "鑑"
-              color: Ink.paper
-              font.family: Type.jpSerif
-              font.pixelSize: Type.px(19)
-            }
-          }
-          Column {
-            visible: !root.compact
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: Type.px(3)
-            Text { text: "HANKO"; color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(12); font.weight: Font.Medium; font.letterSpacing: Type.px(2.6) }
-            Text { text: "//SETTINGS_"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
-          }
-        }
-      }
-
-      Item { width: 1; height: Type.px(16); visible: !root.compact }
-
-      // Search: filters the rows of the cards and the pages of the rail.
-      SearchField { id: railSearch; visible: !root.compact; width: parent.width }
-
-      Item { width: 1; height: Type.px(2) }
-
-      Repeater {
-        model: root.rail
-        Column {
-          id: group
-          required property var modelData
-          readonly property var pages: !modelData ? [] : modelData.pages.filter(function(p) { return Settings.pageMatches(p, root.query) || root.query === "" })
+        // The masthead: your seal and HANKO //SETTINGS_
+        Rectangle {
           width: parent.width
-          visible: pages.length > 0
-
-          Item {
-            width: parent.width
-            height: Type.px(16) + groupName.height + Type.px(6)
-            Text {
-              id: groupName
-              y: Type.px(16)
-              // Folded, a group keeps only its number.
-              text: !group.modelData ? "" : root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
-              color: group.modelData && group.modelData.group === root.pageInfo.group ? Ink.bone : Ink.inkFaint
-              font.family: Type.mono
-              font.pixelSize: Type.label
-              font.letterSpacing: Type.trackLabel
-            }
+          height: mast.height + 2 * Type.px(root.compact ? 6 : 14)
+          radius: 3
+          color: "transparent"
+          border.width: root.compact ? 0 : 1
+          border.color: Ink.lineStrong
+          Row {
+            id: mast
+            x: root.compact ? (parent.width - width) / 2 : Type.px(14)
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: Type.px(12)
             Rectangle {
-              x: groupName.width + Type.px(8)
-              anchors.verticalCenter: groupName.verticalCenter
-              width: parent.width - x
-              height: 1
-              color: Ink.lineSoft
+              width: Type.px(34)
+              height: Type.px(34)
+              radius: 3
+              color: Ink.seal
+              Text {
+                anchors.centerIn: parent
+                text: root.draft.sealGlyph || "鑑"
+                color: Ink.paper
+                font.family: Type.jpSerif
+                font.pixelSize: Type.px(19)
+              }
+            }
+            Column {
+              visible: !root.compact
+              anchors.verticalCenter: parent.verticalCenter
+              spacing: Type.px(3)
+              Text { text: "HANKO"; color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(12); font.weight: Font.Medium; font.letterSpacing: Type.px(2.6) }
+              Text { text: "//SETTINGS_"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
             }
           }
+        }
 
-          Repeater {
-            model: group.pages
-            Rectangle {
-              id: item
-              required property var modelData
-              readonly property bool on: modelData.key === root.page
-              width: group.width
-              height: Type.px(40)
-              radius: 3
-              color: on ? Ink.bone : itemHover.containsMouse ? Ink.lineSoft : "transparent"
-              Row {
-                visible: !root.compact
-                x: Type.px(14)
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: Type.px(10)
-                Text {
-                  visible: item.on
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: "//"
-                  color: Ink.boneInk
-                  opacity: 0.6
-                  font.family: Type.mono
-                  font.pixelSize: Type.px(12)
-                }
-                Text {
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: item.modelData.label
-                  color: item.on ? Ink.boneInk : Ink.inkDim
-                  font.family: Type.text
-                  font.pixelSize: Type.row
-                }
-              }
-              // Folded, the glyph alone names the page, centred.
+        Item { width: 1; height: Type.px(16); visible: !root.compact }
+        SearchField { id: railSearch; visible: !root.compact; width: parent.width }
+        Item { width: 1; height: Type.px(2) }
+
+        Repeater {
+          model: root.rail
+          Column {
+            id: group
+            required property var modelData
+            readonly property var pages: !modelData ? [] : modelData.pages.filter(function(p) { return Settings.pageMatches(p, root.query) || root.query === "" })
+            width: parent.width
+            visible: pages.length > 0
+
+            Item {
+              width: parent.width
+              height: Type.px(16) + groupName.height + Type.px(6)
               Text {
-                x: root.compact ? (parent.width - width) / 2 : parent.width - width - Type.px(14)
-                anchors.verticalCenter: parent.verticalCenter
-                text: root.compact ? item.modelData.jp.charAt(0) : item.modelData.jp
-                color: item.on ? Ink.boneInk : root.compact ? Ink.inkDim : Ink.inkFaint
-                font.family: Type.jp
-                font.pixelSize: Type.px(root.compact ? 15 : 12)
+                id: groupName
+                y: Type.px(16)
+                text: !group.modelData ? "" : root.compact ? group.modelData.group.replace(/ .*/, "") : group.modelData.group
+                color: group.modelData && group.modelData.group === root.pageInfo.group ? Ink.bone : Ink.inkFaint
+                font.family: Type.mono
+                font.pixelSize: Type.label
+                font.letterSpacing: Type.trackLabel
               }
-              MouseArea {
-                id: itemHover
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.pagePicked(item.modelData.key)
+              Rectangle {
+                x: groupName.width + Type.px(8)
+                anchors.verticalCenter: groupName.verticalCenter
+                width: parent.width - x
+                height: 1
+                color: Ink.lineSoft
+              }
+            }
+
+            Repeater {
+              model: group.pages
+              Rectangle {
+                id: item
+                required property var modelData
+                readonly property bool on: modelData.key === root.pageKey
+                width: group.width
+                height: Type.px(38)
+                radius: 3
+                color: on ? Ink.bone : itemHover.containsMouse ? Ink.lineSoft : "transparent"
+                Row {
+                  visible: !root.compact
+                  x: Type.px(14)
+                  anchors.verticalCenter: parent.verticalCenter
+                  spacing: Type.px(10)
+                  Text {
+                    visible: item.on
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "//"
+                    color: Ink.boneInk
+                    opacity: 0.6
+                    font.family: Type.mono
+                    font.pixelSize: Type.px(12)
+                  }
+                  Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: item.modelData.label
+                    color: item.on ? Ink.boneInk : Ink.inkDim
+                    font.family: Type.text
+                    font.pixelSize: Type.row
+                  }
+                }
+                Text {
+                  x: root.compact ? (parent.width - width) / 2 : parent.width - width - Type.px(14)
+                  anchors.verticalCenter: parent.verticalCenter
+                  text: root.compact ? item.modelData.jp.charAt(0) : item.modelData.jp
+                  color: item.on ? Ink.boneInk : root.compact ? Ink.inkDim : Ink.inkFaint
+                  font.family: Type.jp
+                  font.pixelSize: Type.px(root.compact ? 15 : 12)
+                }
+                MouseArea {
+                  id: itemHover
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.pagePicked(item.modelData.key)
+                }
               }
             }
           }
         }
       }
     }
-    }
 
-    // Advanced: the seal glyph, per-monitor overrides and the raw document.
+    // The foot: the keys that work everywhere here.
     Item {
       id: railFoot
       x: root.compact ? Type.px(8) : Type.px(20)
       width: parent.width - 2 * x
-      height: Type.px(50)
+      height: root.compact ? Type.px(8) : footKeys.height + Type.px(22)
       anchors.bottom: parent.bottom
       anchors.bottomMargin: Type.px(8)
-      Rectangle { width: parent.width; height: 1; color: Ink.line }
-      Text {
+      Rectangle { width: parent.width; height: 1; color: Ink.line; visible: !root.compact }
+      Grid {
+        id: footKeys
         visible: !root.compact
-        anchors.verticalCenter: parent.verticalCenter
-        text: "ADVANCED"
-        color: Ink.ink
-        font.family: Type.mono
-        font.pixelSize: Type.px(11)
-        font.letterSpacing: Type.px(1.6)
-      }
-      Rectangle {
-        x: root.compact ? (parent.width - width) / 2 : parent.width - width
-        anchors.verticalCenter: parent.verticalCenter
-        width: Type.px(34)
-        height: Type.px(18)
-        radius: 3
-        color: root.advanced ? Ink.alpha(Ink.ink, 0.14) : "transparent"
-        border.width: 1
-        border.color: Ink.lineStrong
-        Rectangle {
-          x: root.advanced ? parent.width - width - Type.px(3) : Type.px(3)
-          anchors.verticalCenter: parent.verticalCenter
-          width: Type.px(10)
-          height: width
-          radius: 1
-          color: root.advanced ? Ink.ink : Ink.inkFaint
-          Behavior on x { enabled: !Motion.still; NumberAnimation { duration: Motion.slide; easing.type: Easing.OutCubic } }
-        }
-        MouseArea {
-          anchors.fill: parent
-          anchors.margins: -Type.px(6)
-          cursorShape: Qt.PointingHandCursor
-          onClicked: root.advancedToggled(!root.advanced)
+        y: Type.px(14)
+        columns: 2
+        columnSpacing: Type.px(10)
+        rowSpacing: Type.px(6)
+        Repeater {
+          model: [["/", "search"], ["CTRL Z", "undo"], ["ESC", "close"], ["← →", "parts, on the proof"]]
+          Row {
+            id: hint
+            required property var modelData
+            spacing: Type.px(8)
+            Rectangle {
+              width: Math.max(Type.px(22), keyCap.implicitWidth + Type.px(10))
+              height: Type.px(18)
+              radius: 2
+              color: "transparent"
+              border.width: 1
+              border.color: Ink.line
+              Text { id: keyCap; anchors.centerIn: parent; text: hint.modelData[0]; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: 1 }
+            }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: hint.modelData[1]; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
+          }
         }
       }
     }
@@ -310,7 +321,7 @@ Rectangle {
       visible: active
       width: parent.width
       height: parent.height - (actions.visible ? actions.height : 0)
-      sourceComponent: root.page === "profile" ? profilePlate : root.page === "about" ? aboutPlate : creditsPlate
+      sourceComponent: root.pageKey === "profile" ? profilePlate : root.pageKey === "about" ? aboutPlate : creditsPlate
     }
 
     Flickable {
@@ -333,7 +344,7 @@ Rectangle {
         SearchField { id: pageSearch; visible: root.compact; width: parent.width }
         Item { width: 1; height: Type.px(14); visible: root.compact }
 
-        // Eyebrow: 鑑 BAR ───── hanko.bar · omarchy
+        // Eyebrow: 鑑 BAR · PRESET · MA + EDITS ───── hanko.bar · omarchy
         Item {
           width: parent.width
           height: Type.px(16)
@@ -341,12 +352,13 @@ Rectangle {
             id: eyebrow
             anchors.verticalCenter: parent.verticalCenter
             spacing: Type.px(10)
-            Text { anchors.verticalCenter: parent.verticalCenter; text: Typeset.current.sealGlyph || "鑑"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(13) }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: root.draft.sealGlyph || "鑑"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(13) }
             Text {
               anchors.verticalCenter: parent.verticalCenter
               width: Math.min(implicitWidth, pageColumn.width - Type.px(24))
               elide: Text.ElideRight
-              text: root.pageInfo.group.replace(/^\d+ /, "") + (root.page === "typesetting" || root.page === "presets" ? " · " + Settings.presetLine(root.draft) : "")
+              text: root.pageInfo.group.replace(/^\d+ /, "") + " · " + root.pageInfo.page.jp
+                + (root.pageKey === "typesetting" || root.pageKey === "presets" ? " · " + Settings.presetLine(root.draft) : "")
               color: Ink.inkMuted
               font.family: Type.mono
               font.pixelSize: Type.eyebrow
@@ -356,7 +368,6 @@ Rectangle {
           }
           Text {
             id: where
-            // Gives way when the eyebrow needs the room.
             visible: eyebrow.width + implicitWidth + Type.px(40) <= parent.width
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -376,138 +387,57 @@ Rectangle {
         }
 
         Item { width: 1; height: Type.px(10) }
-        Text {
-          text: root.pageInfo.page.label
-          color: Ink.ink
-          font.family: Type.display
-          font.pixelSize: Type.px(root.compact ? 34 : 44)
-          font.weight: Font.Normal
-          font.variableAxes: Type.axes(Type.px(root.compact ? 34 : 44))
-          font.letterSpacing: -0.8
-        }
-        Item { width: 1; height: Type.px(6) }
-        Text {
+        Item {
           width: parent.width
-          wrapMode: Text.Wrap
-          text: root.page === "typesetting"
-            ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
-            : root.page === "presets"
-            ? "A preset sets all twenty-four settings at once; tune any of them afterwards on Typesetting. Each bar below is drawn live with your data, seal and type size. Your sheets, motion and hidden parts stay as they are."
-            : root.placeholders[root.page] || ""
-          color: Ink.inkMuted
-          font.family: Type.text
-          font.pixelSize: Type.row
-        }
-
-        // ------------------------------------------------ Presets
-        PresetsPage {
-          visible: root.page === "presets"
-          width: parent.width
-          doc: root.draft
-          barData: root.barData
-          query: root.query
-          compact: root.compact
-          onPresetPicked: function(name) { root.presetPicked(name) }
-        }
-
-        // ------------------------------------------------ Sheets
-        SheetsPage {
-          visible: root.page === "sheets"
-          width: parent.width
-          doc: root.draft
-          feed: root.sheetFeed
-          compact: root.compact
-          onStylePicked: function(sheet, style) { root.settingPicked("sheetStyle:" + sheet, style) }
-          onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
-        }
-
-        // ------------------------------------------------ Typesetting
-        Column {
-          visible: root.page === "typesetting"
-          width: parent.width
-
-          Item { width: 1; height: Type.px(16) }
-
-          // The live preview: your bar, on bare paper.
-          Rectangle {
-            width: parent.width
-            height: preview.y + preview.height + Type.px(30)
-            radius: 3
-            color: "transparent"
-            border.width: 1
-            border.color: Ink.line
-            clip: true
-            Item {
-              id: preview
-              readonly property int gap: root.style.float === "inset" ? Type.px(8) : 0
-              x: 1 + gap
-              y: 1 + gap
-              width: parent.width - 2 - 2 * gap
-              height: previewBar.height
-              PreviewBar {
-                id: previewBar
-                width: parent.width
-                style: root.style
-                barData: root.barData
-              }
-            }
-            Text {
-              anchors.right: parent.right
-              anchors.rightMargin: Type.px(10)
-              anchors.bottom: parent.bottom
-              anchors.bottomMargin: Type.px(8)
-              text: "LIVE PREVIEW · YOUR THEME"
-              color: Ink.inkMuted
-              font.family: Type.mono
-              font.pixelSize: Type.label
-              font.letterSpacing: Type.trackLabel
-            }
+          height: pageTitle.height
+          Text {
+            id: pageTitle
+            text: root.pageInfo.page.label
+            color: Ink.ink
+            font.family: Type.display
+            font.pixelSize: Type.px(root.compact ? 34 : 44)
+            font.weight: Font.Normal
+            font.variableAxes: Type.axes(Type.px(root.compact ? 34 : 44))
+            font.letterSpacing: -0.8
           }
-
-          Item { width: 1; height: Type.px(14) }
-
-          // The preset this bar starts from, and the way to the others.
+          // Typesetting: the preset this bar starts from, and the way to
+          // the others.
           Rectangle {
-            width: parent.width
-            height: presetLine.implicitHeight + 2 * Type.px(11)
+            visible: root.pageKey === "typesetting" && !root.compact
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: Type.px(6)
+            width: presetChip.width + 2 * Type.px(12)
+            height: Type.px(34)
             radius: 3
             color: presetLink.containsMouse ? Ink.lineSoft : "transparent"
             border.width: 1
-            border.color: Ink.line
+            border.color: presetLink.containsMouse ? Ink.lineStrong : Ink.line
             Row {
-              id: presetLine
-              x: Type.px(14)
-              anchors.verticalCenter: parent.verticalCenter
-              spacing: Type.px(10)
-              Text { anchors.verticalCenter: parent.verticalCenter; text: "PRESET"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
+              id: presetChip
+              anchors.centerIn: parent
+              spacing: Type.px(9)
+              Text { anchors.verticalCenter: parent.verticalCenter; text: "FROM"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
               Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.draft.preset
                 color: Ink.ink
                 font.family: Type.display
-                font.pixelSize: Type.px(18)
+                font.pixelSize: Type.px(17)
                 font.weight: Font.Normal
-                font.variableAxes: Type.axes(Type.px(18))
+                font.variableAxes: Type.axes(Type.px(17))
               }
-              Text { anchors.verticalCenter: parent.verticalCenter; text: Settings.PRESET_KANJI[root.draft.preset] || ""; color: Ink.inkMuted; font.family: Type.jp; font.pixelSize: Type.px(15) }
+              Text { anchors.verticalCenter: parent.verticalCenter; text: Settings.PRESET_KANJI[root.draft.preset] || ""; color: Ink.inkMuted; font.family: Type.jp; font.pixelSize: Type.px(14) }
               Text {
-                visible: root.style.edited
+                readonly property int n: Object.keys(root.draft.edits).length
                 anchors.verticalCenter: parent.verticalCenter
-                text: "+ " + Object.keys(root.draft.edits).length + (Object.keys(root.draft.edits).length === 1 ? " edit" : " edits")
-                color: Ink.inkMuted
+                text: n === 0 ? "as set" : "+ " + n + (n === 1 ? " edit" : " edits")
+                color: n ? Ink.seal : Ink.inkMuted
                 font.family: Type.text
                 font.pixelSize: Type.note
               }
-            }
-            Text {
-              anchors.right: parent.right
-              anchors.rightMargin: Type.px(14)
-              anchors.verticalCenter: parent.verticalCenter
-              text: "ALL " + S.PRESET_NAMES.length + " PRESETS ›"
-              color: presetLink.containsMouse ? Ink.ink : Ink.inkDim
-              font.family: Type.mono
-              font.pixelSize: Type.tag
-              font.letterSpacing: Type.trackLabel
+              Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 1; height: Type.px(14); color: Ink.line }
+              Text { anchors.verticalCenter: parent.verticalCenter; text: "PRESETS ›"; color: presetLink.containsMouse ? Ink.ink : Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
             }
             MouseArea {
               id: presetLink
@@ -517,566 +447,36 @@ Rectangle {
               onClicked: root.pagePicked("presets")
             }
           }
-
-          Item { width: 1; height: Type.px(14) }
-
-          // Six cards, two rows of three, each row as tall as its tallest;
-          // two or one to a row when a card would be too narrow to read.
-          Grid {
-            id: cards
-            width: parent.width
-            columns: Math.max(1, Math.min(3, Math.floor((width + spacing) / (Type.px(400) + spacing))))
-            spacing: Type.px(12)
-            readonly property real cardWidth: (width - (columns - 1) * spacing) / columns
-
-            Repeater {
-              id: cardRepeater
-              model: Settings.CARDS
-              SettingsCard {
-                id: settingsCard
-                required property var modelData
-                required property int index
-                width: cards.cardWidth
-                height: Math.max(implicitHeight, cards.rowHeight(Math.floor(index / cards.columns)))
-                card: modelData
-                style: root.style
-                options: S.OPTIONS
-                query: root.query
-                onPicked: function(key, value) { root.settingPicked(key, value) }
-              }
-            }
-
-            function rowHeight(r) {
-              void cardRepeater.count
-              var h = 0
-              for (var i = r * columns; i < (r + 1) * columns; i++) {
-                var c = cardRepeater.itemAt(i) as SettingsCard
-                if (c && c.visible) h = Math.max(h, c.implicitHeight)
-              }
-              return h
-            }
-          }
-
-          // Advanced: what only some people want.
-          Column {
-            visible: root.advanced
-            width: parent.width
-            topPadding: Type.px(14)
-
-            Rectangle {
-              width: parent.width
-              height: advancedColumn.height + 2 * Type.px(12)
-              radius: 3
-              color: "transparent"
-              border.width: 1
-              border.color: Ink.line
-
-              Column {
-                id: advancedColumn
-                x: Type.px(14)
-                y: Type.px(12)
-                width: parent.width - 2 * x
-                spacing: Type.px(10)
-
-                Row {
-                  spacing: Type.px(8)
-                  Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
-                  Text { text: "ADVANCED"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
-                }
-                Rectangle { width: parent.width; height: 1; color: Ink.line }
-
-                // Any one character as the seal.
-                Row {
-                  spacing: Type.px(14)
-                  Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Type.px(160)
-                    text: "Seal glyph"
-                    color: Ink.ink
-                    font.family: Type.text
-                    font.pixelSize: Type.row
-                  }
-                  Rectangle {
-                    width: Type.px(44)
-                    height: Type.px(28)
-                    radius: 3
-                    color: "transparent"
-                    border.width: 1
-                    border.color: glyphInput.activeFocus ? Ink.lineStrong : Ink.line
-                    TextInput {
-                      id: glyphInput
-                      anchors.centerIn: parent
-                      text: root.draft.sealGlyph
-                      color: Ink.seal
-                      font.family: Type.jpSerif
-                      font.pixelSize: Type.px(16)
-                      onTextEdited: if (text.trim() !== "") root.settingPicked("sealGlyph", text)
-                    }
-                  }
-                  Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(implicitWidth, advancedColumn.width - Type.px(160 + 44 + 28))
-                    wrapMode: Text.Wrap
-                    text: "One character, used when the seal is a stamp."
-                    color: Ink.inkMuted
-                    font.family: Type.text
-                    font.pixelSize: Type.note
-                  }
-                }
-
-                // Per-monitor overrides: pick a monitor, then set any setting
-                // for it alone. Picking what the rest of your screens get drops
-                // the override (Style.withMonitorSetting), so a marked row is
-                // always one that differs.
-                Column {
-                  visible: root.monitors.length > 0
-                  width: parent.width
-                  spacing: Type.px(8)
-
-                  Row {
-                    spacing: Type.px(14)
-                    Text {
-                      anchors.verticalCenter: parent.verticalCenter
-                      width: Type.px(160)
-                      text: "Per monitor"
-                      color: Ink.ink
-                      font.family: Type.text
-                      font.pixelSize: Type.row
-                    }
-                    Segmented {
-                      anchors.verticalCenter: parent.verticalCenter
-                      options: root.monitors
-                      selected: root.monitorShown
-                      onPicked: function(value) { root.overrideMonitor = value }
-                    }
-                    Text {
-                      anchors.verticalCenter: parent.verticalCenter
-                      text: root.monitorOwn.length
-                        ? root.monitorOwn.length + (root.monitorOwn.length === 1 ? " override" : " overrides")
-                        : "as the rest"
-                      color: Ink.inkDim
-                      font.family: Type.mono
-                      font.pixelSize: Type.px(10)
-                      font.letterSpacing: 1
-                    }
-                    SmallButton {
-                      visible: root.monitorOwn.length > 0
-                      label: "Clear"
-                      onClicked: root.monitorCleared(root.monitorShown)
-                    }
-                  }
-
-                  Grid {
-                    id: perMonitor
-                    width: parent.width
-                    // Down each column, in the order the cards read.
-                    flow: Grid.TopToBottom
-                    readonly property int across: width >= Type.px(860) ? 2 : 1
-                    rows: Math.ceil(S.KEYS.length / across)
-                    columnSpacing: Type.px(28)
-                    readonly property real cellWidth: (width - (across - 1) * columnSpacing) / across
-
-                    Repeater {
-                      model: S.KEYS
-                      Item {
-                        id: override
-                        required property string modelData
-                        required property int index
-                        readonly property bool own: root.monitorOwn.indexOf(modelData) >= 0
-                        width: perMonitor.cellWidth
-                        height: Type.px(34)
-
-                        Rectangle {
-                          visible: override.index % perMonitor.rows > 0
-                          width: parent.width
-                          height: 1
-                          color: Ink.lineSoft
-                        }
-                        // A red tick marks a setting this monitor sets for itself.
-                        Rectangle {
-                          visible: override.own
-                          anchors.verticalCenter: parent.verticalCenter
-                          width: 2
-                          height: Type.px(14)
-                          color: Ink.seal
-                        }
-                        Text {
-                          anchors.verticalCenter: parent.verticalCenter
-                          x: Type.px(10)
-                          width: Math.max(0, parent.width - x - overrideSeg.width - Type.px(8))
-                          elide: Text.ElideRight
-                          text: Settings.nameOf(override.modelData)
-                          color: override.own ? Ink.ink : Ink.inkMuted
-                          font.family: Type.text
-                          font.pixelSize: Type.px(12)
-                        }
-                        Segmented {
-                          id: overrideSeg
-                          anchors.right: parent.right
-                          anchors.verticalCenter: parent.verticalCenter
-                          options: Settings.optionsFor(override.modelData, S.OPTIONS)
-                          selected: String(root.monitorStyle[override.modelData])
-                          onPicked: function(value) { root.monitorPicked(root.monitorShown, override.modelData, value) }
-                        }
-                      }
-                    }
-                  }
-                }
-
-                // The document as style.json holds it.
-                Text {
-                  width: parent.width
-                  text: JSON.stringify(root.draft, null, 2)
-                  color: Ink.inkMuted
-                  wrapMode: Text.WrapAnywhere
-                  font.family: Type.mono
-                  font.pixelSize: Type.px(10)
-                }
-              }
-            }
-          }
+        }
+        Item { width: 1; height: Type.px(6) }
+        Text {
+          width: Math.min(parent.width, Type.px(900))
+          wrapMode: Text.Wrap
+          text: Settings.PAGE_LINES[root.pageKey] || ""
+          color: Ink.inkMuted
+          font.family: Type.text
+          font.pixelSize: Type.row
+          lineHeight: 1.1
         }
 
-        // ------------------------------------------------ Widgets
-        // Every part the bar can show, each shown or hidden: Hanko's own,
-        // its marks, the tray's apps and the widgets it hosts.
-        Column {
-          visible: root.page === "widgets"
+        // The page itself, built only while it is open.
+        Loader {
+          id: pageLoader
           width: parent.width
-          topPadding: Type.px(22)
-          spacing: Type.px(14)
-
-          Row {
-            spacing: Type.px(12)
-            SmallButton {
-              label: "Show all"
-              faint: root.style.hidden.length === 0
-              onClicked: root.showAll()
-            }
-            Text {
-              anchors.verticalCenter: parent.verticalCenter
-              text: root.style.hidden.length
-                ? (root.style.hidden.length + (root.style.hidden.length === 1 ? " PART HIDDEN" : " PARTS HIDDEN"))
-                : "EVERYTHING SHOWN"
-              color: Ink.inkDim
-              font.family: Type.mono
-              font.pixelSize: Type.px(10)
-              font.letterSpacing: Type.px(1.8)
-            }
-          }
-
-          Grid {
-            id: partCards
-            width: parent.width
-            columns: Math.max(1, Math.min(3, Math.floor((width + spacing) / (Type.px(400) + spacing))))
-            spacing: Type.px(12)
-            readonly property real cardWidth: (width - (columns - 1) * spacing) / columns
-            readonly property var cardList: Settings.visibilityCards(root.visibility)
-
-            Repeater {
-              id: partRepeater
-              model: partCards.cardList
-              SettingsCard {
-                required property var modelData
-                required property int index
-                width: partCards.cardWidth
-                height: Math.max(implicitHeight, partCards.rowHeight(Math.floor(index / partCards.columns)))
-                card: modelData
-                style: root.style
-                options: S.OPTIONS
-                query: root.query
-                onPicked: function(key, value) { root.settingPicked(key, value) }
-              }
-            }
-
-            function rowHeight(r) {
-              void partRepeater.count
-              var h = 0
-              for (var i = r * columns; i < (r + 1) * columns; i++) {
-                var c = partRepeater.itemAt(i) as SettingsCard
-                if (c && c.visible) h = Math.max(h, c.implicitHeight)
-              }
-              return h
-            }
-          }
-
-          Text {
-            width: parent.width
-            wrapMode: Text.Wrap
-            text: "Hiding a part takes it off this bar only; the widget stays in Omarchy's bar layout. Add or remove widgets there."
-            color: Ink.inkMuted
-            font.family: Type.text
-            font.pixelSize: Type.note
-          }
-        }
-
-        // ------------------------------------------------ Motion
-        Column {
-          visible: root.page === "motion"
-          width: parent.width
-          topPadding: Type.px(22)
-          spacing: Type.px(18)
-
-          SettingsCard {
-            width: parent.width
-            card: Settings.MOTION_CARD
-            style: root.style
-            options: ({})
-            onPicked: function(key, value) { root.settingPicked(key, value) }
-          }
-
-          Text {
-            visible: Motion.system
-            width: parent.width
-            wrapMode: Text.Wrap
-            text: "Omarchy's animations are off, so Hanko is still whatever this says."
-            color: Ink.seal
-            font.family: Type.text
-            font.pixelSize: Type.px(12)
-          }
-
-          // The timings, as Scroll's motion sheet gives them.
-          Rectangle {
-            width: parent.width
-            height: timings.implicitHeight + Type.px(16)
-            radius: 3
-            color: "transparent"
-            border.width: 1
-            border.color: Ink.line
-
-            Column {
-              id: timings
-              x: Type.px(14)
-              y: Type.px(8)
-              width: parent.width - 2 * x
-              Repeater {
-                model: Settings.MOTION_ROWS
-                Item {
-                  id: timing
-                  required property var modelData
-                  required property int index
-                  readonly property int ms: Motion[modelData[2]]
-                  width: timings.width
-                  // A narrow page wraps the line instead of cutting it short.
-                  height: Math.max(Type.px(36), timingLine.height + Type.px(16))
-                  Rectangle {
-                    visible: timing.index > 0
-                    width: parent.width; height: 1; color: Ink.lineSoft
-                  }
-                  Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Type.px(120)
-                    text: timing.modelData[0]
-                    color: Ink.ink
-                    font.family: Type.text
-                    font.pixelSize: Type.row
-                  }
-                  Text {
-                    id: timingLine
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: Type.px(120)
-                    width: parent.width - x - Type.px(root.compact ? 70 : 110)
-                    wrapMode: Text.Wrap
-                    text: timing.modelData[1]
-                    color: Ink.inkMuted
-                    font.family: Type.text
-                    font.pixelSize: Type.note
-                  }
-                  Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.right: parent.right
-                    text: root.style.motion === "still" || Motion.system ? "cut" : timing.ms >= 1000 ? (timing.ms / 1000) + " s" : timing.ms + " ms"
-                    color: root.style.motion === "still" || Motion.system ? Ink.inkFaint : Ink.inkDim
-                    font.family: Type.mono
-                    font.pixelSize: Type.px(10)
-                    font.letterSpacing: 1
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        // ------------------------------------------------ Scroll
-        // What sits between the scroll's sections (the `interlude` setting):
-        // each tile draws the real Interlude between two stub sections.
-        Column {
-          visible: root.page === "scroll"
-          width: parent.width
-          topPadding: Type.px(22)
-          spacing: Type.px(12)
-
-          Row {
-            spacing: Type.px(8)
-            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
-            Text { text: "BETWEEN PANELS"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
-          }
-
-          Grid {
-            id: interludes
-            width: parent.width
-            spacing: Type.px(8)
-            columns: width >= Type.px(760) ? 3 : 2
-            Repeater {
-              model: Settings.INTERLUDES
-              Rectangle {
-                id: tile
-                required property var modelData
-                readonly property bool on: modelData.key === root.style.interlude
-                width: (interludes.width - (interludes.columns - 1) * interludes.spacing) / interludes.columns
-                height: stage.height + caption.height + Type.px(20)
-                radius: 3
-                color: tileHover.containsMouse && !on ? Ink.lineSoft : "transparent"
-                border.width: on ? 2 : 1
-                border.color: on ? Ink.bone : Ink.line
-
-                // Two stub sections either side of the interlude.
-                Item {
-                  id: stage
-                  x: Type.px(8); y: Type.px(8)
-                  width: parent.width - 2 * x
-                  height: Type.px(150)
-                  clip: true
-                  Repeater {
-                    model: [{ jp: "時", no: "01", left: true }, { jp: "音", no: "02", left: false }]
-                    Column {
-                      id: stub
-                      required property var modelData
-                      x: stub.modelData.left ? Type.px(10) : stage.width / 2 + Type.px(30)
-                      y: Type.px(18)
-                      width: stage.width / 2 - Type.px(42)
-                      spacing: Type.px(6)
-                      Text { text: stub.modelData.jp + "  " + stub.modelData.no; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(9) }
-                      Rectangle { width: parent.width * 0.8; height: Type.px(7); radius: 1; color: Ink.inkDim; opacity: 0.55 }
-                      Rectangle { width: parent.width * 0.55; height: Type.px(3); color: Ink.inkFaint; opacity: 0.6 }
-                      Item { width: 1; height: Type.px(6) }
-                      Repeater {
-                        model: 4
-                        Rectangle { required property int index; width: stub.width * (0.9 - index * 0.12); height: 1; color: Ink.line }
-                      }
-                    }
-                  }
-                  Interlude {
-                    x: stage.width / 2 - width / 2
-                    y: Type.px(8)
-                    width: Type.px(46)
-                    height: stage.height - Type.px(16)
-                    s: Type.scale * 0.62
-                    seed: 0
-                    style: tile.modelData.key
-                  }
-                }
-
-                Row {
-                  id: caption
-                  x: Type.px(12)
-                  y: stage.y + stage.height + Type.px(6)
-                  spacing: Type.px(8)
-                  Text { text: tile.modelData.jp; color: tile.on ? Ink.seal : Ink.inkDim; font.family: Type.jp; font.pixelSize: Type.px(13) }
-                  Column {
-                    Text { text: tile.modelData.name.toUpperCase() + (tile.on ? "  · IN USE" : ""); color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
-                    Text { text: tile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
-                  }
-                }
-
-                MouseArea {
-                  id: tileHover
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.settingPicked("interlude", tile.modelData.key)
-                }
-              }
-            }
-          }
-        }
-
-        // What sits after Inbox (the `endleaf` setting): each tile draws the
-        // real end leaf, small, with a sample reading.
-        Column {
-          visible: root.page === "scroll"
-          width: parent.width
-          topPadding: Type.px(26)
-          spacing: Type.px(12)
-
-          Row {
-            spacing: Type.px(8)
-            Text { text: "//"; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
-            Text { text: "AFTER INBOX"; color: Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.eyebrow; font.letterSpacing: Type.trackEyebrow }
-          }
-
-          Grid {
-            id: endleaves
-            width: parent.width
-            spacing: Type.px(8)
-            columns: width >= Type.px(760) ? 3 : 2
-            readonly property var reading: LeafJs.sample(new Date())
-            Repeater {
-              model: Settings.ENDLEAVES
-              Rectangle {
-                id: leafTile
-                required property var modelData
-                readonly property bool on: modelData.key === root.style.endleaf
-                width: (endleaves.width - (endleaves.columns - 1) * endleaves.spacing) / endleaves.columns
-                height: leafStage.height + leafCaption.height + Type.px(20)
-                radius: 3
-                color: leafHover.containsMouse && !on ? Ink.lineSoft : "transparent"
-                border.width: on ? 2 : 1
-                border.color: on ? Ink.bone : Ink.line
-
-                Item {
-                  id: leafStage
-                  x: Type.px(8)
-                  y: Type.px(8)
-                  width: parent.width - 2 * x
-                  height: Math.round(width * 0.82)
-                  clip: true
-                  EndLeaf {
-                    width: Type.px(400)
-                    height: Type.px(460)
-                    x: (leafStage.width - width * scale) / 2
-                    y: -Type.px(36) * scale
-                    transformOrigin: Item.TopLeft
-                    scale: leafStage.height / Type.px(390)
-                    kind: leafTile.modelData.key
-                    reading: endleaves.reading
-                    version: "0.1.0"
-                    preset: root.style.preset
-                    sealGlyph: root.style.sealGlyph
-                    enabled: false
-                  }
-                }
-
-                Row {
-                  id: leafCaption
-                  x: Type.px(12)
-                  y: leafStage.y + leafStage.height + Type.px(6)
-                  spacing: Type.px(8)
-                  Text { text: leafTile.modelData.jp; color: leafTile.on ? Ink.seal : Ink.inkDim; font.family: Type.jp; font.pixelSize: Type.px(13) }
-                  Column {
-                    Text { text: leafTile.modelData.name.toUpperCase() + (leafTile.on ? "  · IN USE" : ""); color: Ink.ink; font.family: Type.mono; font.pixelSize: Type.px(10); font.letterSpacing: Type.px(1.6) }
-                    Text { text: leafTile.modelData.detail; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
-                  }
-                }
-
-                MouseArea {
-                  id: leafHover
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.settingPicked("endleaf", leafTile.modelData.key)
-                }
-              }
-            }
-          }
+          active: !root.onPlate
+          sourceComponent: ({
+            typesetting: typesettingPage, presets: presetsPage, parts: partsPage,
+            colour: colourPage, screens: screensPage, sheets: sheetsPage,
+            scroll: scrollPage, overview: overviewPage, motion: motionPage, keys: keysPage
+          })[root.pageKey] || typesettingPage
         }
       }
     }
 
     // ------------------------------------------------ action bar
+    // Left, what was last kept, in words; right, what you can do about it.
     Item {
       id: actions
-      // On a plate only while there is something to undo.
       visible: !root.onPlate || root.undoCount > 0
       anchors.bottom: parent.bottom
       width: parent.width
@@ -1086,13 +486,16 @@ Rectangle {
         x: root.pad
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(12)
-        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(7); height: width; color: root.undoCount ? Ink.ink : Ink.inkFaint }
+        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(7); height: width; color: root.lastChange !== "" ? Ink.seal : Ink.inkFaint }
         Text {
           anchors.verticalCenter: parent.verticalCenter
-          // Never under the buttons.
           width: Math.max(0, Math.min(implicitWidth, buttons.x - root.pad - Type.px(7 + 12 + 16)))
           elide: Text.ElideRight
-          text: Settings.status(root.undoCount).toUpperCase()
+          textFormat: Text.StyledText
+          text: root.lastChange !== ""
+            ? "KEPT · <font color=\"" + Ink.ink + "\">" + root.lastChange.replace(/&/g, "&amp;").replace(/</g, "&lt;").toUpperCase() + "</font>"
+              + (root.undoCount > 1 ? " · " + root.undoCount + " TO UNDO" : "")
+            : Settings.status(root.undoCount).toUpperCase()
           color: Ink.inkDim
           font.family: Type.mono
           font.pixelSize: Type.px(10)
@@ -1105,22 +508,125 @@ Rectangle {
         anchors.rightMargin: root.pad
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(root.compact ? 8 : 12)
-        SmallButton { visible: root.page === "presets"; label: "Shuffle"; onClicked: root.shuffle() }
-        SmallButton { visible: root.page === "typesetting" || root.page === "presets"; label: root.compact ? "Reset" : "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
+        SmallButton { visible: root.pageKey === "presets"; label: "Shuffle"; onClicked: root.shuffle() }
+        SmallButton { visible: root.pageKey === "parts"; label: "Show all"; faint: (root.draft.hidden || []).length === 0; onClicked: root.showAll() }
+        SmallButton { visible: root.pageKey === "typesetting" || root.pageKey === "presets"; label: root.compact ? "Reset" : "Reset to preset"; faint: !root.style.edited; onClicked: root.resetToPreset() }
         SmallButton { label: "Undo"; plate: true; faint: root.undoCount === 0; onClicked: if (root.undoCount > 0) root.undo() }
       }
     }
   }
 
-  // Honest words for the rail pages that are still to come.
-  readonly property var placeholders: ({
-    colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
-    widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
-    sheets: "Sheets drop flush from the cell you click. Pick the hand that draws each one: the ledger's page, slips hung like tanzaku, a shōgi board, an abacus, armour lacing, bands of gold mist or Shōji's washi panels on their rail. Every change is kept at once.",
-    scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
-    motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
-    keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. Rebinding comes later."
-  })
+  // ================================================================ pages
+  Component {
+    id: typesettingPage
+    TypesettingPage {
+      draft: root.draft
+      style: root.style
+      barData: root.proofData
+      query: root.query
+      compact: root.compact
+      part: root.partShown
+      lit: root.litParts
+      edited: root.editedParts
+      proofStyle: root.proofStyle
+      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+      onPartPicked: function(key) { root.partPicked(key) }
+      onTried: function(key, value) { root.trial = { key: key, value: value } }
+      onUntried: root.trial = null
+    }
+  }
+  Component {
+    id: presetsPage
+    PresetsPage {
+      viewed: root.presetView
+      onViewedChanged: root.presetView = viewed
+      doc: root.draft
+      barData: root.barData
+      query: root.query
+      compact: root.compact
+      onPresetPicked: function(name) { root.presetPicked(name) }
+    }
+  }
+  Component {
+    id: partsPage
+    PartsPage {
+      barData: root.proofData
+      style: root.style
+      draft: root.draft
+      query: root.query
+      compact: root.compact
+      visibility: root.visibility
+      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+      onShowAll: root.showAll()
+    }
+  }
+  Component {
+    id: screensPage
+    ScreensPage {
+      draft: root.draft
+      screens: root.screens
+      monitor: root.overrideMonitor
+      compact: root.compact
+      onMonitorSelected: function(name) { root.overrideMonitor = name }
+      onMonitorPicked: function(monitor, key, value) { root.monitorPicked(monitor, key, value) }
+      onMonitorCleared: function(name) { root.monitorCleared(name) }
+    }
+  }
+  Component {
+    id: sheetsPage
+    SheetsPage {
+      doc: root.draft
+      feed: root.sheetFeed
+      compact: root.compact
+      onStylePicked: function(sheet, style) { root.settingPicked("sheetStyle:" + sheet, style) }
+      onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
+    }
+  }
+  Component {
+    id: scrollPage
+    ScrollPage {
+      style: root.style
+      draft: root.draft
+      query: root.query
+      compact: root.compact
+      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+    }
+  }
+  Component {
+    id: motionPage
+    MotionPage {
+      style: root.style
+      draft: root.draft
+      compact: root.compact
+      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+    }
+  }
+  Component {
+    id: colourPage
+    ColourPage {
+      themes: root.themes
+      theme: root.theme
+      glyph: root.draft.sealGlyph || "鑑"
+      compact: root.compact
+      onThemePicked: function(slug) { root.themePicked(slug) }
+    }
+  }
+  Component {
+    id: overviewPage
+    OverviewSettings {
+      style: root.style
+      barData: root.barData
+      compact: root.compact
+      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+    }
+  }
+  Component {
+    id: keysPage
+    KeysPage {
+      compact: root.compact
+      onCopyText: function(text) { root.copyText(text) }
+    }
+  }
 
   Component {
     id: profilePlate
@@ -1139,44 +645,8 @@ Rectangle {
       onProfileReset: root.profileReset()
     }
   }
-  Component {
-    id: aboutPlate
-    AboutPlate { version: root.version }
-  }
-  Component {
-    id: creditsPlate
-    CreditsPlate {}
-  }
-
-  component SmallButton: Rectangle {
-    id: button
-    property string label: ""
-    property bool plate: false
-    property bool faint: false
-    signal clicked()
-    width: buttonText.implicitWidth + 2 * Type.px(14)
-    height: Type.px(32)
-    radius: 3
-    color: plate && !faint ? Ink.bone : buttonHover.containsMouse ? Ink.lineSoft : "transparent"
-    border.width: 1
-    border.color: plate && !faint ? Ink.bone : faint ? Ink.line : Ink.lineStrong
-    Text {
-      id: buttonText
-      anchors.centerIn: parent
-      text: button.label.toUpperCase()
-      color: button.plate && !button.faint ? Ink.boneInk : button.faint ? Ink.inkFaint : Ink.ink
-      font.family: Type.mono
-      font.pixelSize: Type.px(10)
-      font.letterSpacing: Type.px(1.8)
-    }
-    MouseArea {
-      id: buttonHover
-      anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-      onClicked: button.clicked()
-    }
-  }
+  Component { id: aboutPlate; AboutPlate { version: root.version } }
+  Component { id: creditsPlate; CreditsPlate {} }
 
   // The search field, in the rail or (folded) at the top of the page.
   component SearchField: Rectangle {

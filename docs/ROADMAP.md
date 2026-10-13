@@ -132,8 +132,29 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 - ✅ **K7 · Settings › Design 意匠** (asked for without a Save button): the rail's first Bar page. Four design cards, each with its bar drawn live (Classic the Typeset bar); the mix named in a line, Back to the design and Surprise me; twelve borrow rows, each variant drawn small by its own part (`bar/settings/PartPreview.qml`), the current one ringed and a borrowed part marked; the touches (season with today's sekki, numerals, grain). The whole settings window now saves as you go: `Typeset.keep()` after every edit, `Typeset.history` and `undo()` (Ctrl+Z and the action bar's Undo), forgotten on close; Save and Revert are gone. Harness `design-settings.json`, `-light`, `-narrow`.
 - ✅ **Margin and Leaf removed** (asked for): two designs are left, Hanko and Shōji, and with them borrowing, Surprise me and the borrow rows on Settings › Design; a style.json naming Margin or Leaf loads as Hanko and a saved `borrow` is ignored. Shōji renders exactly as before.
 - ✅ **The right side, four ways** (asked for: "the right side looks too cramped; research and come up with a better design with a Japanese touch", then "add all"): four `status` values and four presets on the Hanko bar, Ma 間 (groups held apart by space), Shizuka 静 (quiet until it changes), Suji 筋 (one brush line per reading) and Inrō 印籠 (one ruled case), from six study sheets and their research in [right-side/](right-side/README.md).
+- ✅ **Fewer presets:** Sheet, Scroll and Instrument taken out (aliased to Kamon and Islet); Ma carries the user's bar (36 px, fuda); Kamon is last of the bars.
 - ✅ **Presets 型, a page of their own** (asked for: "move the presets from Typesetting to a new Presets page, with the 4 new designs there too"): the first page of `01 BAR`, every preset a numbered specimen with its kanji, blurb, telling settings and its bar drawn live, in one list (the bars, then the studies), filtered by search, with Shuffle and Reset; Typesetting keeps a one-line link to it.
 - ✅ **Kamon 家紋** (asked for: no "Hanko" on the preset): the default preset is renamed Kamon, the family crest; "Hanko" still loads it.
+
+- ✅ **Inkan 印, the seal only** (asked for: "now I want to work on this Inkan", shell concept 04, then "go with your idea and all"): a `form` setting that takes the bar away and leaves one seal in a corner, its carving the status; pressed, it prints the whole shell as one sheet, No. 00. Design and timings in [shell-concepts/inkan/](shell-concepts/inkan/README.md). Steps, each its own commit:
+  - ✅ **I0 · Design sheets**: the seal's states, No. 00, the four corners and per monitor, the ink-press, a light theme.
+  - ✅ **I1 · The model**: `form` and `inkanAt` in `Style.js`, the Inkan preset, `core/Inkan.js` (wear, specks, chips, placement, No. 00 rows) with tests.
+  - ✅ **I2 · The seal that reads**: `bar/InkanSeal.qml`, harness scene and params.
+  - ✅ **I3 · The corner layer**: `bar/SealWindow.qml`, the bar parked under `inkan`, `barSize` 0, clicks, wheel, hover reading.
+  - ✅ **I4 · No. 00**: `bar/sheets/AllSheet.qml`, printing from the seal, rows into their sheets and back, Omarchy's panel hotkeys at the corner, the scroll from the seal.
+  - ✅ **I5 · The ink-press**: press, bloom, print out, lift off.
+  - ✅ **I6 · Settings, CLI and keys**: Form and Corner rows, the Inkan specimen on Presets, `hanko press`, README.
+  - ✅ **I7 · Drag to a corner** and the recording ring.
+
+- ✅ **Kōsei 校正, Typesetting as a proof** (asked for: "all are just crumbled in Typesetting … research how people create this kind of experience, then something unique and premium"): the six cards of segmented controls are replaced by a galley of your bar (set in two lines at your screen's width, its parts numbered in the margin), an index of ten parts and a case per part with a live specimen of every way it can be set (hover tries, click keeps) and the few word choices under it. Panel settings moved to Scroll 巻. Research and renders in [settings-kosei/](settings-kosei/README.md).
+
+- ✅ **Kōsei, the whole window** (asked for: "redesign all the other sections too … full control of the whole settings flow and layout"): every page on the proof's rule, the thing itself first. Plan and research in [settings-kosei/](settings-kosei/README.md#part-two-the-whole-window).
+  - ✅ **R1 · The shell and Screens 画面**: rail regrouped (Typesetting first), key hints, the action bar names the last change, one file per page built only while open; Advanced becomes Screens (monitors to scale, overrides by part, style.json); your own glyph in the Seal case; "on the bar / set aside" in each part's case.
+  - ✅ **R2 · Presets 型, the pattern book**: nine swatches, the open one set as your bar, only what it would change, Use.
+  - ✅ **R3 · Parts 部品, the sorts tray**: every part as a real crop of your bar, in bar order; set aside and put back with one click; your bar above shows it.
+  - ✅ **R4 · Colour 色**: the ink drawdown with measured contrasts, and every Omarchy theme as a specimen in its own colours; a click switches the desk.
+  - ✅ **R5 · Sheets 紙, Scroll 巻, Overview 一覧**: the sheet printed large with every hand as a picture of it; how panels open drawn in small; dividers and end leaves as tiles; the three overviews drawn with your spaces.
+  - ✅ **R6 · Motion 動, the timesheet; Keys 鍵, the keymap**: every move on a ms ruler with its real curve, hover to run it; Hanko's keys inked on a keyboard by context, and the bindings to copy.
 
 ## Dev loop
 

@@ -7,13 +7,12 @@ import "../../core/Skin.js" as Sk
 import "../sheets"
 import "../parts" as Parts
 
-// Settings › Sheets 紙: which hand draws each cell's sheet. Cards name
-// the six hands (Ledger 帳, Tanzaku 短冊, Shōgi 将棋, Soroban 算盤,
-// Odoshi 縅, Kasumi 霞, Shōji 障子; a click sets every sheet), three to
-// a row; then one row per sheet: its name, what its hand is, and under
-// them the choice. Beside the rows the sheet you last touched prints live
-// in its hand, in a room as wide as the widest sheet.
-Item {
+// Settings › Sheets 紙, on the proof's rule (docs/settings-kosei): pick a
+// sheet from the row of seven; it prints large, live, in the hand that
+// draws it; beside it every hand is drawn as a picture of that same sheet.
+// Hover a hand to print the sheet in it, click to keep it for that sheet;
+// "Every sheet" puts all seven in one hand. Panel opacity at the foot.
+Column {
   id: root
 
   property var doc: S.normalize({})
@@ -27,6 +26,8 @@ Item {
 
   readonly property var styles: S.resolve(doc).sheetStyles
   property string focusSheet: "sound"
+  // A hand under the pointer, tried on the large print.
+  property string trialHand: ""
   readonly property var hands: [
     { key: "ledger", jp: "帳", name: "Ledger", short: "The editorial page: every choice listed", line: "The editorial page: a serif title, // groups and hairline rows. Everything listed, nothing hidden." },
     { key: "tanzaku", jp: "短冊", name: "Tanzaku", short: "The poem slips: each choice a hanging strip", line: "Each choice a paper slip hung from a rail, right to left, as long as its level; the one in use inked and sealed." },
@@ -37,89 +38,264 @@ Item {
     { key: "shoji", jp: "障子", name: "Shōji", short: "Washi panels that slide along a rail", line: "One washi panel on a rail under the bar, sliding to the cell you pick; its name down the right edge, brush sliders and the ensō." },
   ]
   readonly property var labels: ({ ledger: "Ledger", tanzaku: "Tanzaku", shogi: "Shōgi", soroban: "Soroban", odoshi: "Odoshi", kasumi: "Kasumi", shoji: "Shōji" })
-  // Shōji's panels are drawn in Shōji's skin, with your touches and opacity.
   readonly property var skin: Sk.fromStyle(S.resolve(doc))
   readonly property int panelOpacity: S.resolve(doc).panelOpacity || 0
-  // Auto: each hand's own paper (solid, or Shōji's washi at 86%); the
-  // slider and figure read 100% then.
   readonly property real paperOpacity: panelOpacity > 0 ? panelOpacity / 100 : 1
-  readonly property string allStyle: {
-    var first = styles[S.SHEET_KEYS[0]]
-    for (var i = 1; i < S.SHEET_KEYS.length; i++) if (styles[S.SHEET_KEYS[i]] !== first) return ""
-    return first
+  readonly property string handOf: styles[focusSheet] || "ledger"
+  readonly property string shownHand: trialHand !== "" ? trialHand : handOf
+  function withHand(hand) {
+    var m = Object.assign({}, styles)
+    m[focusSheet] = hand
+    return m
   }
+  function handInfo(key) { return hands[Math.max(0, S.SHEET_STYLES.indexOf(key))] }
   readonly property bool twoUp: width >= Type.px(900)
-  // The preview's room is fixed to the widest sheet, so pointing at another
-  // row never resizes the list or shifts its choices.
-  readonly property real previewRoom: Type.px(Math.max.apply(null, Sheets.SHEETS.map(function(x) { return x.width })))
-  readonly property real listWidth: twoUp ? width - previewRoom - Type.px(40) : width
+  readonly property real printRoom: twoUp ? Math.min(Type.px(560), width * 0.52) : width
 
   width: parent ? parent.width : 0
-  implicitHeight: body.y + Math.max(list.height, twoUp ? previewBox.height : 0) + (twoUp ? 0 : previewBox.height + Type.px(24))
+  spacing: 0
+  topPadding: Type.px(22)
 
-  // The six hands, three to a row (two when narrow).
-  Grid {
-    id: cards
-    y: Type.px(22)
+  // ------------------------------------------------------------ the seven
+  Flow {
     width: parent.width
-    columns: root.width >= Type.px(720) ? 3 : 2
-    spacing: Type.px(12)
+    spacing: Type.px(6)
     Repeater {
-      model: root.hands
+      model: Sheets.SHEETS
       Rectangle {
-        id: card
+        id: tab
         required property var modelData
-        width: (cards.width - (cards.columns - 1) * cards.spacing) / cards.columns
-        height: Type.px(root.compact ? 96 : 104)
+        readonly property bool open: modelData.key === root.focusSheet
+        width: Math.max(Type.px(118), tabCol.width + Type.px(24))
+        height: Type.px(62)
         radius: 3
-        color: root.allStyle === card.modelData.key ? Ink.bone : cardHover.containsMouse ? Ink.alpha(Ink.bone, 0.05) : "transparent"
+        color: open ? Ink.bone : tabHover.containsMouse ? Ink.lineSoft : "transparent"
         border.width: 1
-        border.color: root.allStyle === card.modelData.key ? Ink.bone : Ink.line
-        readonly property color ink: root.allStyle === card.modelData.key ? Ink.boneInk : Ink.ink
-        readonly property color soft: root.allStyle === card.modelData.key ? Ink.alpha(Ink.boneInk, 0.7) : Ink.inkMuted
+        border.color: open ? Ink.bone : Ink.line
         Row {
-          x: Type.px(14)
-          y: Type.px(12)
-          spacing: Type.px(8)
-          Text { text: card.modelData.jp; color: card.soft; font.family: Type.brush; font.pixelSize: Type.px(20) }
+          x: Type.px(12)
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: Type.px(10)
           Text {
-            anchors.baseline: parent.children[0].baseline
-            text: card.modelData.name
-            color: card.ink
-            font.family: Type.display
-            font.pixelSize: Type.px(20)
-            font.variableAxes: Type.axes(Type.px(20))
+            anchors.verticalCenter: parent.verticalCenter
+            text: tab.modelData.jp
+            color: tab.open ? Ink.boneInk : Ink.seal
+            font.family: Type.brush
+            font.pixelSize: Type.px(24)
+          }
+          Column {
+            id: tabCol
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: Type.px(2)
+            Text {
+              text: tab.modelData.label.charAt(0) + tab.modelData.label.slice(1).toLowerCase()
+              color: tab.open ? Ink.boneInk : Ink.ink
+              font.family: Type.text
+              font.pixelSize: Type.px(14)
+            }
+            Text {
+              text: (root.labels[root.styles[tab.modelData.key]] || "Ledger").toUpperCase()
+              color: tab.open ? Ink.alpha(Ink.boneInk, 0.7) : Ink.inkMuted
+              font.family: Type.mono
+              font.pixelSize: Type.tag
+              font.letterSpacing: Type.trackLabel
+            }
           }
         }
-        Text {
-          x: Type.px(14)
-          y: Type.px(46)
-          width: parent.width - 2 * x
-          wrapMode: Text.Wrap
-          maximumLineCount: 3
-          elide: Text.ElideRight
-          text: card.modelData.line
-          color: card.soft
-          font.family: Type.text
-          font.pixelSize: Type.note
-        }
         MouseArea {
-          id: cardHover
+          id: tabHover
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
-          onClicked: root.stylePicked("all", card.modelData.key)
+          onClicked: root.focusSheet = tab.modelData.key
         }
       }
     }
   }
+
+  Item { width: 1; height: Type.px(22) }
+
+  // ------------------------------------------------- the print and the hands
+  Grid {
+    id: body
+    width: parent.width
+    columns: root.twoUp ? 2 : 1
+    columnSpacing: Type.px(28)
+    rowSpacing: Type.px(22)
+
+    // The sheet, printed live in its hand (or the hand being tried).
+    Column {
+      width: root.printRoom
+      spacing: Type.px(10)
+      Row {
+        spacing: Type.px(8)
+        Text { text: root.handInfo(root.shownHand).jp; color: Ink.seal; font.family: Type.brush; font.pixelSize: Type.px(14) }
+        Text {
+          anchors.verticalCenter: parent.verticalCenter
+          text: (root.trialHand !== "" ? "TRYING · " : "PRINTED · ") + root.focusSheet.toUpperCase() + " IN " + root.handInfo(root.shownHand).name.toUpperCase()
+          color: root.trialHand !== "" ? Ink.ink : Ink.inkMuted
+          font.family: Type.mono
+          font.pixelSize: Type.tag
+          font.letterSpacing: Type.trackLabel
+        }
+      }
+      Item {
+        width: parent.width
+        height: printed.height * printed.scale
+        SheetView {
+          id: printed
+          sheet: root.focusSheet
+          styles: root.withHand(root.shownHand)
+          skin: root.skin
+          scale: Math.min(1, root.printRoom / Math.max(1, width))
+          transformOrigin: Item.TopLeft
+          feed: root.feed
+          animate: false
+          tearX: Type.px(30)
+          tearWidth: Type.px(80)
+        }
+      }
+    }
+
+    // Every hand, as a picture of this sheet.
+    Column {
+      width: root.twoUp ? body.width - root.printRoom - body.columnSpacing : body.width
+      spacing: Type.px(10)
+      Text {
+        text: "書  SEVEN HANDS · " + root.focusSheet.toUpperCase() + " IN EACH"
+        color: Ink.inkMuted
+        font.family: Type.mono
+        font.pixelSize: Type.tag
+        font.letterSpacing: Type.trackLabel
+      }
+      Grid {
+        id: handGrid
+        width: parent.width
+        columns: width >= Type.px(380) ? 2 : 1
+        spacing: Type.px(8)
+        readonly property real tileWidth: Math.floor((width - (columns - 1) * spacing) / columns)
+        Repeater {
+          model: root.hands
+          Rectangle {
+            id: hand
+            required property var modelData
+            readonly property bool on: modelData.key === root.handOf
+            width: handGrid.tileWidth
+            height: thumb.height + handCaption.height + 2
+            radius: 3
+            color: handHover.containsMouse && !on ? Ink.lineSoft : "transparent"
+            border.width: 1
+            border.color: on ? Ink.bone : handHover.containsMouse ? Ink.lineStrong : Ink.line
+            clip: true
+
+            // The top of the sheet in this hand, small.
+            Item {
+              id: thumb
+              x: 1
+              y: 1
+              width: parent.width - 2
+              height: Type.px(104)
+              clip: true
+              SheetView {
+                id: mini
+                x: Math.max(0, (thumb.width - width * scale) / 2)
+                y: Type.px(4)
+                sheet: root.focusSheet
+                styles: root.withHand(hand.modelData.key)
+                skin: root.skin
+                scale: Math.min(0.5, (thumb.width - Type.px(8)) / Math.max(1, width))
+                transformOrigin: Item.TopLeft
+                feed: root.feed
+                animate: false
+                tearX: Type.px(30)
+                tearWidth: Type.px(80)
+                enabled: false
+              }
+              Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: Type.px(26)
+                gradient: Gradient {
+                  GradientStop { position: 0; color: Ink.alpha(Ink.paper, 0) }
+                  GradientStop { position: 1; color: Ink.paper } }
+              }
+            }
+            Rectangle {
+              id: handCaption
+              x: 1
+              y: thumb.y + thumb.height
+              width: parent.width - 2
+              height: Type.px(42)
+              color: hand.on ? Ink.bone : "transparent"
+              Column {
+                x: Type.px(10)
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - 2 * x
+                spacing: Type.px(1)
+                Row {
+                  spacing: Type.px(6)
+                  Text { visible: hand.on; text: "//"; color: Ink.boneInk; opacity: 0.6; font.family: Type.mono; font.pixelSize: Type.px(11) }
+                  Text { text: hand.modelData.jp; color: hand.on ? Ink.boneInk : Ink.inkMuted; font.family: Type.brush; font.pixelSize: Type.px(13) }
+                  Text {
+                    text: hand.modelData.name
+                    color: hand.on ? Ink.boneInk : Ink.ink
+                    font.family: Type.text
+                    font.pixelSize: Type.px(13)
+                    font.weight: Font.Medium
+                    font.variableAxes: Type.valueAxes
+                  }
+                }
+                Text {
+                  width: parent.width
+                  elide: Text.ElideRight
+                  text: hand.modelData.short
+                  color: hand.on ? Ink.alpha(Ink.boneInk, 0.7) : Ink.inkMuted
+                  font.family: Type.text
+                  font.pixelSize: Type.note
+                }
+              }
+            }
+            MouseArea {
+              id: handHover
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onContainsMouseChanged: root.trialHand = containsMouse ? hand.modelData.key : ""
+              onClicked: { root.trialHand = ""; root.stylePicked(root.focusSheet, hand.modelData.key) }
+            }
+          }
+        }
+      }
+      // All seven in this hand.
+      Row {
+        spacing: Type.px(10)
+        SmallButton {
+          label: "Every sheet in " + root.handInfo(root.handOf).name
+          onClicked: root.stylePicked("all", root.handOf)
+        }
+        Text {
+          anchors.verticalCenter: parent.verticalCenter
+          text: {
+            var n = 0
+            for (var i = 0; i < S.SHEET_KEYS.length; i++) if ((root.styles[S.SHEET_KEYS[i]] || "ledger") === root.handOf) n++
+            return n + " OF 7 IN IT NOW"
+          }
+          color: Ink.inkMuted
+          font.family: Type.mono
+          font.pixelSize: Type.tag
+          font.letterSpacing: Type.trackLabel
+        }
+      }
+    }
+  }
+
+  Item { width: 1; height: Type.px(26) }
 
   // Panel opacity 透け: how much of the desk shows through every panel
   // (sheets in any hand, the scroll, the framed overview), with Shōji's
   // brush slider. It was on Settings › Design, which went with the design.
   Item {
     id: opacityRow
-    y: cards.y + cards.height + Type.px(18)
     width: root.width
     height: opacityLabel.implicitHeight + Type.px(14) + (root.compact ? opacityControls.height + Type.px(10) : 0)
     Rectangle { width: parent.width; height: 1; color: Ink.line }
@@ -186,109 +362,4 @@ Item {
     }
   }
 
-  Item {
-    id: body
-    y: opacityRow.y + opacityRow.height + Type.px(18)
-    width: parent.width
-
-    Column {
-      id: list
-      width: root.listWidth
-
-      Repeater {
-        model: Sheets.SHEETS
-        Row_ {
-          required property var modelData
-          jp: modelData.jp
-          name: modelData.label.charAt(0) + modelData.label.slice(1).toLowerCase()
-          line: root.hands[Math.max(0, S.SHEET_STYLES.indexOf(root.styles[modelData.key]))].short
-          selected: root.styles[modelData.key] || "ledger"
-          focused: root.focusSheet === modelData.key
-          onPicked: function(v) { root.focusSheet = modelData.key; root.stylePicked(modelData.key, v) }
-          onTouched: root.focusSheet = modelData.key
-        }
-      }
-    }
-
-    // The sheet last touched, printed live in its hand.
-    Item {
-      id: previewBox
-      x: root.twoUp ? root.width - root.previewRoom : 0
-      y: root.twoUp ? 0 : list.height + Type.px(24)
-      width: root.previewRoom
-      height: previewLabel.height + Type.px(10) + preview.height * preview.scale
-      Text {
-        id: previewLabel
-        text: ("Preview · " + root.focusSheet + " · " + (root.labels[root.styles[root.focusSheet]] || "")).toUpperCase()
-        color: Ink.inkMuted
-        font.family: Type.mono
-        font.pixelSize: Type.tag
-        font.letterSpacing: Type.trackEyebrow
-      }
-      SheetView {
-        id: preview
-        y: previewLabel.height + Type.px(10)
-        sheet: root.focusSheet
-        styles: root.styles
-        skin: root.skin
-        // A Shōji panel can be wider than the room (Time with the season): fit it.
-        scale: Math.min(1, root.previewRoom / Math.max(1, width))
-        transformOrigin: Item.TopLeft
-        feed: root.feed
-        animate: false
-        tearX: Type.px(30)
-        tearWidth: Type.px(80)
-      }
-    }
-  }
-
-  // One sheet's row: its kanji and name, what its hand is, the choice.
-  component Row_: Item {
-    id: row
-    property string jp: ""
-    property string name: ""
-    property string line: ""
-    property string selected: ""
-    property bool focused: false
-    signal picked(string value)
-    signal touched()
-    width: parent ? parent.width : 0
-    // Three lines: the name, the hand's line, the seven-way choice across.
-    height: seg.y + seg.height + Type.px(12)
-    Rectangle {
-      anchors.fill: parent
-      color: row.focused ? Ink.alpha(Ink.bone, 0.05) : "transparent"
-    }
-    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Ink.lineSoft }
-    Rectangle { visible: row.focused; width: 2; height: parent.height - Type.px(16); anchors.verticalCenter: parent.verticalCenter; color: Ink.ink }
-    MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: row.touched(); onClicked: row.touched() }
-    Text {
-      x: Type.px(12)
-      y: label.y
-      width: Type.px(26)
-      text: row.jp
-      color: Ink.inkMuted
-      font.family: Type.brush
-      font.pixelSize: Type.px(18)
-    }
-    Column {
-      id: label
-      x: Type.px(46)
-      y: Type.px(12)
-      width: parent.width - x - Type.px(12)
-      spacing: Type.px(2)
-      Text { text: row.name; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row }
-      Text { width: parent.width; elide: Text.ElideRight; text: row.line; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
-    }
-    Segmented {
-      id: seg
-      x: Type.px(12)
-      y: label.y + label.implicitHeight + Type.px(10)
-      fill: row.width - 2 * x
-      options: S.SHEET_STYLES
-      labels: root.labels
-      selected: row.selected
-      onPicked: function(v) { row.picked(v) }
-    }
-  }
 }

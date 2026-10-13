@@ -10,14 +10,18 @@
 #   hanko style set K V      change one setting (e.g. clock mono)
 #   hanko style set --monitor NAME K V
 #                            change it on one monitor only (e.g. DP-2 height 32)
-#   hanko style preset NAME  Sheet | Scroll | Kamon | Quiet | Instrument | Islet | Shoji
-#                            | Ma | Shizuka | Suji | Inro
+#   hanko style preset NAME  Quiet | Islet | Shoji | Kamon | Inkan | Ma | Shizuka | Suji
+#                            | Inro
+#   hanko inkan [on|off]     the seal only (form inkan) or the bar again; toggles
+#                            with no argument
 #   hanko style reset        back to the preset, edits dropped
 #   hanko style shuffle      a random combination
 #   hanko hide PART          take one part off the bar (e.g. tray, volume,
 #                            indicator:night, tray:nm-applet, hosted:omarchy.weather)
 #   hanko show PART          put it back
 #   hanko scroll             unroll (or roll up) the handscroll
+#   hanko press              press the seal: print No. 00 (every sheet on one),
+#                            or lift it off (bind it to a key: see the README)
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
 #   hanko doctor             check the installation
 #
@@ -201,8 +205,18 @@ case "${1:-}" in
     (( $# == 2 )) || fail "usage: hanko $1 <part> (see the Widgets page in hanko settings)"
     [[ $(ipc "$1" "$2") == ok ]] || fail "'$2' is not a part Hanko knows" ;;
   scroll) ipc scroll >/dev/null ;;
+  press) ipc press >/dev/null ;;
+  inkan)
+    case "${2:-}" in
+      on) form=inkan ;;
+      off) form=bar ;;
+      "") [[ $(ipc styleGet | jq -r .form) == inkan ]] && form=bar || form=inkan ;;
+      *) fail "usage: hanko inkan [on|off]" ;;
+    esac
+    [[ $(ipc styleSet form "$form") == ok ]] || fail "could not set form $form"
+    say "form: $form" ;;
   menu) shift; cmd_menu "$@" ;;
   doctor) cmd_doctor ;;
-  -h|--help|"") sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+  -h|--help|"") awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;
 esac

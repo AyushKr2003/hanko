@@ -3,6 +3,8 @@ import Quickshell
 import "../core"
 import "../services"
 import "../core/Extras.js" as X
+import "../core/Settings.js" as Settings
+import "../core/Style.js" as S
 import "settings"
 
 // Hanko's settings as an ordinary window (a Quickshell FloatingWindow, like
@@ -11,7 +13,8 @@ import "settings"
 // kept at once (Typeset.keep() after each draft edit), and Undo puts the
 // last one back (Typeset.history, forgotten when the window closes).
 //
-// Keys: / searches, Ctrl+Z undoes, Esc clears the search, then closes.
+// Keys: / searches, Ctrl+Z undoes, Esc clears the search, then closes;
+// on Typesetting, Left/Right and 1-0 move through the proof's parts.
 FloatingWindow {
   id: win
 
@@ -19,7 +22,6 @@ FloatingWindow {
 
   property string page: "typesetting"
   property string query: ""
-  property bool advanced: false
 
 
   title: "Hanko settings"
@@ -34,6 +36,9 @@ FloatingWindow {
   // The Profile plate's machine facts, read while the window is open.
   Binding { target: Machine; property: "wanted"; value: win.visible }
 
+  // Colour 色 lists Omarchy's themes: read them when the page opens.
+  onPageChanged: if (page === "colour") Leaf.loadThemes()
+
   // Closed by the window manager (Super+W, the close button).
   onVisibleChanged: if (!visible && bar.settingsOpen) bar.closeSettings()
 
@@ -44,6 +49,13 @@ FloatingWindow {
 
     Keys.onPressed: function(event) {
       if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { Typeset.undo(); event.accepted = true }
+      // Typesetting: Left/Right walk the proof's parts, 1-9 and 0 open one.
+      else if (win.page === "typesetting" && (event.key === Qt.Key_Left || event.key === Qt.Key_Right) && !(event.modifiers & Qt.ControlModifier)) {
+        settings.stepPart(event.key === Qt.Key_Right ? 1 : -1); event.accepted = true
+      }
+      else if (win.page === "typesetting" && event.key >= Qt.Key_0 && event.key <= Qt.Key_9 && !event.modifiers) {
+        settings.pickPartAt(event.key === Qt.Key_0 ? 9 : event.key - Qt.Key_1); event.accepted = true
+      }
       else if (event.key === Qt.Key_Slash) { win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
       else if (event.key === Qt.Key_Escape) {
         if (win.query !== "") win.query = ""
@@ -60,7 +72,12 @@ FloatingWindow {
       undoCount: Typeset.history.length
       page: win.page
       query: win.query
-      advanced: win.advanced
+      themes: Leaf.themes
+      theme: Leaf.theme
+      onThemePicked: function(slug) { Leaf.setTheme(slug) }
+      onCopyText: function(text) { Quickshell.execDetached(["wl-copy", text]) }
+      lastChange: Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
+      screens: Quickshell.screens.map(function(s) { return { name: s.name, x: s.x, y: s.y, width: s.width, height: s.height } })
       monitors: Quickshell.screens.map(function(s) { return s.name })
       machine: Machine.info
       profile: Dossier.doc
@@ -86,7 +103,14 @@ FloatingWindow {
         battery: Status.battery,
         brightness: Status.brightness,
         notifications: Status.notifications,
-        dnd: Status.doNotDisturb
+        dnd: Status.doNotDisturb,
+        indicators: Extras.indicators,
+        // The galley lays your bar out as wide as the screen it is on.
+        screenWidth: (function() {
+          var name = win.bar.focusedScreen(), list = Quickshell.screens
+          for (var i = 0; i < list.length; i++) if (list[i].name === name) return list[i].width
+          return 0
+        })()
       })
 
       sheetFeed: ({
@@ -103,8 +127,6 @@ FloatingWindow {
         dnd: Status.doNotDisturb
       })
       onSettingPicked: function(key, value) {
-        // "…" asks for a glyph of your own, under Advanced.
-        if (key === "sealGlyph" && value === "…") { win.advanced = true; return }
         Typeset.draftSet(key, value)
         // A dragged slider is one step of Undo, not one per pixel.
         Typeset.keep(key === "panelOpacity" ? key : "")
@@ -114,8 +136,7 @@ FloatingWindow {
       onUndo: Typeset.undo()
       onPagePicked: function(key) { win.page = key }
       // A search shows Typesetting, unless you are searching Widgets or Presets.
-      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets" && win.page !== "presets") win.page = "typesetting" }
-      onAdvancedToggled: function(on) { win.advanced = on }
+      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "parts" && win.page !== "presets") win.page = "typesetting" }
       onMonitorCleared: function(name) { Typeset.draftClearMonitor(name); Typeset.keep() }
       onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value); Typeset.keep() }
       onShuffle: { Typeset.draftShuffle(); Typeset.keep() }

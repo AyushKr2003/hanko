@@ -27,6 +27,10 @@ PanelWindow {
 
   readonly property int barHeight: Type.px(style.height)
   readonly property bool atBottom: bar.position === "bottom"
+  // Inkan 印 (form: inkan): the strip is parked off-screen like a hidden
+  // bar, and the seal in its corner (SealWindow) is all that shows.
+  readonly property bool inkan: shown.form === "inkan"
+  readonly property bool parked: bar.barHidden || inkan
   // Float inset floats 8 px off the screen's edges. Hyprland adds the margin on
   // the anchored edge to the exclusive zone, so windows stay 8 px clear of
   // the frame too.
@@ -34,7 +38,7 @@ PanelWindow {
 
   color: "transparent"
   implicitHeight: barHeight
-  exclusionMode: bar.barHidden ? ExclusionMode.Ignore : ExclusionMode.Auto
+  exclusionMode: parked ? ExclusionMode.Ignore : ExclusionMode.Auto
 
   WlrLayershell.namespace: "hanko-bar"
   WlrLayershell.layer: WlrLayer.Top
@@ -48,8 +52,8 @@ PanelWindow {
   }
 
   margins {
-    top: win.atBottom ? 0 : (win.bar.barHidden ? -win.barHeight - win.gap : win.gap)
-    bottom: !win.atBottom ? 0 : (win.bar.barHidden ? -win.barHeight - win.gap : win.gap)
+    top: win.atBottom ? 0 : (win.parked ? -win.barHeight - win.gap : win.gap)
+    bottom: !win.atBottom ? 0 : (win.parked ? -win.barHeight - win.gap : win.gap)
     left: win.gap
     right: win.gap
   }
@@ -87,6 +91,8 @@ PanelWindow {
   BarSurface {
     id: classicSurface
     anchors.fill: parent
+    // Parked under Inkan: nothing of it is drawn.
+    visible: !win.inkan
     style: win.shown
     now: win.bar.now
     spaces: Hypr.spacesFor(win.screen ? win.screen.name : "")
@@ -132,6 +138,13 @@ PanelWindow {
     bar: win.bar
     barWindow: win
   }
+
+  SealWindow {
+    id: sealWindow
+    bar: win.bar
+    barWindow: win
+  }
+  readonly property var seal: sealWindow
 
   OverviewWindow {
     bar: win.bar

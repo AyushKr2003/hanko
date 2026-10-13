@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../core"
 import "../core/Scroll.js" as Scroll
+import "../core/Inkan.js" as Inkan
 import "../services"
 import "scroll"
 
@@ -26,8 +27,12 @@ PanelWindow {
 
   readonly property string screenName: screen ? screen.name : ""
   readonly property bool open: bar.scrollOpen && bar.scrollScreen === screenName
-  readonly property bool atBottom: bar.position === "bottom"
-  readonly property int strip: barWindow.barHeight + barWindow.gap
+  // Under Inkan (form: inkan) the scroll unrolls from the edge the seal is
+  // on, clear of the seal, which stays to roll it up again.
+  readonly property bool inkan: barWindow.inkan
+  readonly property bool atBottom: inkan ? String(barWindow.shown.inkanAt).indexOf("bottom") === 0 : bar.position === "bottom"
+  readonly property int strip: inkan ? barWindow.seal.margin + barWindow.seal.size + Type.px(Inkan.SHEET_GAP)
+                                     : barWindow.barHeight + barWindow.gap
   property bool primed: false
 
   // Panning state: while dragging, the track follows the pointer directly;

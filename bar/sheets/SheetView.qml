@@ -13,7 +13,8 @@ import "../../core/Blue.js" as BlueJs
 // component so the handscroll (Phase 7) can lay them out again.
 //
 // feed: { now, zones, timeShift, sound, network, bluetooth, power, display,
-// letters, dnd }:
+// letters, dnd, all }, where all is No. 00's { rows, spaces, window, home,
+// media, glyph }:
 // plain data for whichever sheet shows.
 Item {
   id: root
@@ -31,7 +32,8 @@ Item {
   // How each sheet is drawn (Style.js sheetStyles): ledger | tanzaku |
   // shogi | soroban | odoshi | kasumi | shoji.
   property var styles: ({})
-  readonly property string hand: styles[sheet] || "ledger"
+  // No. 00 (Inkan's sheet of every sheet) is always a ledger.
+  readonly property string hand: sheet === "all" ? "ledger" : styles[sheet] || "ledger"
   // Shōji 障子 sheets are a Shōji panel (ShojiPanel), not a printed card:
   // washi in Shōji's skin (core/Skin.js), on a rail a little below the bar
   // (`rail`, so SheetWindow leaves the gap and slides it along), arriving
@@ -100,9 +102,28 @@ Item {
         : (root.hand === "tanzaku"
           ? { time: timeTanzaku, sound: soundTanzaku, network: networkTanzaku, bluetooth: bluetoothTanzaku,
               power: powerTanzaku, display: displayTanzaku, inbox: inboxTanzaku }
-          : { time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
+          : { all: allSheet, time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
               power: powerSheet, display: displaySheet, inbox: inboxSheet })[root.sheet] || null
       onLoaded: if (root.open) root.focusContents()
+    }
+  }
+
+  Component {
+    id: allSheet
+    AllSheet {
+      readonly property var all: root.feed.all || ({})
+      now: root.feed.now || new Date()
+      timeFormat: root.feed.timeFormat || "HH:mm"
+      glyph: all.glyph || "鑑"
+      rows: all.rows || []
+      spaces: all.spaces || []
+      window: all.window || null
+      home: all.home || ""
+      media: all.media || null
+      onRequest: function(what, arg) { root.request("all", what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 

@@ -1,0 +1,270 @@
+{
+  "title": "",
+  "scene": "Settings",
+  "width": 1600,
+  "theme": {
+    "foreground": "#ddd5c7",
+    "background": "#0a0a09",
+    "red": "#d8452f"
+  },
+  "spaces": [
+    {
+      "id": 1,
+      "active": false,
+      "urgent": false,
+      "count": 2,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 0.5,
+          "h": 1,
+          "focused": true
+        },
+        {
+          "x": 0.5,
+          "y": 0,
+          "w": 0.5,
+          "h": 1,
+          "focused": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "active": false,
+      "urgent": false,
+      "count": 1,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "focused": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "active": true,
+      "urgent": false,
+      "count": 3,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 0.5,
+          "h": 1,
+          "focused": true
+        },
+        {
+          "x": 0.5,
+          "y": 0,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        },
+        {
+          "x": 0.5,
+          "y": 0.5,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "active": false,
+      "urgent": true,
+      "count": 4,
+      "windows": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": true
+        },
+        {
+          "x": 0.5,
+          "y": 0,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        },
+        {
+          "x": 0,
+          "y": 0.5,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        },
+        {
+          "x": 0.5,
+          "y": 0.5,
+          "w": 0.5,
+          "h": 0.5,
+          "focused": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "active": false,
+      "urgent": false,
+      "count": 0,
+      "windows": []
+    }
+  ],
+  "window": {
+    "cls": "Alacritty",
+    "title": "nvim /home/ayush/code/hanko/Bar.qml"
+  },
+  "media": {
+    "title": "Water Copy",
+    "artist": "Hiroshi Yoshimura",
+    "progress": 0.38,
+    "playing": true
+  },
+  "volume": {
+    "percent": 62,
+    "level": 0.62,
+    "muted": false,
+    "needsYou": false
+  },
+  "bluetooth": {
+    "name": "WH-1000XM5",
+    "enabled": true,
+    "connected": 1,
+    "level": 0.8,
+    "needsYou": false
+  },
+  "network": {
+    "kind": "wifi",
+    "name": "Kumo",
+    "signal": 68,
+    "bars": 3,
+    "off": false,
+    "needsYou": false
+  },
+  "battery": {
+    "percent": 91,
+    "level": 0.91,
+    "charging": false,
+    "needsYou": false
+  },
+  "brightness": null,
+  "notifications": [
+    {
+      "app": "Signal",
+      "summary": "",
+      "timestamp": 3,
+      "urgent": false,
+      "glyph": "S",
+      "tilt": -3
+    },
+    {
+      "app": "Ghostty",
+      "summary": "",
+      "timestamp": 2,
+      "urgent": false,
+      "glyph": "G",
+      "tilt": 3
+    },
+    {
+      "app": "Firefox",
+      "summary": "",
+      "timestamp": 1,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": -1.5
+    }
+  ],
+  "settings": {
+    "saved": {
+      "preset": "Ma",
+      "edits": {
+        "clock": "inline"
+      }
+    },
+    "draft": {
+      "preset": "Ma",
+      "edits": {
+        "clock": "inline"
+      }
+    },
+    "width": 1320,
+    "height": 980,
+    "part": "status",
+    "page": "colour",
+    "themes": [
+      {
+        "slug": "aether",
+        "name": "Aether",
+        "bg": "#010000",
+        "fg": "#f8ebeb",
+        "red": "#ff8773",
+        "light": false
+      },
+      {
+        "slug": "calestia",
+        "name": "Calestia",
+        "bg": "#0f0d12",
+        "fg": "#ebe3ef",
+        "red": "#fb92aa",
+        "light": false
+      },
+      {
+        "slug": "papier",
+        "name": "Papier",
+        "bg": "#dfdacb",
+        "fg": "#2b2924",
+        "red": "#a3220f",
+        "light": true
+      },
+      {
+        "slug": "ryoku-ink",
+        "name": "Ryoku Ink",
+        "bg": "#000000",
+        "fg": "#cdc4ba",
+        "red": "#a8847a",
+        "light": false
+      },
+      {
+        "slug": "tokyo-night",
+        "name": "Tokyo Night",
+        "bg": "#1a1b26",
+        "fg": "#a9b1d6",
+        "red": "#f7768e",
+        "light": false
+      },
+      {
+        "slug": "tusche",
+        "name": "Tusche",
+        "bg": "#000000",
+        "fg": "#e0e0e0",
+        "red": "#ff4a2b",
+        "light": false
+      },
+      {
+        "slug": "rose-pine-dawn",
+        "name": "Rosé Pine Dawn",
+        "bg": "#faf4ed",
+        "fg": "#575279",
+        "red": "#b4637a",
+        "light": true
+      },
+      {
+        "slug": "gruvbox",
+        "name": "Gruvbox",
+        "bg": "#282828",
+        "fg": "#d4be98",
+        "red": "#ea6962",
+        "light": false
+      }
+    ],
+    "theme": "tusche"
+  }
+}

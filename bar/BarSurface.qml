@@ -94,7 +94,8 @@ Item {
   // Where a cell sits along the bar ({ x, width } in this item), so a sheet
   // can drop from under it; null when the cell isn't showing.
   function anchorFor(cell) {
-    var item = cell === "clock" ? (clockRight ? rightClock : centreClock)
+    var item = cell === "seal" ? seal
+      : cell === "clock" ? (clockRight ? rightClock : centreClock)
       : cell === "notif" ? (lettersOnSeal ? seal : inbox)
       : status.cellFor(cell)
     if (!item || !item.visible) return null
@@ -438,6 +439,29 @@ Item {
     if (!it || !it.visible) return Qt.rect(0, 0, 0, 0)
     var deps = left.x + right.x + right.width + centreClock.x + width
     var p = it.mapToItem(root, deps * 0, 0)
+    return Qt.rect(p.x, 0, it.width, barHeight)
+  }
+  // Where a part of the proof (Settings.PROOF) sits on the bar, for the
+  // settings page's marks and specimens: seal | spaces | title | clock |
+  // media | status | indicators | notif | edge | frame, or one reading
+  // (network, bluetooth, volume, brightness, battery). An empty rect when
+  // the part isn't drawn. `layoutTick` is read so a binding over this
+  // follows the layout.
+  readonly property real layoutTick: left.x + left.width + right.x + right.width + centreClock.x
+    + centreClock.width + width + height + seal.width + spacesView.width + titleView.width
+    + status.x + status.width + extras.x + marks.width + inbox.x + inbox.width + media.x + media.width
+    + rightClock.x + (status._cells ? 1 : 0)
+  function partRect(name) {
+    void layoutTick
+    if (name === "frame") return Qt.rect(0, 0, width, barHeight)
+    if (name === "edge") return root.shown("edge") ? Qt.rect(0, 0, width, barHeight) : Qt.rect(0, 0, 0, 0)
+    var it = name === "seal" ? seal : name === "spaces" ? spacesView : name === "title" ? titleView
+      : name === "clock" ? (clockRight ? rightClock : centreClock) : name === "media" ? media
+      : name === "status" ? status : name === "indicators" ? marks
+      : name === "notif" ? (lettersOnSeal ? seal : inbox)
+      : status.visible ? status.cellFor(name) : null
+    if (!it || !it.visible || it.width <= 0) return Qt.rect(0, 0, 0, 0)
+    var p = it.mapToItem(root, 0, 0)
     return Qt.rect(p.x, 0, it.width, barHeight)
   }
   readonly property var pointables: {
