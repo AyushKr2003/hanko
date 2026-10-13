@@ -56,7 +56,7 @@ These come from the user's own messages and reactions:
 
 ## 3. Repository and branches
 
-Repo: **`AyushKr2003/hanko`** (private). In cloud sessions it was checked out at `/tmp/claude-0/hanko`.
+Repo: **`AyushKr2003/hanko`** (public; submitted to the Omarchy plugin marketplace on 2026-10-13). In cloud sessions it was checked out at `/tmp/claude-0/hanko`.
 
 | Branch | What it holds |
 |---|---|
@@ -89,7 +89,7 @@ A future design direction (if the user asks for one) gets a plain descriptive na
 - **Commit messages:** `Phase N: <short title>` then a blank line and a plain-language paragraph or two on what the phase does for the user.
 - **Push with** `git push -u origin dev`. The git proxy in cloud sessions **rejects tag pushes**; use branches, never tags.
 - **Only this repo.** Do not use GitHub's `create_repository` or any `search_*` tool. Reference repos are cloned read-only into a scratch folder (§8).
-- **The repo is private.** Never publish its content anywhere outside the project.
+- **The repo is public** and listed on the Omarchy plugin marketplace, which installs from `main` HEAD. The listing shows the standard `omarchy plugin add` command; the README leads with the manual install (`scripts/hanko install`). The listing preview is `preview.webp` at the root. After a large update reaches `main`, file the marketplace's "Plugin verification" form (newer upstream commit).
 - **Project chat (Claude projects):** replies go through the thread's `reply` tool. A thread can hold at most 24 attached outputs; the Hanko thread is at that limit, so link files by path (`/mnt/project-files/...`) in the text instead of attaching them. Renders are copied to `/mnt/project-files/ryoku-shell/typeset/phaseN-render.png`.
 
 ## 5. The design in one page
@@ -987,7 +987,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 
 1. ~~The Scroll motion spec across the bar: inversion plates slide between items (one indicator, like Ryoku's rail); values crossfade; the now-notch creeps; a new stamp is pressed down oversized and tilted, then settles (140 ms, the only overshoot anywhere); sheets print top-down (~180 ms). A global **reduced motion** switch (Motion 動 page + style key, outside the 18 settings) that cuts every transition to its end frame.~~
 2. ~~Per-monitor override UI on the settings page (Advanced).~~
-3. README install guide (screenshots from renders), `manifest.json` version `0.1.0` → release version, CHANGELOG entry, listing on omarchyplugins.com (ask the user before publishing anything; the repo is private).
+3. README install guide (screenshots from renders), `manifest.json` version `0.1.0` → release version, CHANGELOG entry, listing on omarchyplugins.com (submitted 2026-10-13).
 4. Merge `dev` into `main` **only when the user asks**.
 
 ## 11. The per-phase routine
