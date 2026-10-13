@@ -1,0 +1,355 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Inkan 印, the seal only: the design sheets drawn before it is built
+     (docs/shell-concepts/inkan/README.md). kit.html?c=1 … c=5, rendered
+     with headless Chromium at 2x (see the README). The seal's wear and
+     chips are drawn exactly as core/Inkan.js describes them, with the
+     same seeded specks. -->
+<style>
+@font-face{font-family:Fraunces;src:url(../../../../assets/fonts/Fraunces.ttf)}
+@font-face{font-family:Fraunces;font-style:italic;src:url(../../../../assets/fonts/Fraunces-Italic.ttf)}
+@font-face{font-family:Grot;src:url(../../../../assets/fonts/SpaceGrotesk.ttf)}
+@font-face{font-family:Brush;src:url(../../../../assets/fonts/YujiBoku.ttf)}
+:root{
+  --paper:#0a0a09; --ink:#ddd5c7; --dim:#a9a297; --muted:#7a746b; --faint:#4a4640;
+  --line:rgba(221,213,199,.22); --soft:rgba(221,213,199,.10); --strong:rgba(221,213,199,.4);
+  --red:#d8452f; --page:#050505; --card:#0d0d0c;
+  --mono:"JetBrainsMono Nerd Font","Noto Sans Mono",monospace; --serif:Fraunces,serif; --sans:Grot,sans-serif; --jp:Brush,"Noto Serif CJK JP",serif;
+}
+.light{ --paper:#f2ede1; --ink:#1c1b18; --dim:#4a4740; --muted:#6c675d; --faint:#9c968a;
+  --line:rgba(28,27,24,.2); --soft:rgba(28,27,24,.09); --strong:rgba(28,27,24,.38);
+  --red:#b8382a; --card:#f7f3ea; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font-family:var(--sans);width:2048px;padding:56px 64px 64px}
+.kick{font:500 11px var(--mono);letter-spacing:.28em;color:var(--muted);text-transform:uppercase;display:flex;gap:14px;align-items:center}
+.kick b{color:var(--red);font-weight:400;font-family:var(--jp);font-size:15px;letter-spacing:0}
+.kick::after{content:"";flex:1;height:1px;background:var(--line)}
+h1{font:400 64px/1.05 var(--serif);margin:26px 0 8px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:22px}
+h1 .k{font:56px var(--jp);color:var(--red)}
+h1 i{font-style:italic;color:var(--dim);font-size:44px}
+.lede{font:400 19px/1.55 var(--sans);color:var(--dim);max-width:1320px}
+.lede em{color:var(--ink);font-style:normal}
+.lab{font:500 10.5px var(--mono);letter-spacing:.26em;color:var(--muted);text-transform:uppercase;margin:40px 0 14px;display:flex;gap:12px;align-items:center}
+.lab::after{content:"";flex:1;height:1px;background:var(--soft)}
+.mono{font:500 10px var(--mono);letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:40px;border-top:1px solid var(--line);padding-top:26px}
+.notes h3{font:500 10.5px var(--mono);letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.notes h3 b{color:var(--red);font-weight:500}
+.notes p{font:400 15px/1.6 var(--sans);color:var(--dim);margin-bottom:8px}
+.notes p em{color:var(--ink);font-style:normal}
+.notes code{font:13px var(--mono);color:var(--ink)}
+.foot{display:flex;justify-content:space-between;margin-top:40px;font:500 10px var(--mono);letter-spacing:.22em;color:var(--faint)}
+/* the state grid */
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border:1px solid var(--line)}
+.st{padding:28px 18px 22px;border-right:1px solid var(--soft);border-bottom:1px solid var(--soft);display:flex;flex-direction:column;align-items:center;gap:16px;background:var(--paper)}
+.st .n{font:500 10px var(--mono);letter-spacing:.2em;color:var(--ink);text-transform:uppercase}
+.st .w{font:400 12.5px/1.45 var(--sans);color:var(--muted);text-align:center;max-width:220px}
+.st .w b{color:var(--red);font-weight:400}
+/* desks */
+.desk{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--line)}
+.wall{position:absolute;inset:0;background:
+  radial-gradient(60% 50% at 78% 18%,rgba(221,213,199,.06),transparent 70%),
+  linear-gradient(180deg,transparent 55%,rgba(221,213,199,.03) 75%,rgba(216,69,47,.04) 100%)}
+.light .wall{background:radial-gradient(60% 50% at 78% 18%,rgba(28,27,24,.05),transparent 70%)}
+.win{position:absolute;background:color-mix(in srgb,var(--paper) 88%,var(--ink) 4%);border:1px solid var(--soft)}
+.win.f{border-color:var(--strong)}
+.win pre{font:11px/1.6 var(--mono);color:var(--muted);padding:12px 14px;white-space:pre}
+.win pre b{color:var(--ink);font-weight:400}
+.win pre s{color:var(--red);text-decoration:none}
+/* the No. 00 sheet */
+.sheet{position:absolute;width:440px;background:var(--card);border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.light .sheet{box-shadow:0 14px 34px rgba(60,50,30,.18)}
+.sh-head{display:flex;gap:10px;align-items:center;padding:22px 24px 0}
+.sh-head .rule{flex:1;height:1px;background:var(--line)}
+.sh-head .k{font:13px var(--jp);color:var(--ink)}
+.sh-clock{padding:18px 24px 0;font:400 52px/1 var(--serif);display:flex;align-items:baseline;gap:14px}
+.sh-clock i{font-size:18px;color:var(--dim)}
+.sh-spaces{display:flex;align-items:center;gap:7px;margin:18px 24px 0;padding:12px 0;border-top:1px solid var(--soft)}
+.sh-spaces span{width:24px;height:24px;font:15px/24px var(--jp);text-align:center;color:var(--dim);position:relative;border-radius:2px}
+.sh-spaces span.on{background:var(--ink);color:var(--paper)}
+.sh-spaces span.d::after{content:"";position:absolute;left:10.5px;bottom:-5px;width:3px;height:3px;border-radius:50%;background:var(--muted)}
+.sh-spaces span.u::after{background:var(--red)}
+.sh-spaces .title{margin-left:12px;padding-left:14px;border-left:1px solid var(--soft);font:italic 400 15px var(--serif);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-spaces .title em{font:400 12.5px var(--sans);color:var(--dim);font-style:normal;margin-left:7px}
+.sh-media{display:flex;align-items:center;gap:10px;margin:0 24px;padding:0 0 12px;font:400 13px var(--sans);color:var(--dim)}
+.sh-media .bar{flex:0 0 60px;height:1px;background:var(--line);position:relative}
+.sh-media .bar::after{content:"";position:absolute;left:0;top:-.5px;height:2px;width:38%;background:var(--ink)}
+.row{display:flex;align-items:center;gap:14px;margin:0 24px;padding:12px 0;border-bottom:1px solid var(--soft)}
+.row.first{border-top:1px solid var(--soft)}
+.row .k{font:17px var(--jp);color:var(--dim);width:20px;text-align:center}
+.row .nm{font:400 14px var(--sans)}
+.row .v{margin-left:auto;font:500 10px var(--mono);letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.row.red .k,.row.red .v{color:var(--red)}
+.row.hov{background:linear-gradient(90deg,transparent,var(--soft) 8%,var(--soft) 92%,transparent)}
+.row.hov .v::after{content:" ›";color:var(--ink)}
+.sh-foot{display:flex;justify-content:space-between;padding:14px 24px 18px}
+.sh-foot .mono{font-size:9px}
+.sh-foot .mono b{color:var(--ink);font-weight:500}
+.bloom{position:absolute;border-radius:50%;background:radial-gradient(color-mix(in srgb,var(--red) 30%,transparent),transparent 70%)}
+.reading{position:absolute;white-space:nowrap;font:500 10px var(--mono);letter-spacing:.18em;color:var(--dim);text-transform:uppercase;display:flex;gap:10px;align-items:center}
+.reading .t{font:400 17px var(--serif);letter-spacing:0;color:var(--ink);text-transform:none}
+.reading b{color:var(--red);font-weight:500}
+.reading .k{font:12px var(--jp);letter-spacing:0}
+.cap{position:absolute;font:500 9.5px var(--mono);letter-spacing:.18em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+.cap::before{content:"";display:inline-block;width:5px;height:5px;background:var(--red);margin-right:8px;vertical-align:1px}
+.crumb{font:500 9px var(--mono);letter-spacing:.2em;color:var(--muted)}
+.crumb b{color:var(--ink);font-weight:500}
+.bar40{position:absolute;left:0;right:0;top:0;height:30px;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 8px;gap:10px}
+.bar40 .s{width:18px;height:18px;background:var(--red);border-radius:2px}
+.bar40 .c{position:absolute;left:50%;transform:translateX(-50%);font:400 15px var(--serif)}
+.bar40 .r{margin-left:auto;display:flex;gap:12px}
+.bar40 .r i{width:34px;height:8px;background:var(--soft)}
+.frames{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.frame .lbl{font:500 10px var(--mono);letter-spacing:.2em;color:var(--ink);margin-top:12px;text-transform:uppercase}
+.frame .lbl b{color:var(--red);font-weight:500;margin-right:8px}
+.frame .w{font:400 12.5px/1.45 var(--sans);color:var(--muted);margin-top:6px}
+</style></head>
+<body>
+<div id="root"></div>
+<script>
+const P = new URLSearchParams(location.search), C = P.get('c') || '1'
+const $ = s => document.querySelector(s)
+const root = $('#root')
+const add = html => root.insertAdjacentHTML('beforeend', html)
+
+// ---- the seal, as core/Inkan.js draws it --------------------------------
+// specks(seed): seeded blots inside the carving, each with a threshold. A
+// speck is drawn (in the plate's red, over the glyph) when its threshold is
+// under the erosion, 1 − wear; so the carving wears away in the same places
+// every time, a little more as the battery falls.
+function rng(seed) { let s = seed % 2147483647; if (s <= 0) s += 2147483646; return () => (s = s * 16807 % 2147483647) / 2147483647 }
+function specks(seed) {
+  const r = rng(seed), out = []
+  // Clusters, so the wear reads as worn strokes rather than noise.
+  for (let c = 0; c < 14; c++) {
+    const cx = .2 + r() * .6, cy = .2 + r() * .6, t0 = r()
+    const n = 4 + Math.floor(r() * 6)
+    for (let i = 0; i < n; i++)
+      out.push({ x: cx + (r() - .5) * .16, y: cy + (r() - .5) * .16, r: .018 + r() * .045, t: Math.min(1, t0 + r() * .25) })
+  }
+  return out
+}
+function wear(pct, charging, present) {
+  if (!present || charging) return 1
+  if (pct >= 60) return 1
+  return Math.max(.18, .3 + .7 * pct / 60)
+}
+// seal(size, o): o = { glyph, wear, chips (0..2), urgent, dnd, offline, light }
+function sealCanvas(size, o = {}) {
+  const d = 2, cv = document.createElement('canvas')
+  cv.width = cv.height = size * d; cv.style.width = cv.style.height = size + 'px'
+  const g = cv.getContext('2d'); g.scale(d, d)
+  const css = getComputedStyle(o.el || document.body)
+  const red = css.getPropertyValue('--red').trim(), paper = css.getPropertyValue('--paper').trim()
+  const ink = css.getPropertyValue('--dim').trim()
+  const rad = Math.max(2, size * .07), chip = (o.urgent ? .34 : .22) * size
+  const chips = o.dnd ? 0 : (o.chips || 0)
+  // The plate's outline, with the chipped corners cut off.
+  const path = () => {
+    g.beginPath()
+    g.moveTo(rad, 0)
+    if (chips >= 1) { g.lineTo(size - chip, 0); g.lineTo(size, chip) } else { g.lineTo(size - rad, 0); g.quadraticCurveTo(size, 0, size, rad) }
+    g.lineTo(size, size - rad); g.quadraticCurveTo(size, size, size - rad, size)
+    if (chips >= 2) { g.lineTo(chip, size); g.lineTo(0, size - chip) } else { g.lineTo(rad, size); g.quadraticCurveTo(0, size, 0, size - rad) }
+    g.lineTo(0, rad); g.quadraticCurveTo(0, 0, rad, 0); g.closePath()
+  }
+  path()
+  if (o.dnd) { g.lineWidth = 1.5; g.strokeStyle = ink; g.stroke() }
+  else { g.fillStyle = red; g.fill() }
+  // The inner rule; broken along the foot when offline.
+  const m = Math.max(2, size * .08)
+  g.strokeStyle = o.dnd ? 'transparent' : paper; g.globalAlpha = .5; g.lineWidth = 1
+  g.beginPath()
+  const a = m + .5, b = size - m - .5
+  const cut = chips >= 1 ? chip - m * .2 : 0, cut2 = chips >= 2 ? chip - m * .2 : 0
+  g.moveTo(a, a); g.lineTo(b - cut, a); if (cut) g.lineTo(b, a + cut)
+  g.lineTo(b, b)
+  if (o.offline) { g.lineTo(size * .64, b); g.moveTo(size * .36, b) }
+  g.lineTo(a + cut2, b); if (cut2) g.lineTo(a, b - cut2)
+  g.closePath(); if (o.offline) { g.moveTo(a, b - cut2); g.lineTo(a, a) }
+  g.stroke(); g.globalAlpha = 1
+  // The glyph, in paper (ink when quiet).
+  g.fillStyle = o.dnd ? ink : paper
+  g.font = `${Math.round(size * .66)}px Brush`
+  g.textAlign = 'center'; g.textBaseline = 'middle'
+  g.fillText(o.glyph || '鑑', size / 2, size / 2 + size * .02)
+  // The wear: red specks over the carving.
+  const e = 1 - (o.wear == null ? 1 : o.wear)
+  if (e > 0 && !o.dnd) {
+    g.fillStyle = red
+    for (const s of specks(7)) if (s.t < e) { g.beginPath(); g.arc(s.x * size, s.y * size, s.r * size, 0, 7); g.fill() }
+  }
+  return cv
+}
+function placeSeal(el, size, o) { el.appendChild(sealCanvas(size, Object.assign({ el }, o))) }
+// A seal slot in HTML; filled after the fonts load.
+let seals = []
+const S = (size, o = {}, style = '') => { const id = 's' + seals.length; seals.push([id, size, o]); return `<span id="${id}" style="display:inline-block;width:${size}px;height:${size}px;${style}"></span>` }
+
+const code = `<b>import</b> QtQuick
+<b>import</b> "../core"
+
+<i>// The seal: pressed, the shell prints.</i>
+<b>Item</b> {
+  <b>id</b>: root
+  <b>property</b> bool pressed: <s>false</s>
+  <b>signal</b> printed()
+}`
+
+// The No. 00 sheet. o = { low, hover, x, y, scale, opacity, clip, lift }
+function sheet(o = {}) {
+  const rows = [
+    ['音', 'Sound', '62% · Studio monitors'],
+    ['網', 'Network', 'Kumo · 82%'],
+    ['藍', 'Bluetooth', 'WH-1000XM5 · 80%'],
+    ['電', 'Power', o.low === false ? '91% · on AC' : '14% · 38 min', o.low !== false],
+    ['明', 'Display', 'Built-in · 70%'],
+    ['報', 'Inbox', '2 letters']
+  ]
+  return `<div class="sheet" style="left:${o.x}px;top:${o.y}px;${o.style || ''}">
+    <div class="sh-head mono"><span style="width:18px;height:1px;background:var(--muted)"></span><span class="k">鑑</span>HANKO · ALL SHEETS<span class="rule"></span>NO. 00</div>
+    <div class="sh-clock">21:44 <i>Tuesday, 6 October</i></div>
+    <div class="sh-spaces"><span class="d">壱</span><span class="on d">弐</span><span class="d u">参</span><span>肆</span><div class="title">nvim<em>Bar.qml · ~/code/hanko</em></div></div>
+    <div class="sh-media"><span class="k" style="font:13px var(--jp);color:var(--muted)">曲</span>Midnight City <span style="color:var(--muted)">· M83</span><span class="bar"></span></div>
+    ${rows.map((r, i) => `<div class="row${i ? '' : ' first'}${r[3] ? ' red' : ''}${o.hover === i ? ' hov' : ''}"><span class="k">${r[0]}</span><span class="nm">${r[1]}</span><span class="v">${r[2]}</span></div>`).join('')}
+    <div class="sh-foot"><span class="mono"><b>⏎</b> OPEN · <b>TAB</b> NEXT · <b>ESC</b> LIFT OFF</span><span class="mono"><b>MENU</b> · <b>SETTINGS</b></span></div>
+  </div>`
+}
+
+function head(n, k, name, sub, lede) {
+  return `<div class="kick"><b>印</b> Hanko · Inkan, the seal only · ${n} / 05</div>
+  <h1><span class="k">${k}</span>${name} <i>${sub}</i></h1><p class="lede">${lede}</p>`
+}
+const foot = `<div class="foot"><span>HANKO · INKAN 印 · DESIGN SHEETS · 2026-10-13</span><span>ONE SEAL · THE SAME SHEETS · NOTHING ELSE ON SCREEN</span></div>`
+
+if (C === '1') {
+  add(head(1, '印', 'The seal at rest', 'read like a stamp',
+    'Nothing on screen but one seal, in a corner you choose. Its carving is the status: <em>the strokes wear away as the battery falls</em>, <em>a chipped corner is an unread letter</em>, a broken inner rule is no network, an outline is do not disturb. Red keeps its one meaning, you or now; nothing else is added to the seal.'))
+  const st = [
+    ['All well', 'Full carving, the inner rule whole.', {}],
+    ['Battery 45%', 'The first strokes thin. Above 60% nothing wears.', { wear: wear(45, false, true) }],
+    ['Battery 30%', 'The wear spreads, always in the same places (seeded).', { wear: wear(30, false, true) }],
+    ['Battery 14%', 'Under 15% and draining: the hover reading turns <b>red</b>.', { wear: wear(14, false, true) }],
+    ['Charging', 'Charging, or a desktop with no battery: the full carving.', { wear: 1 }],
+    ['One letter', 'A corner chipped off: something waits in the Inbox.', { chips: 1 }],
+    ['Three letters', 'Three or more: a second corner chipped.', { chips: 2 }],
+    ['Urgent', 'A critical letter: the chip cuts deeper.', { chips: 1, urgent: true }],
+    ['Do not disturb', 'Quiet: the seal is only an outline, and chips wait.', { dnd: true, chips: 1 }],
+    ['Offline', 'No network: the inner rule breaks along the foot.', { offline: true }],
+    ['Low, two letters', 'States combine: wear and a chip together.', { wear: wear(14, false, true), chips: 1 }],
+    ['seal: workspace', 'With seal: workspace, the active page as a numeral.', { glyph: '参' }]
+  ]
+  add(`<div class="lab">Twelve states · the seal at 72 px (46 px on screen, scaled)</div><div class="grid">${st.map(s => `<div class="st">${S(72, s[2])}<div class="n">${s[0]}</div><div class="w">${s[1]}</div></div>`).join('')}</div>`)
+  add(`<div class="lab">At its real size, on a desk · hover adds one line of reading toward the screen</div>
+    <div style="display:flex;gap:24px">
+      ${[['ALL WELL', {}, '21:44 · <span class="k">電</span> 91% · KUMO'], ['LOW', { wear: wear(14, false, true), chips: 1 }, '21:44 · <b><span class="k">電</span> 14% · 38 MIN</b> · <span class="k">報</span> 2']]
+        .map(d => `<div class="desk" style="width:920px;height:150px"><div class="wall"></div>
+          <div style="position:absolute;right:24px;bottom:24px">${S(46, d[1])}</div>
+          <div class="reading" style="right:86px;bottom:38px"><span class="t">${d[2].split(' · ')[0]}</span>${d[2].split(' · ').slice(1).join(' · ')}</div>
+          <div class="cap" style="left:24px;top:22px">${d[0]} · POINTER ON THE SEAL</div></div>`).join('')}
+    </div>`)
+  add(`<div class="notes">
+    <div><h3><b>01</b> &nbsp;What it reads</h3><p><em>Wear</em> is the battery: nothing wears above 60%, then red specks cover more of the carving, down to a floor that keeps the glyph legible. Charging and desktops keep the full carving.</p><p><em>Chips</em> are letters: one corner for one or two, two corners for three or more, deeper when one is urgent.</p></div>
+    <div><h3><b>02</b> &nbsp;What stays the same</h3><p>Your glyph (鑑 漢 観 寛, <code>sealGlyph</code>), or the workspace numeral under <code>seal: workspace</code>. <code>seal: carved</code> rests as the outline and presses red when letters wait. The plate, the inner rule and the brush face are the bar's seal.</p></div>
+    <div><h3><b>03</b> &nbsp;Hands on it</h3><p>Click: print the sheet. Right-click: Omarchy's menu. Middle: a terminal. Wheel: step workspaces. Hover straightens it and sets one line of reading beside it: the time, then what needs you, in red.</p></div>
+  </div>${foot}`)
+}
+
+if (C === '2') {
+  add(head(2, '鑑', 'No. 00', 'all sheets on one',
+    'Pressed, the seal prints the whole shell as one sheet: <em>the time and date</em>, <em>the workspaces with the window you are in</em>, what is playing, then a row for each of the bar\'s sheets with its reading. A row needing you is red. Open a row and that sheet, in the hand you chose for it, prints in its place; Backspace returns to No. 00.'))
+  add(`<div class="lab">No. 00 · then 05 Power opened from it · the seal bottom right</div>`)
+  add(`<div class="desk" style="width:1920px;height:820px"><div class="wall"></div>
+    <div class="win f" style="left:24px;top:24px;width:820px;height:772px"><pre>${code}</pre></div>
+    ${sheet({ x: 1000, y: 160, hover: 3 })}
+    <div class="cap" style="left:1000px;top:128px">NO. 00 · THE POINTER ON POWER</div>
+    <div class="sheet" style="left:1460px;top:300px;width:420px">
+      <div class="sh-head mono"><span class="crumb">‹ <b>NO. 00</b></span><span class="rule"></span><span class="k" style="color:var(--red)">電</span>05 · POWER</div>
+      <div style="padding:16px 24px 0;display:flex;align-items:baseline;gap:12px"><span style="font:400 52px/1 var(--serif);color:var(--red)">14%</span><i style="font:italic 18px var(--serif);color:var(--dim)">38 minutes left</i></div>
+      <div style="margin:18px 24px 0;height:10px;display:flex;gap:3px;align-items:flex-end">${Array.from({ length: 41 }, (_, i) => `<i style="flex:1;height:${i % 10 ? 4 : 10}px;background:${i < 6 ? 'var(--red)' : 'var(--line)'}"></i>`).join('')}</div>
+      ${[['Power saver', '', true], ['Balanced', 'ON AC'], ['Performance', '']].map((r, i) => `<div class="row${i ? '' : ' first'}" style="${r[2] ? 'background:var(--ink);margin:0;padding:12px 24px;color:var(--paper)' : ''}"><span class="nm" style="${r[2] ? 'color:var(--paper)' : ''}">${r[2] ? '// ' : ''}${r[0]}</span><span class="v">${r[1]}</span></div>`).join('')}
+      <div class="sh-foot"><span class="mono"><b>⌫</b> BACK · <b>TAB</b> NEXT</span><span class="mono">THE LEDGER HAND</span></div>
+    </div>
+    <div style="position:absolute;right:24px;bottom:24px">${S(46, { wear: wear(14, false, true), chips: 1 })}</div>
+    <div class="bloom" style="right:-8px;bottom:-8px;width:110px;height:110px"></div>
+    <div class="cap" style="right:90px;bottom:36px">THE SEAL, PRESSED</div>
+  </div>`)
+  add(`<div class="notes">
+    <div><h3><b>01</b> &nbsp;What is on it</h3><p>The head <em>— 鑑 HANKO · ALL SHEETS — NO. 00</em> (your glyph). The clock in Fraunces with the date in italic. The workspaces as kanji numerals (the live one inverted, a dot when busy, red when urgent) and the window you are in. Now playing when something plays. Then Sound, Network, Bluetooth, Power, Display (laptops) and Inbox, each with its sheet's kanji.</p></div>
+    <div><h3><b>02</b> &nbsp;Open a row</h3><p>Click a row, or Enter on it: that sheet prints where No. 00 was, in its own hand (Ledger, Tanzaku, Shōgi … as Settings › Sheets says). Its head carries <em>‹ NO. 00</em>; Backspace or a click on it goes back. Tab walks the sheets as on the bar; Esc lifts it all off. The clock opens 01 Time; a numeral focuses that workspace.</p></div>
+    <div><h3><b>03</b> &nbsp;Where it prints</h3><p>Next to the seal, its outer edge on the seal's, set off the screen edge it shares: above a bottom seal, below a top one. Under <code>panels: scroll</code> the press unrolls the handscroll from that edge instead. Omarchy's own panel hotkeys open the matching sheet here too.</p></div>
+  </div>${foot}`)
+}
+
+if (C === '3') {
+  add(head(3, '隅', 'A corner of your choosing', 'and a form per monitor',
+    '<em>inkanAt</em> puts the seal in any of the four corners; dragging the seal snaps it to the nearest one and remembers it for that monitor. <em>form</em> is a setting like any other, so a laptop can be all seal while the desk monitor keeps the bar.'))
+  const desk = (corner, label) => {
+    const top = corner.startsWith('top'), left = corner.endsWith('left')
+    const sx = left ? 'left:18px' : 'right:18px', sy = top ? 'top:18px' : 'bottom:18px'
+    const shx = left ? 'left:18px' : 'right:18px', shy = top ? 'top:82px' : 'bottom:82px'
+    return `<div class="desk" style="width:952px;height:430px"><div class="wall"></div>
+      <div class="win f" style="left:${left ? 470 : 14}px;top:44px;width:466px;height:372px"><pre>${code}</pre></div>
+      <div style="position:absolute;${shx};${shy};transform:scale(.62);transform-origin:${top ? 'top' : 'bottom'} ${left ? 'left' : 'right'};width:440px;height:560px">${sheet({ x: 0, y: 0, low: false })}</div>
+      <div style="position:absolute;${sx};${sy}">${S(46, {})}</div>
+      <div class="cap" style="${left ? 'right' : 'left'}:24px;top:16px">${label}</div></div>`
+  }
+  add(`<div class="lab">inkanAt · the sheet always prints away from the edge the seal shares</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${desk('top-left', 'TOP-LEFT')}${desk('top-right', 'TOP-RIGHT')}${desk('bottom-left', 'BOTTOM-LEFT')}${desk('bottom-right', 'BOTTOM-RIGHT · DEFAULT')}
+    </div>`)
+  add(`<div class="lab">Per monitor · monitors.eDP-1.form = inkan, the external screen keeps the bar</div>
+    <div style="display:flex;gap:16px;align-items:flex-end">
+      <div class="desk" style="width:640px;height:400px"><div class="wall"></div><div class="win f" style="left:12px;top:12px;width:616px;height:376px"><pre>${code}</pre></div>
+        <div style="position:absolute;right:16px;bottom:16px">${S(40, { chips: 1 })}</div><div class="cap" style="left:24px;bottom:20px">EDP-1 · LAPTOP · INKAN</div></div>
+      <div class="desk" style="width:1100px;height:560px"><div class="wall"></div><div class="bar40"><span class="s"></span><span class="c">21:44</span><span class="r"><i></i><i></i><i></i><i></i></span></div>
+        <div class="win f" style="left:12px;top:42px;width:1076px;height:506px"><pre>${code}</pre></div><div class="cap" style="left:24px;bottom:20px">DP-2 · DESK · THE BAR</div></div>
+    </div>`)
+  add(`<div class="notes">
+    <div><h3><b>01</b> &nbsp;Nothing reserved</h3><p>The seal's layer reserves no space: windows fill the screen to its edges, and the seal sits 18 px in from the corner over them. Fullscreen windows cover it. Omarchy is told the bar is 0 px tall, so its OSD and toasts sit where they would with no bar.</p></div>
+    <div><h3><b>02</b> &nbsp;Drag to a corner</h3><p>Press and drag the seal: it follows the pointer and snaps to the nearest corner on release, saved for that monitor (<code>monitors.&lt;name&gt;.inkanAt</code>). A press that does not move prints the sheet.</p></div>
+    <div><h3><b>03</b> &nbsp;Hiding</h3><p><code>omarchy toggle bar</code> hides the seal as it hides the bar. Under the bar, <code>form: bar</code> is everything as it was.</p></div>
+  </div>${foot}`)
+}
+
+if (C === '4') {
+  add(head(4, '押', 'The ink-press', 'print out, lift off',
+    'Six frames, the same timings as the bar: the seal <em>sinks</em> on the stamp curve, ink <em>blooms</em> under it, the sheet <em>prints out of the seal</em> from its corner (180 ms, the sheet print), and when you are done it <em>lifts off</em>, rising a few pixels as it fades (220 ms). <code>motion: still</code> cuts every frame to its end.'))
+  const fr = (n, title, w, body) => `<div class="frame"><div class="desk" style="width:100%;height:440px"><div class="wall"></div>${body}</div><div class="lbl"><b>${n}</b>${title}</div><div class="w">${w}</div></div>`
+  const seal0 = (sc = 1, extra = '') => `<div style="position:absolute;right:18px;bottom:18px;transform:scale(${sc});transform-origin:center">${S(46, { chips: 1 })}</div>${extra}`
+  const part = (clip, op = 1, dy = 0) => `<div style="position:absolute;right:18px;bottom:${82 - dy}px;width:440px;height:560px;transform:scale(.5);transform-origin:bottom right;opacity:${op}"><div style="position:absolute;inset:0;clip-path:${clip}">${sheet({ x: 0, y: 0, low: false })}</div></div>`
+  add(`<div class="lab">0 → 400 ms · then, later, lift-off</div><div class="frames">
+    ${fr('00', 'At rest', 'One seal; a letter waits.', seal0())}
+    ${fr('01', 'Hover', 'It straightens; the reading sets in beside it.', seal0(1, `<div class="reading" style="right:76px;bottom:32px;font-size:8.5px"><span class="t" style="font-size:14px">21:44</span><span class="k">報</span> 1</div>`))}
+    ${fr('02', 'Press · 0–140 ms', 'Sinks to 0.92 on the stamp curve; the ink blooms.', seal0(.92, `<div class="bloom" style="right:-14px;bottom:-14px;width:110px;height:110px"></div>`))}
+    ${fr('03', 'Print · 140–320 ms', 'The sheet unclips from the seal\'s corner.', seal0(1, `<div class="bloom" style="right:-14px;bottom:-14px;width:110px;height:110px;opacity:.5"></div>`) + part('inset(45% 0 0 40%)'))}
+    ${fr('04', 'Open', 'The sheet, keyboard on it.', seal0() + part('none'))}
+    ${fr('05', 'Lift off · 220 ms', 'Rises 6 px and fades; the seal settles.', seal0() + part('none', .4, 6))}
+  </div>`)
+  add(`<div class="notes">
+    <div><h3><b>01</b> &nbsp;Timings</h3><p>Press: <em>stamp 140 ms</em>, the only overshoot curve in Hanko. Bloom: radial red at 25% opacity, 200 ms, then fades over 400. Print: <em>sheet print 180 ms</em>, starting 140 ms in. Lift: <em>220 ms</em>, the scroll's roll-up time, rising 6 px.</p></div>
+    <div><h3><b>02</b> &nbsp;Drilling in</h3><p>Opening a row swaps the paper without a press: the next sheet prints with the usual sheet print. Backspace prints No. 00 again.</p></div>
+    <div><h3><b>03</b> &nbsp;Keys</h3><p>Omarchy has no hook for a plugin's keybindings, so the README gives one line for your bindings: <code>omarchy-shell hanko press</code>. A key-press runs the same press, bloom and print.</p></div>
+  </div>${foot}`)
+}
+
+if (C === '5') {
+  document.body.classList.add('light')
+  document.body.style.background = '#e4ddcf'
+  add(head(5, '紙', 'On a light theme', 'the same seal, on paper',
+    'Every colour still comes from the Omarchy theme: the plate is the theme\'s red, the carving its paper, the outline its ink. The specks of wear are the plate\'s own red, so they read on any theme.'))
+  const st = [['All well', {}], ['Battery 30%', { wear: wear(30, false, true) }], ['Battery 14%', { wear: wear(14, false, true) }], ['Two letters', { chips: 1 }], ['Do not disturb', { dnd: true }], ['Offline', { offline: true }]]
+  add(`<div class="lab">Six states on a light theme</div><div class="grid">${st.map(s => `<div class="st">${S(72, s[1])}<div class="n">${s[0]}</div></div>`).join('')}</div>`)
+  add(`<div class="lab">No. 00 on a light theme, the seal top right</div>
+    <div class="desk" style="width:1920px;height:720px"><div class="wall"></div>
+      <div class="win f" style="left:24px;top:24px;width:1100px;height:672px"><pre>${code}</pre></div>
+      <div style="position:absolute;right:24px;top:24px">${S(46, { wear: wear(14, false, true), chips: 1 })}</div>
+      ${sheet({ x: 1456, y: 88 })}
+    </div>${foot}`)
+}
+
+document.fonts.ready.then(() => document.fonts.load('40px Brush', '鑑参')).then(() => {
+  for (const [id, size, o] of seals) placeSeal(document.getElementById(id), size, o)
+  document.body.dataset.ready = '1'
+})
+</script></body></html>
