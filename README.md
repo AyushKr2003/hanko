@@ -94,15 +94,17 @@ scripts/hanko uninstall
 
 ## Optional extras
 
-**A key for the scroll.** Add this to `~/.config/hypr/bindings.lua`:
+**A key for the scroll.** Add this to `~/.config/hypr/bindings.lua` (each binding frees its keys first with `hl.unbind`, so nothing else fires beside it; Settings › Keys copies them for you):
 
 ```lua
+hl.unbind("SUPER + CTRL + U")
 o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")
 ```
 
 **A key for the seal (Inkan).** `hanko press` prints No. 00 from the seal, or from the bar's seal when you use the bar:
 
 ```lua
+hl.unbind("SUPER + ALT + I")
 o.bind("SUPER + ALT + I", "Hanko seal", "omarchy-shell hanko press")
 ```
 

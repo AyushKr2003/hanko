@@ -199,44 +199,97 @@ Column {
   Item { width: 1; height: Type.px(30) }
 
   // ------------------------------------------------------- your own bindings
-  SectionLabel { jp: "綴"; text: "Bindings of your own · for ~/.config/hypr/bindings.lua" }
-  Item { width: 1; height: Type.px(8) }
+  // One row per binding: what it does and its keys, the Lua in a hairline
+  // box, Copy. Each frees its keys first (hl.unbind). Copy all at the head.
+  Item {
+    width: root.width
+    height: Math.max(bindHead.height, copyAll.height)
+    SectionLabel {
+      id: bindHead
+      anchors.verticalCenter: parent.verticalCenter
+      width: parent.width - copyAll.width - Type.px(16)
+      jp: "綴"
+      text: "Bindings of your own · ~/.config/hypr/bindings.lua"
+    }
+    SmallButton {
+      id: copyAll
+      anchors.right: parent.right
+      label: "Copy all"
+      onClicked: root.copyText(Settings.bindingsCode())
+    }
+  }
+  Item { width: 1; height: Type.px(6) }
+  Text {
+    width: Math.min(root.width, Type.px(820))
+    wrapMode: Text.Wrap
+    text: "Paste into ~/.config/hypr/bindings.lua. Each line pair frees the keys first, so Omarchy's own binding on them never fires beside Hanko's."
+    color: Ink.inkMuted
+    font.family: Type.text
+    font.pixelSize: Type.note
+  }
+  Item { width: 1; height: Type.px(10) }
+
   Repeater {
     model: Settings.BINDINGS
     Item {
       id: bind
       required property var modelData
       required property int index
+      readonly property bool stacked: root.width < Type.px(760)
+      readonly property real leftWidth: stacked ? root.width : Type.px(250)
       width: root.width
-      height: code.height + Type.px(28)
+      height: (stacked ? about.height + Type.px(10) + box.height : Math.max(about.height, box.height)) + Type.px(28)
+
       Rectangle { visible: bind.index > 0; width: parent.width; height: 1; color: Ink.lineSoft }
+
       Column {
+        id: about
         y: Type.px(14)
-        width: Type.px(260)
-        spacing: Type.px(6)
-        Text { text: bind.modelData.what; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row }
+        width: bind.leftWidth
+        spacing: Type.px(8)
+        Text {
+          width: parent.width
+          wrapMode: Text.Wrap
+          text: bind.modelData.what
+          color: Ink.ink
+          font.family: Type.text
+          font.pixelSize: Type.row
+        }
         Row {
           spacing: Type.px(4)
           Repeater { model: bind.modelData.caps; KeyCap { required property string modelData; label: modelData } }
         }
       }
-      Text {
-        id: code
-        x: Type.px(280)
-        y: Type.px(14)
-        width: parent.width - x - copy.width - Type.px(16)
-        wrapMode: Text.WrapAnywhere
-        text: bind.modelData.code
-        color: Ink.inkDim
-        font.family: Type.mono
-        font.pixelSize: Type.px(11)
+
+      Rectangle {
+        id: box
+        x: bind.stacked ? 0 : bind.leftWidth + Type.px(20)
+        y: bind.stacked ? about.y + about.height + Type.px(10) : Type.px(14)
+        width: parent.width - x - copy.width - Type.px(14)
+        height: code.height + 2 * Type.px(10)
+        radius: 3
+        color: "transparent"
+        border.width: 1
+        border.color: Ink.line
+        Text {
+          id: code
+          x: Type.px(12)
+          y: Type.px(10)
+          width: parent.width - 2 * x
+          wrapMode: Text.WrapAnywhere
+          text: Settings.bindingCode(bind.modelData)
+          color: Ink.inkDim
+          font.family: Type.mono
+          font.pixelSize: Type.px(11)
+          lineHeight: 1.25
+        }
       }
       SmallButton {
         id: copy
         anchors.right: parent.right
-        y: Type.px(12)
+        anchors.verticalCenter: box.verticalCenter
         label: "Copy"
-        onClicked: root.copyText(bind.modelData.code)
+        onClicked: root.copyText(Settings.bindingCode(bind.modelData))
       }
     }
   }

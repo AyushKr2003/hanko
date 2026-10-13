@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -1823,7 +1823,12 @@ test("settings: the timesheet has every motion, the keymap lights its keys", () 
   assert.ok(settings["1"] && settings["0"] && settings["5"])
   assert.equal(Se.keyDoes(sheet, "M"), "Sound: mute")
   assert.equal(Se.keyDoes(sheet, "Q"), "")
-  assert.ok(Se.BINDINGS.every(b => b.code.includes("omarchy-shell hanko")))
+  for (const b of Se.BINDINGS) {
+    const code = Se.bindingCode(b)
+    assert.ok(code.startsWith('hl.unbind("' + b.keys + '")\n'), code)
+    assert.ok(code.includes('o.bind("' + b.keys + '", "' + b.name + '", "omarchy-shell hanko '))
+  }
+  assert.equal(Se.bindingsCode().split("hl.unbind").length - 1, Se.BINDINGS.length)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

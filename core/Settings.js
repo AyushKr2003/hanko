@@ -439,11 +439,21 @@ var KEYMAP = [
 ]
 
 // Hyprland bindings for what Hanko has no key of its own for (README).
+// Each frees its keys first (hl.unbind), so Omarchy's own binding, or one
+// of yours, never fires beside it; unbinding keys nothing holds is harmless.
 var BINDINGS = [
-  { what: "Unroll the scroll", caps: ["Super", "Ctrl", "U"], code: 'o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")' },
-  { what: "Press Inkan's seal", caps: ["Super", "Alt", "I"], code: 'o.bind("SUPER + ALT + I", "Hanko seal", "omarchy-shell hanko press")' },
-  { what: "The overview, in place of Omarchy's", caps: ["Super", "Tab"], code: 'hl.unbind("SUPER + TAB")\no.bind("SUPER + TAB", "Hanko overview", "omarchy-shell hanko overview")' }
+  { what: "Unroll the scroll", caps: ["Super", "Ctrl", "U"], keys: "SUPER + CTRL + U", name: "Hanko scroll", command: "omarchy-shell hanko scroll" },
+  { what: "Press Inkan's seal", caps: ["Super", "Alt", "I"], keys: "SUPER + ALT + I", name: "Hanko seal", command: "omarchy-shell hanko press" },
+  { what: "The overview, in place of Omarchy's", caps: ["Super", "Tab"], keys: "SUPER + TAB", name: "Hanko overview", command: "omarchy-shell hanko overview" }
 ]
+
+// The Lua lines for one binding, or for all of them.
+function bindingCode(b) {
+  return 'hl.unbind("' + b.keys + '")\no.bind("' + b.keys + '", "' + b.name + '", "' + b.command + '")'
+}
+function bindingsCode(list) {
+  return (list || BINDINGS).map(bindingCode).join("\n\n")
+}
 
 // The caps a context lights on the keyboard ("1–8" lights 1 to 8).
 function keysLit(context) {
