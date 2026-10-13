@@ -11,7 +11,8 @@ import "settings"
 // kept at once (Typeset.keep() after each draft edit), and Undo puts the
 // last one back (Typeset.history, forgotten when the window closes).
 //
-// Keys: / searches, Ctrl+Z undoes, Esc clears the search, then closes.
+// Keys: / searches, Ctrl+Z undoes, Esc clears the search, then closes;
+// on Typesetting, Left/Right and 1-0 move through the proof's parts.
 FloatingWindow {
   id: win
 
@@ -44,6 +45,13 @@ FloatingWindow {
 
     Keys.onPressed: function(event) {
       if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { Typeset.undo(); event.accepted = true }
+      // Typesetting: Left/Right walk the proof's parts, 1-9 and 0 open one.
+      else if (win.page === "typesetting" && (event.key === Qt.Key_Left || event.key === Qt.Key_Right) && !(event.modifiers & Qt.ControlModifier)) {
+        settings.stepPart(event.key === Qt.Key_Right ? 1 : -1); event.accepted = true
+      }
+      else if (win.page === "typesetting" && event.key >= Qt.Key_0 && event.key <= Qt.Key_9 && !event.modifiers) {
+        settings.pickPartAt(event.key === Qt.Key_0 ? 9 : event.key - Qt.Key_1); event.accepted = true
+      }
       else if (event.key === Qt.Key_Slash) { win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
       else if (event.key === Qt.Key_Escape) {
         if (win.query !== "") win.query = ""
@@ -86,7 +94,14 @@ FloatingWindow {
         battery: Status.battery,
         brightness: Status.brightness,
         notifications: Status.notifications,
-        dnd: Status.doNotDisturb
+        dnd: Status.doNotDisturb,
+        indicators: Extras.indicators,
+        // The galley lays your bar out as wide as the screen it is on.
+        screenWidth: (function() {
+          var name = win.bar.focusedScreen(), list = Quickshell.screens
+          for (var i = 0; i < list.length; i++) if (list[i].name === name) return list[i].width
+          return 0
+        })()
       })
 
       sheetFeed: ({

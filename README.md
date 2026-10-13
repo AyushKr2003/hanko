@@ -2,7 +2,7 @@
 
 A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-![The Typesetting settings page](docs/mockups/typeset/01-settings.webp)
+![Settings › Typesetting, set as a proof](docs/settings-kosei/images/01-status.webp)
 
 ![The Shōji preset on the Hanko bar](docs/revision2/images/r2-shoji-preset.webp)
 
@@ -22,6 +22,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
 - **Written, not typeset:** every kanji is drawn in a brush face (Yuji Boku, bundled), and your seal is 鑑 by default, or 漢, 観 or 寛 from Settings › Typesetting.
 - **Follows your theme,** light or dark, and switches with it live.
+- **Settings you read by looking:** Settings › Typesetting is a printer's proof of your bar. Your bar is set large with its parts numbered in the margin; click one, and every way it can be set appears as the real part, drawn with your data. Hover one to try it on the proof, click to keep it, and Ctrl+Z puts it back.
 - **A profile plate to show off your desk:** Profile 印影 in the settings window is laid out like a seal registration certificate: your name and your machine's small print, your seal glyph written large in ink and signed with two small seals, and your bar's live readings as a row of stats; EDIT renames it, hides any block and saves it as an image. About 由来 and Credits 謝辞 sit beside it.
 - **Safe to try:** if Hanko fails to load, Omarchy puts its own bar back.
 

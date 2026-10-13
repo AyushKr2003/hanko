@@ -146,6 +146,8 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **I6 · Settings, CLI and keys**: Form and Corner rows, the Inkan specimen on Presets, `hanko press`, README.
   - ✅ **I7 · Drag to a corner** and the recording ring.
 
+- ✅ **Kōsei 校正, Typesetting as a proof** (asked for: "all are just crumbled in Typesetting … research how people create this kind of experience, then something unique and premium"): the six cards of segmented controls are replaced by a galley of your bar (set in two lines at your screen's width, its parts numbered in the margin), an index of ten parts and a case per part with a live specimen of every way it can be set (hover tries, click keeps) and the few word choices under it. Panel settings moved to Scroll 巻. Research and renders in [settings-kosei/](settings-kosei/README.md).
+
 ## Dev loop
 
 ```sh

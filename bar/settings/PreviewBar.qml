@@ -20,6 +20,9 @@ Item {
   readonly property real design: Math.max(width, minDesign)
   readonly property bool inkan: style.form === "inkan"
   readonly property bool sealLeft: String(style.inkanAt).indexOf("left") > 0
+  // The bar inside, and how much it is scaled (the proof marks its parts).
+  readonly property alias surface: surface
+  readonly property real k: width / design
   height: inkan ? Type.px(Inkan.SIZE) + 2 * Type.px(14) : Math.round(surface.implicitHeight * width / design)
 
   InkanSeal {
@@ -68,5 +71,6 @@ Item {
     brightness: previewItem.barData.brightness || null
     notifications: previewItem.barData.notifications || []
     dnd: !!previewItem.barData.dnd
+    indicators: previewItem.barData.indicators || []
   }
 }

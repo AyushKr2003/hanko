@@ -6,7 +6,7 @@ import "../../../bar/settings"
 
 // The settings window's page at its design size. render.py passes `params`:
 //   { theme, now, ...bar data as in Strips.qml...,
-//     settings: { saved, draft, page, query, advanced, monitors, monitor, scrollEnd,
+//     settings: { saved, draft, page, part, trial, query, advanced, monitors, monitor, scrollEnd,
 //                 width, height } }
 // settings.width/height size the window (logical px) instead of its design size.
 // saved and draft are style.json documents.
@@ -37,6 +37,8 @@ Rectangle {
     saved: S.normalize(sheet.s.saved || {})
     draft: S.normalize(sheet.s.draft || sheet.s.saved || {})
     page: sheet.s.page || "typesetting"
+    part: sheet.s.part || "seal"
+    trial: sheet.s.trial || null
     query: sheet.s.query || ""
     advanced: !!sheet.s.advanced
     monitors: sheet.s.monitors || []

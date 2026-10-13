@@ -13,8 +13,10 @@ import "../scroll"
 // live bar data; the harness renders it still.
 //
 // Presets 型 shows every preset as a live specimen (PresetsPage.qml).
-// Typesetting 組版 holds every setting: a live preview of the bar, a line naming the preset (a link to Presets), and six cards
-// of segmented controls.
+// Typesetting 組版 is a proof (校正, docs/settings-kosei): the galley (your
+// bar set large, each part numbered), an index of the ten parts, and the
+// case of the open one: a specimen per way it can be set, then the few
+// choices that are words. How panels open is on the Scroll 巻 page.
 Rectangle {
   id: root
 
@@ -66,6 +68,38 @@ Rectangle {
   signal showAll()
 
   readonly property var style: S.resolve(draft)
+
+  // ---------------------------------------------------------- the proof
+  // The open part (Settings.PROOF key). A click on the galley or the
+  // index, Left/Right or 1-0 from the window change it.
+  property string part: "seal"
+  signal partPicked(string key)
+  onPartPicked: function(key) { part = key }
+  function stepPart(delta) { part = Settings.proofStep(partShown, delta) }
+  function pickPartAt(n) { if (n >= 0 && n < Settings.PROOF.length) part = Settings.PROOF[n].key }
+  // A specimen under the pointer is tried on the galley ({ key, value }).
+  property var trial: null
+  readonly property var proofStyle: {
+    if (!trial) return style
+    var s = Object.assign({}, style)
+    s[trial.key] = trial.key === "height" ? Number(trial.value) : trial.value
+    return s
+  }
+  // The parts a search leaves lit ([] when there is no search).
+  readonly property var litParts: String(query).trim() === "" ? []
+    : Settings.PROOF.filter(function(p) { return Settings.proofMatches(p, root.query, S.OPTIONS) }).map(function(p) { return p.key })
+  // A search moves the case to the first part it lights.
+  readonly property string partShown: litParts.length && litParts.indexOf(part) < 0 ? litParts[0] : part
+  readonly property var editedParts: Settings.PROOF.filter(function(p) { return Settings.proofEdits(p, root.draft).length > 0 }).map(function(p) { return p.key })
+  // The bar data, with indicators to show: yours when any is on, else two
+  // lit for the specimens (night light, stay awake), so the part has a face.
+  readonly property var proofData: {
+    var d = Object.assign({}, barData)
+    var inds = barData.indicators || []
+    var anyOn = inds.some ? inds.some(function(i) { return i.on }) : false
+    if (!anyOn) d.indicators = Settings.SAMPLE_INDICATORS
+    return d
+  }
 
   // Advanced: the monitor whose overrides are shown (the first by default),
   // how it resolves, and which settings it sets for itself.
@@ -376,21 +410,73 @@ Rectangle {
         }
 
         Item { width: 1; height: Type.px(10) }
-        Text {
-          text: root.pageInfo.page.label
-          color: Ink.ink
-          font.family: Type.display
-          font.pixelSize: Type.px(root.compact ? 34 : 44)
-          font.weight: Font.Normal
-          font.variableAxes: Type.axes(Type.px(root.compact ? 34 : 44))
-          font.letterSpacing: -0.8
+        Item {
+          width: parent.width
+          height: pageTitle.height
+          Text {
+            id: pageTitle
+            text: root.pageInfo.page.label
+            color: Ink.ink
+            font.family: Type.display
+            font.pixelSize: Type.px(root.compact ? 34 : 44)
+            font.weight: Font.Normal
+            font.variableAxes: Type.axes(Type.px(root.compact ? 34 : 44))
+            font.letterSpacing: -0.8
+          }
+          // Typesetting: the preset this bar starts from, and the way to
+          // the others.
+          Rectangle {
+            visible: root.page === "typesetting" && !root.compact
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: Type.px(6)
+            width: presetChip.width + 2 * Type.px(12)
+            height: Type.px(34)
+            radius: 3
+            color: presetLink.containsMouse ? Ink.lineSoft : "transparent"
+            border.width: 1
+            border.color: presetLink.containsMouse ? Ink.lineStrong : Ink.line
+            Row {
+              id: presetChip
+              anchors.centerIn: parent
+              spacing: Type.px(9)
+              Text { anchors.verticalCenter: parent.verticalCenter; text: "FROM"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
+              Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: root.draft.preset
+                color: Ink.ink
+                font.family: Type.display
+                font.pixelSize: Type.px(17)
+                font.weight: Font.Normal
+                font.variableAxes: Type.axes(Type.px(17))
+              }
+              Text { anchors.verticalCenter: parent.verticalCenter; text: Settings.PRESET_KANJI[root.draft.preset] || ""; color: Ink.inkMuted; font.family: Type.jp; font.pixelSize: Type.px(14) }
+              Text {
+                readonly property int n: Object.keys(root.draft.edits).length
+                anchors.verticalCenter: parent.verticalCenter
+                text: n === 0 ? "as set" : "+ " + n + (n === 1 ? " edit" : " edits")
+                color: n ? Ink.seal : Ink.inkMuted
+                font.family: Type.text
+                font.pixelSize: Type.note
+              }
+              Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 1; height: Type.px(14); color: Ink.line }
+              Text { anchors.verticalCenter: parent.verticalCenter; text: "PRESETS ›"; color: presetLink.containsMouse ? Ink.ink : Ink.inkDim; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
+            }
+            MouseArea {
+              id: presetLink
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: root.pagePicked("presets")
+            }
+          }
         }
         Item { width: 1; height: Type.px(6) }
         Text {
           width: parent.width
           wrapMode: Text.Wrap
           text: root.page === "typesetting"
-            ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
+            ? "Click a part of your bar, then pick how it is set. Hover a way to try it; a click keeps it, live on your desktop. Ctrl+Z puts it back."
             : root.page === "presets"
             ? "A preset sets all twenty-six settings at once; tune any of them afterwards on Typesetting. Each bar below is drawn live with your data, seal and type size. Your sheets, motion and hidden parts stay as they are."
             : root.placeholders[root.page] || ""
@@ -426,135 +512,113 @@ Rectangle {
           visible: root.page === "typesetting"
           width: parent.width
 
-          Item { width: 1; height: Type.px(16) }
+          Item { width: 1; height: Type.px(18) }
 
-          // The live preview: your bar, on bare paper.
-          Rectangle {
+          // The galley: your bar set large, its parts numbered.
+          Galley {
+            id: galley
             width: parent.width
-            height: preview.y + preview.height + Type.px(30)
-            radius: 3
-            color: "transparent"
-            border.width: 1
-            border.color: Ink.line
-            clip: true
-            Item {
-              id: preview
-              readonly property int gap: root.style.float === "inset" ? Type.px(8) : 0
-              x: 1 + gap
-              y: 1 + gap
-              width: parent.width - 2 - 2 * gap
-              height: previewBar.height
-              PreviewBar {
-                id: previewBar
-                width: parent.width
-                style: root.style
-                barData: root.barData
-              }
-            }
-            Text {
-              anchors.right: parent.right
-              anchors.rightMargin: Type.px(10)
-              anchors.bottom: parent.bottom
-              anchors.bottomMargin: Type.px(8)
-              text: "LIVE PREVIEW · YOUR THEME"
-              color: Ink.inkMuted
-              font.family: Type.mono
-              font.pixelSize: Type.label
-              font.letterSpacing: Type.trackLabel
-            }
+            height: implicitHeight
+            style: root.proofStyle
+            barData: root.proofData
+            part: root.partShown
+            edited: root.editedParts
+            lit: root.litParts
+            compact: root.compact
+            onPartPicked: function(key) { root.partPicked(key) }
           }
 
           Item { width: 1; height: Type.px(14) }
 
-          // The preset this bar starts from, and the way to the others.
-          Rectangle {
+          // The index: every part by number and name, Edge and Frame too.
+          Flow {
             width: parent.width
-            height: presetLine.implicitHeight + 2 * Type.px(11)
-            radius: 3
-            color: presetLink.containsMouse ? Ink.lineSoft : "transparent"
-            border.width: 1
-            border.color: Ink.line
-            Row {
-              id: presetLine
-              x: Type.px(14)
-              anchors.verticalCenter: parent.verticalCenter
-              spacing: Type.px(10)
-              Text { anchors.verticalCenter: parent.verticalCenter; text: "PRESET"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackLabel }
-              Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: root.draft.preset
-                color: Ink.ink
-                font.family: Type.display
-                font.pixelSize: Type.px(18)
-                font.weight: Font.Normal
-                font.variableAxes: Type.axes(Type.px(18))
-              }
-              Text { anchors.verticalCenter: parent.verticalCenter; text: Settings.PRESET_KANJI[root.draft.preset] || ""; color: Ink.inkMuted; font.family: Type.jp; font.pixelSize: Type.px(15) }
-              Text {
-                visible: root.style.edited
-                anchors.verticalCenter: parent.verticalCenter
-                text: "+ " + Object.keys(root.draft.edits).length + (Object.keys(root.draft.edits).length === 1 ? " edit" : " edits")
-                color: Ink.inkMuted
-                font.family: Type.text
-                font.pixelSize: Type.note
-              }
-            }
-            Text {
-              anchors.right: parent.right
-              anchors.rightMargin: Type.px(14)
-              anchors.verticalCenter: parent.verticalCenter
-              text: "ALL " + S.PRESET_NAMES.length + " PRESETS ›"
-              color: presetLink.containsMouse ? Ink.ink : Ink.inkDim
-              font.family: Type.mono
-              font.pixelSize: Type.tag
-              font.letterSpacing: Type.trackLabel
-            }
-            MouseArea {
-              id: presetLink
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.pagePicked("presets")
-            }
-          }
-
-          Item { width: 1; height: Type.px(14) }
-
-          // Six cards, two rows of three, each row as tall as its tallest;
-          // two or one to a row when a card would be too narrow to read.
-          Grid {
-            id: cards
-            width: parent.width
-            columns: Math.max(1, Math.min(3, Math.floor((width + spacing) / (Type.px(400) + spacing))))
-            spacing: Type.px(12)
-            readonly property real cardWidth: (width - (columns - 1) * spacing) / columns
-
+            spacing: Type.px(4)
             Repeater {
-              id: cardRepeater
-              model: Settings.CARDS
-              SettingsCard {
-                id: settingsCard
+              model: Settings.PROOF
+              Rectangle {
+                id: tab
                 required property var modelData
-                required property int index
-                width: cards.cardWidth
-                height: Math.max(implicitHeight, cards.rowHeight(Math.floor(index / cards.columns)))
-                card: modelData
-                style: root.style
-                options: S.OPTIONS
-                query: root.query
-                onPicked: function(key, value) { root.settingPicked(key, value) }
+                readonly property bool open: modelData.key === root.partShown
+                readonly property bool dim: (root.litParts.length > 0 && root.litParts.indexOf(modelData.key) < 0)
+                  || (root.style.form === "inkan" && modelData.bar)
+                width: tabRow.width + Type.px(20)
+                height: Type.px(30)
+                radius: 3
+                color: open ? Ink.bone : tabHover.containsMouse ? Ink.lineSoft : "transparent"
+                opacity: dim && !open ? 0.4 : 1
+                Row {
+                  id: tabRow
+                  anchors.centerIn: parent
+                  spacing: Type.px(7)
+                  Text {
+                    anchors.baseline: tabName.baseline
+                    text: tab.open ? "//" : tab.modelData.no
+                    color: tab.open ? Ink.boneInk : Ink.inkFaint
+                    opacity: tab.open ? 0.6 : 1
+                    font.family: Type.mono
+                    font.pixelSize: Type.tag
+                    font.letterSpacing: 1
+                  }
+                  Text {
+                    id: tabName
+                    text: tab.modelData.name
+                    color: tab.open ? Ink.boneInk : Ink.inkDim
+                    font.family: Type.text
+                    font.pixelSize: Type.px(13)
+                  }
+                  Rectangle {
+                    visible: root.editedParts.indexOf(tab.modelData.key) >= 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Type.px(4)
+                    height: width
+                    radius: width / 2
+                    color: Ink.seal
+                  }
+                }
+                MouseArea {
+                  id: tabHover
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.partPicked(tab.modelData.key)
+                }
               }
             }
+          }
 
-            function rowHeight(r) {
-              void cardRepeater.count
-              var h = 0
-              for (var i = r * columns; i < (r + 1) * columns; i++) {
-                var c = cardRepeater.itemAt(i) as SettingsCard
-                if (c && c.visible) h = Math.max(h, c.implicitHeight)
-              }
-              return h
-            }
+          Item { width: 1; height: Type.px(14) }
+          Rectangle { width: parent.width; height: 1; color: Ink.line }
+          Item { width: 1; height: Type.px(22) }
+
+          // A search that lights nothing on the bar says where to look.
+          Text {
+            visible: String(root.query).trim() !== "" && root.litParts.length === 0
+            width: parent.width
+            bottomPadding: Type.px(18)
+            wrapMode: Text.Wrap
+            textFormat: Text.StyledText
+            text: "Nothing on the bar answers to <b>" + String(root.query).trim().replace(/&/g, "&amp;").replace(/</g, "&lt;") + "</b>."
+              + (Settings.PANELS_CARD.rows.some(function(r) { return Settings.matches(r, root.query, S.OPTIONS) }) || /interlude|divider|leaf|scroll/i.test(root.query)
+                ? " How panels open, the scroll's dividers and its end leaf are on Scroll 巻." : "")
+            color: Ink.inkMuted
+            font.family: Type.text
+            font.pixelSize: Type.row
+          }
+
+          // The case for the open part.
+          TypeCase {
+            width: parent.width
+            height: implicitHeight
+            part: Settings.proofPart(root.partShown)
+            style: root.style
+            doc: root.draft
+            barData: root.proofData
+            compact: root.compact
+            onPicked: function(key, value) { root.trial = null; root.settingPicked(key, value) }
+            onTried: function(key, value) { root.trial = { key: key, value: value } }
+            onUntried: root.trial = null
+            onGlyphAsked: root.advancedToggled(true)
           }
 
           // Advanced: what only some people want.
@@ -898,6 +962,23 @@ Rectangle {
         }
 
         // ------------------------------------------------ Scroll
+        // How panels open (sheets or the scroll), the scroll's frame and the
+        // overview: what used to close Typesetting.
+        Column {
+          visible: root.page === "scroll"
+          width: parent.width
+          topPadding: Type.px(22)
+          SettingsCard {
+            width: parent.width
+            height: implicitHeight
+            card: Settings.PANELS_CARD
+            style: root.style
+            options: S.OPTIONS
+            query: root.query
+            onPicked: function(key, value) { root.settingPicked(key, value) }
+          }
+        }
+
         // What sits between the scroll's sections (the `interlude` setting):
         // each tile draws the real Interlude between two stub sections.
         Column {
@@ -1117,7 +1198,7 @@ Rectangle {
     colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks, one red. There is nothing to pick here yet; switch themes with Omarchy and the bar follows.",
     widgets: "Show or hide anything on the bar: Hanko's own parts, its marks, each tray app, and every Omarchy or third-party widget it hosts. Saved with the rest of your style.",
     sheets: "Sheets drop flush from the cell you click. Pick the hand that draws each one: the ledger's page, slips hung like tanzaku, a shōgi board, an abacus, armour lacing, bands of gold mist or Shōji's washi panels on their rail. Every change is kept at once.",
-    scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
+    scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll just below, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
     keys: "Esc closes, Tab moves between sheets, Backspace goes back to No. 00, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. For Inkan, bind omarchy-shell hanko press to a key in your Hyprland bindings (see the README). Rebinding comes later."
   })

@@ -382,7 +382,7 @@ It uses the same data as Omarchy's own weather panel, so it needs no setting: th
 
 #### Scroll sides `sides`
 
-What finishes the scroll's left and right edges. The rollers with caps that stood there felt heavy next to the paper, so they are gone; ten alternatives were drawn in `docs/revision3/` on the `docs` branch and two were built. Set it in the Typesetting Panels card or with `hanko style set sides bare`.
+What finishes the scroll's left and right edges. The rollers with caps that stood there felt heavy next to the paper, so they are gone; ten alternatives were drawn in `docs/revision3/` on the `docs` branch and two were built. Set it on Settings › Scroll or with `hanko style set sides bare`.
 
 | Option | What it is | Presets |
 |---|---|---|
@@ -393,7 +393,7 @@ Added after the Typeset mockups were drawn.
 
 #### Scroll guides `guides`
 
-What helps you find your way on the scroll: the index plate of tabs (on top; below for a bar at the bottom) and the position bar along the foot with its `H` `L` and `Esc` keys. Hiding them leaves the paper alone; the sections do not move. Set it in the Typesetting Panels card or with `hanko style set guides tabs`.
+What helps you find your way on the scroll: the index plate of tabs (on top; below for a bar at the bottom) and the position bar along the foot with its `H` `L` and `Esc` keys. Hiding them leaves the paper alone; the sections do not move. Set it on Settings › Scroll or with `hanko style set guides tabs`.
 
 | Option | What it shows | Presets |
 |---|---|---|
@@ -572,17 +572,26 @@ There is a search field at the top and an **Advanced** switch at the foot (which
 
 ![Presets](right-side/images/12-presets-page.webp)
 
-**Typesetting 組版**, the page drawn on sheets 01 and 02, holds every setting in this document:
+**Typesetting 組版** is a proof (校正; design and research in [settings-kosei/](settings-kosei/README.md)). It holds every setting in this document except how panels open:
 
-1. **Live preview**: your bar, on your theme, on bare paper, updated as you click.
-2. **Preset line**: the preset this bar starts from, its kanji and how many edits are on top; ALL 11 PRESETS › opens Presets. (The gallery of preset cards that sat here moved to Presets 型.)
-3. **Six cards of segmented controls**, grouped the way the bar reads:
-   - *Left · where you are*: Seal, Workspaces, Window title
-   - *Centre · when*: Clock, Clock position, Now playing
-   - *Right · how things are*: Status, Meters, Notifications, Bluetooth, Indicators, Indicator marks
-   - *Edge*: Bottom edge, Dividers
-   - *Frame*: Height, Surface, Position
-   - *Panels*: Panels open as, Seal glyph
+1. **The galley**: your bar, live, laid out at your screen's width and set in two lines (the left zone; then from just before the clock to the end), each close to its real size, each part numbered in the margin (01 Seal, 02 Workspaces, 03 Window title, 04 Clock, 05 Now playing, 06 Status, 07 Indicators, 08 Inbox). The bar's foot is 09 Edge, the paper around it 10 Frame. Hover brackets a part; a click opens its case. Under `form: inkan`, a small screen with the seal in its corner. Beside the title, the preset it starts from (FROM Ma 間 + 1 edit · PRESETS ›).
+2. **The index**: the ten parts by number and name; a red dot on each part with edits.
+3. **The case** of the open part: number, name, kanji and a line; what you changed from the preset, each with PUT BACK; a **specimen** of every way the part can be set (the real bar set that way, cropped to the part; the one in use inverted; hover tries it on the galley, a click keeps it); then **Also**, the choices that are words:
+   - 01 Seal: *seal* · Glyph (鑑 漢 観 寛, or … for your own)
+   - 02 Workspaces: *spaces* · Numerals
+   - 03 Window title: *title*
+   - 04 Clock: *clock* · Hours, Season, Sits (`clockAt`)
+   - 05 Now playing: *media*
+   - 06 Status: *status* · Meters, Bluetooth
+   - 07 Indicators: *indicatorStyle* · Show (`indicators`)
+   - 08 Inbox: *notif*
+   - 09 Edge: *edge* · Dividers (`rules`), Pointer
+   - 10 Frame: *form*, *surface* · Height, Type, Float, Position, Grain, Corner (`inkanAt`)
+   
+   Keys: ← → walk the parts, 1–9 and 0 open one. A search lights the parts that match.
+
+How panels open (Panels open as, Scroll sides, Scroll guides, Overview) is a card at the top of **Scroll 巻**, over its dividers and end leaf.
+
 4. **Action bar**: Shuffle (on Presets) · Reset to preset (on Presets and Typesetting) · Undo. There is no Save: every change prints live on your bar and is written to `style.json` at once; Undo (or Ctrl+Z) puts the last one back, as many times as you changed something since the window opened.
 
 The same settings can be changed from a terminal:

@@ -120,6 +120,199 @@ var CARDS = [
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
+// Typesetting 組版 as a proof (校正, docs/settings-kosei): the bar is set
+// large as a galley, each part numbered in the margin; a part picked shows
+// its case, a specimen of the part per way it can be set, then the few
+// plain choices that go with it. Every setting of CARDS' first five cards
+// is here once; the sixth (Panels) is on the Scroll 巻 page.
+//   cast   settings drawn as specimens (the part, set each way)
+//   also   settings given as words (a segmented row, or the glyph stones)
+//   bar    true when the part is drawn only on the bar (not under Inkan)
+var PROOF = [
+  { key: "seal", no: "01", name: "Seal", jp: "印", bar: false,
+    line: "The stamp at the far left. A click opens Omarchy's menu, a right-click a terminal, the wheel steps through your spaces.",
+    cast: ["seal"], also: ["sealGlyph"] },
+  { key: "spaces", no: "02", name: "Workspaces", jp: "場", bar: true,
+    line: "Your spaces, the one you are on inverted. Click one to go there; the wheel steps.",
+    cast: ["spaces"], also: ["numerals"] },
+  { key: "title", no: "03", name: "Window title", jp: "窓", bar: true,
+    line: "The focused window: its app, and what it shows.",
+    cast: ["title"], also: [] },
+  { key: "clock", no: "04", name: "Clock", jp: "時", bar: true,
+    line: "The time and the date. A click drops the Time sheet.",
+    cast: ["clock"], also: ["hours", "season", "clockAt"] },
+  { key: "media", no: "05", name: "Now playing", jp: "曲", bar: true,
+    line: "What is playing, while it plays. Click to pause, middle-click for the next track.",
+    cast: ["media"], also: [] },
+  { key: "status", no: "06", name: "Status", jp: "状", bar: true,
+    line: "Network, Bluetooth, volume, light and battery. Each opens its sheet; red only when something needs you.",
+    cast: ["status"], also: ["meters", "bluetooth"] },
+  { key: "indicators", no: "07", name: "Indicators", jp: "標", bar: true,
+    line: "Omarchy's six indicators as stamps: recording, dictation, reminder, stay awake, night light, do not disturb.",
+    cast: ["indicatorStyle"], also: ["indicators"] },
+  { key: "notif", no: "08", name: "Inbox", jp: "報", bar: true,
+    line: "Your notifications. A click opens them, a right-click is do not disturb.",
+    cast: ["notif"], also: [] },
+  { key: "edge", no: "09", name: "Edge", jp: "縁", bar: true,
+    line: "The line along the bar's foot, and the rules between its groups.",
+    cast: ["edge"], also: ["rules", "pointer"] },
+  { key: "frame", no: "10", name: "Frame", jp: "枠", bar: false,
+    line: "What the bar is, its paper and its size. Inkan takes the strip away and leaves one seal in a corner.",
+    cast: ["form", "surface"], also: ["height", "typeSize", "float", "position", "grain", "inkanAt"] }
+]
+
+// The Scroll 巻 page's card: how panels open, and the scroll's own frame
+// (its dividers and end leaf have galleries of their own there).
+var PANELS_CARD = { title: "Panels · how they open", rows: CARDS[5].rows.filter(function(r) {
+  return ["panels", "sides", "guides", "overview"].indexOf(r.key) >= 0
+}) }
+
+// Two indicators lit, for a proof made while none is on (the glyphs and
+// icons of core/Extras.js INDICATORS).
+var SAMPLE_INDICATORS = [
+  { key: "recording", glyph: "写", icon: "\u{f0ec2}", title: "Screen recording", on: false, red: false, count: 0 },
+  { key: "dictation", glyph: "言", icon: "\u{f036c}", title: "Dictation", on: false, red: false, count: 0 },
+  { key: "reminder",  glyph: "予", icon: "\u{f088c}", title: "Reminder", on: false, red: false, count: 0 },
+  { key: "awake",     glyph: "目", icon: "\u{f0176}", title: "Stay awake", on: true, red: false, count: 0 },
+  { key: "night",     glyph: "月", icon: "\u{f050e}", title: "Night light", on: true, red: false, count: 0 },
+  { key: "dnd",       glyph: "休", icon: "\u{f009b}", title: "Do not disturb", on: false, red: false, count: 0 }
+]
+
+function proofPart(key) {
+  for (var i = 0; i < PROOF.length; i++) if (PROOF[i].key === key) return PROOF[i]
+  return PROOF[0]
+}
+
+// The part a setting is set on ("hours" -> clock), or null.
+function proofPartOf(setting) {
+  for (var i = 0; i < PROOF.length; i++)
+    if (PROOF[i].cast.indexOf(setting) >= 0 || PROOF[i].also.indexOf(setting) >= 0) return PROOF[i]
+  return null
+}
+
+// Each way a cast setting can be set, as its specimen names it: a name in
+// plain words and one line on what it looks like.
+var WAYS = {
+  seal: {
+    stamp: ["Stamp", "Your glyph, carved in red"],
+    workspace: ["Workspace", "The space you are on, as a numeral"],
+    carved: ["Carved", "An outline; inked red when letters wait"],
+    none: ["None", "The bar starts with your spaces"] },
+  spaces: {
+    folio: ["Folio", "Numbered pages, a dot per window"],
+    layout: ["Layout", "Each space's real tiling, in small"],
+    kanji: ["Kanji", "一 二 三, the live one inverted"],
+    dots: ["Dots", "One mark a space; the quietest"],
+    brush: ["Brush", "Numerals, a stroke under the live one"] },
+  title: {
+    cell: ["Cell", "The app over the title, labelled"],
+    byline: ["Byline", "The app in italic, then the path"],
+    ink: ["Ink", "The app, then what it shows"],
+    none: ["None", "No title at all"] },
+  clock: {
+    stacked: ["Stacked", "The time large, the date beside it"],
+    inline: ["Inline", "Time and date on one line"],
+    mono: ["Mono", "Your terminal's face, tracked"],
+    season: ["Season", "With the solar term of the year"] },
+  media: {
+    cell: ["Cell", "Artist and song, labelled"],
+    underline: ["Underline", "The song, its progress drawn under"],
+    ink: ["Ink", "Three level bars, song and artist"],
+    none: ["None", "Nothing, even while music plays"] },
+  status: {
+    cells: ["Cells", "A label over every value"],
+    glyphs: ["Glyphs", "A kanji and a figure each"],
+    numerals: ["Numerals", "VOL 62 · NET, in mono"],
+    ink: ["Ink", "Icons; the battery an ensō"],
+    ma: ["Ma 間", "Three groups held apart by space"],
+    shizuka: ["Shizuka 静", "Quiet until something changes"],
+    suji: ["Suji 筋", "A brush line each, as long as the level"],
+    inro: ["Inrō 印籠", "One ruled case of compartments"] },
+  indicatorStyle: {
+    icon: ["Icon", "Omarchy's own icon"],
+    kanji: ["Kanji", "A small red seal"],
+    iconname: ["Icon and name", "Named while it is on"],
+    kanjiname: ["Kanji and name", "A seal, named while on"] },
+  notif: {
+    count: ["Count", "INBOX 03 and a red dot"],
+    stamps: ["Stamps", "Up to three seals, pressed askew"],
+    seal: ["On the seal", "The count moves onto your seal"] },
+  edge: {
+    hairline: ["Hairline", "One ink line"],
+    dayrule: ["Day rule", "The day as a ruler, now in red"],
+    rod: ["Rod", "A rod to pull the panels from"],
+    rodrule: ["Rod and rule", "The rod, ruled with the day"] },
+  form: {
+    bar: ["Bar", "The strip across the screen"],
+    inkan: ["Inkan 印", "One seal in a corner; it prints every sheet"] },
+  surface: {
+    solid: ["Solid", "Plain paper"],
+    glass: ["Glass", "Paper you can half see through"],
+    washi: ["Washi", "Paper with long fibres"] }
+}
+
+function wayOf(key, value) {
+  var w = WAYS[key] && WAYS[key][String(value)]
+  return w ? { name: w[0], line: w[1] } : { name: String(value), line: "" }
+}
+
+// The words for an `also` setting: its row name and a short line.
+var ALSO = {
+  sealGlyph: ["Glyph", "Carved on the stamp"],
+  numerals: ["Numerals", "Arabic, or kanji in brush"],
+  hours: ["Hours", "Auto follows Omarchy's clock"],
+  season: ["Season", "The solar term beside the date"],
+  clockAt: ["Sits", "In the middle, or after the inbox"],
+  meters: ["Meters", "Ticks beside the quantities"],
+  bluetooth: ["Bluetooth", "Device, a mark each, a count, or off"],
+  indicators: ["Show", "All six with the off ones faint, or only those on"],
+  rules: ["Dividers", "Hairlines between the groups"],
+  pointer: ["Pointer", "A brush mark under what you point at"],
+  height: ["Height", "At Omarchy's font size 12"],
+  typeSize: ["Type", "Hanko's text over Omarchy's font size"],
+  float: ["Float", "Flush on the edge, or 8 px off it, framed"],
+  position: ["Position", "Top or bottom of the screen"],
+  grain: ["Grain", "The washi's fibres"],
+  inkanAt: ["Corner", "Where Inkan's seal sits; drag it there too"]
+}
+
+function alsoOf(key) {
+  var a = ALSO[key]
+  return a ? { name: a[0], line: a[1] } : { name: nameOf(key), line: "" }
+}
+
+// The settings of a part the draft sets apart from its preset (edits),
+// for the red marks in the margin.
+function proofEdits(part, doc) {
+  var edits = (doc && doc.edits) || {}
+  var keys = part.cast.concat(part.also)
+  return keys.filter(function(k) { return edits[k] !== undefined })
+}
+
+// A part is lit by a search when the query is in its name, kanji, line,
+// the names of its settings or of any of their ways.
+function proofMatches(part, query, OPTIONS) {
+  var q = String(query || "").trim().toLowerCase()
+  if (!q) return true
+  var hay = [part.name, part.jp, part.line, part.key]
+  var keys = part.cast.concat(part.also)
+  for (var i = 0; i < keys.length; i++) {
+    hay.push(keys[i], nameOf(keys[i]), alsoOf(keys[i]).name)
+    var opts = optionsFor(keys[i], OPTIONS)
+    for (var j = 0; j < opts.length; j++) {
+      hay.push(opts[j])
+      if (WAYS[keys[i]]) { var w = wayOf(keys[i], opts[j]); hay.push(w.name, w.line) }
+    }
+  }
+  return hay.join(" ").toLowerCase().indexOf(q) >= 0
+}
+
+// The next part along (Left/Right on the page), wrapping.
+function proofStep(key, delta) {
+  var i = PROOF.indexOf(proofPart(key))
+  return PROOF[(i + delta + PROOF.length) % PROOF.length].key
+}
+
 // The Motion 動 page: one switch outside the twenty-six (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [

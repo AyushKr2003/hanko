@@ -441,6 +441,27 @@ Item {
     var p = it.mapToItem(root, deps * 0, 0)
     return Qt.rect(p.x, 0, it.width, barHeight)
   }
+  // Where a part of the proof (Settings.PROOF) sits on the bar, for the
+  // settings page's marks and specimens: seal | spaces | title | clock |
+  // media | status | indicators | notif | edge | frame. An empty rect when
+  // the part isn't drawn. `layoutTick` is read so a binding over this
+  // follows the layout.
+  readonly property real layoutTick: left.x + left.width + right.x + right.width + centreClock.x
+    + centreClock.width + width + height + seal.width + spacesView.width + titleView.width
+    + status.x + status.width + extras.x + marks.width + inbox.x + inbox.width + media.x + media.width
+    + rightClock.x + (status._cells ? 1 : 0)
+  function partRect(name) {
+    void layoutTick
+    if (name === "frame") return Qt.rect(0, 0, width, barHeight)
+    if (name === "edge") return root.shown("edge") ? Qt.rect(0, 0, width, barHeight) : Qt.rect(0, 0, 0, 0)
+    var it = name === "seal" ? seal : name === "spaces" ? spacesView : name === "title" ? titleView
+      : name === "clock" ? (clockRight ? rightClock : centreClock) : name === "media" ? media
+      : name === "status" ? status : name === "indicators" ? marks
+      : name === "notif" ? (lettersOnSeal ? seal : inbox) : null
+    if (!it || !it.visible || it.width <= 0) return Qt.rect(0, 0, 0, 0)
+    var p = it.mapToItem(root, 0, 0)
+    return Qt.rect(p.x, 0, it.width, barHeight)
+  }
   readonly property var pointables: {
     var out = [seal, spacesView, titleView, centreClock, media, inbox, rightClock]
     var cells = status.visible ? status.items : []

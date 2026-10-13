@@ -17,7 +17,8 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
-  "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId"])
+  "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId",
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -1739,3 +1740,34 @@ test("inkan: the seal in its corner, the sheet printed away from the edge it sha
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
+
+test("settings: the proof sets every setting once, on its part or on the Scroll page", () => {
+  const onProof = Se.PROOF.flatMap(p => p.cast.concat(p.also))
+  const onScroll = Se.PANELS_CARD.rows.map(r => r.key).concat(["interlude", "endleaf"])
+  const all = onProof.concat(onScroll)
+  assert.equal(new Set(all).size, all.length)
+  const want = S.KEYS.concat(["sealGlyph", "numerals", "hours", "season", "grain", "typeSize", "overview"])
+  for (const k of want) assert.ok(all.includes(k), k)
+  assert.deepEqual(Se.PROOF.map(p => p.no), ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"])
+  // Every way a cast setting can take has a specimen name and line.
+  for (const p of Se.PROOF) for (const k of p.cast)
+    for (const v of Se.optionsFor(k, S.OPTIONS)) assert.ok(Se.WAYS[k][v] && Se.wayOf(k, v).line, k + " " + v)
+  for (const p of Se.PROOF) for (const k of p.also) assert.ok(Se.ALSO[k], k)
+})
+
+test("settings: the proof's parts, edits, search and stepping", () => {
+  assert.equal(Se.proofPartOf("hours").key, "clock")
+  assert.equal(Se.proofPartOf("inkanAt").key, "frame")
+  assert.equal(Se.proofPartOf("interlude"), null)
+  assert.equal(Se.proofPart("nope").key, "seal")
+  const doc = S.normalize({ preset: "Ma", edits: { clock: "inline", hours: "24h", form: "inkan" } })
+  assert.deepEqual(Se.proofEdits(Se.proofPart("clock"), doc), ["clock"])
+  assert.deepEqual(Se.proofEdits(Se.proofPart("frame"), doc), ["form"])
+  assert.ok(Se.proofMatches(Se.proofPart("status"), "brush line", S.OPTIONS))
+  assert.ok(Se.proofMatches(Se.proofPart("clock"), "solar", S.OPTIONS))
+  assert.ok(!Se.proofMatches(Se.proofPart("seal"), "solar", S.OPTIONS))
+  assert.ok(Se.proofMatches(Se.proofPart("frame"), "glass", S.OPTIONS))
+  assert.equal(Se.proofStep("frame", 1), "seal")
+  assert.equal(Se.proofStep("seal", -1), "frame")
+  assert.equal(Se.wayOf("status", "inro").name, "Inrō 印籠")
+})

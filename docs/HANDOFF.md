@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-13, after Inkan 印, the seal only (`form: inkan`, §9 "Inkan 印"; design in `docs/shell-concepts/inkan/`); before that 2026-10-11, after the Hanko preset was renamed Kamon 家紋 (§9, "Kamon 家紋"), Settings › Presets 型 (every preset as a live specimen, its own page; §9 "Presets 型, a page of their own") and the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
+Last updated: 2026-10-13, after Kōsei 校正, Typesetting as a proof (§9 "Kōsei 校正"; design in `docs/settings-kosei/`); before that, after Inkan 印, the seal only (`form: inkan`, §9 "Inkan 印"; design in `docs/shell-concepts/inkan/`); before that 2026-10-11, after the Hanko preset was renamed Kamon 家紋 (§9, "Kamon 家紋"), Settings › Presets 型 (every preset as a live specimen, its own page; §9 "Presets 型, a page of their own") and the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -301,7 +301,9 @@ bar/
                          DesktopStrip (dynamic, Ryoku's) — all pure
   SettingsWindow.qml     the settings window (see Phase 8 in §9)
   settings/              SettingsPage, SettingsCard, Segmented, Plate, PreviewBar,
-                         PresetsPage (all pure); the
+                         PresetsPage; Typesetting's proof: Galley (the bar in two
+                         lines, numbered), TypeCase (a part's case), Specimen (one
+                         way, the real bar cropped to the part) (all pure); the
                          plates ProfilePlate, AboutPlate, CreditsPlate with their art
                          (SealImpression, HangingScroll) and parts (PlateEyebrow,
                          PlateSpine, LeaderRow)
@@ -363,7 +365,8 @@ core/
   Hosted.js              which layout entries are drawn, own, or hosted
   Extras.js              indicators, keyboard (hyprctl devices), tray rows
   Settings.js            RAIL, CARDS, MOTION_CARD/ROWS, PRESET_BLURBS, GLYPHS, nameOf,
-                         changes, status, search
+                         changes, status, search; the proof: PROOF, WAYS, ALSO,
+                         PANELS_CARD, proofEdits/Matches/Step/PartOf, SAMPLE_INDICATORS
   Scroll.js              SECTIONS, layout, centred, nearest, clampTrack, landing,
                          position, forCell; BAYER/fbm noise for the settings plate
   Time.js                heading, ribbon, isoWeek, Elsewhen zones + date probe rows
@@ -894,6 +897,16 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - **I7 · drag and ring**: drag the seal (8 px threshold): it follows inside its layer, the reading says where it will go, and on release `Bar.moveSeal` saves the nearest corner for that monitor (`setFor`), or for the style with one screen. Recording or dictation draws a breathing red ring and leads the reading in red.
 - Unit tests: 121.
 
+### Kōsei 校正, Typesetting as a proof ✅ (asked for: "all are just crumbled in Typesetting … take your time, research how people create this kind of experience, then come up with something unique and premium, not AI slop")
+- The six cards of 33 segmented controls are gone. Research (configurators, FFXIV/WoW HUD edit modes, thumbnails-with-text studies) and renders in `docs/settings-kosei/`.
+- **Galley** (`bar/settings/Galley.qml`): one `BarSurface` (opacity 0, measured) at the screen's width (`barData.screenWidth`, 1920 by default); two `Line`s draw the same bar cropped, split 28 px before the centre clock (45 % with the clock at the right), at one scale ≤ 1. Brackets on hover and on the open part; numbers in the margin under each placed part (bone plate with its name when open, a red dot when edited). Anywhere off a part = Frame. Under `form: inkan`, a small screen with `InkanSeal` and `InkanReading` in its corner.
+- **Case** (`TypeCase.qml`): heading (number, Fraunces name, kanji), edits with PUT BACK (sets the preset's value), specimens per `cast` setting (2–4 across; wide parts get wider tiles), then `also` rows (Segmented; the glyph as four red stones and …, which opens Advanced).
+- **Specimen** (`Specimen.qml`): a `BarSurface` 1920 wide with the one setting changed, cropped to `partRect(part)` ± 16 px and enlarged up to 1.6×; edge = a 2.2× close-up of the foot around the hour with the bar above faded out; surface = the left 300 px over a hatch (glass shows through); form = a schematic screen. Hover emits `tried` → `SettingsPage.trial` → `proofStyle` on the galley; click emits `picked`.
+- Both measure 30 ms after `layoutTick` changes (a Row places children in a later pass; a binding over `mapToItem` latched half-laid-out positions and cropped the wrong part). `BarSurface.partRect(part)` and `layoutTick` are new.
+- `SettingsPage`: `part` (+ `partPicked`, `stepPart`, `pickPartAt`), `trial`, `litParts` (search), `partShown` (the first lit part when the open one isn't), `editedParts`, `proofData` (sample stamps when none is on). The preset chip sits beside the title. `SettingsWindow`: ← → and 1–0 on Typesetting; `screenWidth` and `indicators` in `barData`.
+- Panels open as, Scroll sides, Scroll guides and Overview are `Settings.PANELS_CARD` at the top of Scroll 巻.
+- Harness: `proof.json` (Ma, Status), `proof-light`, `proof-inkan`, `proof-narrow` (820 px), `proof-frame`, `proof-trial` (Inrō tried). Unit tests: 121.
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
@@ -1023,6 +1036,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 
 35. **Inkan to verify on hardware:** the seal layer under fullscreen windows (it is on `Top`), its mask (only the seal takes clicks; the rest of its 500 px layer must pass them through), hover on a layer-shell surface, the drag carrying on past the layer's edge (Wayland's implicit grab) and the snap writing `monitors.<name>.inkanAt`, `barSize` 0 with Omarchy's OSD and toasts, the sheet layer's seal hole (a click on the seal lifts the sheet off, not the closer then the seal again), the 140 ms print delay and the lift-off on a real sheet, Backspace back to No. 00 (a `Shortcut` in a layer-shell window), Tab under Inkan, the scroll unrolling from the seal's edge, Omarchy's panel hotkeys printing at the seal, and the wear specks' size at 1x. `form: inkan` on one monitor only still reports the bar's height to Omarchy (barSize is global).
 
+36. **Kōsei to verify on hardware:** the galley's hover and click with a real pointer (brackets follow a 30 ms settle after the bar lays out), the specimens' cost (Status builds eight 1920 px bars; only the open part's are built), hover-to-try leaving no trial behind when the pointer leaves the window fast, `screenWidth` on a scaled monitor (logical width), and ← → / 1–0 not firing while the search field has focus.
+
 ## 13. QML pitfalls already hit
 
 - Under a Wayland session `QT_QPA_PLATFORM` is already set, so the harness opened a real window that Hyprland tiled to its own size. `render.py` now forces `offscreen`.
@@ -1042,6 +1057,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 - A property named `data` on an Item (or window) replaces its default property: the children vanish. Inkan's readings were `data` until lint said "Duplicate binding on property 'data'".
 - A `var` declared later in a JS function is hoisted over the whole function: `var screenW` in one branch made `screenW` (the property) undefined in another. Qualify properties (`win.screenW`).
 - A list a QML model hands to JS is not always an Array: `Array.isArray` is false and `.some` may be missing. Count by `length`.
+- Never read a Row's children's positions (`mapToItem`) from a binding and trust the answer: the Row places them in a later polish pass. Measure on a short Timer after the layout changes (Galley, Specimen).
+- A property named `left`, `right`, `top` or `bottom` on an Item clashes with the FINAL anchor-line properties ("Cannot override FINAL property"); use `east`, `west`, `high`, `low`.
 - Never find a Repeater's item with a binding over `itemAt(i)`: nothing tells the binding when the Repeater builds its items (`count` can change first), so it can stay null for good and the sliding plate vanished in places. Let the delegates report themselves (`onOnChanged` / `Component.onCompleted` / `onDestruction`), as `Segmented` and `Workspaces` do.
 
 ## 14. Reference material
