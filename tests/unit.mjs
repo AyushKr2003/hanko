@@ -1659,6 +1659,7 @@ test("inkan: form and its corner are settings; the Inkan preset is Kamon as a se
   }
   assert.ok(Se.CARDS.some(c => c.rows.some(r => r.key === "form")))
   assert.equal(Se.PRESET_KANJI.Inkan, "印")
+  assert.equal(Se.presetFacts(S.resolve({ preset: "Inkan" })), "form inkan · seal bottom-right · panels sheets")
 })
 
 test("inkan: the battery wears the carving, always in the same places", () => {

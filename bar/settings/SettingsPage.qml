@@ -1119,7 +1119,7 @@ Rectangle {
     sheets: "Sheets drop flush from the cell you click. Pick the hand that draws each one: the ledger's page, slips hung like tanzaku, a shōgi board, an abacus, armour lacing, bands of gold mist or Shōji's washi panels on their rail. Every change is kept at once.",
     scroll: "The handscroll unrolls from the rod. Choose what sits between its panels and what follows Inbox; open panels as a scroll under Panels on Typesetting, and bind a key with omarchy-shell hanko scroll.",
     motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, and only a new stamp overshoots. Still cuts every move to its end, as Omarchy's own animation switch does.",
-    keys: "Esc closes, Tab moves between sheets, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. Rebinding comes later."
+    keys: "Esc closes, Tab moves between sheets, Backspace goes back to No. 00, H and L pan the scroll, / searches here, Ctrl+Z undoes the last change here. For Inkan, bind omarchy-shell hanko press to a key in your Hyprland bindings (see the README). Rebinding comes later."
   })
 
   Component {

@@ -48,8 +48,12 @@ var PRESET_KANJI = {
 // The settings a preset card names under its title: how the bar reads at
 // a glance (status, clock, height, surface, panels), as small caps.
 var PRESET_FACTS = ["status", "clock", "height", "surface", "panels"]
+// Under Inkan there is no bar to describe: the form, its corner, its panels.
+var INKAN_FACTS = ["form", "inkanAt", "panels"]
 function presetFacts(style) {
   var st = style || {}
+  if (st.form === "inkan")
+    return INKAN_FACTS.map(function(k) { return (k === "inkanAt" ? "seal" : k) + " " + st[k] }).join(" · ")
   return PRESET_FACTS.map(function(k) {
     return k === "height" ? st.height + " px" : k + " " + st[k]
   }).join(" · ")
