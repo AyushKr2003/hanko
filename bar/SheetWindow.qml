@@ -132,14 +132,36 @@ PanelWindow {
     }
   }
 
+  // Under Inkan a sheet prints once the seal has pressed (the stamp's
+  // 140 ms), and lifts off when it closes: rising 6 px away from the seal
+  // as it fades (220 ms), instead of un-printing.
+  property bool printed: false
+  property real lift: 0
+  Timer { id: printAfter; interval: Motion.ms(Motion.stamp); onTriggered: win.printed = win.open }
+  NumberAnimation {
+    id: lifting
+    target: win
+    property: "lift"
+    from: 0
+    to: 1
+    duration: Motion.ms(Motion.rollUp)
+    easing.type: Easing.OutCubic
+  }
+
   onOpenChanged: {
     primed = false
     if (open) {
-      closing.stop()
+      lifting.stop()
+      lift = 0
+      if (inkan && !printed) printAfter.restart()
+      else printed = true
       shownSheet = bar.sheet
       Qt.callLater(place)
       prime.restart()
     } else {
+      printAfter.stop()
+      if (inkan && !Motion.still) lifting.restart()
+      else printed = false
       closing.restart()
     }
   }
@@ -163,10 +185,11 @@ PanelWindow {
     }
   }
 
-  // Long enough for the 180 ms un-print.
+  // Long enough for the 180 ms un-print, or the 220 ms lift-off.
   Timer {
     id: closing
     interval: 220
+    onTriggered: win.printed = false
   }
 
   // A click anywhere off the sheet closes it.
@@ -192,9 +215,11 @@ PanelWindow {
       enabled: classicView.rail && !!win.skin.travels && win.open && !Motion.still
       NumberAnimation { duration: win.skin.open || 360; easing.type: Easing.BezierSpline; easing.bezierCurve: win.skin.openCurve || [0.16, 1, 0.3, 1, 1, 1] }
     }
-    y: win.inkan ? win.placed.y : win.atBottom ? win.height - win.strip - height - railGap : win.strip + railGap
+    opacity: 1 - win.lift
+    y: win.inkan ? win.placed.y + (win.atBottom ? -1 : 1) * Type.px(6) * win.lift : win.atBottom ? win.height - win.strip - height - railGap : win.strip + railGap
     sheet: win.shownSheet
-    open: win.open
+    // Under Inkan: printed after the press, and still printed while it lifts.
+    open: win.inkan ? win.printed : win.open
     atBottom: win.atBottom
     tearX: win.placed.tearX
     tearWidth: win.placed.tearWidth

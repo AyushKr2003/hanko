@@ -53,6 +53,25 @@ PanelWindow {
 
   property bool hovered: false
 
+  // The ink-press (docs/shell-concepts/inkan, sheet 04): whenever something
+  // prints from this seal, by a click or a key, it sinks for the stamp's
+  // 140 ms and ink pools under it (200 ms in, 400 out).
+  property bool stamping: false
+  readonly property bool printed: bar.inkanPrinted(screenName)
+  onPrintedChanged: if (printed && active) press()
+  function press() {
+    if (Motion.still) return
+    stamping = true
+    stampDone.restart()
+    bloom.restart()
+  }
+  Timer { id: stampDone; interval: Motion.stamp; onTriggered: win.stamping = false }
+  SequentialAnimation {
+    id: bloom
+    NumberAnimation { target: seal; property: "bloom"; from: 0; to: 1; duration: 200; easing.type: Easing.OutCubic }
+    NumberAnimation { target: seal; property: "bloom"; to: 0; duration: 400; easing.type: Easing.InCubic }
+  }
+
   screen: barWindow.screen
   visible: active
   color: "transparent"
@@ -93,7 +112,7 @@ PanelWindow {
     size: win.size
     carving: Inkan.carving(win.style, win.readings)
     hovered: win.hovered
-    pressed: sealArea.pressed
+    pressed: sealArea.pressed || win.stamping
   }
 
   MouseArea {

@@ -142,7 +142,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **I2 · The seal that reads**: `bar/InkanSeal.qml`, harness scene and params.
   - ✅ **I3 · The corner layer**: `bar/SealWindow.qml`, the bar parked under `inkan`, `barSize` 0, clicks, wheel, hover reading.
   - ✅ **I4 · No. 00**: `bar/sheets/AllSheet.qml`, printing from the seal, rows into their sheets and back, Omarchy's panel hotkeys at the corner, the scroll from the seal.
-  - ⬜ **I5 · The ink-press**: press, bloom, print out, lift off.
+  - ✅ **I5 · The ink-press**: press, bloom, print out, lift off.
   - ⬜ **I6 · Settings, CLI and keys**: Form and Corner rows, the Inkan specimen on Presets, `hanko press`, README.
   - ⬜ **I7 · Drag to a corner** and the recording ring.
 
