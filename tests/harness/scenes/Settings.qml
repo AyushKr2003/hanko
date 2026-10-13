@@ -43,6 +43,7 @@ Rectangle {
     lastChange: sheet.s.lastChange || ""
     screens: sheet.s.screens || (sheet.s.monitors || []).map(function(n, i) { return { name: n, x: i * 1920, y: 0, width: i ? 2560 : 1920, height: i ? 1440 : 1080 } })
     overrideMonitor: sheet.s.monitor || ""
+    presetView: sheet.s.preset || ""
     themes: sheet.s.themes || []
     theme: sheet.s.theme || ""
     monitors: sheet.s.monitors || []

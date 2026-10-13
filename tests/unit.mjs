@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -1783,6 +1783,18 @@ test("settings: the last change in words, and every rail page has a line", () =>
   assert.equal(Se.pageInfo("widgets").page.key, "parts")
   for (const g of Se.RAIL) for (const p of g.pages)
     assert.ok(Se.PLATES.includes(p.key) || Se.PAGE_LINES[p.key], p.key)
+})
+
+test("settings: what a preset would change, in the proof's order", () => {
+  const doc = S.normalize({ preset: "Ma", edits: { clock: "inline" } })
+  const toKamon = Se.presetDiff(doc, "Kamon", S)
+  const keys = toKamon.map(r => r.key)
+  assert.ok(keys.indexOf("clock") < keys.indexOf("status"))
+  assert.deepEqual(toKamon.find(r => r.key === "clock"), { key: "clock", name: "Clock", no: "04", part: "Clock", from: "inline", to: "stacked" })
+  assert.equal(toKamon.find(r => r.key === "status").to, "cells")
+  assert.equal(toKamon.find(r => r.key === "interlude").no, "—")
+  assert.deepEqual(Se.presetDiff(S.normalize({ preset: "Ma" }), "Ma", S), [])
+  assert.ok(Se.presetDiff(doc, "Shōji", S).some(r => r.key === "sheetStyles"))
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

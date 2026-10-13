@@ -27,6 +27,10 @@ Item {
   // Parts a search leaves lit; [] lights them all.
   property var lit: []
   property bool compact: false
+  // false: a plain proof (Presets): no numbers, brackets or clicks.
+  property bool marks: true
+  // The head's words, when not the proof's own.
+  property string label: ""
   // The width the bar is laid out at: your screen's (logical px).
   property real screenWidth: barData.screenWidth || Type.px(1920)
 
@@ -34,8 +38,8 @@ Item {
 
   readonly property bool inkan: style.form === "inkan"
   readonly property int pad: Type.px(compact ? 12 : 20)
-  readonly property int bandHeight: Type.px(compact ? 28 : 32)
-  readonly property string hovered: hover.containsMouse ? partAt(hover.mouseX - body.x, hover.mouseY - body.y) : ""
+  readonly property int bandHeight: marks ? Type.px(compact ? 28 : 32) : Type.px(10)
+  readonly property string hovered: marks && hover.containsMouse ? partAt(hover.mouseX - body.x, hover.mouseY - body.y) : ""
 
   implicitHeight: body.y + body.height + Type.px(compact ? 8 : 10)
 
@@ -61,7 +65,7 @@ Item {
       Text { anchors.verticalCenter: parent.verticalCenter; text: "校正"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(12) }
       Text {
         anchors.verticalCenter: parent.verticalCenter
-        text: root.inkan ? "PROOF · YOUR SEAL, LIVE" : "PROOF · YOUR BAR, LIVE, SET IN TWO LINES"
+        text: root.label !== "" ? root.label : root.inkan ? "PROOF · YOUR SEAL, LIVE" : "PROOF · YOUR BAR, LIVE, SET IN TWO LINES"
         color: Ink.inkMuted
         font.family: Type.mono
         font.pixelSize: Type.tag
@@ -70,7 +74,7 @@ Item {
     }
     Text {
       // Gives way when the head needs the room.
-      visible: headLeft.width + implicitWidth + Type.px(32) <= head.width
+      visible: root.marks && headLeft.width + implicitWidth + Type.px(32) <= head.width
       anchors.right: parent.right
       anchors.verticalCenter: parent.verticalCenter
       text: "CLICK A PART  ·  ← →  ·  1–0"
@@ -177,7 +181,7 @@ Item {
       Bracket { required property rect modelData; target: modelData; strong: false }
     }
     Repeater {
-      model: root.rectsOf(root.part)
+      model: root.marks ? root.rectsOf(root.part) : []
       Bracket { required property rect modelData; target: modelData; strong: true }
     }
 
@@ -195,7 +199,7 @@ Item {
         readonly property bool open: modelData.key === root.part
         readonly property bool hot: modelData.key === root.hovered
         readonly property bool dim: root.lit.length > 0 && root.lit.indexOf(modelData.key) < 0
-        visible: placed
+        visible: placed && root.marks
         x: Math.round(r.x + r.width / 2)
         y: r.y + r.height + 1
         width: 1
@@ -235,6 +239,7 @@ Item {
 
   MouseArea {
     id: hover
+    enabled: root.marks
     anchors.fill: parent
     hoverEnabled: true
     cursorShape: root.hovered !== "" ? Qt.PointingHandCursor : Qt.ArrowCursor

@@ -99,6 +99,8 @@ Rectangle {
     return d
   }
 
+  // Presets: the pattern open in the book ("" = the one in use).
+  property string presetView: ""
   // Screens: the one picked (the first by default).
   property string overrideMonitor: ""
 
@@ -534,6 +536,8 @@ Rectangle {
   Component {
     id: presetsPage
     PresetsPage {
+      viewed: root.presetView
+      onViewedChanged: root.presetView = viewed
       doc: root.draft
       barData: root.barData
       query: root.query

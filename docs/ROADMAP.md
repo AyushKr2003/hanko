@@ -150,7 +150,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 
 - 🔨 **Kōsei, the whole window** (asked for: "redesign all the other sections too … full control of the whole settings flow and layout"): every page on the proof's rule, the thing itself first. Plan and research in [settings-kosei/](settings-kosei/README.md#part-two-the-whole-window).
   - ✅ **R1 · The shell and Screens 画面**: rail regrouped (Typesetting first), key hints, the action bar names the last change, one file per page built only while open; Advanced becomes Screens (monitors to scale, overrides by part, style.json); your own glyph in the Seal case; "on the bar / set aside" in each part's case.
-  - ⬜ **R2 · Presets 型, the pattern book**
+  - ✅ **R2 · Presets 型, the pattern book**: nine swatches, the open one set as your bar, only what it would change, Use.
   - ⬜ **R3 · Parts 部品, the sorts tray**
   - ⬜ **R4 · Colour 色**
   - ⬜ **R5 · Sheets 紙, Scroll 巻, Overview 一覧**

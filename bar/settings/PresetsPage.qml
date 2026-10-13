@@ -4,229 +4,309 @@ import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
 
-// Settings › Presets 型: every preset as a specimen, drawn live with your
-// data, as one list: the bars, then the four right-side studies
-// (Style.js PRESET_GROUPS gives the order and the numbering). A card is its number, name, kanji and blurb, the
-// settings that tell it apart, and the bar itself.
-// The one in use carries the red mark (red means you) and IN USE, with the
-// edits you made on top of it; a click on any other puts it on your bar.
-// Your seal glyph, type size and hidden parts show in every preview, as
-// they would on your bar.
-Item {
+// Settings › Presets 型 as a pattern book (docs/settings-kosei): the dyers'
+// stencil sample books from which a pattern was chosen. A row of swatches
+// (a kanji and a name each; the one on your bar marked red), and the one
+// you open set as your bar, at proof size, with only what it would change
+// listed under it. Use puts it on. Your seal glyph, type size, set-aside
+// parts and motion stay yours.
+Column {
   id: root
 
   property var doc: S.normalize({})
   property var barData: ({})
   property string query: ""
   property bool compact: false
+  // The preset open in the book ("" = the one in use).
+  property string viewed: ""
 
   signal presetPicked(string name)
 
-  readonly property var current: S.resolve(doc)
+  readonly property var names: S.PRESET_NAMES.filter(function(n) { return Settings.presetMatches(n, root.query, S.PRESETS) })
+  readonly property string open: {
+    var want = viewed !== "" ? viewed : doc.preset
+    if (names.indexOf(want) >= 0) return want
+    return names.length ? names[0] : doc.preset
+  }
+  readonly property bool inUse: open === doc.preset
+  readonly property var openStyle: S.resolve(S.withPreset(doc, open))
+  readonly property var diff: Settings.presetDiff(doc, open, S)
+  readonly property int edits: Object.keys(doc.edits || {}).length
+  readonly property int number: S.PRESET_NAMES.indexOf(open) + 1
 
   width: parent ? parent.width : 0
-  implicitHeight: groups.y + groups.height
+  spacing: 0
+  topPadding: Type.px(22)
 
-  Column {
-    id: groups
-    y: Type.px(22)
+  // ------------------------------------------------------------ the swatches
+  Flow {
+    id: book
     width: parent.width
-    spacing: Type.px(12)
+    spacing: Type.px(18)
 
     Repeater {
       model: S.PRESET_GROUPS
-
       Column {
         id: group
         required property var modelData
         required property int index
-        // The cards a search leaves in this group.
-        readonly property var shown: modelData.names.filter(function(n) { return Settings.presetMatches(n, root.query, S.PRESETS) })
-        // Numbered through both groups: Hanko 01 … Inrō 11.
-        readonly property int first: {
-          var n = 0
-          for (var g = 0; g < index; g++) n += S.PRESET_GROUPS[g].names.length
-          return n
-        }
+        readonly property var shown: modelData.names.filter(function(n) { return root.names.indexOf(n) >= 0 })
+        // All nine in one row when there is room: three group gaps of 18,
+        // the rest 8 apart.
+        readonly property real cardWidth: Math.max(Type.px(92), Math.min(Type.px(130), Math.floor(
+          (book.width - (S.PRESET_GROUPS.length - 1) * book.spacing - (S.PRESET_NAMES.length - S.PRESET_GROUPS.length) * Type.px(8)) / S.PRESET_NAMES.length) - 1))
         visible: shown.length > 0
-        width: groups.width
-        spacing: Type.px(12)
+        spacing: Type.px(8)
 
-        // One label over the whole list: the studies follow the bars
-        // without a head of their own.
-        SectionLabel {
-          visible: group.index === 0
-          jp: group.modelData.jp
-          text: group.modelData.title + " · " + S.PRESET_NAMES.filter(function(n) { return Settings.presetMatches(n, root.query, S.PRESETS) }).length
+        Text {
+          text: group.modelData.jp + "  " + (group.shown.length === 1 ? group.modelData.title.replace(/^The /, "") : group.modelData.title).toUpperCase()
+          color: Ink.inkMuted
+          font.family: Type.mono
+          font.pixelSize: Type.tag
+          font.letterSpacing: Type.trackLabel
+          // Never wider than its cards: "The seal only" sits over one.
+          width: Math.min(implicitWidth, cards.width)
+          elide: Text.ElideRight
         }
-
-        Repeater {
-          model: group.shown
-
-          Rectangle {
-            id: card
-            required property string modelData
-            required property int index
-            readonly property bool inUse: modelData === root.doc.preset
-            readonly property var style: S.resolve(S.withPreset(root.doc, modelData))
-            readonly property int number: group.first + group.modelData.names.indexOf(modelData) + 1
-            readonly property int pad: Type.px(root.compact ? 12 : 16)
-
-            width: group.width
-            height: head.y + head.height + Type.px(10) + facts.height + Type.px(12) + box.height + pad
-            radius: 3
-            color: cardHover.containsMouse && !inUse ? Ink.alpha(Ink.bone, Ink.light ? 0.04 : 0.035) : "transparent"
-            border.width: 1
-            border.color: inUse ? Ink.lineStrong : cardHover.containsMouse ? Ink.line : Ink.lineSoft
-            Behavior on color { enabled: Motion.live; ColorAnimation { duration: 120 } }
-
-            // 01  Hanko 判  · the two together              ■ IN USE · 2 EDITS
-            Item {
-              id: head
-              x: card.pad
-              y: card.pad
-              width: card.width - 2 * card.pad
-              height: name.implicitHeight
-              Row {
-                id: title
-                spacing: Type.px(12)
-                Text {
-                  anchors.baseline: name.baseline
-                  text: (card.number < 10 ? "0" : "") + card.number
-                  color: Ink.inkFaint
-                  font.family: Type.mono
-                  font.pixelSize: Type.tag
-                  font.letterSpacing: Type.trackLabel
-                }
-                Text {
-                  id: name
-                  text: card.modelData
-                  color: Ink.ink
-                  font.family: Type.display
-                  font.pixelSize: Type.px(root.compact ? 22 : 26)
-                  font.weight: Font.Normal
-                  font.variableAxes: Type.axes(Type.px(root.compact ? 22 : 26))
-                  font.letterSpacing: -0.3
-                }
-                Text {
-                  anchors.baseline: name.baseline
-                  text: Settings.PRESET_KANJI[card.modelData] || ""
-                  color: card.inUse ? Ink.seal : Ink.inkMuted
-                  font.family: Type.jp
-                  font.pixelSize: Type.px(root.compact ? 16 : 19)
-                }
-                Text {
-                  visible: !root.compact
-                  anchors.baseline: name.baseline
-                  text: "· " + (Settings.PRESET_BLURBS[card.modelData] || "")
-                  color: Ink.inkMuted
-                  font.family: Type.text
-                  font.pixelSize: Type.note
-                }
-              }
-              // In use: the red mark and a bone tag; otherwise USE on reach.
-              Row {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: Type.px(8)
-                Text {
-                  visible: card.inUse && root.current.edited
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: (Object.keys(root.doc.edits).length) + (Object.keys(root.doc.edits).length === 1 ? " EDIT" : " EDITS")
-                  color: Ink.inkMuted
-                  font.family: Type.mono
-                  font.pixelSize: Type.tag
-                  font.letterSpacing: Type.trackLabel
-                }
-                Rectangle {
-                  visible: card.inUse
-                  anchors.verticalCenter: parent.verticalCenter
-                  width: Type.px(7)
-                  height: width
-                  color: Ink.seal
-                }
-                Rectangle {
-                  visible: card.inUse || cardHover.containsMouse
-                  anchors.verticalCenter: parent.verticalCenter
-                  width: tag.implicitWidth + 2 * Type.px(9)
-                  height: tag.implicitHeight + 2 * Type.px(4)
-                  radius: 2
-                  color: card.inUse ? Ink.bone : "transparent"
-                  border.width: card.inUse ? 0 : 1
-                  border.color: Ink.lineStrong
-                  Text {
-                    id: tag
-                    anchors.centerIn: parent
-                    text: card.inUse ? "IN USE" : "USE ›"
-                    color: card.inUse ? Ink.boneInk : Ink.ink
-                    font.family: Type.mono
-                    font.pixelSize: Type.tag
-                    font.letterSpacing: Type.trackLabel
-                  }
-                }
-              }
-            }
-
-            // The settings that tell it apart.
-            Text {
-              id: facts
-              x: card.pad
-              y: head.y + head.height + Type.px(8)
-              width: card.width - 2 * card.pad
-              elide: Text.ElideRight
-              text: (root.compact ? (Settings.PRESET_BLURBS[card.modelData] || "") + " · " : "") + Settings.presetFacts(card.style)
-              color: Ink.inkMuted
-              font.family: Type.mono
-              font.pixelSize: Type.tag
-              font.letterSpacing: Type.trackLabel
-              font.capitalization: Font.AllUppercase
-            }
-
-            // The bar, on bare paper.
+        Row {
+          id: cards
+          spacing: Type.px(8)
+          Repeater {
+            model: group.shown
             Rectangle {
-              id: box
-              x: card.pad
-              y: facts.y + facts.height + Type.px(12)
-              width: card.width - 2 * card.pad
-              readonly property int gap: card.style.float === "inset" ? Type.px(8) : 0
-              height: preview.height + 2 + 2 * gap
-              radius: 2
-              color: "transparent"
+              id: swatch
+              required property string modelData
+              readonly property bool open: modelData === root.open
+              readonly property bool used: modelData === root.doc.preset
+              width: group.cardWidth
+              height: Type.px(118)
+              radius: 3
+              color: open ? Ink.bone : swatchHover.containsMouse ? Ink.lineSoft : "transparent"
               border.width: 1
-              border.color: Ink.lineSoft
-              clip: true
-              PreviewBar {
-                id: preview
-                x: 1 + box.gap
-                y: card.style.position === "bottom" ? box.height - 1 - box.gap - height : 1 + box.gap
-                width: box.width - 2 - 2 * box.gap
-                style: card.style
-                barData: root.barData
-                // A screen's width, so a full bar never runs into its clock.
-                minDesign: Type.px(1600)
-              }
-            }
+              border.color: open ? Ink.bone : used ? Ink.lineStrong : Ink.line
 
-            MouseArea {
-              id: cardHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: card.inUse ? Qt.ArrowCursor : Qt.PointingHandCursor
-              // The one in use stays as it is; Reset to preset drops its edits.
-              onClicked: if (!card.inUse) root.presetPicked(card.modelData)
+              Text {
+                x: Type.px(8)
+                y: Type.px(7)
+                text: String(S.PRESET_NAMES.indexOf(swatch.modelData) + 1).padStart(2, "0")
+                color: swatch.open ? Ink.boneInk : Ink.inkFaint
+                opacity: swatch.open ? 0.6 : 1
+                font.family: Type.mono
+                font.pixelSize: Type.tag
+                font.letterSpacing: 1
+              }
+              // On your bar: red, as everything that is you.
+              Rectangle {
+                visible: swatch.used
+                anchors.right: parent.right
+                anchors.rightMargin: Type.px(8)
+                y: Type.px(10)
+                width: Type.px(6)
+                height: width
+                radius: width / 2
+                color: Ink.seal
+              }
+              Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: Type.px(26)
+                text: Settings.PRESET_KANJI[swatch.modelData] || ""
+                color: swatch.open ? Ink.boneInk : swatch.used ? Ink.seal : Ink.ink
+                font.family: Type.jp
+                font.pixelSize: Type.px(Settings.PRESET_KANJI[swatch.modelData] && Settings.PRESET_KANJI[swatch.modelData].length > 1 ? 26 : 32)
+              }
+              Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: Type.px(12)
+                text: swatch.modelData
+                color: swatch.open ? Ink.boneInk : Ink.inkDim
+                font.family: Type.display
+                font.pixelSize: Type.px(16)
+                font.weight: Font.Normal
+                font.variableAxes: Type.axes(Type.px(16))
+              }
+              MouseArea {
+                id: swatchHover
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.viewed = swatch.modelData
+                onDoubleClicked: root.presetPicked(swatch.modelData)
+              }
             }
           }
         }
       }
     }
+  }
 
-    // A search that leaves no preset.
-    Text {
-      visible: !S.PRESET_NAMES.some(function(n) { return Settings.presetMatches(n, root.query, S.PRESETS) })
-      text: "No preset matches “" + root.query.trim() + "”."
-      color: Ink.inkMuted
-      font.family: Type.text
-      font.pixelSize: Type.row
+  Item { width: 1; height: Type.px(30) }
+
+  // ------------------------------------------------------------ the pattern
+  Item {
+    width: parent.width
+    height: Math.max(patternHead.height, useBox.height)
+    Column {
+      id: patternHead
+      width: parent.width - useBox.width - Type.px(24)
+      spacing: Type.px(4)
+      Row {
+        spacing: Type.px(14)
+        Text {
+          id: patternNo
+          text: String(root.number).padStart(2, "0")
+          color: Ink.inkFaint
+          font.family: Type.display
+          font.pixelSize: Type.px(root.compact ? 30 : 40)
+          font.weight: Font.Normal
+          font.variableAxes: Type.axes(Type.px(root.compact ? 30 : 40))
+        }
+        Text {
+          anchors.baseline: patternNo.baseline
+          text: root.open
+          color: Ink.ink
+          font.family: Type.display
+          font.pixelSize: Type.px(root.compact ? 24 : 30)
+          font.weight: Font.Normal
+          font.variableAxes: Type.axes(Type.px(root.compact ? 24 : 30))
+        }
+        Text {
+          anchors.baseline: patternNo.baseline
+          text: Settings.PRESET_KANJI[root.open] || ""
+          color: Ink.inkMuted
+          font.family: Type.jp
+          font.pixelSize: Type.px(20)
+        }
+      }
+      Text {
+        width: parent.width
+        wrapMode: Text.Wrap
+        text: (Settings.PRESET_BLURBS[root.open] || "").replace(/^./, function(c) { return c.toUpperCase() }) + ". " + Settings.presetFacts(root.openStyle) + "."
+        color: Ink.inkMuted
+        font.family: Type.text
+        font.pixelSize: Type.row
+      }
     }
+    Column {
+      id: useBox
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      anchors.bottomMargin: Type.px(4)
+      spacing: Type.px(6)
+      SmallButton {
+        anchors.right: parent.right
+        visible: !root.inUse
+        plate: true
+        label: "Use " + root.open
+        onClicked: root.presetPicked(root.open)
+      }
+      Row {
+        anchors.right: parent.right
+        visible: root.inUse
+        spacing: Type.px(8)
+        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(6); height: width; radius: width / 2; color: Ink.seal }
+        Text {
+          anchors.verticalCenter: parent.verticalCenter
+          text: "ON YOUR BAR" + (root.edits ? " · " + root.edits + (root.edits === 1 ? " EDIT" : " EDITS") + " ON TOP" : "")
+          color: Ink.ink
+          font.family: Type.mono
+          font.pixelSize: Type.tag
+          font.letterSpacing: Type.trackLabel
+        }
+      }
+    }
+  }
+
+  Item { width: 1; height: Type.px(16) }
+
+  Galley {
+    width: parent.width
+    height: implicitHeight
+    marks: false
+    label: "PATTERN · " + root.open.toUpperCase() + ", SET AS YOUR BAR"
+    style: root.openStyle
+    barData: root.barData
+    compact: root.compact
+  }
+
+  Item { width: 1; height: Type.px(26) }
+
+  // ------------------------------------------------------- what would change
+  SectionLabel {
+    jp: "差"
+    text: root.inUse && root.diff.length === 0
+      ? "What changes · nothing, this is your bar"
+      : root.inUse ? "Use it again and your edits go · " + root.diff.length
+      : "What changes from your bar · " + root.diff.length
+  }
+  Item { width: 1; height: Type.px(6) }
+
+  Grid {
+    id: changes
+    width: parent.width
+    columns: width >= Type.px(820) ? 2 : 1
+    columnSpacing: Type.px(28)
+    readonly property real cellWidth: (width - (columns - 1) * columnSpacing) / columns
+    Repeater {
+      model: root.diff
+      Item {
+        id: change
+        required property var modelData
+        width: changes.cellWidth
+        height: Type.px(34)
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Ink.lineSoft }
+        Text {
+          id: changeNo
+          anchors.verticalCenter: parent.verticalCenter
+          width: Type.px(26)
+          text: change.modelData.no
+          color: Ink.inkFaint
+          font.family: Type.mono
+          font.pixelSize: Type.tag
+          font.letterSpacing: 1
+        }
+        Text {
+          id: changeName
+          x: changeNo.width
+          anchors.verticalCenter: parent.verticalCenter
+          text: change.modelData.name
+          color: Ink.inkDim
+          font.family: Type.text
+          font.pixelSize: Type.px(13)
+        }
+        Row {
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: Type.px(10)
+          Text {
+            text: change.modelData.from
+            color: Ink.inkFaint
+            font.family: Type.mono
+            font.pixelSize: Type.px(11)
+            font.strikeout: true
+          }
+          Text { text: "→"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.px(11) }
+          Text {
+            text: change.modelData.to
+            color: Ink.ink
+            font.family: Type.mono
+            font.pixelSize: Type.px(11)
+            font.letterSpacing: 0.5
+          }
+        }
+      }
+    }
+  }
+
+  Item { width: 1; height: Type.px(16) }
+  Text {
+    width: Math.min(parent.width, Type.px(820))
+    wrapMode: Text.Wrap
+    text: "Stays yours: the seal " + root.doc.sealGlyph + ", type size, motion, the parts you set aside, and each screen's own settings"
+      + (root.open === "Shōji" ? ". Shōji also puts every sheet in its washi hand and frames the overview." : ", and your sheet hands.")
+      + " Double-click a swatch to use it at once."
+    color: Ink.inkMuted
+    font.family: Type.text
+    font.pixelSize: Type.note
   }
 }

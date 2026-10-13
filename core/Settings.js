@@ -92,6 +92,36 @@ function presetMatches(name, query, presets) {
   return hay.join(" ").toLowerCase().indexOf(q) >= 0
 }
 
+// What a preset would change on your bar (the pattern book, Presets 型): one
+// row per setting that resolves differently, in the proof's order, each
+// with the part it is set on: [{ key, name, no, part, from, to }]. Panel
+// settings (on Scroll and Overview) come last, numbered "—"; a preset that
+// also sets the sheets' hands says so. S is core/Style.js.
+function presetDiff(doc, name, S) {
+  var now = S.resolve(doc), then = S.resolve(S.withPreset(doc, name))
+  var out = []
+  var seen = {}
+  for (var i = 0; i < PROOF.length; i++) {
+    var keys = PROOF[i].cast.concat(PROOF[i].also)
+    for (var j = 0; j < keys.length; j++) {
+      var k = keys[j]
+      seen[k] = true
+      if (k === "sealGlyph" || String(now[k]) === String(then[k])) continue
+      out.push({ key: k, name: nameOf(k), no: PROOF[i].no, part: PROOF[i].name, from: String(now[k]), to: String(then[k]) })
+    }
+  }
+  for (var x = 0; x < S.KEYS.length; x++) {
+    var key = S.KEYS[x]
+    if (seen[key] || String(now[key]) === String(then[key])) continue
+    out.push({ key: key, name: nameOf(key), no: "—", part: "Panels", from: String(now[key]), to: String(then[key]) })
+  }
+  if (String(now.overview) !== String(then.overview))
+    out.push({ key: "overview", name: "Overview", no: "—", part: "Panels", from: String(now.overview), to: String(then.overview) })
+  if (JSON.stringify(now.sheetStyles) !== JSON.stringify(then.sheetStyles))
+    out.push({ key: "sheetStyles", name: "Sheet hands", no: "—", part: "Panels", from: "yours", to: name === "Shōji" ? "shōji, every sheet" : "the preset's" })
+  return out
+}
+
 // Seal glyphs offered as one-tap choices; anything else is typed under
 // Advanced (or with the "…" button).
 // The four Kan: 鑑 (as in 印鑑, the registered seal; a mirror, a model),
