@@ -501,6 +501,58 @@ function visibilityCards(ctx) {
   return cards
 }
 
+// The Parts 部品 page as a sorts tray: every part the bar can carry, in the
+// order it sits, grouped, each a sort to set aside or put back. kind:
+//   crop   a real crop of the bar (BarCrop.qml)
+//   stamp  an indicator's stamp (glyph)
+//   tray   a tray app (icon, letter)
+//   text   a widget or a leaf, named (glyph)
+// ctx as visibilityCards. Every part is a Style.js part name.
+function partsTray(ctx) {
+  var c = ctx || {}
+  var own = c.own || {}
+  function sort(part, name, kind, extra) {
+    var o = { part: part, name: name, kind: kind, glyph: "", icon: "", letter: "", detail: "" }
+    for (var k in (extra || {})) o[k] = extra[k]
+    return o
+  }
+  var groups = [
+    { title: "Left · where you are", jp: "左", sorts: [
+      sort("seal", "Seal", "crop"), sort("spaces", "Workspaces", "crop"), sort("title", "Window title", "crop")] },
+    { title: "Centre · when", jp: "中", sorts: [
+      sort("clock", "Clock", "crop"), sort("media", "Now playing", "crop", { detail: "While something plays" })] },
+    { title: "Right · readings", jp: "右", sorts: [
+      sort("network", "Network", "crop"), sort("bluetooth", "Bluetooth", "crop", { detail: "Where there is an adapter" }),
+      sort("volume", "Volume", "crop"), sort("brightness", "Brightness", "crop", { detail: "Where the screen has a backlight" }),
+      sort("battery", "Battery", "crop", { detail: "Where there is one" }),
+      sort("notif", "Inbox", "crop")] }
+  ]
+  var marks = []
+  if (own.indicators) {
+    var inds = c.indicators || []
+    for (var i = 0; i < inds.length; i++)
+      marks.push(sort("indicator:" + inds[i].key, inds[i].title, "stamp", { glyph: inds[i].glyph, icon: inds[i].icon || "" }))
+  }
+  if (own.keyboard) marks.push(sort("keyboard", "Keyboard layout", "text", { glyph: "鍵", detail: "With more than one layout" }))
+  if (own.mic) marks.push(sort("mic", "Microphone", "text", { glyph: "言", detail: "Its mute mark" }))
+  if (own.tray) marks.push(sort("tray", "Tray", "text", { glyph: "盆", detail: "Every tray app at once" }))
+  if (marks.length) groups.push({ title: "Marks · Hanko's own", jp: "標", sorts: marks })
+  var tray = own.tray ? (c.tray || []) : []
+  if (tray.length) groups.push({ title: "Tray apps", jp: "盆", sorts: tray.map(function(t) {
+    return sort("tray:" + t.id, t.title || t.id, "tray", { icon: t.icon || "", letter: t.letter || String(t.title || t.id || "·").charAt(0).toUpperCase() })
+  }) })
+  var hosted = c.hosted || []
+  if (hosted.length) groups.push({ title: "Widgets · from your Omarchy bar", jp: "借", sorts: hosted.map(function(h) {
+    var name = h.name || prettyId(h.id)
+    return sort("hosted:" + h.id, name, "text", { glyph: name.charAt(0).toUpperCase(), detail: h.firstParty ? "Omarchy" : "Third-party" })
+  }) })
+  groups.push({ title: "Edge and scroll", jp: "縁", sorts: [
+    sort("edge", "Edge", "crop", { detail: "The line along the foot" }),
+    sort("weather", "Weather leaf", "text", { glyph: "天", detail: "Left of Time on the scroll" }),
+    sort("endleaf", "End leaf", "text", { glyph: "跋", detail: "Right of Inbox on the scroll" })] })
+  return groups
+}
+
 // "omarchy.system-updates" -> "System updates".
 function prettyId(id) {
   var s = String(id || "").replace(/^.*\./, "").replace(/[-_]+/g, " ")

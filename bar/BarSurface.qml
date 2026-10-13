@@ -443,7 +443,8 @@ Item {
   }
   // Where a part of the proof (Settings.PROOF) sits on the bar, for the
   // settings page's marks and specimens: seal | spaces | title | clock |
-  // media | status | indicators | notif | edge | frame. An empty rect when
+  // media | status | indicators | notif | edge | frame, or one reading
+  // (network, bluetooth, volume, brightness, battery). An empty rect when
   // the part isn't drawn. `layoutTick` is read so a binding over this
   // follows the layout.
   readonly property real layoutTick: left.x + left.width + right.x + right.width + centreClock.x
@@ -457,7 +458,8 @@ Item {
     var it = name === "seal" ? seal : name === "spaces" ? spacesView : name === "title" ? titleView
       : name === "clock" ? (clockRight ? rightClock : centreClock) : name === "media" ? media
       : name === "status" ? status : name === "indicators" ? marks
-      : name === "notif" ? (lettersOnSeal ? seal : inbox) : null
+      : name === "notif" ? (lettersOnSeal ? seal : inbox)
+      : status.visible ? status.cellFor(name) : null
     if (!it || !it.visible || it.width <= 0) return Qt.rect(0, 0, 0, 0)
     var p = it.mapToItem(root, 0, 0)
     return Qt.rect(p.x, 0, it.width, barHeight)

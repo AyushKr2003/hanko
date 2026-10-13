@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -1795,6 +1795,18 @@ test("settings: what a preset would change, in the proof's order", () => {
   assert.equal(toKamon.find(r => r.key === "interlude").no, "—")
   assert.deepEqual(Se.presetDiff(S.normalize({ preset: "Ma" }), "Ma", S), [])
   assert.ok(Se.presetDiff(doc, "Shōji", S).some(r => r.key === "sheetStyles"))
+})
+
+test("settings: the parts tray holds every part once, each a known part", () => {
+  const ctx = { own: { indicators: true, keyboard: true, mic: true, tray: true },
+    indicators: [{ key: "night", glyph: "月", title: "Night light" }],
+    tray: [{ id: "nm-applet", title: "Network", letter: "N" }],
+    hosted: [{ id: "omarchy.weather", name: "Weather", firstParty: true }] }
+  const parts = Se.partsTray(ctx).flatMap(g => g.sorts.map(s => s.part))
+  assert.equal(new Set(parts).size, parts.length)
+  for (const p of parts) assert.ok(S.withSetting(S.normalize({}), "show:" + p, "hidden"), p)
+  assert.ok(parts.includes("indicator:night") && parts.includes("tray:nm-applet") && parts.includes("hosted:omarchy.weather"))
+  assert.ok(!Se.partsTray({}).flatMap(g => g.sorts).some(s => s.kind === "stamp"))
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

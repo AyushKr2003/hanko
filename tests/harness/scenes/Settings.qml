@@ -44,6 +44,16 @@ Rectangle {
     screens: sheet.s.screens || (sheet.s.monitors || []).map(function(n, i) { return { name: n, x: i * 1920, y: 0, width: i ? 2560 : 1920, height: i ? 1440 : 1080 } })
     overrideMonitor: sheet.s.monitor || ""
     presetView: sheet.s.preset || ""
+    // Parts: what the window gets from Bar.own, Extras and the registry.
+    visibility: sheet.s.visibility || ({
+      own: { indicators: true, keyboard: false, mic: true, tray: true },
+      indicators: [
+        { key: "recording", glyph: "写", title: "Screen recording" }, { key: "dictation", glyph: "言", title: "Dictation" },
+        { key: "reminder", glyph: "予", title: "Reminder" }, { key: "awake", glyph: "目", title: "Stay awake" },
+        { key: "night", glyph: "月", title: "Night light" }, { key: "dnd", glyph: "休", title: "Do not disturb" }],
+      tray: [{ id: "nm-applet", title: "Network Manager", letter: "N" }, { id: "1password", title: "1Password", letter: "1" }],
+      hosted: [{ id: "omarchy.weather", name: "Weather", firstParty: true }, { id: "omarchy.agents", name: "Agents", firstParty: true }]
+    })
     themes: sheet.s.themes || []
     theme: sheet.s.theme || ""
     monitors: sheet.s.monitors || []

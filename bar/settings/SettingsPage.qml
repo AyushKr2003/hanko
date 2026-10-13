@@ -548,6 +548,7 @@ Rectangle {
   Component {
     id: partsPage
     PartsPage {
+      barData: root.proofData
       style: root.style
       draft: root.draft
       query: root.query
