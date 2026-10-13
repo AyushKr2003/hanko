@@ -36,6 +36,9 @@ FloatingWindow {
   // The Profile plate's machine facts, read while the window is open.
   Binding { target: Machine; property: "wanted"; value: win.visible }
 
+  // Colour 色 lists Omarchy's themes: read them when the page opens.
+  onPageChanged: if (page === "colour") Leaf.loadThemes()
+
   // Closed by the window manager (Super+W, the close button).
   onVisibleChanged: if (!visible && bar.settingsOpen) bar.closeSettings()
 
@@ -69,6 +72,9 @@ FloatingWindow {
       undoCount: Typeset.history.length
       page: win.page
       query: win.query
+      themes: Leaf.themes
+      theme: Leaf.theme
+      onThemePicked: function(slug) { Leaf.setTheme(slug) }
       lastChange: Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
       screens: Quickshell.screens.map(function(s) { return { name: s.name, x: s.x, y: s.y, width: s.width, height: s.height } })
       monitors: Quickshell.screens.map(function(s) { return s.name })

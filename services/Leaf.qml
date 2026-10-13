@@ -148,6 +148,8 @@ Singleton {
     onLoaded: root.theme = String(text()).trim()
   }
   function setTheme(name) { Quickshell.execDetached(["omarchy-theme-set", String(name)]) }
+  // Settings › Colour reads the themes too, whatever the end leaf is.
+  function loadThemes() { if (!_themes.running) _themes.running = true }
   function openThemes() {
     Quickshell.execDetached(["omarchy-shell", "shell", "summon", "omarchy.image-picker", "{\"source\":\"themes\"}"])
   }

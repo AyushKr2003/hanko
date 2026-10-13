@@ -599,7 +599,16 @@ Rectangle {
       onSettingPicked: function(key, value) { root.settingPicked(key, value) }
     }
   }
-  Component { id: colourPage; Placeholder { text: "The theme specimens arrive with the next step of this redesign." } }
+  Component {
+    id: colourPage
+    ColourPage {
+      themes: root.themes
+      theme: root.theme
+      glyph: root.draft.sealGlyph || "鑑"
+      compact: root.compact
+      onThemePicked: function(slug) { root.themePicked(slug) }
+    }
+  }
   Component { id: overviewPage; Placeholder { text: "Overview specimens arrive with the panels step of this redesign." } }
   Component { id: keysPage; Placeholder { text: "The keymap arrives with the feel step of this redesign." } }
 
