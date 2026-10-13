@@ -42,6 +42,8 @@ const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
 const Sn = load("core/Season.js", ["SEKKI", "KO", "sunLongitude", "koIndex", "at", "label"])
 const Sk = load("core/Skin.js", ["skin", "fromStyle", "SHOJI", "TEMPOS", "RADII", "OPACITY"])
+const Ik = load("core/Inkan.js", ["SIZE", "MARGIN", "CORNERS", "ROWS", "NUMERALS", "wear", "specks", "worn", "chips", "chipSize", "carving",
+  "reading", "rows", "place", "sheetPlace", "nearest", "cornerOf"])
 const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
 
 let passed = 0
@@ -49,9 +51,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-four settings, 3,913,788,948,480 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 24)
-  assert.equal(S.combinations(), 3913788948480)
+test("twenty-six settings, 31,310,311,587,840 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 26)
+  assert.equal(S.combinations(), 31310311587840)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -60,8 +62,8 @@ test("indicators: all or only what is on; icon or kanji, alone or named; set per
   assert.equal(S.coerce("indicatorStyle", "full"), "iconname")
   assert.equal(S.resolve({}).indicators, "active")
   assert.equal(S.resolve({}).indicatorStyle, "kanjiname")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), Array(8).fill("active"))
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["icon", "icon", "icon", "kanjiname", "kanji", "kanji", "kanji", "kanji"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicators), Array(9).fill("active"))
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).indicatorStyle), ["icon", "icon", "icon", "kanjiname", "kanjiname", "kanji", "kanji", "kanji", "kanji"])
   assert.equal(S.resolve({ edits: { indicatorStyle: "emoji" } }).indicatorStyle, "kanjiname")
   assert.equal(Se.nameOf("indicatorStyle"), "Indicator marks")
 })
@@ -805,7 +807,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Quiet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 3913788948480)
+  assert.equal(S.combinations(), 31310311587840)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -966,7 +968,7 @@ test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () =
   assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
   assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
   assert.equal(S.resolve({}).endleaf, "koyomi")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["batsu", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["batsu", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
   assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
   assert.equal(Se.endleafOf("iro").name, "Iro")
   assert.equal(Lf.kindOf("nope").key, "koyomi")
@@ -1120,14 +1122,14 @@ test("end leaf: notes you can tick, and the clipboard", () => {
 test("scroll sides: bare or curl, in place of the rollers", () => {
   assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
   assert.equal(S.resolve({}).sides, "curl")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "bare", "curl", "curl", "curl", "curl", "curl"])
+  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "bare", "curl", "curl", "curl", "curl", "curl", "curl"])
   assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
 })
 
 test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
   assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
   assert.equal(S.resolve({}).guides, "none")
-  const yours = ["Kamon", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, and the four studies built on it
+  const yours = ["Kamon", "Inkan", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, Inkan and the four studies built on it
   assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (yours.indexOf(p) >= 0 ? "none" : "both")))
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
@@ -1630,4 +1632,96 @@ test("Kamon 家紋 is the preset that was Hanko; the old name still loads it", (
   assert.equal(Se.PRESET_KANJI.Kamon, "家紋")
   assert.equal(Se.PRESET_BLURBS.Kamon, "the family crest")
 })
+test("inkan: form and its corner are settings; the Inkan preset is Kamon as a seal", () => {
+  assert.deepEqual(S.OPTIONS.form, ["bar", "inkan"])
+  assert.deepEqual(S.OPTIONS.inkanAt, Ik.CORNERS)
+  assert.equal(S.resolve({}).form, "bar")
+  assert.equal(S.resolve({}).inkanAt, "bottom-right")
+  const diff = S.KEYS.filter(k => S.PRESETS.Inkan[k] !== S.PRESETS.Kamon[k])
+  assert.deepEqual(diff, ["form"])
+  assert.equal(S.withPreset({}, "inkan").preset, "Inkan")
+  // Per monitor: a laptop all seal beside a full bar.
+  const d = S.withMonitorSetting({}, "eDP-1", "form", "inkan")
+  assert.equal(S.resolve(d, "eDP-1").form, "inkan")
+  assert.equal(S.resolve(d, "DP-2").form, "bar")
+  // A shuffle never takes the bar away or moves the seal.
+  for (let i = 0; i < 20; i++) {
+    let n = i
+    const sh = S.shuffled({ edits: { inkanAt: "top-left" } }, () => ((n = (n * 7919 + 13) % 997) / 997))
+    assert.equal(S.resolve(sh).form, "bar")
+    assert.equal(S.resolve(sh).inkanAt, "top-left")
+  }
+  assert.ok(Se.CARDS.some(c => c.rows.some(r => r.key === "form")))
+  assert.equal(Se.PRESET_KANJI.Inkan, "印")
+})
+
+test("inkan: the battery wears the carving, always in the same places", () => {
+  assert.equal(Ik.wear(null), 1)
+  assert.equal(Ik.wear({ percent: 90 }), 1)
+  assert.equal(Ik.wear({ percent: 60 }), 1)
+  assert.equal(Ik.wear({ percent: 10, charging: true }), 1)
+  assert.ok(Ik.wear({ percent: 45 }) > Ik.wear({ percent: 30 }))
+  assert.ok(Ik.wear({ percent: 30 }) > Ik.wear({ percent: 14 }))
+  assert.equal(Ik.wear({ percent: 0 }), 0.3)
+  assert.deepEqual(Ik.specks(), Ik.specks())
+  const all = Ik.specks()
+  assert.ok(all.length > 60 && all.every(p => p.x > 0 && p.x < 1 && p.y > 0 && p.y < 1 && p.t <= 1))
+  assert.equal(Ik.worn(all, 1).length, 0)
+  const low = Ik.worn(all, Ik.wear({ percent: 14 })), mid = Ik.worn(all, Ik.wear({ percent: 40 }))
+  assert.ok(low.length > mid.length && mid.length > 0)
+  // Wearing further only adds specks.
+  assert.ok(mid.every(p => low.indexOf(p) >= 0))
+})
+
+test("inkan: chips for letters, an outline when quiet, a broken rule offline", () => {
+  const one = [{ urgent: false }], three = [{}, {}, { urgent: true }]
+  assert.deepEqual(Ik.chips([], false), { count: 0, deep: false })
+  assert.deepEqual(Ik.chips(one, false), { count: 1, deep: false })
+  assert.deepEqual(Ik.chips(three, false), { count: 2, deep: true })
+  assert.deepEqual(Ik.chips(three, true), { count: 0, deep: false })
+  assert.ok(Ik.chipSize(true) > Ik.chipSize(false))
+  const c = Ik.carving({ seal: "stamp", sealGlyph: "寛" }, { notifications: one, network: { off: true }, battery: { percent: 12, needsYou: true } })
+  assert.equal(c.glyph, "寛")
+  assert.equal(c.chips, 1)
+  assert.ok(c.broken && c.low && c.wear < 1 && !c.outline)
+  assert.equal(Ik.carving({ seal: "workspace" }, { workspace: 3 }).glyph, "参")
+  assert.ok(Ik.carving({ seal: "stamp" }, { dnd: true }).outline)
+  assert.ok(Ik.carving({ seal: "carved" }, {}).outline)
+  assert.ok(!Ik.carving({ seal: "carved" }, { notifications: one }).outline)
+  assert.equal(Ik.carving({ seal: "none" }, {}).glyph, "鑑")
+})
+
+test("inkan: the hover reading and No. 00's rows", () => {
+  const d = { battery: St.battery(14, false, true), network: St.network("wifi\tKumo\t82\t5180"),
+              volume: St.volume(0.62, false, true), notifications: [{}, { urgent: true }], dnd: false,
+              bluetooth: { enabled: true, connected: 1, name: "WH-1000XM5", level: 0.8, needsYou: false },
+              brightness: { percent: 70 } }
+  const r = Ik.reading(d, "21:44")
+  assert.equal(r[0].text, "21:44")
+  assert.deepEqual(r.slice(1).map(p => [p.jp || "", p.text, !!p.red]), [["電", "14%", true], ["", "Kumo", false], ["報", "2", true]])
+  const rows = Ik.rows(d)
+  assert.deepEqual(rows.map(x => x.key), ["sound", "network", "bluetooth", "power", "display", "inbox"])
+  assert.deepEqual(rows.map(x => x.value), ["62%", "Kumo · 82%", "WH-1000XM5 · 80%", "14%", "70%", "2 letters"])
+  assert.deepEqual(rows.filter(x => x.red).map(x => x.key), ["power", "inbox"])
+  // A desktop: no Power, Display or Bluetooth rows; quiet inbox.
+  const desk = Ik.rows({ volume: St.volume(0.5, true, true), network: St.network(""), notifications: [{}], dnd: true })
+  assert.deepEqual(desk.map(x => [x.key, x.value, x.red]), [["sound", "Muted", true], ["network", "Offline", true], ["inbox", "Quiet", false]])
+  // Each row's kanji is its sheet's.
+  for (const row of Ik.ROWS) assert.equal(row.jp, Sh.byKey(row.key).jp, row.key)
+})
+
+test("inkan: the seal in its corner, the sheet printed away from the edge it shares", () => {
+  assert.deepEqual(Ik.place("bottom-right", 1920, 1080, 46, 18), { x: 1856, y: 1016, width: 46, height: 46 })
+  assert.deepEqual(Ik.place("top-left", 1920, 1080, 46, 18), { x: 18, y: 18, width: 46, height: 46 })
+  assert.equal(Ik.cornerOf("middle"), "bottom-right")
+  const br = Ik.sheetPlace("bottom-right", 1920, 1080, Ik.place("bottom-right", 1920, 1080, 46, 18), 440, 560, 18, 8)
+  assert.deepEqual(br, { x: 1462, y: 438, origin: "bottom-right" })
+  const tl = Ik.sheetPlace("top-left", 1920, 1080, Ik.place("top-left", 1920, 1080, 46, 18), 440, 560, 18, 8)
+  assert.deepEqual(tl, { x: 18, y: 82, origin: "top-left" })
+  // A sheet taller than the room above stays on screen.
+  assert.equal(Ik.sheetPlace("bottom-left", 800, 500, Ik.place("bottom-left", 800, 500, 46, 18), 440, 560, 18, 8).y, 8)
+  assert.equal(Ik.nearest(100, 900, 1920, 1080), "bottom-left")
+  assert.equal(Ik.nearest(1500, 100, 1920, 1080), "top-right")
+})
+
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

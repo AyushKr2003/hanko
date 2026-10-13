@@ -20,7 +20,7 @@ Inkan is not a new design. It is a **form** of the Hanko bar: `form: inkan` take
 
 ## The states (core/Inkan.js)
 
-- **Wear** = the battery: `wear(pct, charging, present)` is 1 at 60 % and above, while charging and with no battery; below 60 % it falls to a floor of 0.18 at 0 %. `specks(seed)` are seeded clusters of blots, each with a threshold; a speck is drawn when its threshold is under `1 − wear`, so the carving wears away in the same places every time.
+- **Wear** = the battery: `wear(pct, charging, present)` is 1 at 60 % and above, while charging and with no battery; below 60 % it falls to 0.3 at 0 %, which still leaves the glyph legible. `specks(seed)` are seeded clusters of blots, each with a threshold; a speck is drawn when its threshold is under `1 − wear`, so the carving wears away in the same places every time.
 - **Chips** = letters: one corner (top right) for one or two, a second (bottom left) for three or more; deeper (34 % of the side, not 22 %) when one is urgent; none under do not disturb.
 - **Do not disturb:** the seal rests as an outline in ink. **Offline:** the inner rule breaks along the foot.
 - **The glyph:** `sealGlyph`, or the active workspace numeral under `seal: workspace`; `seal: carved` rests as the outline and presses red when letters wait. `seal: none` still draws the stamp (it is the only thing on screen).

@@ -105,7 +105,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The twenty-three settings (`core/Style.js` `OPTIONS`; **bold** = Kamon default)
+### The twenty-six settings (`core/Style.js` `OPTIONS`; **bold** = Kamon default)
 
 Values marked † are the right-side studies (`docs/right-side/`, §9 "The right side, four ways"). Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with its parts in its skin.
 
@@ -129,6 +129,8 @@ Values marked † are the right-side studies (`docs/right-side/`, §9 "The right
 | Frame | `height` | `32`, `36`, **`40`**, `44` |
 | Frame | `surface` | **`solid`**, `glass`, `inset`, `washi`‡ |
 | Frame | `position` | **`top`**, `bottom` |
+| Frame | `form` | **`bar`**, `inkan` (Inkan 印, the seal only: `docs/shell-concepts/inkan/`) |
+| Frame | `inkanAt` | `top-left`, `top-right`, `bottom-left`, **`bottom-right`** (where Inkan's seal sits) |
 | Panels | `panels` | **`sheets`**, `scroll` |
 | Panels | `interlude` | `ma`, `hairline`, `folio`, `kotoba`, `tsugime`, **`seal`**, `jiku`, `fuda`, `su` (added after Typeset; what sits between scroll sections) |
 | Panels | `endleaf` | `okugaki`, **`koyomi`**, `kiki`, `shimai`, `iro`, `dougu`, `shuchu`, `hikae`, `batsu` (added after Typeset; the leaf right of Inbox on the scroll) |
@@ -163,7 +165,7 @@ Values marked † are the right-side studies (`docs/right-side/`, §9 "The right
 | sides | bare | curl | bare | curl |
 | guides | both | both | both | none |
 
-The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Kamon column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off`, `height: 36` and `interlude: fuda` (the user's own bar). Sheet, Scroll and Instrument were taken out (aliases: Sheet and Instrument load Kamon, Scroll loads Islet). COMPONENTS.md §4 has the table.
+The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Kamon column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off`, `height: 36` and `interlude: fuda` (the user's own bar). Sheet, Scroll and Instrument were taken out (aliases: Sheet and Instrument load Kamon, Scroll loads Islet). **Inkan** 印 is Kamon with `form: inkan` (its own group on the Presets page). COMPONENTS.md §4 has the table.
 
 ### Where options interact (COMPONENTS.md §3)
 

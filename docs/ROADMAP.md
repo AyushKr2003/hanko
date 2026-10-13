@@ -138,7 +138,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 
 - 🔨 **Inkan 印, the seal only** (asked for: "now I want to work on this Inkan", shell concept 04, then "go with your idea and all"): a `form` setting that takes the bar away and leaves one seal in a corner, its carving the status; pressed, it prints the whole shell as one sheet, No. 00. Design and timings in [shell-concepts/inkan/](shell-concepts/inkan/README.md). Steps, each its own commit:
   - ✅ **I0 · Design sheets**: the seal's states, No. 00, the four corners and per monitor, the ink-press, a light theme.
-  - ⬜ **I1 · The model**: `form` and `inkanAt` in `Style.js`, the Inkan preset, `core/Inkan.js` (wear, specks, chips, placement, No. 00 rows) with tests.
+  - ✅ **I1 · The model**: `form` and `inkanAt` in `Style.js`, the Inkan preset, `core/Inkan.js` (wear, specks, chips, placement, No. 00 rows) with tests.
   - ⬜ **I2 · The seal that reads**: `bar/InkanSeal.qml`, harness scene and params.
   - ⬜ **I3 · The corner layer**: `bar/SealWindow.qml`, the bar parked under `inkan`, `barSize` 0, clicks, wheel, hover reading.
   - ⬜ **I4 · No. 00**: `bar/sheets/AllSheet.qml`, printing from the seal, rows into their sheets and back, Omarchy's panel hotkeys at the corner, the scroll from the seal.

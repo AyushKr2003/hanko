@@ -132,7 +132,7 @@ function specks(seed) {
 function wear(pct, charging, present) {
   if (!present || charging) return 1
   if (pct >= 60) return 1
-  return Math.max(.18, .3 + .7 * pct / 60)
+  return .3 + .7 * pct / 60
 }
 // seal(size, o): o = { glyph, wear, chips (0..2), urgent, dnd, offline, light }
 function sealCanvas(size, o = {}) {

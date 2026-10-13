@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the twenty-four settings into six cards, and the
+// Typesetting 組版 page groups the twenty-six settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -31,7 +31,7 @@ function pageInfo(key) {
 var PLATES = ["profile", "about", "credits"]
 
 var PRESET_BLURBS = {
-  Kamon: "the family crest",
+  Kamon: "the family crest", Inkan: "the seal only",
   Quiet: "least on screen", Islet: "floating, inset",
   "Shōji": "washi and the seasons",
   Ma: "room between the groups", Shizuka: "quiet until it changes",
@@ -41,7 +41,7 @@ var PRESET_BLURBS = {
 // Each preset's kanji, for the Presets 型 page: what the bar is, in one
 // sign. The four studies keep the kanji they were drawn with.
 var PRESET_KANJI = {
-  Kamon: "家紋", Quiet: "素", Islet: "島",
+  Kamon: "家紋", Inkan: "印", Quiet: "素", Islet: "島",
   "Shōji": "障子", Ma: "間", Shizuka: "静", Suji: "筋", "Inrō": "印籠"
 }
 
@@ -98,6 +98,8 @@ var CARDS = [
     { key: "rules", name: "Dividers", detail: "Hairlines between groups" },
     { key: "pointer", name: "Pointer", detail: "A brush mark under the cell you point at" }] },
   { title: "Frame", rows: [
+    { key: "form", name: "Form", detail: "The bar, or Inkan: one seal in a corner that prints every sheet" },
+    { key: "inkanAt", name: "Seal corner", detail: "Where Inkan's seal sits" },
     { key: "height", name: "Height", detail: "px at font size 12" },
     { key: "typeSize", name: "Type size", detail: "Hanko's text over Omarchy's font size" },
     { key: "surface", name: "Surface", detail: "Washi is Shōji's paper, with fibres" },
@@ -114,14 +116,14 @@ var CARDS = [
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
-// The Motion 動 page: one switch outside the twenty-four (style.json `motion`),
+// The Motion 動 page: one switch outside the twenty-six (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
 var OVERVIEW_OPTIONS = ["grid", "dynamic", "framed"]
-// Shōji's touches, beside the twenty-four (Style.js SEASONS, NUMERALS, GRAINS).
+// Shōji's touches, beside the twenty-six (Style.js SEASONS, NUMERALS, GRAINS).
 var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
                      hours: ["auto", "24h", "12h"] }
 
@@ -274,7 +276,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// twenty-four that resolves differently, the seal glyph, and each monitor whose
+// twenty-six that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)

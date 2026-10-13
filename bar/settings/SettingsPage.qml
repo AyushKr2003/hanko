@@ -392,7 +392,7 @@ Rectangle {
           text: root.page === "typesetting"
             ? "Choose how each part of the bar is set. Every change prints live on your desktop and is kept at once; Undo puts the last one back."
             : root.page === "presets"
-            ? "A preset sets all twenty-four settings at once; tune any of them afterwards on Typesetting. Each bar below is drawn live with your data, seal and type size. Your sheets, motion and hidden parts stay as they are."
+            ? "A preset sets all twenty-six settings at once; tune any of them afterwards on Typesetting. Each bar below is drawn live with your data, seal and type size. Your sheets, motion and hidden parts stay as they are."
             : root.placeholders[root.page] || ""
           color: Ink.inkMuted
           font.family: Type.text
