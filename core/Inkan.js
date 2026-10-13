@@ -84,10 +84,16 @@ function worn(list, w) {
 // or two, two for three or more; `deep` when one is urgent. None under do
 // not disturb: the letters wait.
 function chips(letters, dnd) {
-  var list = Array.isArray(letters) ? letters : []
-  if (dnd || !list.length) return { count: 0, deep: false }
-  return { count: list.length >= 3 ? 2 : 1,
-           deep: list.some(function(l) { return l && l.urgent }) }
+  // A list from QML is not always a JS Array (Array.isArray is false for a
+  // model's nested list), so count by its length.
+  var n = count(letters)
+  if (dnd || !n) return { count: 0, deep: false }
+  return { count: n >= 3 ? 2 : 1, deep: anyUrgent(letters) }
+}
+function count(letters) { return letters && letters.length > 0 ? letters.length : 0 }
+function anyUrgent(letters) {
+  for (var i = 0; i < count(letters); i++) if (letters[i] && letters[i].urgent) return true
+  return false
 }
 // A chip's leg, as a share of the seal's side.
 function chipSize(deep) { return deep ? 0.34 : 0.22 }
@@ -129,8 +135,8 @@ function reading(d, time) {
   if (v && v.muted) out.push({ jp: "音", text: "muted", red: true })
   if (data.dnd) out.push({ jp: "静", text: "quiet" })
   else {
-    var count = (data.notifications || []).length
-    if (count) out.push({ jp: "報", text: String(count), red: (data.notifications || []).some(function(l) { return l.urgent }) })
+    var n = count(data.notifications)
+    if (n) out.push({ jp: "報", text: String(n), red: anyUrgent(data.notifications) })
   }
   return out
 }
@@ -159,9 +165,9 @@ function rows(d) {
   if (b) push("power", b.percent + "%" + (b.charging ? " · charging" : data.timeLeft ? " · " + data.timeLeft : ""), b.needsYou)
   var l = data.brightness
   if (l) push("display", l.percent + "%")
-  var letters = data.notifications || []
-  push("inbox", data.dnd ? "Quiet" : !letters.length ? "None" : letters.length + (letters.length === 1 ? " letter" : " letters"),
-       !data.dnd && letters.some(function(x) { return x.urgent }))
+  var n = count(data.notifications)
+  push("inbox", data.dnd ? "Quiet" : !n ? "None" : n + (n === 1 ? " letter" : " letters"),
+       !data.dnd && anyUrgent(data.notifications))
   return out
 }
 

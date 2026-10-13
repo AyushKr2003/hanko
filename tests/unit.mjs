@@ -1680,6 +1680,8 @@ test("inkan: chips for letters, an outline when quiet, a broken rule offline", (
   assert.deepEqual(Ik.chips(three, false), { count: 2, deep: true })
   assert.deepEqual(Ik.chips(three, true), { count: 0, deep: false })
   assert.ok(Ik.chipSize(true) > Ik.chipSize(false))
+  // A list QML hands over need not be a JS Array: counted by its length.
+  assert.deepEqual(Ik.chips({ length: 2, 0: {}, 1: { urgent: true } }, false), { count: 1, deep: true })
   const c = Ik.carving({ seal: "stamp", sealGlyph: "寛" }, { notifications: one, network: { off: true }, battery: { percent: 12, needsYou: true } })
   assert.equal(c.glyph, "寛")
   assert.equal(c.chips, 1)

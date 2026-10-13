@@ -1,0 +1,448 @@
+{
+ "scene": "Inkan",
+ "width": 1600,
+ "theme": {
+  "foreground": "#ddd5c7",
+  "background": "#0a0a09",
+  "red": "#d8452f"
+ },
+ "title": "Inkan 印 · the seal at rest, read like a stamp",
+ "states": [
+  {
+   "label": "All well",
+   "data": {
+    "battery": {
+     "percent": 91,
+     "level": 0.91,
+     "charging": false,
+     "needsYou": false
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    }
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Battery 45%",
+   "data": {
+    "battery": {
+     "percent": 45,
+     "level": 0.45,
+     "charging": false,
+     "needsYou": false
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    }
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Battery 30%",
+   "data": {
+    "battery": {
+     "percent": 30,
+     "level": 0.3,
+     "charging": false,
+     "needsYou": false
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    }
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Battery 14%",
+   "data": {
+    "battery": {
+     "percent": 14,
+     "level": 0.14,
+     "charging": false,
+     "needsYou": true
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    }
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Charging",
+   "data": {
+    "battery": {
+     "percent": 14,
+     "level": 0.14,
+     "charging": true,
+     "needsYou": false
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    }
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "One letter",
+   "data": {
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "notifications": [
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     }
+    ]
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Three letters",
+   "data": {
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "notifications": [
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     },
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     },
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     }
+    ]
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Urgent",
+   "data": {
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "notifications": [
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": true,
+      "timestamp": 0
+     }
+    ]
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Do not disturb",
+   "data": {
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "notifications": [
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     },
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     }
+    ],
+    "dnd": true
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Offline",
+   "data": {
+    "network": {
+     "kind": "disconnected",
+     "name": "Offline",
+     "signal": 0,
+     "bars": 0,
+     "off": true,
+     "needsYou": true
+    }
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "Low, two letters",
+   "data": {
+    "battery": {
+     "percent": 14,
+     "level": 0.14,
+     "charging": false,
+     "needsYou": true
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "notifications": [
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     },
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     }
+    ]
+   },
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "鑑"
+   }
+  },
+  {
+   "label": "seal: workspace",
+   "data": {
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "workspace": 3
+   },
+   "doc": {
+    "edits": {
+     "seal": "workspace"
+    },
+    "preset": "Inkan"
+   }
+  }
+ ],
+ "desks": [
+  {
+   "label": "BOTTOM-RIGHT · ALL WELL · POINTER ON THE SEAL",
+   "doc": {
+    "preset": "Inkan"
+   },
+   "data": {
+    "battery": {
+     "percent": 91,
+     "level": 0.91,
+     "charging": false,
+     "needsYou": false
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    }
+   },
+   "hover": true
+  },
+  {
+   "label": "BOTTOM-RIGHT · LOW, TWO LETTERS · POINTER ON THE SEAL",
+   "doc": {
+    "preset": "Inkan"
+   },
+   "data": {
+    "battery": {
+     "percent": 14,
+     "level": 0.14,
+     "charging": false,
+     "needsYou": true
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "notifications": [
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": true,
+      "timestamp": 0
+     },
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     }
+    ],
+    "volume": {
+     "percent": 40,
+     "muted": true
+    }
+   },
+   "hover": true
+  },
+  {
+   "label": "TOP-LEFT · 寛 · PRESSED",
+   "doc": {
+    "preset": "Inkan",
+    "sealGlyph": "寛",
+    "edits": {
+     "inkanAt": "top-left"
+    }
+   },
+   "data": {
+    "battery": {
+     "percent": 70,
+     "level": 0.7,
+     "charging": false,
+     "needsYou": false
+    },
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    }
+   },
+   "pressed": true
+  },
+  {
+   "label": "TOP-RIGHT · QUIET · POINTER ON THE SEAL",
+   "doc": {
+    "preset": "Inkan",
+    "edits": {
+     "inkanAt": "top-right"
+    }
+   },
+   "data": {
+    "network": {
+     "kind": "wifi",
+     "name": "Kumo",
+     "signal": 82,
+     "bars": 4,
+     "off": false,
+     "needsYou": false
+    },
+    "dnd": true,
+    "notifications": [
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     },
+     {
+      "app": "Signal",
+      "summary": "hi",
+      "urgent": false,
+      "timestamp": 0
+     }
+    ]
+   },
+   "hover": true
+  }
+ ]
+}
