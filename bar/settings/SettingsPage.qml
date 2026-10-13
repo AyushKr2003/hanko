@@ -60,6 +60,8 @@ Rectangle {
   signal shuffle()
   signal showAll()
   signal themePicked(string slug)
+  // Keys: a binding to put on the clipboard.
+  signal copyText(string text)
   // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
   // core/Profile.js BLOCKS.
   signal profileTextEdited(string field, string value)
@@ -329,9 +331,6 @@ Rectangle {
       height: parent.height - actions.height
       contentHeight: pageColumn.height + Type.px(40)
       clip: true
-      // Brush strokes (Shape's curve renderer) ignore `clip` in Qt's scene
-      // graph: drawn into a layer, they are cut at the page's edge.
-      layer.enabled: true
       boundsBehavior: Flickable.StopAtBounds
 
       Column {
@@ -621,7 +620,13 @@ Rectangle {
       onSettingPicked: function(key, value) { root.settingPicked(key, value) }
     }
   }
-  Component { id: keysPage; Placeholder { text: "The keymap arrives with the feel step of this redesign." } }
+  Component {
+    id: keysPage
+    KeysPage {
+      compact: root.compact
+      onCopyText: function(text) { root.copyText(text) }
+    }
+  }
 
   Component {
     id: profilePlate
@@ -642,22 +647,6 @@ Rectangle {
   }
   Component { id: aboutPlate; AboutPlate { version: root.version } }
   Component { id: creditsPlate; CreditsPlate {} }
-
-  component Placeholder: Item {
-    property alias text: words.text
-    width: parent ? parent.width : 0
-    implicitHeight: words.height + Type.px(40)
-    Text {
-      id: words
-      y: Type.px(26)
-      width: parent.width
-      wrapMode: Text.Wrap
-      color: Ink.inkFaint
-      font.family: Type.mono
-      font.pixelSize: Type.tag
-      font.letterSpacing: Type.trackLabel
-    }
-  }
 
   // The search field, in the rail or (folded) at the top of the page.
   component SearchField: Rectangle {

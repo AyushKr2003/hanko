@@ -75,6 +75,7 @@ FloatingWindow {
       themes: Leaf.themes
       theme: Leaf.theme
       onThemePicked: function(slug) { Leaf.setTheme(slug) }
+      onCopyText: function(text) { Quickshell.execDetached(["wl-copy", text]) }
       lastChange: Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
       screens: Quickshell.screens.map(function(s) { return { name: s.name, x: s.x, y: s.y, width: s.width, height: s.height } })
       monitors: Quickshell.screens.map(function(s) { return s.name })

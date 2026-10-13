@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -1807,6 +1807,23 @@ test("settings: the parts tray holds every part once, each a known part", () => 
   for (const p of parts) assert.ok(S.withSetting(S.normalize({}), "show:" + p, "hidden"), p)
   assert.ok(parts.includes("indicator:night") && parts.includes("tray:nm-applet") && parts.includes("hosted:omarchy.weather"))
   assert.ok(!Se.partsTray({}).flatMap(g => g.sorts).some(s => s.kind === "stamp"))
+})
+
+test("settings: the timesheet has every motion, the keymap lights its keys", () => {
+  assert.deepEqual(Se.MOTION_SHEET.map(m => m.prop), Se.MOTION_ROWS.map(r => r[2]))
+  for (const m of Se.MOTION_SHEET) assert.equal(m.curve.length, 4)
+  const sheet = Se.KEYMAP.find(c => c.key === "sheet")
+  const lit = Se.keysLit(sheet)
+  assert.ok(lit.Esc && lit.Tab && lit.M && lit["↑"] && !lit.H)
+  const scroll = Se.keysLit(Se.KEYMAP.find(c => c.key === "scroll"))
+  assert.ok(scroll["1"] && scroll["8"] && !scroll["9"] && !scroll["0"])
+  const overview = Se.keysLit(Se.KEYMAP.find(c => c.key === "overview"))
+  assert.ok(overview["0"] && overview["9"] && overview.J)
+  const settings = Se.keysLit(Se.KEYMAP[0])
+  assert.ok(settings["1"] && settings["0"] && settings["5"])
+  assert.equal(Se.keyDoes(sheet, "M"), "Sound: mute")
+  assert.equal(Se.keyDoes(sheet, "Q"), "")
+  assert.ok(Se.BINDINGS.every(b => b.code.includes("omarchy-shell hanko")))
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

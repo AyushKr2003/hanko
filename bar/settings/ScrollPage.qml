@@ -75,7 +75,7 @@ Column {
             x: Type.px(10); y: Type.px(10)
             spacing: Type.px(6)
             Rectangle { width: Type.px(44); height: Type.px(7); color: Ink.inkDim }
-            Repeater { model: 4; Rectangle { required property int index; width: Type.px(88) - index * Type.px(10); height: 1; color: Ink.line } }
+            Repeater { model: 4; Rectangle { id: rule; required property int index; width: Type.px(88) - rule.index * Type.px(10); height: 1; color: Ink.line } }
           }
         }
         // ...or the whole scroll across.
@@ -93,9 +93,10 @@ Column {
             Repeater {
               model: 5
               Column {
+                id: section
                 required property int index
                 spacing: Type.px(5)
-                Rectangle { width: Type.px(10); height: Type.px(10); color: index === 1 ? Ink.seal : Ink.inkFaint }
+                Rectangle { width: Type.px(10); height: Type.px(10); color: section.index === 1 ? Ink.seal : Ink.inkFaint }
                 Rectangle { width: Type.px(40); height: Type.px(5); color: Ink.inkDim }
                 Repeater { model: 3; Rectangle { width: Type.px(36); height: 1; color: Ink.line } }
               }

@@ -56,8 +56,6 @@ Rectangle {
     width: root.width - 2
     height: root.stageHeight
     clip: true
-    // Cuts brush strokes too (Shape ignores clip).
-    layer.enabled: true
 
     // Glass shows only over something: a faint hatch, as a window behind.
     Canvas {

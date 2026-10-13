@@ -389,6 +389,90 @@ var MOTION_ROWS = [
   ["Now-notch", "Creeps to the new minute instead of jumping", "creep"]
 ]
 
+// The timesheet on Motion 動 (タイムシート): every move Hanko makes, with
+// the Motion.qml property for its length, its delay and its curve as a
+// cubic bézier (x1, y1, x2, y2), named as the code eases it. `dip` draws a
+// fade (down to a trace, then back) instead of a rise.
+var MOTION_SHEET = [
+  { name: "Unroll", line: "The rod drops and the scroll's paper follows it", prop: "unroll", delay: 0, curve: [0.2, 0.9, 0.25, 1], ease: "bézier .2 .9 .25 1" },
+  { name: "Ink", line: "Section ink arrives after the paper has moved", prop: "ink", delayProp: "inkDelay", curve: [0.4, 0, 0.2, 1], ease: "bézier .4 0 .2 1" },
+  { name: "Pan", line: "A pan carries on and lands centred on a section", prop: "pan", delay: 0, curve: [0.16, 1, 0.3, 1], ease: "bézier .16 1 .3 1" },
+  { name: "Print", line: "A sheet prints top-down from the cell you clicked", prop: "sheetPrint", delay: 0, curve: [0.33, 1, 0.68, 1], ease: "out cubic" },
+  { name: "Plates", line: "A sliding plate moves to its new place", prop: "slide", delay: 0, curve: [0.33, 1, 0.68, 1], ease: "out cubic" },
+  { name: "Values", line: "A changed reading fades to a trace and back", prop: "fade", delay: 0, curve: [0.11, 0, 0.5, 0], ease: "in quad, out quad", dip: true },
+  { name: "Stamp", line: "A new letter is pressed down, then settles: the only overshoot", prop: "stamp", delay: 0, curve: [0.3, 1.4, 0.5, 1], ease: "bézier .3 1.4 .5 1" },
+  { name: "Now-notch", line: "Creeps to the new minute instead of jumping", prop: "creep", delay: 0, curve: [0.37, 0, 0.63, 1], ease: "in-out sine" }
+]
+
+// Keys 鍵: every key Hanko answers to, by where it answers (read from the
+// key handlers in bar/), and the bindings the README suggests.
+var KEYMAP = [
+  { key: "settings", jp: "設", name: "Here, in settings", keys: [
+    { caps: ["/"], what: "Search the settings" },
+    { caps: ["Ctrl", "Z"], what: "Undo the last change" },
+    { caps: ["Esc"], what: "Clear the search, then close" },
+    { caps: ["←", "→"], what: "Typesetting: the previous or next part" },
+    { caps: ["1–0"], what: "Typesetting: open part 01 to 10" }] },
+  { key: "sheet", jp: "紙", name: "On a sheet", keys: [
+    { caps: ["Esc"], what: "Close the sheet" },
+    { caps: ["Tab"], what: "The next sheet (Shift for the one before)" },
+    { caps: ["↑", "↓"], what: "Sound and Display: up or down 5%" },
+    { caps: ["←", "→"], what: "Time: a day back or on" },
+    { caps: ["T"], what: "Time: back to today" },
+    { caps: ["M"], what: "Sound: mute" },
+    { caps: ["R"], what: "Network: look again" },
+    { caps: ["P"], what: "Bluetooth: power" },
+    { caps: ["N"], what: "Display: night light" },
+    { caps: ["Space"], what: "No. 00: play or pause" },
+    { caps: ["Enter"], what: "No. 00: open the row" }] },
+  { key: "scroll", jp: "巻", name: "On the scroll", keys: [
+    { caps: ["Esc"], what: "Roll it up" },
+    { caps: ["H", "L"], what: "Pan one section left or right (or ← →)" },
+    { caps: ["Tab"], what: "The next section (Shift for the one before)" },
+    { caps: ["1–8"], what: "Jump to section 1 to 8" }] },
+  { key: "overview", jp: "一覧", name: "On the overview", keys: [
+    { caps: ["H", "J", "K", "L"], what: "Move between spaces (or the arrows)" },
+    { caps: ["0–9"], what: "Go to a space by number" },
+    { caps: ["Enter"], what: "Go there" },
+    { caps: ["Esc"], what: "Close" },
+    { caps: ["Alt", "Tab"], what: "Busy spaces: the next desktop" }] }
+]
+
+// Hyprland bindings for what Hanko has no key of its own for (README).
+var BINDINGS = [
+  { what: "Unroll the scroll", caps: ["Super", "Ctrl", "U"], code: 'o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")' },
+  { what: "Press Inkan's seal", caps: ["Super", "Alt", "I"], code: 'o.bind("SUPER + ALT + I", "Hanko seal", "omarchy-shell hanko press")' },
+  { what: "The overview, in place of Omarchy's", caps: ["Super", "Tab"], code: 'hl.unbind("SUPER + TAB")\no.bind("SUPER + TAB", "Hanko overview", "omarchy-shell hanko overview")' }
+]
+
+// The caps a context lights on the keyboard ("1–8" lights 1 to 8).
+function keysLit(context) {
+  var out = {}
+  var keys = (context && context.keys) || []
+  for (var i = 0; i < keys.length; i++) for (var j = 0; j < keys[i].caps.length; j++) {
+    var c = keys[i].caps[j]
+    var m = /^(\d)–(\d)$/.exec(c)
+    if (m) {
+      var a = Number(m[1]), b = Number(m[2])
+      var lo = Math.min(a, b === 0 ? 10 : b), hi = Math.max(a, b === 0 ? 10 : b)
+      for (var n = lo; n <= hi; n++) out[String(n % 10)] = true
+      if (a === 0) for (var d = 0; d <= 9; d++) out[String(d)] = true
+    } else out[c] = true
+  }
+  return out
+}
+
+// What a cap does in a context, for the line under the keyboard.
+function keyDoes(context, cap) {
+  var keys = (context && context.keys) || []
+  var lit = {}
+  for (var i = 0; i < keys.length; i++) {
+    lit = keysLit({ keys: [keys[i]] })
+    if (lit[cap]) return keys[i].what
+  }
+  return ""
+}
+
 // The interludes as the Scroll 巻 page and the Typesetting row show them:
 // a kanji for the segmented control, a name and a line for the gallery.
 var INTERLUDES = [

@@ -3,7 +3,8 @@
 
   python3 tests/harness/render.py <scene.qml> <params.json> <out.png>
 
-Needs PySide6 (pip install PySide6-Essentials). Fonts in $HANKO_HARNESS_FONTS
+Needs PySide6 (pip install PySide6-Essentials). HANKO_HARNESS_GPU=1 renders
+on the GPU like omarchy-shell (see below). Fonts in $HANKO_HARNESS_FONTS
 (a directory of .ttf files) are added first; use it for Noto CJK and a mono
 face on machines that lack them.
 """
@@ -14,6 +15,14 @@ from pathlib import Path
 # window, and the compositor would tile it to its own size.
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 os.environ.setdefault("QT_SCALE_FACTOR", "2")
+# Offscreen, Qt Quick draws with its software renderer, which is not what
+# omarchy-shell uses and differs in places (Shape strokes are not clipped,
+# layers can come out blank at 2x). HANKO_HARNESS_GPU=1 draws on the GPU
+# (OpenGL, as the shell does) when the machine has one; use it at 1x to
+# check what the real window shows (its grab is cropped at 2x).
+if os.environ.get("HANKO_HARNESS_GPU") == "1":
+    os.environ["QT_QUICK_BACKEND"] = "rhi"
+    os.environ["QSG_RHI_BACKEND"] = "opengl"
 
 from PySide6.QtCore import QUrl, QTimer
 from PySide6.QtGui import QGuiApplication, QFontDatabase

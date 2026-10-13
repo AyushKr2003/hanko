@@ -73,3 +73,20 @@ The same rule on every page: **the thing itself first, pictures of its choices s
 | Keys 鍵 | A paragraph | **Keymap**: keycaps by context; hover a key to read it | Keyboard maps that light the keys a shortcut uses ([Fluid Project](https://fluidproject.atlassian.net/wiki/spaces/fluid/pages/11633699/KBS+Concept+2)); keycap labels over plain text |
 
 Built in steps, each its own commit: R1 the shell and Screens, R2 Presets, R3 Parts, R4 Colour, R5 Sheets, Scroll and Overview, R6 Motion and Keys.
+
+### Built (R1–R6)
+
+| | |
+|---|---|
+| ![Presets](images/10-presets.webp) | ![Parts](images/11-parts.webp) |
+| Presets 型, the pattern book | Parts 部品, the sorts tray |
+| ![Colour](images/12-colour.webp) | ![Screens](images/13-screens.webp) |
+| Colour 色, drawdown and themes | Screens 画面, to scale |
+| ![Sheets](images/14-sheets.webp) | ![Scroll](images/15-scroll.webp) |
+| Sheets 紙, every hand as a picture of the sheet | Scroll 巻 |
+| ![Overview](images/16-overview.webp) | ![Motion](images/17-motion.webp) |
+| Overview 一覧 | Motion 動, the timesheet |
+| ![Keys](images/18-keys.webp) | |
+| Keys 鍵, the keymap | |
+
+Shared parts: `Tile.qml` (a picture over its caption, inverted when chosen), `BarCrop.qml` (one part cut from a real bar), `Galley.qml` (the two-line proof, `marks: false` for a plain one), `SmallButton.qml`, `SectionLabel.qml`.

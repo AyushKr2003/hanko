@@ -196,7 +196,6 @@ Column {
               width: parent.width - 2
               height: Type.px(104)
               clip: true
-              layer.enabled: true
               SheetView {
                 id: mini
                 x: Math.max(0, (thumb.width - width * scale) / 2)

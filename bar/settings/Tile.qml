@@ -33,8 +33,6 @@ Rectangle {
     width: tile.width - 2
     height: tile.stageHeight
     clip: true
-    // Cuts brush strokes too (Shape ignores clip).
-    layer.enabled: true
   }
 
   Rectangle {
