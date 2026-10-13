@@ -34,22 +34,35 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 
 ## Install
 
+The recommended way is the manual install:
+
 ```sh
-git clone -b dev https://github.com/AyushKr2003/hanko.git
+git clone https://github.com/AyushKr2003/hanko.git
 cd hanko
 scripts/hanko install
 ```
 
-- This copies Hanko to `~/.config/omarchy/plugins/hanko.bar` and makes it your bar.
+- This copies only what the bar needs to `~/.config/omarchy/plugins/hanko.bar` and makes it your bar.
 - It remembers the bar you had, so uninstalling puts that one back.
 - **For development:** `scripts/hanko dev` symlinks the checkout instead, and saving a file reloads the bar.
 - **Check the install:** `scripts/hanko doctor`.
+
+**From the Omarchy plugin marketplace** (the command shown on the listing), then make Hanko your bar:
+
+```sh
+omarchy plugin add https://github.com/AyushKr2003/hanko.git --enable
+omarchy bar use hanko.bar
+```
+
+This route does not remember your previous bar; `omarchy bar use omarchy.bar` switches back.
 
 ## Update
 
 ```sh
 cd hanko && git pull && scripts/hanko install
 ```
+
+If you installed from the marketplace: `omarchy plugin update hanko.bar`.
 
 ## Uninstall
 
@@ -60,6 +73,7 @@ scripts/hanko uninstall
 
 - This switches back to your previous bar and removes the plugin folder.
 - Your style is kept in `~/.config/hanko/`. Delete that folder to remove it too.
+- If you installed from the marketplace: `omarchy bar use omarchy.bar`, then `omarchy plugin remove hanko.bar`.
 
 ## Use
 
