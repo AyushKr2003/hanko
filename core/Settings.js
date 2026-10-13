@@ -5,21 +5,41 @@
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
-  { group: "00 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" }] },
-  { group: "01 BAR",    pages: [{ key: "presets", label: "Presets", jp: "型" },
-                                { key: "typesetting", label: "Typesetting", jp: "組版" },
+  { group: "01 BAR",    pages: [{ key: "typesetting", label: "Typesetting", jp: "組版" },
+                                { key: "presets", label: "Presets", jp: "型" },
+                                { key: "parts", label: "Parts", jp: "部品" },
                                 { key: "colour", label: "Colour", jp: "色" },
-                                { key: "widgets", label: "Widgets", jp: "部品" }] },
+                                { key: "screens", label: "Screens", jp: "画面" }] },
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
-                                { key: "scroll", label: "Scroll", jp: "巻" }] },
+                                { key: "scroll", label: "Scroll", jp: "巻" },
+                                { key: "overview", label: "Overview", jp: "一覧" }] },
   { group: "03 FEEL",   pages: [{ key: "motion", label: "Motion", jp: "動" },
                                 { key: "keys", label: "Keys", jp: "鍵" }] },
-  { group: "04 HANKO",  pages: [{ key: "about", label: "About", jp: "由来" },
+  { group: "04 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" },
+                                { key: "about", label: "About", jp: "由来" },
                                 { key: "credits", label: "Credits", jp: "謝辞" }] }
 ]
 
+// Old page keys that still open their page (widgets was renamed parts).
+var PAGE_ALIASES = { widgets: "parts", advanced: "screens" }
+
+// What each page is for, under its title.
+var PAGE_LINES = {
+  typesetting: "Click a part of your bar, then pick how it is set. Hover a way to try it; a click keeps it, live on your desktop. Ctrl+Z puts it back.",
+  presets: "Patterns for the whole bar. Pick one to see it set as your bar and what it would change; Use puts it on. Your seal, type size, sheets and set-aside parts stay yours.",
+  parts: "Everything that can sit on your bar, in the order it sits. Click a part to set it aside; click it again to put it back.",
+  colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks stepped from it, one red. Pick a theme here and the whole desk follows.",
+  screens: "Each screen can carry a bar of its own. Pick a screen to see and set what differs on it; the rest follow Typesetting.",
+  sheets: "A sheet drops from the cell you click. Pick a sheet, then the hand that draws it; hover a hand to see that sheet in it.",
+  scroll: "The handscroll unrolls from the rod with every panel on it. Choose what sits between its sections and what follows Inbox.",
+  overview: "The workspace overview: every space at once. Choose how it is laid out.",
+  motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, only a new stamp overshoots. The timesheet below is every move Hanko makes; hover a row to play it.",
+  keys: "Every key Hanko answers to, where it answers. Hover a key to read what it does; the commands at the foot are for your own Hyprland bindings."
+}
+
 // The group and page a rail key names (Typesetting when the key is unknown).
 function pageInfo(key) {
+  if (PAGE_ALIASES[key]) key = PAGE_ALIASES[key]
   for (var g = 0; g < RAIL.length; g++)
     for (var p = 0; p < RAIL[g].pages.length; p++)
       if (RAIL[g].pages[p].key === key) return { group: RAIL[g].group, page: RAIL[g].pages[p] }
@@ -128,20 +148,23 @@ var CARDS = [
 //   cast   settings drawn as specimens (the part, set each way)
 //   also   settings given as words (a segmented row, or the glyph stones)
 //   bar    true when the part is drawn only on the bar (not under Inkan)
+//   show   the part's name for `hidden` (Style.js PARTS), when it can be
+//          set aside as a whole; Status and Indicators are set aside per
+//          reading and per stamp on the Parts 部品 page
 var PROOF = [
-  { key: "seal", no: "01", name: "Seal", jp: "印", bar: false,
+  { key: "seal", show: "seal", no: "01", name: "Seal", jp: "印", bar: false,
     line: "The stamp at the far left. A click opens Omarchy's menu, a right-click a terminal, the wheel steps through your spaces.",
     cast: ["seal"], also: ["sealGlyph"] },
-  { key: "spaces", no: "02", name: "Workspaces", jp: "場", bar: true,
+  { key: "spaces", show: "spaces", no: "02", name: "Workspaces", jp: "場", bar: true,
     line: "Your spaces, the one you are on inverted. Click one to go there; the wheel steps.",
     cast: ["spaces"], also: ["numerals"] },
-  { key: "title", no: "03", name: "Window title", jp: "窓", bar: true,
+  { key: "title", show: "title", no: "03", name: "Window title", jp: "窓", bar: true,
     line: "The focused window: its app, and what it shows.",
     cast: ["title"], also: [] },
-  { key: "clock", no: "04", name: "Clock", jp: "時", bar: true,
+  { key: "clock", show: "clock", no: "04", name: "Clock", jp: "時", bar: true,
     line: "The time and the date. A click drops the Time sheet.",
     cast: ["clock"], also: ["hours", "season", "clockAt"] },
-  { key: "media", no: "05", name: "Now playing", jp: "曲", bar: true,
+  { key: "media", show: "media", no: "05", name: "Now playing", jp: "曲", bar: true,
     line: "What is playing, while it plays. Click to pause, middle-click for the next track.",
     cast: ["media"], also: [] },
   { key: "status", no: "06", name: "Status", jp: "状", bar: true,
@@ -150,10 +173,10 @@ var PROOF = [
   { key: "indicators", no: "07", name: "Indicators", jp: "標", bar: true,
     line: "Omarchy's six indicators as stamps: recording, dictation, reminder, stay awake, night light, do not disturb.",
     cast: ["indicatorStyle"], also: ["indicators"] },
-  { key: "notif", no: "08", name: "Inbox", jp: "報", bar: true,
+  { key: "notif", show: "notif", no: "08", name: "Inbox", jp: "報", bar: true,
     line: "Your notifications. A click opens them, a right-click is do not disturb.",
     cast: ["notif"], also: [] },
-  { key: "edge", no: "09", name: "Edge", jp: "縁", bar: true,
+  { key: "edge", show: "edge", no: "09", name: "Edge", jp: "縁", bar: true,
     line: "The line along the bar's foot, and the rules between its groups.",
     cast: ["edge"], also: ["rules", "pointer"] },
   { key: "frame", no: "10", name: "Frame", jp: "枠", bar: false,
@@ -258,7 +281,7 @@ function wayOf(key, value) {
 
 // The words for an `also` setting: its row name and a short line.
 var ALSO = {
-  sealGlyph: ["Glyph", "Carved on the stamp"],
+  sealGlyph: ["Glyph", "Carved on the stamp; type your own in the last stone"],
   numerals: ["Numerals", "Arabic, or kanji in brush"],
   hours: ["Hours", "Auto follows Omarchy's clock"],
   season: ["Season", "The solar term beside the date"],
@@ -485,6 +508,56 @@ function changes(savedDoc, draftDoc, resolve) {
   for (var y in mb) names[y] = true
   for (var m in names) if (JSON.stringify(ma[m] || {}) !== JSON.stringify(mb[m] || {})) n++
   return n
+}
+
+// The last change in words, for the action bar: "Clock · stacked → inline",
+// "Preset · Kamon → Ma", "Seal set aside", "DP-2 · Height 40 → 32"; "" when
+// the two documents resolve the same.
+function describeChange(before, after, resolve) {
+  if (!before || !after) return ""
+  if (before.preset !== after.preset) return "Preset · " + before.preset + " → " + after.preset
+  var hb = before.hidden || [], ha = after.hidden || []
+  for (var i = 0; i < ha.length; i++) if (hb.indexOf(ha[i]) < 0) return partName(ha[i]) + " set aside"
+  for (var j = 0; j < hb.length; j++) if (ha.indexOf(hb[j]) < 0) return partName(hb[j]) + " put back"
+  if (before.sealGlyph !== after.sealGlyph) return "Seal glyph · " + before.sealGlyph + " → " + after.sealGlyph
+  var a = resolve(before), b = resolve(after)
+  var skip = ["preset", "edited", "hidden", "sheetStyles"]
+  for (var k in b) {
+    if (skip.indexOf(k) >= 0) continue
+    if (String(a[k]) === String(b[k])) continue
+    var nm = nameOf(k)
+    if (nm === k) nm = { motion: "Motion", panelOpacity: "Panel opacity" }[k] || k
+    return nm + " · " + a[k] + " → " + b[k]
+  }
+  var sa = JSON.stringify(a.sheetStyles || {}), sb = JSON.stringify(b.sheetStyles || {})
+  if (sa !== sb) return "Sheet hands"
+  var ma = before.monitors || {}, mb = after.monitors || {}
+  var names = {}
+  for (var x in ma) names[x] = true
+  for (var y in mb) names[y] = true
+  for (var m in names) {
+    var oa = ma[m] || {}, ob = mb[m] || {}
+    for (var key in ob) if (String(oa[key]) !== String(ob[key])) return m + " · " + nameOf(key) + " " + ob[key]
+    for (var key2 in oa) if (ob[key2] === undefined) return m + " · " + nameOf(key2) + " as the rest"
+  }
+  return ""
+}
+
+// A part name as the Parts page gives it ("indicator:night" -> "Night light").
+function partName(part) {
+  var p = String(part)
+  var fixed = { seal: "Seal", spaces: "Workspaces", title: "Window title", clock: "Clock", media: "Now playing",
+                network: "Network", bluetooth: "Bluetooth", volume: "Volume", brightness: "Brightness",
+                battery: "Battery", notif: "Inbox", edge: "Edge", keyboard: "Keyboard layout",
+                mic: "Microphone", tray: "Tray", weather: "Weather leaf", endleaf: "End leaf" }
+  if (fixed[p]) return fixed[p]
+  if (p.indexOf("indicator:") === 0) {
+    var names = { recording: "Screen recording", dictation: "Dictation", reminder: "Reminder", awake: "Stay awake", night: "Night light", dnd: "Do not disturb" }
+    return names[p.slice(10)] || p.slice(10)
+  }
+  if (p.indexOf("tray:") === 0) return p.slice(5)
+  if (p.indexOf("hosted:") === 0) return prettyId(p.slice(7))
+  return p
 }
 
 // "Edited · live on your bar · 2 changes", or how things stand.

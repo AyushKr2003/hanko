@@ -54,3 +54,22 @@ One paper, four inks, one red (red only for your edits and the seal); emphasis b
 - `bar/settings/SettingsPage.qml`: `part`, `trial`, `proofStyle`, `litParts`, `partShown`, `editedParts`, `proofData`, `stepPart`, `pickPartAt`; the preset chip beside the title.
 - `bar/SettingsWindow.qml`: the keys, and `screenWidth` and `indicators` in the bar data.
 - Harness: `tests/harness/params/proof*.json` (scene `Settings`, `settings.part`, `settings.trial`).
+
+## Part two: the whole window
+
+Asked for next: "just like you redesigned Typesetting, redesign all the other sections too; make more pages if needed; you have full control of the whole settings flow and layout."
+
+The same rule on every page: **the thing itself first, pictures of its choices second, words last.** Each page borrows an object from Japanese print and craft that does that page's job.
+
+| Page | Was | Becomes | Why (research) |
+|---|---|---|---|
+| Shell | 11 pages in 5 groups, an Advanced switch | Four groups, Typesetting first; key hints in the rail's foot; the action bar names the last change | Undo is only trusted when you can see what it will undo |
+| Presets 型 | Nine bars in a long list, each a thin strip | **Pattern book** (the dyers' stencil sample books, *komon-chō*, used to choose patterns since the early 1800s): the pattern set as your proof, with only what it would change from yours, then Use | Trim-compare tools lead with the differences, not the full spec ([J.D. Power](https://www.jdpower.com/business/chrome-compare/)) |
+| Widgets → **Parts 部品** | Fourteen shown/hidden toggles | **Sorts tray**: every part as a real specimen in bar order; set-aside ones ghosted; Show all | Bartender's own support notes users read its hide toggle backwards ([Bartender](https://macbartender.com/b3_knowledge/items-not-staying-hidden)); one clear state per item, and a way back |
+| Colour 色 | An empty page | Your theme's paper, inks and red, measured; every Omarchy theme as a specimen to switch to | — |
+| Advanced → **Screens 画面** | A switch revealing a dense grid | Your monitors drawn to scale; click one to see and set what differs | macOS arranges displays as tiles to scale, the picked one highlighted ([guide](https://www.techrepublic.com/article/how-to-configure-second-display-mac/)) |
+| Sheets 紙 · Scroll 巻 · **Overview 一覧** | Text cards, segmented rows | The proof pattern: the sheet drawn large, each hand as a picture of *that* sheet | Same as Typesetting |
+| Motion 動 | A switch and a table of numbers | **Timesheet** (タイムシート, the animator's exposure sheet): every motion as a bar on a ms ruler; hover plays it | Japanese timesheets lay out each action in its own column against frames ([TVPaint](https://doc.tvpaint.com/docs/timesheet/timesheet-overview), [Wikipedia](https://en.wikipedia.org/wiki/Exposure_sheet)) |
+| Keys 鍵 | A paragraph | **Keymap**: keycaps by context; hover a key to read it | Keyboard maps that light the keys a shortcut uses ([Fluid Project](https://fluidproject.atlassian.net/wiki/spaces/fluid/pages/11633699/KBS+Concept+2)); keycap labels over plain text |
+
+Built in steps, each its own commit: R1 the shell and Screens, R2 Presets, R3 Parts, R4 Colour, R5 Sheets, Scroll and Overview, R6 Motion and Keys.

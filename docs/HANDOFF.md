@@ -907,6 +907,10 @@ The first of five steps (plan below, in §10). Shōji's panels are a seventh she
 - Panels open as, Scroll sides, Scroll guides and Overview are `Settings.PANELS_CARD` at the top of Scroll 巻.
 - Harness: `proof.json` (Ma, Status), `proof-light`, `proof-inkan`, `proof-narrow` (820 px), `proof-frame`, `proof-trial` (Inrō tried). Unit tests: 121.
 
+### Kōsei, the whole window (R1–R6; asked for: "redesign all the other sections too … full control of the whole settings flow and layout")
+Plan, research and status in `docs/settings-kosei/README.md` ("Part two") and ROADMAP.
+- **R1 · The shell and Screens ✅.** `SettingsPage.qml` is now only the shell: rail (Settings.RAIL: 01 BAR Typesetting, Presets, Parts, Colour, Screens · 02 PANELS Sheets, Scroll, Overview · 03 FEEL Motion, Keys · 04 YOU Profile, About, Credits; `PAGE_ALIASES` keeps `widgets` and `advanced`), key hints in its foot, eyebrow + title + `Settings.PAGE_LINES[page]`, a `Loader` that builds the open page only, and the action bar (`lastChange` from `Settings.describeChange(history[last], doc, resolve)`, set by SettingsWindow). Pages are files: `TypesettingPage`, `ScreensPage`, `PartsPage`, `ScrollPage`, `MotionPage` (the last three moved as they were, to be redone), `PresetsPage`, `SheetsPage`; `SmallButton.qml` is shared. The Advanced switch is gone: the own glyph is typed into the last stone in the Seal case, and per-monitor overrides + style.json are on `ScreensPage` (Quickshell.screens geometry through `screens`; harness `settings.screens`, else made from `monitors`). `Settings.PROOF[].show` names the part for `hidden`; TypeCase has "on the bar / set aside" and the index strikes an aside part. Unit tests: 124 (the summary line now prints after every test).
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)

@@ -17,8 +17,8 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
-  "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep"])
+  "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -615,7 +615,8 @@ test("settings: six cards hold every one of the twenty-four settings once", () =
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS).sort(), [...S.PRESET_NAMES].sort())
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 11)   // Design went with the Shōji design (S5); Presets came
+  // Typesetting, Presets, Parts, Colour, Screens · Sheets, Scroll, Overview · Motion, Keys · Profile, About, Credits
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 13)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -1614,7 +1615,7 @@ test("right side: short names and how full a reading is", () => {
 
 test("settings: a Presets 型 page, every preset with a kanji and its facts", () => {
   const pages = Se.RAIL.flatMap(g => g.pages)
-  assert.deepEqual(pages.slice(1, 3).map(p => p.key), ["presets", "typesetting"])
+  assert.deepEqual(pages.slice(0, 2).map(p => p.key), ["typesetting", "presets"])
   assert.equal(Se.pageInfo("presets").page.jp, "型")
   assert.equal(Se.pageInfo("nope").page.key, "typesetting")
   assert.deepEqual(Object.keys(Se.PRESET_KANJI).sort(), [...S.PRESET_NAMES].sort())
@@ -1739,7 +1740,6 @@ test("inkan: the seal in its corner, the sheet printed away from the edge it sha
   assert.equal(Ik.nearest(1500, 100, 1920, 1080), "top-right")
 })
 
-console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
 
 test("settings: the proof sets every setting once, on its part or on the Scroll page", () => {
   const onProof = Se.PROOF.flatMap(p => p.cast.concat(p.also))
@@ -1771,3 +1771,18 @@ test("settings: the proof's parts, edits, search and stepping", () => {
   assert.equal(Se.proofStep("seal", -1), "frame")
   assert.equal(Se.wayOf("status", "inro").name, "Inrō 印籠")
 })
+
+test("settings: the last change in words, and every rail page has a line", () => {
+  const a = S.normalize({ preset: "Ma" })
+  assert.equal(Se.describeChange(a, S.withSetting(a, "clock", "inline"), S.resolve), "Clock · stacked → inline")
+  assert.equal(Se.describeChange(a, S.withPreset(a, "Kamon"), S.resolve), "Preset · Ma → Kamon")
+  assert.equal(Se.describeChange(a, S.withSetting(a, "show:seal", "hidden"), S.resolve), "Seal set aside")
+  assert.equal(Se.describeChange(a, S.withSetting(a, "show:indicator:night", "hidden"), S.resolve), "Night light set aside")
+  assert.equal(Se.describeChange(a, S.withMonitorSetting(a, "DP-2", "height", 32), S.resolve), "DP-2 · Height 32")
+  assert.equal(Se.describeChange(a, a, S.resolve), "")
+  assert.equal(Se.pageInfo("widgets").page.key, "parts")
+  for (const g of Se.RAIL) for (const p of g.pages)
+    assert.ok(Se.PLATES.includes(p.key) || Se.PAGE_LINES[p.key], p.key)
+})
+
+console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

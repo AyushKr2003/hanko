@@ -21,13 +21,12 @@ Item {
   signal picked(string key, string value)
   signal tried(string key, string value)
   signal untried()
-  // "…" on the glyph stones: a glyph of your own, under Advanced.
-  signal glyphAsked()
 
   readonly property var preset: S.PRESETS[doc.preset] || {}
   readonly property var edits: Settings.proofEdits(part, doc)
   // Under Inkan the bar's own parts are set for when you go back to it.
   readonly property bool shelved: style.form === "inkan" && part.bar
+  readonly property bool aside: !!part.show && !S.shows(style, part.show)
 
   implicitHeight: column.height
 
@@ -126,14 +125,31 @@ Item {
       }
     }
 
-    Text {
-      width: Math.min(parent.width, Type.px(720))
-      wrapMode: Text.Wrap
-      text: root.part.line + (root.shelved ? "  Inkan has no bar: set it now, and it is ready when Form is Bar again." : "")
-      color: Ink.inkMuted
-      font.family: Type.text
-      font.pixelSize: Type.row
-      lineHeight: 1.15
+    // The line, and (for a part that can go) whether it is on the bar.
+    Item {
+      width: parent.width
+      height: Math.max(partLine.height, showSeg.visible ? showSeg.height : 0)
+      Text {
+        id: partLine
+        width: Math.min(parent.width - (showSeg.visible ? showSeg.width + Type.px(24) : 0), Type.px(720))
+        wrapMode: Text.Wrap
+        text: root.part.line + (root.shelved ? "  Inkan has no bar: set it now, and it is ready when Form is Bar again." : "")
+          + (root.aside ? "  Set aside: it is off your bar until you put it back." : "")
+        color: Ink.inkMuted
+        font.family: Type.text
+        font.pixelSize: Type.row
+        lineHeight: 1.15
+      }
+      Segmented {
+        id: showSeg
+        visible: !!root.part.show
+        anchors.right: parent.right
+        anchors.top: parent.top
+        options: ["shown", "hidden"]
+        labels: ({ shown: "on the bar", hidden: "set aside" })
+        selected: root.aside ? "hidden" : "shown"
+        onPicked: function(value) { root.picked("show:" + root.part.show, value) }
+      }
     }
 
     // ---------------------------------------------------------- specimens
@@ -261,13 +277,37 @@ Item {
                     color: own ? "transparent" : Ink.seal
                     border.width: own ? 1 : 0
                     border.color: Ink.lineStrong
-                    opacity: on || stoneHover.containsMouse ? 1 : 0.62
+                    opacity: own || on || stoneHover.containsMouse ? 1 : 0.62
                     Text {
+                      visible: !stone.own
                       anchors.centerIn: parent
-                      text: stone.own && stone.on ? root.doc.sealGlyph : stone.modelData
-                      color: stone.own ? Ink.ink : Ink.paper
+                      text: stone.modelData
+                      color: Ink.paper
                       font.family: Type.jpSerif
                       font.pixelSize: Type.px(18)
+                    }
+                    // Your own: any one character, typed into the stone.
+                    TextInput {
+                      id: ownGlyph
+                      visible: stone.own
+                      anchors.centerIn: parent
+                      width: parent.width - Type.px(6)
+                      horizontalAlignment: TextInput.AlignHCenter
+                      maximumLength: 2
+                      text: stone.on ? root.doc.sealGlyph : ""
+                      color: Ink.seal
+                      selectionColor: Ink.bone
+                      font.family: Type.jpSerif
+                      font.pixelSize: Type.px(18)
+                      onTextEdited: if (text.trim() !== "") root.picked("sealGlyph", text.trim())
+                      Text {
+                        visible: !ownGlyph.text && !ownGlyph.activeFocus
+                        anchors.centerIn: parent
+                        text: "…"
+                        color: Ink.inkMuted
+                        font.family: Type.text
+                        font.pixelSize: Type.px(14)
+                      }
                     }
                     // The one carved now is ringed in ink.
                     Rectangle {
@@ -284,7 +324,8 @@ Item {
                       anchors.fill: parent
                       hoverEnabled: true
                       cursorShape: Qt.PointingHandCursor
-                      onClicked: stone.own ? root.glyphAsked() : root.picked("sealGlyph", stone.modelData)
+                      enabled: !stone.own
+                      onClicked: root.picked("sealGlyph", stone.modelData)
                     }
                   }
                 }

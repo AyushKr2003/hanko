@@ -546,15 +546,14 @@ Hanko's settings open as their own window in the Ryoku Hub grammar: a numbered r
 
 | Group | Pages |
 |---|---|
-| `00 YOU` | Profile 印影 |
-| `01 BAR` | Presets 型 · Typesetting 組版 · Colour 色 · Widgets 部品 |
-| `02 PANELS` | Sheets 紙 · Scroll 巻 (the scroll dividers, as a gallery) |
+| `01 BAR` | Typesetting 組版 · Presets 型 · Parts 部品 · Colour 色 · Screens 画面 |
+| `02 PANELS` | Sheets 紙 · Scroll 巻 · Overview 一覧 |
 | `03 FEEL` | Motion 動 · Keys 鍵 |
-| `04 HANKO` | About 由来 · Credits 謝辞 |
+| `04 YOU` | Profile 印影 · About 由来 · Credits 謝辞 |
 
-Presets 型 was first planned under a `04 SHARE` group; it was built as the first page of `01 BAR`, beside the settings it sets.
+The window opens on Typesetting. Every page is its own file, built only while it is open, and keeps one rule (docs/settings-kosei): the thing itself first, pictures of its choices second, words last. The rail's foot lists the keys that work everywhere (`/` search, Ctrl+Z undo, Esc close, ← → parts on the proof). The action bar names the last change kept ("KEPT · CLOCK · STACKED → INLINE · 2 TO UNDO", `Settings.describeChange`), with Undo; Typesetting and Presets add Reset to preset, Presets Shuffle, Parts Show all.
 
-There is a search field at the top and an **Advanced** switch at the foot (which shows `sealGlyph`, per-monitor overrides and raw JSON). Per-monitor overrides are set there too: pick a monitor, and every setting is listed with the value that monitor gets; a red tick marks one it sets for itself, and picking what the other screens get drops the override.
+The Advanced switch is gone. Your own seal glyph is typed into the last stone in 01 Seal's case. Per-monitor overrides and the raw style.json are on **Screens 画面**: your monitors drawn to scale where Hyprland places them, each with the bar it carries (a strip on its edge, or Inkan's seal in its corner) and a red count of what it sets for itself; pick one, and every setting a monitor can carry is listed by part as "name ……… value", a click opening its choices. Picking what the other screens get drops the override. `widgets` and `advanced` still open Parts and Screens.
 
 **Profile 印影, About 由来 and Credits 謝辞** are plates, not pages: they fill the page like posters (the action bar shows only while there is something to save). They follow the grammar of Ryoku's Profile and Credits pages, with Hanko's own art drawn in code from the theme.
 

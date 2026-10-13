@@ -3,6 +3,8 @@ import Quickshell
 import "../core"
 import "../services"
 import "../core/Extras.js" as X
+import "../core/Settings.js" as Settings
+import "../core/Style.js" as S
 import "settings"
 
 // Hanko's settings as an ordinary window (a Quickshell FloatingWindow, like
@@ -20,7 +22,6 @@ FloatingWindow {
 
   property string page: "typesetting"
   property string query: ""
-  property bool advanced: false
 
 
   title: "Hanko settings"
@@ -68,7 +69,8 @@ FloatingWindow {
       undoCount: Typeset.history.length
       page: win.page
       query: win.query
-      advanced: win.advanced
+      lastChange: Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
+      screens: Quickshell.screens.map(function(s) { return { name: s.name, x: s.x, y: s.y, width: s.width, height: s.height } })
       monitors: Quickshell.screens.map(function(s) { return s.name })
       machine: Machine.info
       profile: Dossier.doc
@@ -118,8 +120,6 @@ FloatingWindow {
         dnd: Status.doNotDisturb
       })
       onSettingPicked: function(key, value) {
-        // "…" asks for a glyph of your own, under Advanced.
-        if (key === "sealGlyph" && value === "…") { win.advanced = true; return }
         Typeset.draftSet(key, value)
         // A dragged slider is one step of Undo, not one per pixel.
         Typeset.keep(key === "panelOpacity" ? key : "")
@@ -129,8 +129,7 @@ FloatingWindow {
       onUndo: Typeset.undo()
       onPagePicked: function(key) { win.page = key }
       // A search shows Typesetting, unless you are searching Widgets or Presets.
-      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "widgets" && win.page !== "presets") win.page = "typesetting" }
-      onAdvancedToggled: function(on) { win.advanced = on }
+      onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "parts" && win.page !== "presets") win.page = "typesetting" }
       onMonitorCleared: function(name) { Typeset.draftClearMonitor(name); Typeset.keep() }
       onMonitorPicked: function(monitor, key, value) { Typeset.draftMonitor(monitor, key, value); Typeset.keep() }
       onShuffle: { Typeset.draftShuffle(); Typeset.keep() }
