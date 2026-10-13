@@ -153,7 +153,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **R2 · Presets 型, the pattern book**: nine swatches, the open one set as your bar, only what it would change, Use.
   - ✅ **R3 · Parts 部品, the sorts tray**: every part as a real crop of your bar, in bar order; set aside and put back with one click; your bar above shows it.
   - ✅ **R4 · Colour 色**: the ink drawdown with measured contrasts, and every Omarchy theme as a specimen in its own colours; a click switches the desk.
-  - ⬜ **R5 · Sheets 紙, Scroll 巻, Overview 一覧**
+  - ✅ **R5 · Sheets 紙, Scroll 巻, Overview 一覧**: the sheet printed large with every hand as a picture of it; how panels open drawn in small; dividers and end leaves as tiles; the three overviews drawn with your spaces.
   - ⬜ **R6 · Motion 動, the timesheet; Keys 鍵, the keymap**
 
 ## Dev loop

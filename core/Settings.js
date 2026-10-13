@@ -32,7 +32,7 @@ var PAGE_LINES = {
   screens: "Each screen can carry a bar of its own. Pick a screen to see and set what differs on it; the rest follow Typesetting.",
   sheets: "A sheet drops from the cell you click. Pick a sheet, then the hand that draws it; hover a hand to see that sheet in it.",
   scroll: "The handscroll unrolls from the rod with every panel on it. Choose what sits between its sections and what follows Inbox.",
-  overview: "The workspace overview: every space at once. Choose how it is laid out.",
+  overview: "The workspace overview: every space at once, its windows where they sit. Pick how it is laid out; each is drawn with your own spaces.",
   motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, only a new stamp overshoots. The timesheet below is every move Hanko makes; hover a row to play it.",
   keys: "Every key Hanko answers to, where it answers. Hover a key to read what it does; the commands at the foot are for your own Hyprland bindings."
 }

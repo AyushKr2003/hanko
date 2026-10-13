@@ -326,6 +326,7 @@ Item {
       width: parent.width - 2
       height: parent.height - 2
       clip: true
+      layer.enabled: true
       BarSurface {
         x: -line.from * body.k
         width: root.screenWidth

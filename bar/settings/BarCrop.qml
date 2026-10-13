@@ -27,6 +27,8 @@ Item {
   }
 
   clip: true
+  // Cuts brush strokes too (Shape ignores clip).
+  layer.enabled: true
 
   property bool measured: false
   property rect region: Qt.rect(0, 0, 0, 0)

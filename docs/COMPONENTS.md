@@ -557,6 +557,12 @@ The window opens on Typesetting. Every page is its own file, built only while it
 
 **Colour 色** shows what Hanko takes from your theme and lets you switch it. A drawdown (展色, the printer's ink test): Paper, then Ink, Dim, Muted, Faint and Red, each with what it is for, a strip of it drawn down on your paper (solid, thinning out), "21:44" and your seal glyph set in it, its hex, and its contrast on the paper against the tier's target (12, 9, 6.2, 4.6 : 1). Under it every Omarchy theme as a specimen in its own colours (`InkMath.ramp` steps its inks exactly as Hanko would): its paper, your seal in its red, three workspaces, the clock, its five inks, light or dark; the one in use is ringed and marked red; a click runs `omarchy-theme-set` (`Leaf.setTheme`). The themes are read when the page opens (`Leaf.loadThemes`).
 
+**Sheets 紙**: the seven sheets as tabs (kanji, name, the hand drawing it); the open one printed large and live in its hand; beside it the seven hands, each a picture of that same sheet in that hand (hover prints the sheet in it, a click keeps it for that sheet); "Every sheet in <hand>" sets all seven; Panel opacity at the foot.
+
+**Scroll 巻**: "A click on the bar opens": a sheet, or the scroll, each drawn in small (`panels`); the nine dividers, each drawn between two stub sections; the nine end leaves, each with a sample reading; then Sides and Guides in words. **Overview 一覧**: the three layouts (Pages, Busy spaces, Framed), each drawn live with your spaces as a screen in small.
+
+All of these use one tile (`Tile.qml`): a picture over its caption, inverted with a // lead when chosen.
+
 The Advanced switch is gone. Your own seal glyph is typed into the last stone in 01 Seal's case. Per-monitor overrides and the raw style.json are on **Screens 画面**: your monitors drawn to scale where Hyprland places them, each with the bar it carries (a strip on its edge, or Inkan's seal in its corner) and a red count of what it sets for itself; pick one, and every setting a monitor can carry is listed by part as "name ……… value", a click opening its choices. Picking what the other screens get drops the override. `widgets` and `advanced` still open Parts and Screens.
 
 **Profile 印影, About 由来 and Credits 謝辞** are plates, not pages: they fill the page like posters (the action bar shows only while there is something to save). They follow the grammar of Ryoku's Profile and Credits pages, with Hanko's own art drawn in code from the theme.

@@ -329,6 +329,9 @@ Rectangle {
       height: parent.height - actions.height
       contentHeight: pageColumn.height + Type.px(40)
       clip: true
+      // Brush strokes (Shape's curve renderer) ignore `clip` in Qt's scene
+      // graph: drawn into a layer, they are cut at the page's edge.
+      layer.enabled: true
       boundsBehavior: Flickable.StopAtBounds
 
       Column {
@@ -609,7 +612,15 @@ Rectangle {
       onThemePicked: function(slug) { root.themePicked(slug) }
     }
   }
-  Component { id: overviewPage; Placeholder { text: "Overview specimens arrive with the panels step of this redesign." } }
+  Component {
+    id: overviewPage
+    OverviewSettings {
+      style: root.style
+      barData: root.barData
+      compact: root.compact
+      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+    }
+  }
   Component { id: keysPage; Placeholder { text: "The keymap arrives with the feel step of this redesign." } }
 
   Component {
