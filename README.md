@@ -47,15 +47,6 @@ scripts/hanko install
 - **For development:** `scripts/hanko dev` symlinks the checkout instead, and saving a file reloads the bar.
 - **Check the install:** `scripts/hanko doctor`.
 
-**From the Omarchy plugin marketplace** (the command shown on the listing), then make Hanko your bar:
-
-```sh
-omarchy plugin add https://github.com/AyushKr2003/hanko.git --enable
-omarchy bar use hanko.bar
-```
-
-This route does not remember your previous bar; `omarchy bar use omarchy.bar` switches back.
-
 ## Update
 
 ```sh
