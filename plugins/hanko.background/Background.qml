@@ -6,8 +6,14 @@ import QtQuick.Effects
 import QtQuick.Shapes
 import qs.Commons
 import qs.Ui
+import Quickshell.Hyprland
+import Quickshell.Services.UPower
 import "core/InkMath.js" as InkMath
 import "core/Print.js" as Print
+import "core/Wind.js" as Wind
+import "core/Weather.js" as Weather
+import "core/Iai.js" as Iai
+import "core"
 
 // Sumizuri 墨摺 (docs/kaze, mockup 03): Omarchy's background, printed in the
 // theme's paper and ink. This is Omarchy's own Background.qml (MIT, from
@@ -18,6 +24,13 @@ import "core/Print.js" as Print
 // says clonedFrom omarchy.background, so Omarchy's own calls reach it.
 // `"wallpaper": "original"` in ~/.config/hanko/kaze.json shows the pictures
 // as they are.
+//
+// Kaze 風, the living layer (mockup 04): grass along the foot of the print,
+// in the faintest ink, leaning with the real wind (Open-Meteo for the place in
+// Omarchy's weather settings) and gusting toward a window that needs you.
+// It is drawn once per change: a lean every 15 minutes, a slow sway on
+// windy days, 30 fps only through a gust; none of it under a fullscreen
+// window, with motion still, or on battery below 30%.
 Item {
   id: root
 
@@ -116,6 +129,172 @@ Item {
     function onBackgroundChanged() { reprintTimer.restart() }
   }
   Timer { id: reprintTimer; interval: 150; onTriggered: root.reprint() }
+
+  // ── Kaze: the wind ────────────────────────────────────────────────────
+  readonly property var wind: Wind.settings(kaze)
+  readonly property string styleFile: root.configHome + "/hanko/style.json"
+  property bool still: false
+  FileView {
+    path: root.styleFile
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: root.still = /"motion"\s*:\s*"still"/.test(text())
+    onLoadFailed: root.still = false
+  }
+
+  // The place, as Omarchy's weather panel has it; found from the IP address
+  // (wttr.in) when it has a name but no coordinates.
+  property var place: ({ latitude: null, longitude: null })
+  FileView {
+    path: root.stateHome + "/omarchy/settings/weather.json"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: root.placeFrom(Weather.location(text()))
+    onLoadFailed: root.placeFrom(Weather.location(""))
+  }
+  function placeFrom(loc) {
+    if (loc.latitude !== null) { root.place = loc; root.fetchWind() }
+    else if (!areaProc.running) areaProc.running = true
+  }
+  Process {
+    id: areaProc
+    command: ["curl", "-fsS", "--max-time", "10", "https://wttr.in/?format=j1"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        var a = Weather.area(text)
+        if (a) { root.place = a; root.fetchWind() }
+      }
+    }
+  }
+  property real windLean: 0
+  function fetchWind() {
+    if (root.wind.wind === "calm" || root.place.latitude === null || windProc.running) return
+    windProc.command = ["curl", "-fsS", "--max-time", "8", Weather.url(root.place.latitude, root.place.longitude)]
+    windProc.running = true
+  }
+  Process {
+    id: windProc
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          var cur = JSON.parse(text).current
+          root.windLean = Wind.lean(cur.wind_speed_10m, cur.wind_direction_10m)
+        } catch (e) {}
+      }
+    }
+  }
+  Timer { interval: 15 * 60 * 1000; running: true; repeat: true; onTriggered: root.fetchWind() }
+  readonly property real lean: root.wind.wind === "calm" ? 0 : root.windLean
+
+  // Monitors whose shown workspace has a fullscreen window: the grass rests there.
+  property var fullscreenOn: ({})
+  Process {
+    id: fsProc
+    command: ["sh", "-c", "hyprctl -j monitors; echo '%%'; hyprctl -j workspaces"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          var parts = String(text || "").split("%%\n")
+          var mons = JSON.parse(parts[0]), wss = JSON.parse(parts[1])
+          var full = {}, byId = {}
+          for (var i = 0; i < wss.length; i++) byId[wss[i].id] = wss[i]
+          for (var j = 0; j < mons.length; j++) {
+            var w = mons[j].activeWorkspace && byId[mons[j].activeWorkspace.id]
+            if (w && w.hasfullscreen) full[mons[j].name] = true
+          }
+          root.fullscreenOn = full
+        } catch (e) {}
+      }
+    }
+  }
+  function lookFullscreen() { if (!fsProc.running) fsProc.running = true }
+
+  // A gust toward a share of the width (0..1) on one screen, or every screen.
+  property real gustTarget: 0.5
+  property string gustScreen: ""
+  property real gustProgress: 0
+  NumberAnimation {
+    id: gustAnim
+    target: root
+    property: "gustProgress"
+    from: 0
+    to: 1
+    duration: Wind.GUST_MS
+    easing.type: Easing.BezierSpline
+    easing.bezierCurve: Iai.qml("chiburi")
+    onFinished: { root.gustProgress = 0; root.previewing = false }
+  }
+  // A preview (the IPC call) runs even with motion still: it was asked for.
+  property bool previewing: false
+  function gust(share, screenName, preview) {
+    if (root.wind.grass !== "grass") return
+    if (!preview && (!root.wind.gusts || root.still)) return
+    root.previewing = !!preview
+    root.gustTarget = Math.max(0, Math.min(1, Number(share)))
+    root.gustScreen = String(screenName || "")
+    gustAnim.restart()
+  }
+
+  // Hyprland: a window that needs you gets a gust toward it.
+  Process {
+    id: urgentProc
+    property string address: ""
+    command: ["sh", "-c", "hyprctl -j clients; echo '%%'; hyprctl -j monitors"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          var parts = String(text || "").split("%%\n")
+          var list = JSON.parse(parts[0]), mons = JSON.parse(parts[1])
+          var c = null
+          for (var i = 0; i < list.length; i++) if (list[i].address === urgentProc.address) c = list[i]
+          if (!c) return
+          for (var j = 0; j < mons.length; j++) {
+            var m = mons[j]
+            if (m.id !== c.monitor) continue
+            var cx = c.at[0] + c.size[0] / 2 - m.x
+            root.gust(cx / (m.width / (m.scale || 1)), m.name)
+          }
+        } catch (e) {}
+      }
+    }
+  }
+  Connections {
+    target: Hyprland
+    function onRawEvent(event) {
+      var n = event.name
+      if (n === "urgent") {
+        urgentProc.address = "0x" + String(event.data || "")
+        if (!urgentProc.running) urgentProc.running = true
+      } else if (["fullscreen", "workspace", "workspacev2", "focusedmon", "activewindowv2", "closewindow", "openwindow"].indexOf(n) >= 0) {
+        root.lookFullscreen()
+      }
+    }
+  }
+
+  // omarchy-shell hankowind gust 0.9   (a share of the width; any screen)
+  // omarchy-shell hankowind state
+  IpcHandler {
+    id: windIpc
+    enabled: false
+    target: "hankowind"
+    function gust(share: string): string { root.gust(parseFloat(share), "", true); return "ok" }
+    function state(): string {
+      return JSON.stringify({ lean: root.lean, grass: root.wind.grass, gusts: root.wind.gusts, still: root.still,
+        place: root.place.name || "", fullscreen: Object.keys(root.fullscreenOn) })
+    }
+  }
+  Timer { interval: 500; running: true; onTriggered: windIpc.enabled = true }
+
+  // The sway: a slow nudge on windy days, twice a second.
+  property real swayTick: 0
+  Timer {
+    interval: 500
+    repeat: true
+    running: Math.abs(root.lean) >= 0.15 && Wind.mayMove(root.still, false, UPower.onBattery, UPower.displayDevice ? UPower.displayDevice.percentage : 1)
+    onTriggered: root.swayTick += 0.5
+  }
 
   // ── The sky keeps the hour ──
   property real hour: 12
@@ -300,7 +479,7 @@ Item {
     }
   }
 
-  Component.onCompleted: refreshBackground()
+  Component.onCompleted: { refreshBackground(); lookFullscreen() }
 
   Variants {
     model: Quickshell.screens
@@ -439,6 +618,62 @@ Item {
               : Qt.rgba(0, 0, 0, root.sky.shade)
           }
           GradientStop { position: 1; color: "transparent" }
+        }
+      }
+
+      // The ground: the print fades into paper along the foot, so the grass reads.
+      Rectangle {
+        anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+        height: Math.round(parent.height * 0.24)
+        visible: grass.visible
+        gradient: Gradient {
+          GradientStop { position: 0; color: "transparent" }
+          GradientStop { position: 0.7; color: Color.background }
+        }
+      }
+
+      // The grass. Drawn when the lean, the sway or a gust changes; it rests
+      // (no sway, no gust) under a fullscreen window and on low battery.
+      Canvas {
+        id: grass
+        anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+        height: Math.round(parent.height * 170 / 1080)
+        visible: root.wind.grass === "grass"
+        renderStrategy: Canvas.Cooperative
+        readonly property bool moves: Wind.mayMove(root.still, !!root.fullscreenOn[panel.modelData.name],
+          UPower.onBattery, UPower.displayDevice ? UPower.displayDevice.percentage : 1)
+        readonly property var blades: Wind.field(width, height, 11)
+        readonly property real sway: moves ? Wind.swayAt(root.lean, root.swayTick) : 0
+        readonly property var gustNow: (moves || root.previewing) && (root.gustScreen === "" || root.gustScreen === panel.modelData.name)
+          ? Wind.gustAt(root.gustProgress, root.gustTarget) : null
+        // The faintest ink: the grass is the quietest thing on the desk.
+        readonly property color ink: Ink.inkFaint
+        onBladesChanged: requestPaint()
+        onSwayChanged: requestPaint()
+        onGustNowChanged: requestPaint()
+        onInkChanged: requestPaint()
+        Connections { target: root; function onLeanChanged() { grass.requestPaint() } }
+        onPaint: {
+          var ctx = getContext("2d")
+          ctx.reset()
+          var c = grass.ink
+          for (var i = 0; i < blades.length; i++) {
+            var g = Wind.blade(blades[i], height, width, root.lean, sway, gustNow)
+            ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, g.alpha * 0.85)
+            ctx.beginPath()
+            ctx.moveTo(g.root[0] - g.w, g.root[1])
+            ctx.quadraticCurveTo(g.ctrl[0] - g.w * 0.45, g.ctrl[1], g.tip[0], g.tip[1])
+            ctx.quadraticCurveTo(g.ctrl[0] + g.w * 0.35, g.ctrl[1], g.root[0] + g.w, g.root[1])
+            ctx.closePath()
+            ctx.fill()
+            if (g.plume.length) {
+              ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, g.alpha * 0.63)
+              ctx.lineWidth = 1
+              ctx.beginPath()
+              for (var k = 0; k < g.plume.length; k++) { var p = g.plume[k]; ctx.moveTo(p[0], p[1]); ctx.lineTo(p[2], p[3]) }
+              ctx.stroke()
+            }
+          }
         }
       }
 

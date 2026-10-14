@@ -40,6 +40,7 @@ const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "c
 const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
 const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "perimeter", "pointAt", "lit", "onScreen"])
 const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "wallpaperMode"])
+const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -1959,6 +1960,56 @@ test("print: the sky lifts by day, settles at night, a few percent at most", () 
 test("print: hanko-print and Print.js crush to the same tones", () => {
   const sh = readFileSync(join(root, "scripts/hanko-print"), "utf8")
   assert.ok(sh.includes(`TONES=${Pt.TONES} CLIP=${Pt.CLIP}`))
+})
+
+test("wind: a west wind leans the grass right, an east wind left, calm stands still", () => {
+  assert.equal(Wi.lean(0, 270), 0)
+  assert.ok(Wi.lean(14, 270) > 0)
+  assert.ok(Wi.lean(14, 90) < 0)
+  assert.equal(Wi.lean(14, 270), -Wi.lean(14, 90))
+  assert.equal(Wi.lean(400, 270), Wi.MAX_LEAN)
+  // from the north: still felt, by its least share
+  assert.ok(Math.abs(Wi.lean(40, 0)) >= Wi.MIN_FELT - 1e-9)
+  assert.ok(Math.abs(Wi.lean(9, 270)) < Math.abs(Wi.lean(31, 270)))
+  assert.equal(Wi.lean("x", 0), 0)
+})
+
+test("wind: the field is clumps across the width, the same every time", () => {
+  const a = Wi.field(1920, 170, 11), b = Wi.field(1920, 170, 11)
+  assert.deepEqual(a, b)
+  assert.ok(a.length > 150 && a.length < 600, String(a.length))
+  assert.ok(a.some(x => x.plume))
+  assert.ok(a.every(x => x.len > 0 && x.len <= 170 && x.x < 1960))
+  assert.ok(Math.max(...a.map(x => x.x)) > 1800)
+})
+
+test("wind: a blade leans with the wind and harder in a gust; the gust runs toward its target", () => {
+  const b = { x: 960, len: 100, rest: 0, w: 1, alpha: 1, plume: true, jitter: 1 }
+  const still = Wi.blade(b, 170, 1920, 0, 0, null)
+  assert.equal(still.tip[0], 960)
+  assert.equal(still.plume.length, 7)
+  const right = Wi.blade(b, 170, 1920, 0.4, 0, null)
+  assert.ok(right.tip[0] > 960 && right.tip[1] > still.tip[1])
+  const gust = Wi.blade(b, 170, 1920, 0.4, 0, { x: 0.5, width: 0.08, strength: 1.2 })
+  assert.ok(gust.tip[0] > right.tip[0])
+  assert.equal(Wi.gustAt(0, 0.9), null)
+  assert.equal(Wi.gustAt(1, 0.9), null)
+  const g1 = Wi.gustAt(0.3, 0.9), g2 = Wi.gustAt(0.7, 0.9)
+  assert.ok(g1.x < g2.x && g2.x < 0.9)
+  assert.ok(Wi.gustAt(0.5, 0.1).x > 0.1)
+})
+
+test("wind: it rests under fullscreen, with motion still and on low battery; settings default on", () => {
+  assert.equal(Wi.mayMove(false, false, false, 1), true)
+  assert.equal(Wi.mayMove(true, false, false, 1), false)
+  assert.equal(Wi.mayMove(false, true, false, 1), false)
+  assert.equal(Wi.mayMove(false, false, true, 0.2), false)
+  assert.equal(Wi.mayMove(false, false, true, 0.5), true)
+  assert.equal(Wi.swayAt(0.05, 3), 0)
+  assert.ok(Math.abs(Wi.swayAt(0.5, 1)) <= 0.04 + 1e-9)
+  assert.deepEqual(Wi.settings({}), { grass: "grass", gusts: true, wind: "weather" })
+  assert.deepEqual(Wi.settings({ grass: "off", gusts: false, wind: "calm" }), { grass: "off", gusts: false, wind: "calm" })
+  assert.equal(Wi.settings({ grass: "petals" }).grass, "grass")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
