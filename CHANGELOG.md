@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Kaze: unlocking with your password now cuts the lock screen along the diagonal and the two halves part onto the desk; Omarchy's lock service is still unchanged (the cut is drawn by the desk plugin). `omarchy-shell hankodesk cut` shows it.
+- `hanko install --desk` (or `hanko dev --desk`) installs Hanko and turns on Kaze, the whole desk, in one go.
 - Kaze: `hanko cursor on` puts on a brush-tip cursor theme, Hanko-Brush, built for your current theme (ink with a paper rim, red only for not-allowed) and rebuilt on every theme switch; `hanko cursor off` puts your own cursor back.
 - Kaze: the menu has a rail of crests down its left edge, one per top-level menu (器 Apps, 彩 Style, 政 System…); the one you are in is inverted, and a click goes straight to it.
 - Kaze: when the Omarchy shell comes back after a crash, a small 回生 "back" tab shows at the top right for a few seconds (a plain restart doesn't show it).

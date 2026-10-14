@@ -1,8 +1,9 @@
 #!/bin/bash
 # hanko · install Hanko into Omarchy and change its style from a terminal.
 #
-#   hanko install            copy this checkout into the plugins folder and use it
-#   hanko dev                symlink this checkout instead (edits reload live)
+#   hanko install [--desk]   copy this checkout into the plugins folder and use it;
+#                            --desk also turns on Kaze, the whole desk (desk on)
+#   hanko dev [--desk]       symlink this checkout instead (edits reload live)
 #   hanko uninstall          go back to the bar you had before, remove Hanko
 #   hanko settings           open (or close) the settings window
 #   hanko style get          print the resolved style
@@ -96,6 +97,7 @@ cmd_install() {
     "$SRC/" "$DEST/"
   activate
   say "Hanko is installed at $DEST and is now your bar."
+  if [[ ${1:-} == --desk ]]; then cmd_desk on; fi
 }
 
 cmd_dev() {
@@ -109,6 +111,7 @@ cmd_dev() {
   ln -sfn "$SRC" "$DEST"
   activate
   say "Hanko is linked from $SRC. Saving a file reloads the bar."
+  if [[ ${1:-} == --desk ]]; then cmd_desk on; fi
 }
 
 cmd_uninstall() {
@@ -567,8 +570,8 @@ cmd_doctor() {
 }
 
 case "${1:-}" in
-  install) cmd_install ;;
-  dev) cmd_dev ;;
+  install) shift; cmd_install "$@" ;;
+  dev) shift; cmd_dev "$@" ;;
   uninstall) cmd_uninstall ;;
   style) shift; cmd_style "$@" ;;
   settings) ipc settings >/dev/null ;;

@@ -22,6 +22,11 @@ import "core/Kaisei.js" as Kaisei
 //   desk frames an urgent window in seal red, breathing (never colour
 //   alone), until you go to it.
 //
+//   Taiji 対峙, the cut: when a password goes to be checked, hanko.lock's
+//   view leaves a note; the desk lays the lock's own picture (core/
+//   Standoff.qml) under the lock, and the moment the session unlocks, cuts
+//   it along the diagonal and parts the halves onto the desk.
+//
 //   Kaisei 回生: when the shell comes back from a crash (a fresh quickshell
 //   core dump, core/Kaisei.js), a small tab says so at the top right for a
 //   few seconds.
@@ -212,7 +217,7 @@ Item {
       readonly property var urgentHere: root.urgentRects.map(function(r) { return Sweep.onScreen(r, win.area) }).filter(function(r) { return !!r })
 
       // No surface unless there is something to draw.
-      visible: (local !== null && root.progress > 0) || urgentHere.length > 0 || (root.kaisei > 0 && win.isFocusedScreen)
+      visible: (local !== null && root.progress > 0) || urgentHere.length > 0 || (root.kaisei > 0 && win.isFocusedScreen) || root.cutPhase !== ""
       readonly property bool isFocusedScreen: !Hyprland.focusedMonitor || Hyprland.focusedMonitor.name === modelData.name
       color: "transparent"
       anchors { top: true; bottom: true; left: true; right: true }
@@ -249,6 +254,78 @@ Item {
             ctx.lineTo(s.b.x, s.b.y)
             ctx.stroke()
           }
+        }
+      }
+
+      // The cut: two copies of the lock's picture, each clipped to one side of
+      // the diagonal from the bottom left to the top right, parting along it.
+      Item {
+        id: cutLayer
+        anchors.fill: parent
+        visible: root.cutPhase !== ""
+        readonly property real hyp: Math.sqrt(width * width + height * height)
+        readonly property real deg: -Math.atan2(height, width) * 180 / Math.PI
+        readonly property real big: hyp * 1.6
+        // along the cut, toward the top right; and out from it, toward each half
+        readonly property real ux: hyp > 0 ? width / hyp : 1
+        readonly property real uy: hyp > 0 ? -height / hyp : 0
+        readonly property real along: root.cutParted * hyp * 0.9
+        readonly property real apart: root.cutParted * 60
+
+        Item {
+          x: cutLayer.ux * cutLayer.along - cutLayer.uy * -cutLayer.apart
+          y: cutLayer.uy * cutLayer.along - cutLayer.ux * cutLayer.apart
+          width: cutLayer.width
+          height: cutLayer.height
+          Item {
+            x: 0; y: cutLayer.height - cutLayer.big
+            width: cutLayer.big; height: cutLayer.big
+            clip: true
+            transformOrigin: Item.BottomLeft
+            rotation: cutLayer.deg
+            Standoff {
+              x: 0; y: cutLayer.big - cutLayer.height
+              width: cutLayer.width; height: cutLayer.height
+              transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
+              backgroundPath: root.cutNote.backgroundPath || ""
+              backgroundVersion: root.cutNote.backgroundVersion || 0
+              loadBackground: root.cutPhase !== ""
+              authenticating: root.cutPhase === "armed"
+              fingerprint: !!root.cutNote.fingerprint
+            }
+          }
+        }
+        Item {
+          x: -cutLayer.ux * cutLayer.along + cutLayer.uy * -cutLayer.apart
+          y: -cutLayer.uy * cutLayer.along + cutLayer.ux * cutLayer.apart
+          width: cutLayer.width
+          height: cutLayer.height
+          Item {
+            x: 0; y: cutLayer.height
+            width: cutLayer.big; height: cutLayer.big
+            clip: true
+            transformOrigin: Item.TopLeft
+            rotation: cutLayer.deg
+            Standoff {
+              x: 0; y: -cutLayer.height
+              width: cutLayer.width; height: cutLayer.height
+              transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
+              backgroundPath: root.cutNote.backgroundPath || ""
+              backgroundVersion: root.cutNote.backgroundVersion || 0
+              loadBackground: root.cutPhase !== ""
+              authenticating: root.cutPhase === "armed"
+              fingerprint: !!root.cutNote.fingerprint
+            }
+          }
+        }
+        // The cut itself: a hairline from corner to corner.
+        Rectangle {
+          visible: root.cutFlash > 0
+          x: 0; y: cutLayer.height
+          width: cutLayer.hyp; height: 2
+          transformOrigin: Item.TopLeft
+          rotation: cutLayer.deg
+          color: Ink.bone
         }
       }
 
@@ -314,12 +391,95 @@ Item {
       return "ok"
     }
     function kaisei(): string { root.showKaisei(); return "ok" }
+    // A preview of the unlock cut, without a lock: lay the picture, then cut.
+    function cut(): string {
+      root.armCut({ at: Date.now(), backgroundPath: Quickshell.env("HOME") + "/.local/state/omarchy/current/background", fingerprint: false })
+      root.cutPreviewing = true
+      lockPoll.stop()
+      cutPreview.restart()
+      return "ok"
+    }
     function state(): string {
       return JSON.stringify({ still: root.still, border: root.border, sweeping: root.sweepRect !== null, urgent: Object.keys(root.urgentSet).length, screens: Quickshell.screens.length })
     }
   }
 
   Timer { interval: 500; running: true; onTriggered: ipc.enabled = true }
+
+  // ── Taiji: the cut on unlock ──────────────────────────────────────────
+  readonly property string cutPath: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/hanko/cut.json"
+  // "" nothing; "armed" laid under the lock, waiting; "cutting" parting.
+  property string cutPhase: ""
+  property var cutNote: ({})
+  property real cutFlash: 0
+  property real cutParted: 0
+  // The note must exist before it can be watched.
+  Process {
+    running: true
+    command: ["sh", "-c", "mkdir -p \"$(dirname \"$1\")\"; [ -f \"$1\" ] || echo '{}' > \"$1\"", "sh", root.cutPath]
+    onExited: cutFile.reload()
+  }
+  FileView {
+    id: cutFile
+    path: root.cutPath
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: {
+      var n = {}
+      try { n = JSON.parse(text() || "{}") } catch (e) {}
+      if (n.at && Date.now() - n.at < 10000) root.armCut(n)
+      else if (root.cutPhase === "armed") root.disarmCut()
+    }
+  }
+  function armCut(n) {
+    root.cutNote = n
+    root.cutParted = 0
+    root.cutFlash = 0
+    root.cutPhase = "armed"
+    cutTimeout.restart()
+    lockPoll.restart()
+  }
+  function disarmCut() {
+    lockPoll.stop(); cutTimeout.stop(); cutAnim.stop()
+    root.cutPhase = ""
+  }
+  Timer { id: cutTimeout; interval: 12000; onTriggered: root.disarmCut() }
+  Timer { id: cutPreview; interval: 700; onTriggered: root.cut() }
+  // While armed: ask the lock, often, whether it has let go.
+  Timer {
+    id: lockPoll
+    interval: 80
+    repeat: true
+    onTriggered: if (!lockAsk.running) lockAsk.running = true
+  }
+  Process {
+    id: lockAsk
+    command: ["omarchy-shell", "lock", "isLocked"]
+    stdout: StdioCollector {
+      onStreamFinished: if (root.cutPhase === "armed" && String(text).trim() === "false") root.cut()
+    }
+  }
+  // A preview (the IPC call) runs even with motion still: it was asked for.
+  property bool cutPreviewing: false
+  function cut() {
+    lockPoll.stop(); cutTimeout.stop()
+    root.cutPhase = "cutting"
+    var preview = root.cutPreviewing
+    root.cutPreviewing = false
+    if (root.still && !preview) { root.disarmCut(); return }
+    cutAnim.restart()
+  }
+  SequentialAnimation {
+    id: cutAnim
+    // the cut: a hairline across, for a frame and 70 ms
+    PropertyAction { target: root; property: "cutFlash"; value: 1 }
+    PauseAnimation { duration: 16 + Iai.BEATS.kiri.ms }
+    PropertyAction { target: root; property: "cutFlash"; value: 0 }
+    // the halves part along it and leave by their corners
+    NumberAnimation { target: root; property: "cutParted"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
+    ScriptAction { script: { root.cutPhase = ""; cutFile.setText("{}") } }
+  }
 
   // ── Kaisei 回生: back after a crash ───────────────────────────────────
   property real kaisei: 0
