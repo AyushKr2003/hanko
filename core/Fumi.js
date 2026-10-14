@@ -19,7 +19,8 @@ var CRESTS = [
   [["code", "nvim", "terminal", "alacritty", "kitty", "ghostty", "foot", "claude"], "筆"]
 ]
 
-function crestFor(app) {
+function crestFor(app, summary) {
+  if (summary !== undefined && /^screenshot\b/i.test(String(summary))) return "写"
   var a = String(app || "").toLowerCase()
   if (!a) return "器"
   for (var i = 0; i < CRESTS.length; i++)
@@ -76,4 +77,11 @@ function plain(body) {
 function gustShare(right, width) {
   var w = Number(width) || 1
   return Math.max(0, Math.min(1, 1 - Number(right) / w))
+}
+
+// A screenshot's letter (Omarchy's capture script says "Screenshot saved to
+// clipboard and file"): it gets the 写 crest and the brush's sound instead
+// of paper. The screenshot sound has no other cue: Omarchy has no hook for it.
+function isScreenshot(app, summary) {
+  return /^screenshot\b/i.test(String(summary || "")) || crestFor(app) === "写"
 }

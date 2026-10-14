@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Kaze: a screenshot's letter plays the brush sound (墨) instead of paper and carries the 写 crest.
 - Kaze: Super+N opens the newest letter beside its strip (and closes it); `omarchy-shell hankoletters toggle` does the same.
 - Kaze KZ12, Oto 音 and Dōgu 道具: six short sounds (wooden clappers for a workspace change, paper for a letter, a small bell when something needs you, a sheath's click when the menu closes, a temple bell for 終), off until you set `"sound": "quiet"` or `"on"` in `~/.config/hanko/kaze.json`. A Kaze starship prompt (`assets/kaze/starship.toml`) and a one-line greeting (`scripts/hanko-greet`) to use if you like.
 - Kaze KZ11, Sumi 墨: `hanko sumi` turns the whole screen to ink (a film curve, a fixed paper grain, a soft vignette; your theme's red keeps its colour), holds notifications with do-not-disturb, strengthens the wind in the grass and lets the bar recede to its rule until the pointer touches it. `hanko sumi` again (or `off`) puts everything back, your own screen shader too.

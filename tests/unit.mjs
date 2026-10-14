@@ -42,7 +42,7 @@ const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "pe
 const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "wallpaperMode"])
 const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX", "ripple", "puffAfter", "rippleUniforms"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
-const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare"])
+const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
@@ -2084,6 +2084,10 @@ test("fumi: a crest per sender, a kind per letter, red only when critical", () =
   assert.equal(Fu.kindFor("gnome-calendar", "Standup", "in 5 minutes", 1), "予定")
   assert.equal(Fu.kindFor("Hyprshot", "Screenshot saved", "", 1), "完了")
   assert.equal(Fu.urgent(2), true); assert.equal(Fu.urgent(1), false)
+  assert.equal(Fu.isScreenshot("", "Screenshot saved to clipboard and file"), true)
+  assert.equal(Fu.isScreenshot("Hyprshot", "Saved"), true)
+  assert.equal(Fu.isScreenshot("Signal", "Aiko"), false)
+  assert.equal(Fu.crestFor("", "Screenshot saved to clipboard and file"), "写")
 })
 
 test("fumi: five strips at most, then a count; bodies as plain words; time and gust share", () => {

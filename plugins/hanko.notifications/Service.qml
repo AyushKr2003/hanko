@@ -1021,7 +1021,8 @@ Item {
     function onCountChanged() {
       if (popupModel.count > service.lastCount && !service._hydrating) {
         Quickshell.execDetached(["omarchy-shell", "-q", "hankowind", "gust", "0.94"])
-        Oto.play("letter")
+        var newest = popupModel.get(0)
+        Oto.play(newest && Fumi.isScreenshot(newest.app, newest.summary) ? "screenshot" : "letter")
       }
       service.lastCount = popupModel.count
     }
@@ -1188,7 +1189,7 @@ Item {
                   }
                   Text {
                     anchors.centerIn: parent
-                    text: Fumi.crestFor(slot.app)
+                    text: Fumi.crestFor(slot.app, slot.summary)
                     color: slot.red ? Ink.paper : Ink.ink
                     font.family: "Noto Serif CJK JP"
                     font.weight: Font.DemiBold
