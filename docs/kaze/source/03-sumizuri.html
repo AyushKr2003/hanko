@@ -1,0 +1,60 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3400">
+<title>Kaze 03 · Sumizuri</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .row .im { aspect-ratio: 16/9; background-size: cover; background-position: center; border: 1px solid var(--line); position: relative; }
+  .row .im .tag { left: 12px; bottom: 10px; background: var(--paper); padding: 3px 8px; }
+  .colh { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 12px; font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); }
+  .colh span b { color: var(--ink); font-weight: 400; } .colh span i { font-style: normal; font-family: var(--jps); color: var(--inkDim); letter-spacing: 0; margin-left: 8px; font-size: 15px; }
+  .rule { display: grid; grid-template-columns: 520px minmax(0, 1fr); gap: 56px; margin: 44px 0 14px; padding-top: 30px; border-top: 1px solid var(--line); }
+  .rule h2 { font-family: var(--display); font-weight: 400; font-size: 38px; } .rule h2 i { font-family: var(--jps); font-style: normal; color: var(--inkDim); font-size: 28px; margin-left: 10px; }
+  .rule p { font-size: 17px; color: var(--inkMuted); line-height: 1.5; margin-top: 10px; }
+  .hours { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .hr { aspect-ratio: 16/10; background-size: cover; background-position: center top; position: relative; border: 1px solid var(--line); }
+  .hr .sky { position: absolute; left: 0; right: 0; top: 0; height: 40%; }
+  .hr .t { position: absolute; left: 10px; bottom: 8px; font: 12px var(--mono); color: var(--ink); background: var(--paper); padding: 2px 6px; letter-spacing: 1px; }
+  .meter { display: flex; height: 10px; margin-top: 18px; border: 1px solid var(--line); }
+  .meter i { flex: 1; } .ml { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--inkFaint); margin-top: 6px; letter-spacing: 1px; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>03 / 14 · wallpaper</div>
+  <div class="head"><span class="no">03</span><h1>Sumizuri, printed in your inks</h1><span class="kj">墨摺</span></div>
+  <p class="lede">Your wallpapers stay yours. Kaze prints them again in the theme's paper and four inks, crushed to five tones (the way Tsushima's menu art crushed its values) with a fixed paper grain. Whatever covers most of the picture becomes the paper. On a dark theme a light print turns into a rubbing (ishizuri 石摺): white marks on a black stone.</p>
+
+  <div class="colh"><span><b>Original</b></span><span><b>Dark theme</b><i>石摺 rubbing</i></span><span><b>Light theme</b><i>墨摺 ink print</i></span></div>
+  <div id="rows"></div>
+
+  <div class="rule">
+    <div><h2>Most of it becomes paper<i>地</i></h2><p>The print's average brightness decides. The Great Wave and Sudden Shower are mostly light paper, so on a dark desk they flip into rubbings. The night pines and Red Fuji are mostly dark, so they keep their tones. The haboku painting is cut from its mount and floats in empty paper.</p></div>
+    <div><div class="meter" id="mean"></div><div class="ml"><span>0 · all dark</span><span>0.5 · the line</span><span>1 · all light</span></div>
+      <p style="font-size:16px;color:var(--inkMuted);margin-top:16px;line-height:1.5">Measured: pines 0.18 · haboku 0.21 · Red Fuji 0.43 · Sudden Shower 0.59 · Great Wave 0.65. Above 0.5 the dark theme prints the negative.<br>No red is ever printed: red stays for "you" and "now" (Hanko rule 2), even under Red Fuji.</p></div>
+  </div>
+
+  <div class="rule" style="margin-top:36px">
+    <div><h2>The sky keeps the hour<i>空</i></h2><p>"90% of the mood comes from your upper hemisphere" (Tsushima's creative director). The top 40% of the print lifts or settles a few percent with the sun, re-drawn every 15 minutes. You never see it change, only that the evening feels like evening.</p></div>
+    <div class="hours" id="hours"></div>
+  </div>
+
+  <div class="notes">
+    <div><b>Every theme, every print<i>色</i></b>The print is drawn by a shader from the theme's colours, so switching theme re-inks every wallpaper at once. No wallpaper ever clashes with the bar.</div>
+    <div><b>The season's character<i>候</i></b>The microseason tunes the print slightly: more grain and a harder crush in the cold kō, softer edges in spring. Felt, not seen. No new colour.</div>
+    <div><b>Off is one switch<i>切</i></b>`wallpaper: print | original`. Original shows the image as it is, with only the ground fade under the grass.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+const prints = [['2-great-wave', 'Hokusai, The Great Wave'], ['6-sudden-shower', 'Hiroshige, Sudden Shower'], ['3-red-fuji', 'Hokusai, Red Fuji'], ['1-pines-night', 'Tōhaku, Pine Trees'], ['7-haboku', 'Sesshū, Haboku landscape']]
+document.getElementById('rows').innerHTML = prints.map(([f, n]) =>
+  `<div class="row"><div class="im" style="background-image:url(img/orig-${f}.webp)"><span class="tag">${n}</span></div><div class="im" style="background-image:url(img/${f}-dark.webp)"></div><div class="im" style="background-image:url(img/${f}-light.webp)"></div></div>`).join('')
+let m = ''; for (let i = 0; i < 20; i++) { const v = i / 19; m += `<i style="background:${v < .5 ? 'var(--lineStrong)' : 'var(--inkMuted)'};opacity:${.4 + v * .6}"></i>` }
+const marks = [0.18, 0.21, 0.43, 0.59, 0.65]
+document.getElementById('mean').innerHTML = m
+document.getElementById('mean').style.position = 'relative'
+document.getElementById('mean').innerHTML += marks.map(v => `<b style="position:absolute;left:${v * 100}%;top:-6px;width:2px;height:20px;background:${v > .5 ? 'var(--seal)' : 'var(--ink)'}"></b>`).join('') + `<b style="position:absolute;left:50%;top:-12px;bottom:-12px;width:1px;background:var(--inkFaint)"></b>`
+const hrs = [['05:40', 'linear-gradient(180deg, rgba(221,213,199,.14), transparent)'], ['09:00', 'linear-gradient(180deg, rgba(221,213,199,.26), transparent)'], ['13:00', 'linear-gradient(180deg, rgba(221,213,199,.36), transparent)'], ['17:30', 'linear-gradient(180deg, rgba(221,213,199,.08), transparent)'], ['20:00', 'linear-gradient(180deg, rgba(0,0,0,.4), transparent)'], ['02:00', 'linear-gradient(180deg, rgba(0,0,0,.65), transparent)']]
+document.getElementById('hours').innerHTML = hrs.map(([t, g]) => `<div class="hr" style="background-image:url(img/6-sudden-shower-dark.webp)"><div class="sky" style="background:${g}"></div><span class="t">${t}</span></div>`).join('')
+ready()
+</script>
+</body></html>
