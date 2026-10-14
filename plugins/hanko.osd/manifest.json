@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "hanko.osd",
+  "name": "Hanko on-screen display",
+  "version": "0.1.0",
+  "author": "AyushKr2003",
+  "license": "MIT",
+  "description": "Kaze, Taikan: volume, brightness and switches as one hairline at the foot of the screen that fills from the centre outward, or a crest and a word. Omarchy's OSD calls, redrawn; works with any bar.",
+  "kinds": ["service"],
+  "entryPoints": {
+    "service": "Osd.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.osd"
+  }
+}

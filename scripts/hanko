@@ -197,11 +197,12 @@ hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 
 
 # Kaze's surfaces are plugins of their own under plugins/ (hanko.desk: the
 # focus sweep and urgent frames; hanko.background: the printed wallpaper, a
-# clone of omarchy.background), all sharing Hanko's core/. Omarchy allows no
+# clone of omarchy.background; hanko.osd: posture, a clone of omarchy.osd),
+# all sharing Hanko's core/ and its fonts. Omarchy allows no
 # symlinks inside a plugin, so each is assembled as a copy: its own files,
-# core/, and bin/hanko-print. `desk build ID DIR` does only that (the tests
+# core/, assets/fonts and bin/hanko-print. `desk build ID DIR` does only that (the tests
 # validate and lint the result).
-SURFACES=(hanko.desk hanko.background)
+SURFACES=(hanko.desk hanko.background hanko.osd)
 
 # Prints the files it changed (rsync's itemized list), nothing when up to date.
 surface_build() {
@@ -209,8 +210,10 @@ surface_build() {
   need rsync
   [[ -d $SRC/plugins/$id ]] || fail "no such surface: $id"
   mkdir -p "$dest/bin"
-  rsync -a --delete --itemize-changes --exclude core --exclude bin "$SRC/plugins/$id/" "$dest/"
+  rsync -a --delete --itemize-changes --exclude core --exclude bin --exclude assets "$SRC/plugins/$id/" "$dest/"
   rsync -a --delete --itemize-changes "$SRC/core/" "$dest/core/"
+  mkdir -p "$dest/assets"
+  rsync -a --delete --itemize-changes "$SRC/assets/fonts/" "$dest/assets/fonts/"
   rsync -a --itemize-changes "$SRC/scripts/hanko-print" "$dest/bin/hanko-print"
 }
 
