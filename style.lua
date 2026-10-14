@@ -20,9 +20,11 @@
 --   * Corners are square, like the flush bar. With `float: inset` the bar
 --     floats 8 px off the screen with 7 px corners, and the windows take the
 --     same gap and radius so their edges line up with its frame.
---   * Windows lie on the desk like sheets of paper: a short, tight black
---     shadow falling down and right, darker under the focused sheet, which
---     sits a little higher. Pick another below (`shadow_style`).
+--   * Windows are plain sheets (Kaze's Ha 刃, docs/kaze mockup 05): square
+--     corners, a 1 px edge, no shadow, no blur. Unfocused sheets dim a touch.
+--     When focus moves the new edge inks up from faint over 600 ms while
+--     plugins/hanko.desk runs light once round it. A paper shadow is still
+--     there if you want one (`shadow_style`).
 --   * Motion is Iai 居合 (core/Iai.js), the beats every Kaze surface moves
 --     on: windows draw in and sheathe out, nothing springs, and
 --     `motion: still` in style.json cuts window animations too.
@@ -86,12 +88,12 @@ local inset = float == "inset"
 -- ── Frame ───────────────────────────────────────────────────────────────────
 
 -- How windows sit on the page:
+--   "none"   hairlines only, as the bar itself (default: Kaze has no shadows)
 --   "paper"  a short soft black shadow, down and right; the focused sheet
---            lifts higher and darker (default)
+--            lifts higher and darker
 --   "print"  a hard black offset, no blur, focused window only
 --   "seal"   the same hard offset in seal red ("you"), focused window only
---   "none"   hairlines only, as the bar itself
-local shadow_style = "paper"
+local shadow_style = "none"
 
 local black = "000000"
 local shadows = {
@@ -106,9 +108,10 @@ local shadow = shadows[shadow_style]
 
 hl.config({
   general = {
-    -- 8 px from the screen, as the inset bar floats; 8 px between windows.
-    gaps_out = 8,
-    gaps_in = 4,
+    -- Ma between sheets: 12 px from the screen (8 px with the inset bar,
+    -- which floats 8 px off it), 6 px either side of a gap.
+    gaps_out = inset and 8 or 12,
+    gaps_in = 6,
     border_size = 1,
 
     col = {
@@ -119,6 +122,13 @@ hl.config({
 
   decoration = {
     rounding = inset and 7 or 0,
+
+    -- Barely there: the focused sheet reads as the lit one.
+    dim_inactive = true,
+    dim_strength = 0.06,
+
+    -- Paper is opaque: no glass.
+    blur = { enabled = false },
 
     shadow = shadow and {
       enabled = true,
@@ -185,8 +195,9 @@ hl.animation({ leaf = "windows", enabled = true, speed = 1.6, bezier = "nuki" })
 hl.animation({ leaf = "windowsIn", enabled = true, speed = 1.6, bezier = "nuki", style = "slide" })
 hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.4, bezier = "noto", style = "slide" })
 hl.animation({ leaf = "windowsMove", enabled = true, speed = 1.6, bezier = "nuki" })
--- The border inks up (ready) when focus arrives.
-hl.animation({ leaf = "border", enabled = true, speed = 0.9, bezier = "kamae" })
+-- The edge inks up from faint as focus arrives, over the focus sweep's
+-- 600 ms (core/Sweep.js), so the light passes and leaves full ink.
+hl.animation({ leaf = "border", enabled = true, speed = 6, bezier = "chiburi" })
 -- Fades settle like a shake-off and leave like a sheath.
 hl.animation({ leaf = "fade", enabled = true, speed = 0.9, bezier = "kamae" })
 hl.animation({ leaf = "fadeIn", enabled = true, speed = 2.2, bezier = "chiburi" })
@@ -208,6 +219,9 @@ hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2.0, bezier = 
 -- The overview is already animated by QML; keep Hyprland from sliding its
 -- full-screen layer in as well.
 hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, animation = "none" })
+-- The desk's overlay (the focus sweep, red frames) maps and unmaps with
+-- every sweep: it must appear at once, not fade.
+hl.layer_rule({ match = { namespace = "^hanko-desk$" }, no_anim = true, animation = "none" })
 
 -- ── Settings window ─────────────────────────────────────────────────────────
 -- Hanko's settings open as a floating sheet in the middle of the screen,

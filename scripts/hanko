@@ -24,7 +24,9 @@
 #                            or lift it off (bind it to a key: see the README)
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
 #   hanko desk on|off|status Kaze 風: give the whole desk Hanko's look and motion
-#                            (loads style.lua from looknfeel.lua; any bar)
+#                            (loads style.lua from looknfeel.lua and installs the
+#                            desk plugin, hanko.desk; any bar). Run `desk on` again
+#                            after an update to refresh the plugin.
 #   hanko doctor             check the installation
 #
 # Style commands talk to the running shell over IPC (omarchy-shell hanko ...),
@@ -110,7 +112,7 @@ cmd_uninstall() {
     rm -rf "$DEST"
   fi
   rm -f "$PREVIOUS"
-  desk_on && cmd_desk off
+  if desk_on || [[ -d $DESK_DEST ]]; then cmd_desk off; fi
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
 }
@@ -193,10 +195,48 @@ desk_on() { [[ -f $LOOK_FILE ]] && grep -q -- '-- hanko desk$' "$LOOK_FILE"; }
 
 hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true; }
 
+# The desk plugin (plugins/hanko.desk) shares Hanko's core/. Omarchy allows no
+# symlinks inside a plugin, so it is assembled as a copy: its own files, then
+# core/ beside them. `desk build DIR` does only that (the tests lint the result).
+DESK_ID="hanko.desk"
+DESK_DEST="$PLUGINS/$DESK_ID"
+# Prints the files it changed (rsync's itemized list), nothing when up to date.
+desk_build() {
+  local dest="$1"
+  need rsync
+  mkdir -p "$dest"
+  rsync -a --delete --itemize-changes --exclude core "$SRC/plugins/$DESK_ID/" "$dest/"
+  rsync -a --delete --itemize-changes "$SRC/core/" "$dest/core/"
+}
+# Omarchy reloads a plugin when its files change, but a service keeps the
+# QML it first compiled until the shell restarts; so when a running desk
+# gets new files, the shell is restarted (a second without a bar).
+desk_plugin_on() {
+  local was_running=0 changed
+  [[ -d $DESK_DEST ]] && omarchy-shell -q hankodesk state >/dev/null 2>&1 && was_running=1
+  changed="$(desk_build "$DESK_DEST")"
+  omarchy plugin validate "$DESK_DEST" >/dev/null || fail "the desk plugin did not validate"
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  omarchy plugin enable "$DESK_ID" >/dev/null 2>&1 || true
+  if (( was_running )) && [[ -n $changed ]] && command -v omarchy-restart-shell >/dev/null 2>&1; then
+    say "The desk plugin changed: restarting the Omarchy shell to load it."
+    omarchy-restart-shell >/dev/null 2>&1 || true
+  fi
+}
+desk_plugin_off() {
+  if [[ -d $DESK_DEST ]]; then
+    omarchy plugin disable "$DESK_ID" >/dev/null 2>&1 || true
+    rm -rf "$DESK_DEST"
+    omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  fi
+}
+
 cmd_desk() {
   case "${1:-status}" in
     on)
-      if desk_on; then say "The desk is already Hanko's ($LOOK_FILE)."; return; fi
+      need omarchy
+      desk_plugin_on
+      if desk_on; then hypr_reload; say "Kaze is on (the desk plugin is refreshed; $LOOK_FILE already loads style.lua)."; return; fi
       mkdir -p "$(dirname "$LOOK_FILE")"
       [[ -f $LOOK_FILE ]] && cp "$LOOK_FILE" "$LOOK_FILE.bak"
       printf '\n-- Kaze 風: Hanko'"'"'s look and motion for the whole desk (hanko desk off removes it).\n%s\n' "$LOOK_LINE" >> "$LOOK_FILE"
@@ -204,13 +244,15 @@ cmd_desk() {
       say "Kaze is on: windows move on Iai and wear the bar's paper ($LOOK_FILE; the old file is at .bak)."
       ;;
     off)
-      desk_on || { say "Kaze is not on."; return; }
+      desk_plugin_off
+      desk_on || { say "Kaze is off."; return; }
       cp "$LOOK_FILE" "$LOOK_FILE.bak"
       grep -v -e '-- hanko desk$' -e "^-- Kaze 風: Hanko's look and motion" "$LOOK_FILE.bak" > "$LOOK_FILE"
       hypr_reload
       say "Kaze is off: Hyprland is back to your own look'n'feel."
       ;;
     status) if desk_on; then say "on"; else say "off"; fi ;;
+    build) [[ -n ${2:-} ]] || fail "usage: hanko desk build DIR"; desk_build "$2" >/dev/null ;;
     *) fail "usage: hanko desk on|off|status" ;;
   esac
 }

@@ -38,6 +38,7 @@ const Lf = load("core/Leaf.js", ["KINDS", "kindOf", "labels", "uptime", "uptimeS
   "afterword", "SEKKI", "KO"])
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
+const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "perimeter", "pointAt", "lit", "onScreen"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -1875,14 +1876,56 @@ test("iai: style.lua and the Motion timesheet carry the same curves and speeds",
     assert.ok(m, "style.lua has no animation " + leaf)
     return { speed: Number(m[1]), bezier: m[2] }
   }
-  for (const [leaf, beat] of [["windowsIn", "nuki"], ["windowsOut", "noto"], ["border", "kamae"], ["layersIn", "nuki"], ["layersOut", "noto"], ["fadeIn", "chiburi"]])
+  for (const [leaf, beat] of [["windowsIn", "nuki"], ["windowsOut", "noto"], ["layersIn", "nuki"], ["layersOut", "noto"], ["fadeIn", "chiburi"]])
     assert.deepEqual(anim(leaf), { speed: Ia.hyprSpeed(beat), bezier: beat }, leaf)
+  // The edge inks up over the focus sweep (core/Sweep.js MS), settling in.
+  assert.deepEqual(anim("border"), { speed: Sw.MS / 100, bezier: "chiburi" })
+  assert.ok(/namespace = "\^hanko-desk\$" \}, no_anim = true/.test(lua), "the desk's overlay must not fade in")
+  assert.ok(/local shadow_style = "none"/.test(lua), "Kaze has no window shadows by default")
   assert.ok(!/popin|bounce|elastic|overshot/i.test(lua.replace(/^\s*--.*$/gm, "")), "no pop-in or springs in style.lua")
   for (const name of Ia.ORDER) {
     const row = Se.MOTION_SHEET.find(r => r.prop === name)
     assert.ok(row, "timesheet has no " + name)
     assert.deepEqual(row.curve, Ia.BEATS[name].curve, name)
   }
+})
+
+test("sweep: the frame sits a border outside the window; the edge is walked clockwise", () => {
+  const r = Sw.frame([100, 50], [400, 300], 1)
+  assert.deepEqual(r, { x: 99, y: 49, width: 402, height: 302 })
+  assert.equal(Sw.perimeter(r), 1408)
+  assert.deepEqual(Sw.pointAt(r, 0), { x: 99, y: 49 })
+  assert.deepEqual(Sw.pointAt(r, 402), { x: 501, y: 49 })
+  assert.deepEqual(Sw.pointAt(r, 402 + 302), { x: 501, y: 351 })
+  assert.deepEqual(Sw.pointAt(r, 402 + 302 + 402), { x: 99, y: 351 })
+  assert.deepEqual(Sw.pointAt(r, 1408), { x: 99, y: 49 })
+})
+
+test("sweep: nothing before or after, a lit stretch between, brightest at the head, on the edge", () => {
+  const r = Sw.frame([0, 0], [400, 300], 1)
+  assert.deepEqual(Sw.lit(r, 0), [])
+  assert.deepEqual(Sw.lit(r, 1), [])
+  const mid = Sw.lit(r, 0.5)
+  assert.ok(mid.length >= Sw.PIECES)
+  assert.ok(mid[mid.length - 1].alpha > mid[0].alpha)
+  for (const s of mid) for (const q of [s.a, s.b]) {
+    const onEdge = Math.abs(q.x - r.x) < 1e-3 || Math.abs(q.x - r.x - r.width) < 1e-3 || Math.abs(q.y - r.y) < 1e-3 || Math.abs(q.y - r.y - r.height) < 1e-3
+    assert.ok(onEdge, JSON.stringify(q))
+    // each piece runs along one side (horizontal or vertical)
+    assert.ok(Math.abs(s.a.x - s.b.x) < 1e-3 || Math.abs(s.a.y - s.b.y) < 1e-3)
+  }
+  // the light's total length stays within its share of the perimeter
+  const len = mid.reduce((n, s) => n + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y), 0)
+  assert.ok(len <= Sw.perimeter(r) * Sw.LENGTH + 1)
+  // at the very start only a sliver of the top edge is lit
+  const start = Sw.lit(r, 0.01)
+  assert.ok(start.every(s => Math.abs(s.a.y - r.y) < 1e-3))
+})
+
+test("sweep: a window is drawn on its own screen only, in that screen's coordinates", () => {
+  const screen = { x: 1920, y: 0, width: 2560, height: 1440 }
+  assert.equal(Sw.onScreen({ x: 10, y: 10, width: 100, height: 100 }, screen), null)
+  assert.deepEqual(Sw.onScreen({ x: 2000, y: 50, width: 100, height: 100 }, screen), { x: 80, y: 50, width: 100, height: 100 })
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
