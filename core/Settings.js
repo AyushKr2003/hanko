@@ -791,7 +791,9 @@ var KAZE_SWITCHES = [
   { key: "wind", name: "Wind", jp: "嵐", line: "The real wind where you are, always calm, or your own",
     options: ["weather", "calm", "virtual"], labels: { weather: "Weather", calm: "Calm", virtual: "Virtual" } },
   { key: "sound", name: "Sound", jp: "音", line: "Six short sounds: clappers, paper, a bell, a sheath's click",
-    options: ["off", "quiet", "on"], labels: { off: "Off", quiet: "Quiet", on: "On" } }
+    options: ["off", "quiet", "on"], labels: { off: "Off", quiet: "Quiet", on: "On" } },
+  { key: "osdCard", name: "OSD card", jp: "台", line: "A sheet of paper under volume and brightness, or bare",
+    options: ["on", "off"], labels: { on: "On", off: "Off" } }
 ]
 
 // The option a switch shows for a kaze.json document. `gusts` is a boolean

@@ -30,6 +30,16 @@ Item {
   // 0 → 1 as it draws in, back to 0 as it sheathes.
   property real shown: 0
   property bool still: false
+  // kaze.json's `osdCard`: the sheet of paper under it, on (default) or off.
+  property bool card: true
+  FileView {
+    path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/hanko/kaze.json"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: { try { root.card = JSON.parse(text() || "{}").osdCard !== "off" } catch (e) { root.card = true } }
+    onLoadFailed: root.card = true
+  }
 
   FileView {
     path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/hanko/style.json"
@@ -157,7 +167,7 @@ Item {
       border.width: 1
       border.color: Ink.lineSoft
       opacity: root.shown
-      visible: root.v.kind !== "ceremony"
+      visible: root.v.kind !== "ceremony" && root.card
     }
 
     // ── Shiki 式, a ceremony: the whole screen (or a band), one brushed kanji ──

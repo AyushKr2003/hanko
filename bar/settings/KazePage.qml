@@ -108,7 +108,7 @@ Column {
           Loader {
             anchors.fill: parent
             sourceComponent: ({ desk: deskArt, motion: motionArt, wallpaper: printArt, grass: grassArt,
-                                gusts: grassArt, wind: windArt, sound: soundArt, sumi: sumiArt })[card.key] || null
+                                gusts: grassArt, wind: windArt, sound: soundArt, sumi: sumiArt, osdCard: osdArt })[card.key] || null
             onLoaded: {
               item.key = card.key
               item.current = Qt.binding(function() { return card.current })
@@ -256,6 +256,41 @@ Column {
 
   // ------------------------------------------------------------ pictures
   // Each is told its key, its current value and whether it is hovered.
+
+  // The OSD: a hairline filling from its centre, on its sheet of paper or bare.
+  Component {
+    id: osdArt
+    Item {
+      id: o
+      property string key
+      property string current
+      property bool hovered
+      readonly property bool card: o.current !== "off"
+      Rectangle {
+        anchors.centerIn: parent
+        width: parent.width * 0.62; height: Type.px(46)
+        color: Ink.paper
+        border.width: 1; border.color: Ink.lineSoft
+        opacity: o.card ? 1 : 0
+        Behavior on opacity { enabled: Motion.live; NumberAnimation { duration: Motion.nuki } }
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: parent.height / 2 - Type.px(20)
+        text: "VOL 音 62"
+        color: Ink.inkDim
+        font.family: Type.mono
+        font.pixelSize: Type.px(10)
+        font.letterSpacing: 1.6
+      }
+      Rectangle { anchors.horizontalCenter: parent.horizontalCenter; y: parent.height / 2 + Type.px(8); width: parent.width * 0.5; height: 1; color: Ink.lineStrong }
+      Rectangle {
+        anchors.horizontalCenter: parent.horizontalCenter; y: parent.height / 2 + Type.px(7)
+        width: parent.width * 0.5 * (o.hovered ? 0.8 : 0.62); height: 3; color: Ink.ink
+        Behavior on width { enabled: Motion.live; NumberAnimation { duration: Motion.nuki; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.nukiCurve } }
+      }
+    }
+  }
 
   // Two windows, the focused one's top edge lit.
   Component {

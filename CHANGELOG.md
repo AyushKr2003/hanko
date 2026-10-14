@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Kaze: Settings › Kaze has an OSD card switch: the sheet of paper under volume and brightness, on (as before) or off for the bare line; `"osdCard": "off"` in kaze.json does the same.
 - Kaze: the menu's Apps (Super+Alt+Space) was empty under hanko.menu: Omarchy hands a third-party menu a shell facade without its app library. The clone now keeps its own copy of Omarchy's AppLibrary for that case, so every app is listed and launches again.
 - Kaze: in the menu, the chosen row's second line (an app's place, a shortcut) and its count now read in paper on the ink plate; they had vanished into it.
 - Kaze: unlocking with your password now cuts the lock screen along the diagonal and the two halves part onto the desk; Omarchy's lock service is still unchanged (the cut is drawn by the desk plugin). `omarchy-shell hankodesk cut` shows it.

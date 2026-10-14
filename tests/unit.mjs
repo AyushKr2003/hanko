@@ -2152,7 +2152,9 @@ test("oto: silent by default; quiet and on; one sound off on its own; only the b
 })
 
 test("settings: the Kaze page's switches read and write kaze.json the way the plugins read it", () => {
-  assert.deepEqual(Se.KAZE_SWITCHES.map(s => s.key), ["wallpaper", "grass", "gusts", "wind", "sound"])
+  assert.deepEqual(Se.KAZE_SWITCHES.map(s => s.key), ["wallpaper", "grass", "gusts", "wind", "sound", "osdCard"])
+  assert.equal(Se.kazeValue({}, "osdCard"), "on")
+  assert.equal(Se.kazeWith({}, "osdCard", "off").osdCard, "off")
   assert.equal(Se.kazeValue({}, "wallpaper"), "print")
   assert.equal(Se.kazeValue({}, "sound"), "off")
   assert.equal(Se.kazeValue({}, "gusts"), "on")
@@ -2167,7 +2169,7 @@ test("settings: the Kaze page's switches read and write kaze.json the way the pl
   assert.equal(Ot.mode(Se.kazeWith({}, "sound", "on")), "on")
   assert.equal(Se.kazeChange({}, { sound: "quiet" }), "Sound · off → quiet")
   assert.equal(Se.kazeChange({ gusts: true }, {}), "")
-  assert.deepEqual(Se.kazeOn({ wallpaper: "print" }, true, true, false), { on: 5, of: 8 })
+  assert.deepEqual(Se.kazeOn({ wallpaper: "print" }, true, true, false), { on: 6, of: 9 })  // the OSD card is on by default
   // The virtual wind: Settings and the grass read windSpeed/windFrom the same way.
   for (const doc of [{}, { wind: "virtual" }, { wind: "virtual", windSpeed: 32, windFrom: "east" }, { windSpeed: 99 }, { windSpeed: -4 }, { windSpeed: "x" }, { windSpeed: 0 }]) {
     const a = Se.kazeWind(doc), b = Wi.settings(doc)
