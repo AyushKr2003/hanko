@@ -788,8 +788,8 @@ var KAZE_SWITCHES = [
     options: ["grass", "off"], labels: { grass: "Grass", off: "Off" } },
   { key: "gusts", name: "Gusts", jp: "颯", line: "A gust runs through the grass toward what needs you",
     options: ["on", "off"], labels: { on: "On", off: "Off" } },
-  { key: "wind", name: "Wind", jp: "嵐", line: "The real wind where you are, or always calm",
-    options: ["weather", "calm"], labels: { weather: "Weather", calm: "Calm" } },
+  { key: "wind", name: "Wind", jp: "嵐", line: "The real wind where you are, always calm, or your own",
+    options: ["weather", "calm", "virtual"], labels: { weather: "Weather", calm: "Calm", virtual: "Virtual" } },
   { key: "sound", name: "Sound", jp: "音", line: "Six short sounds: clappers, paper, a bell, a sheath's click",
     options: ["off", "quiet", "on"], labels: { off: "Off", quiet: "Quiet", on: "On" } }
 ]
@@ -814,12 +814,25 @@ function kazeWith(doc, key, value) {
   return out
 }
 
+// The virtual wind's speed (km/h, 0..60, default 15) and side (west: it
+// leans right; east: left), as core/Wind.js settings() reads them.
+var KAZE_WIND_MAX = 60
+function kazeWind(doc) {
+  doc = doc || {}
+  var v = Number(doc.windSpeed)
+  var ok = doc.windSpeed !== undefined && doc.windSpeed !== null && doc.windSpeed !== "" && isFinite(v)
+  return { speed: ok ? Math.max(0, Math.min(KAZE_WIND_MAX, Math.round(v))) : 15, from: doc.windFrom === "east" ? "east" : "west" }
+}
+
 // The action bar's words for a kaze.json change ("Sound · off → quiet").
 function kazeChange(before, after) {
   for (var i = 0; i < KAZE_SWITCHES.length; i++) {
     var sw = KAZE_SWITCHES[i], a = kazeValue(before, sw.key), b = kazeValue(after, sw.key)
     if (a !== b) return sw.name + " · " + a + " → " + b
   }
+  var wa = kazeWind(before), wb = kazeWind(after)
+  if (wa.speed !== wb.speed) return "Virtual wind · " + wa.speed + " → " + wb.speed + " km/h"
+  if (wa.from !== wb.from) return "Virtual wind · from the " + wb.from
   return ""
 }
 

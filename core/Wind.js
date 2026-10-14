@@ -108,12 +108,25 @@ function swayAt(windLean, tick) {
   return Math.sin(tick * 0.9) * 0.04 * Math.max(1, Math.abs(windLean) * 2)
 }
 
+// A virtual wind (`wind: "virtual"`): your own speed, 0 to VIRTUAL_MAX km/h,
+// blowing from the west (leaning right) or the east (leaning left).
+var VIRTUAL_MAX = 60
+var VIRTUAL_SPEED = 15
+
 // The few settings Kaze keeps for the wind, from ~/.config/hanko/kaze.json.
 function settings(doc) {
   doc = doc || {}
+  var speed = Number(doc.windSpeed)
   return {
     grass: ["grass", "edge", "off"].indexOf(doc.grass) >= 0 ? doc.grass : "grass",
     gusts: doc.gusts !== false,
-    wind: doc.wind === "calm" ? "calm" : "weather"
+    wind: doc.wind === "calm" || doc.wind === "virtual" ? doc.wind : "weather",
+    speed: isFinite(speed) && doc.windSpeed !== null && doc.windSpeed !== "" ? Math.max(0, Math.min(VIRTUAL_MAX, Math.round(speed))) : VIRTUAL_SPEED,
+    from: doc.windFrom === "east" ? "east" : "west"
   }
+}
+
+// The lean of the virtual wind, as a real wind of that speed and side.
+function virtualLean(s) {
+  return lean(s.speed, s.from === "east" ? 90 : 270)
 }

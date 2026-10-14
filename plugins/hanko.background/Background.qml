@@ -170,7 +170,7 @@ Item {
   }
   property real windLean: 0
   function fetchWind() {
-    if (root.wind.wind === "calm" || root.place.latitude === null || windProc.running) return
+    if (root.wind.wind !== "weather" || root.place.latitude === null || windProc.running) return
     windProc.command = ["curl", "-fsS", "--max-time", "8", Weather.url(root.place.latitude, root.place.longitude)]
     windProc.running = true
   }
@@ -195,7 +195,9 @@ Item {
     onLoaded: root.sumi = true
     onLoadFailed: root.sumi = false
   }
-  readonly property real lean: root.wind.wind === "calm" ? 0 : root.windLean * (root.sumi ? 1.3 : 1)
+  // A virtual wind (Settings › Kaze) stands in for the weather's.
+  readonly property real lean: (root.wind.wind === "calm" ? 0
+    : root.wind.wind === "virtual" ? Wind.virtualLean(root.wind) : root.windLean) * (root.sumi ? 1.3 : 1)
 
   // Monitors whose shown workspace has a fullscreen window: the grass rests there.
   property var fullscreenOn: ({})

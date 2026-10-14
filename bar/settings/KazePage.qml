@@ -23,6 +23,10 @@ Column {
   signal kazePicked(string key, string value)
   signal deskPicked(bool on)
   signal sumiPicked(bool on)
+  // The virtual wind's speed, km/h (one drag is one step of Undo).
+  signal windSpeedPicked(int speed)
+
+  readonly property var wind: Settings.kazeWind(kaze)
 
   readonly property bool still: (draft.motion || "paper") === "still"
   readonly property var count: Settings.kazeOn(kaze, desk, still, sumi)
@@ -141,6 +145,7 @@ Column {
             height: Math.ceil(lineMetrics.lineSpacing * 2) + 2
             FontMetrics { id: lineMetrics; font.family: Type.text; font.pixelSize: Type.note }
             Text {
+              visible: !(card.key === "wind" && card.current === "virtual")
               width: parent.width
               wrapMode: Text.WordWrap
               maximumLineCount: 2
@@ -152,6 +157,75 @@ Column {
               color: warn ? Ink.seal : Ink.inkMuted
               font.family: Type.text
               font.pixelSize: Type.note
+            }
+            // Wind on Virtual: your own speed, dragged or scrolled along a
+            // hairline (0 to 60 km/h), and the side it blows from.
+            Row {
+              visible: card.key === "wind" && card.current === "virtual"
+              anchors.verticalCenter: parent.verticalCenter
+              width: parent.width
+              spacing: Type.px(8)
+              Item {
+                id: speedRule
+                width: parent.width - speedFigure.width - sideSwitch.width - 2 * parent.spacing
+                height: Type.px(22)
+                readonly property real share: root.wind.speed / Settings.KAZE_WIND_MAX
+                function pickAt(x) { root.windSpeedPicked(Math.round(Math.max(0, Math.min(1, x / width)) * Settings.KAZE_WIND_MAX)) }
+                // Ticks every 10 km/h, the run of the wind in ink.
+                Repeater {
+                  model: 7
+                  Rectangle {
+                    required property int index
+                    x: Math.round(index * (speedRule.width - 1) / 6)
+                    y: speedRule.height / 2 + Type.px(3)
+                    width: 1; height: Type.px(index % 3 === 0 ? 5 : 3)
+                    color: Ink.inkFaint
+                  }
+                }
+                Rectangle { y: speedRule.height / 2; width: parent.width; height: 1; color: Ink.line }
+                Rectangle {
+                  y: speedRule.height / 2 - 1
+                  width: Math.max(1, speedRule.share * parent.width)
+                  height: 3
+                  color: Ink.ink
+                }
+                Rectangle {
+                  x: speedRule.share * (parent.width - width)
+                  y: speedRule.height / 2 - height / 2 + 0.5
+                  width: Type.px(3); height: Type.px(13)
+                  color: Ink.bone
+                }
+                MouseArea {
+                  anchors.fill: parent
+                  cursorShape: Qt.PointingHandCursor
+                  preventStealing: true
+                  onPressed: function(m) { speedRule.pickAt(m.x) }
+                  onPositionChanged: function(m) { if (pressed) speedRule.pickAt(m.x) }
+                  onWheel: function(w) {
+                    root.windSpeedPicked(Math.max(0, Math.min(Settings.KAZE_WIND_MAX, root.wind.speed + (w.angleDelta.y > 0 ? 1 : -1))))
+                  }
+                }
+              }
+              Text {
+                id: speedFigure
+                anchors.verticalCenter: parent.verticalCenter
+                width: Type.px(56)
+                horizontalAlignment: Text.AlignRight
+                text: root.wind.speed + "<font color=\"" + Ink.inkMuted + "\"> km/h</font>"
+                textFormat: Text.StyledText
+                color: Ink.ink
+                font.family: Type.mono
+                font.pixelSize: Type.label
+                font.features: { "tnum": 1 }
+              }
+              Segmented {
+                id: sideSwitch
+                anchors.verticalCenter: parent.verticalCenter
+                options: ["east", "west"]
+                labels: ({ east: "←", west: "→" })
+                selected: root.wind.from
+                onPicked: function(v) { root.kazePicked("windFrom", v) }
+              }
             }
           }
           Segmented {

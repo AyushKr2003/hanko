@@ -70,6 +70,7 @@ Rectangle {
   signal kazePicked(string key, string value)
   signal deskPicked(bool on)
   signal sumiPicked(bool on)
+  signal windSpeedPicked(int speed)
   // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
   // core/Profile.js BLOCKS.
   signal profileTextEdited(string field, string value)
@@ -641,6 +642,7 @@ Rectangle {
       onKazePicked: function(key, value) { root.kazePicked(key, value) }
       onDeskPicked: function(on) { root.deskPicked(on) }
       onSumiPicked: function(on) { root.sumiPicked(on) }
+      onWindSpeedPicked: function(speed) { root.windSpeedPicked(speed) }
     }
   }
   Component {

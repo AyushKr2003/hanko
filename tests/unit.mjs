@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn", "kazeWind", "KAZE_WIND_MAX"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -40,7 +40,7 @@ const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "c
 const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
 const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "perimeter", "pointAt", "lit", "onScreen"])
 const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "wallpaperMode"])
-const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings"])
+const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
@@ -2011,8 +2011,8 @@ test("wind: it rests under fullscreen, with motion still and on low battery; set
   assert.equal(Wi.mayMove(false, false, true, 0.5), true)
   assert.equal(Wi.swayAt(0.05, 3), 0)
   assert.ok(Math.abs(Wi.swayAt(0.5, 1)) <= 0.04 + 1e-9)
-  assert.deepEqual(Wi.settings({}), { grass: "grass", gusts: true, wind: "weather" })
-  assert.deepEqual(Wi.settings({ grass: "off", gusts: false, wind: "calm" }), { grass: "off", gusts: false, wind: "calm" })
+  assert.deepEqual(Wi.settings({}), { grass: "grass", gusts: true, wind: "weather", speed: 15, from: "west" })
+  assert.deepEqual(Wi.settings({ grass: "off", gusts: false, wind: "calm" }), { grass: "off", gusts: false, wind: "calm", speed: 15, from: "west" })
   assert.equal(Wi.settings({ grass: "petals" }).grass, "grass")
 })
 
@@ -2132,11 +2132,24 @@ test("settings: the Kaze page's switches read and write kaze.json the way the pl
   assert.equal(Se.kazeWith({}, "sound", "quiet").sound, "quiet")
   // what the plugins make of them
   assert.equal(Pt.wallpaperMode(Se.kazeWith({}, "wallpaper", "original")), "original")
-  assert.deepEqual(Wi.settings(Se.kazeWith(Se.kazeWith({}, "grass", "off"), "gusts", "off")), { grass: "off", gusts: false, wind: "weather" })
+  assert.deepEqual(Wi.settings(Se.kazeWith(Se.kazeWith({}, "grass", "off"), "gusts", "off")), { grass: "off", gusts: false, wind: "weather", speed: 15, from: "west" })
   assert.equal(Ot.mode(Se.kazeWith({}, "sound", "on")), "on")
   assert.equal(Se.kazeChange({}, { sound: "quiet" }), "Sound · off → quiet")
   assert.equal(Se.kazeChange({ gusts: true }, {}), "")
   assert.deepEqual(Se.kazeOn({ wallpaper: "print" }, true, true, false), { on: 5, of: 8 })
+  // The virtual wind: Settings and the grass read windSpeed/windFrom the same way.
+  for (const doc of [{}, { wind: "virtual" }, { wind: "virtual", windSpeed: 32, windFrom: "east" }, { windSpeed: 99 }, { windSpeed: -4 }, { windSpeed: "x" }, { windSpeed: 0 }]) {
+    const a = Se.kazeWind(doc), b = Wi.settings(doc)
+    assert.deepEqual([a.speed, a.from], [b.speed, b.from], JSON.stringify(doc))
+  }
+  assert.equal(Wi.settings({ wind: "virtual" }).wind, "virtual")
+  assert.equal(Se.kazeValue({ wind: "virtual" }, "wind"), "virtual")
+  assert.equal(Se.kazeWind({ windSpeed: 0 }).speed, 0)
+  assert.ok(Wi.virtualLean(Wi.settings({ wind: "virtual", windSpeed: 30 })) > 0)
+  assert.ok(Wi.virtualLean(Wi.settings({ wind: "virtual", windSpeed: 30, windFrom: "east" })) < 0)
+  assert.equal(Wi.virtualLean(Wi.settings({ wind: "virtual", windSpeed: 0 })), 0)
+  assert.equal(Se.kazeChange({ wind: "virtual" }, { wind: "virtual", windSpeed: 30 }), "Virtual wind · 15 → 30 km/h")
+  assert.equal(Se.kazeWith({}, "windSpeed", 22).windSpeed, 22)
   assert.ok(Se.PAGE_LINES.kaze)
 })
 

@@ -32,9 +32,18 @@ Singleton {
   readonly property real lastAt: history.length ? history[history.length - 1].at : 0
   readonly property string lastChange: history.length ? Settings.kazeChange(history[history.length - 1].doc, doc) : ""
 
-  function set(key, value) {
+  // `tag` names a continuous edit (the wind's speed being dragged): repeats
+  // within 1.5 s are one step of Undo, as Typeset.keep() does.
+  property string _lastTag: ""
+  property real _lastAt: 0
+  function set(key, value, tag) {
     var next = Settings.kazeWith(doc, key, value)
     if (JSON.stringify(next) === JSON.stringify(doc)) return
+    var now = Date.now()
+    var merge = !!tag && tag === _lastTag && now - _lastAt < 1500 && history.length > 0
+    _lastTag = tag || ""
+    _lastAt = now
+    if (merge) { _commit(next); return }
     var h = history.slice()
     h.push({ doc: doc, at: Date.now() })
     if (h.length > 50) h.shift()

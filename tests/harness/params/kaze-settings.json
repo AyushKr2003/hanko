@@ -203,7 +203,10 @@
     "kaze": {
       "wallpaper": "print",
       "sound": "quiet",
-      "gusts": false
+      "gusts": false,
+      "wind": "virtual",
+      "windSpeed": 24,
+      "windFrom": "west"
     },
     "desk": true,
     "sumi": false,
