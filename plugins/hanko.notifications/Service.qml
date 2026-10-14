@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
+import Quickshell.Hyprland
 import qs.Commons
 
 import "components"
@@ -971,6 +972,34 @@ Item {
     onTriggered: if (!service.cardHovered) service.openIndex = -1
   }
 
+  // Super+N (style.lua binds it to `omarchy-shell hankoletters toggle`):
+  // the newest letter opens beside its strip on the focused screen, and
+  // closes on a second press, or by itself after a while unless the
+  // pointer is on it.
+  property string keyScreen: ""
+  Timer {
+    id: keyLetterTimer
+    interval: 6000
+    onTriggered: if (!service.cardHovered) { service.openIndex = -1; service.keyScreen = "" }
+  }
+  function toggleNewest() {
+    if (service.openIndex >= 0) { service.openIndex = -1; service.keyScreen = ""; keyLetterTimer.stop(); return "closed" }
+    if (popupModel.count === 0) return "none"
+    var mon = Hyprland.focusedMonitor
+    service.keyScreen = mon ? mon.name : ""
+    service.openIndex = 0
+    keyLetterTimer.restart()
+    return "open"
+  }
+  IpcHandler {
+    id: lettersIpc
+    enabled: false
+    target: "hankoletters"
+    function toggle(): string { return service.toggleNewest() }
+  }
+  // Registered a moment after start, as the other Kaze targets are.
+  Timer { interval: 500; running: true; onTriggered: lettersIpc.enabled = true }
+
   readonly property bool kazeStill: kazeStyle.still
   QtObject {
     id: kazeStyle
@@ -1037,6 +1066,7 @@ Item {
         height: popupWindow.stripH
 
         Repeater {
+          id: stripRepeater
           model: popupModel
 
           delegate: Item {
@@ -1232,6 +1262,15 @@ Item {
       }
 
       // The letter, opened sideways from its strip.
+      // Opened by Super+N on this screen: the letter hangs beside the newest strip.
+      Connections {
+        target: service
+        function onKeyScreenChanged() {
+          if (service.keyScreen !== "" && service.keyScreen === popupWindow.modelData.name) letter.slotItem = stripRepeater.itemAt(0)
+          else if (service.keyScreen !== "") letter.slotItem = null
+        }
+      }
+
       Rectangle {
         id: letter
         property var slotItem: null

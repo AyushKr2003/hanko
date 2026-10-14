@@ -238,6 +238,12 @@ hl.layer_rule({ match = { namespace = "^hanko-osd$" }, no_anim = true, animation
 -- The menu draws open itself; Hyprland mustn't fade it in as well.
 hl.layer_rule({ match = { namespace = "^hanko-menu$" }, no_anim = true, animation = "none" })
 
+-- ── Fumi 文: Super+N opens the newest letter (hanko.notifications) ─────────
+-- Free in Omarchy's own bindings; a no-op when the desk's notifications are off.
+
+hl.unbind("SUPER + N")
+o.bind("SUPER + N", "Hanko: the newest letter", "omarchy-shell -q hankoletters toggle")
+
 -- ── Settings window ─────────────────────────────────────────────────────────
 -- Hanko's settings open as a floating sheet in the middle of the screen,
 -- never tiled. Matched on class and title so no other Quickshell window
