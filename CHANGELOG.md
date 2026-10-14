@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Kaze: the menu has a rail of crests down its left edge, one per top-level menu (器 Apps, 彩 Style, 政 System…); the one you are in is inverted, and a click goes straight to it.
 - Kaze: when the Omarchy shell comes back after a crash, a small 回生 "back" tab shows at the top right for a few seconds (a plain restart doesn't show it).
 - Kaze: a screenshot's letter plays the brush sound (墨) instead of paper and carries the 写 crest.
 - Kaze: Super+N opens the newest letter beside its strip (and closes it); `omarchy-shell hankoletters toggle` does the same.

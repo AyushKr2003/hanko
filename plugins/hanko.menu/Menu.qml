@@ -7,6 +7,7 @@ import qs.Ui
 import "MenuModel.js" as MenuModel
 import "core"
 import "core/Iai.js" as Iai
+import "core/Batto.js" as Batto
 
 // Battō 抜刀, the draw (docs/kaze, mockup 08). This is Omarchy's menu (MIT,
 // from shell/plugins/menu), kept as it is: every menu, the app library, the
@@ -155,11 +156,20 @@ Item {
   property int dividerHeight: Style.space(17)
   property bool searchDivider: false
   property int layoutSerial: 0
-  property int cardWidth: Math.min(root.dmenuActive ? Style.space(root.dmenuWidth) : ((root.activeMenu === "trigger.capture.screenrecord" || root.activeMenu === "style.font") ? Style.space(520) : Style.space(300)), panel.width - Style.gapsOut * 2)
+  property int cardWidth: Math.min((root.dmenuActive ? Style.space(root.dmenuWidth) : ((root.activeMenu === "trigger.capture.screenrecord" || root.activeMenu === "style.font") ? Style.space(520) : Style.space(300))) + root.railWidth, panel.width - Style.gapsOut * 2)
+
+  // Battō's rail (core/Batto.js): the top-level menus as crests down the
+  // card's left edge, the one you are in inverted; a click goes there.
+  readonly property var railItems: { void root.itemOrder; return Batto.rail(root.items, root.itemOrder, root.childCount) }
+  readonly property bool showRail: !root.dmenuActive && root.railItems.length > 0
+  readonly property int railCrest: Style.space(26)
+  readonly property int railGap: Style.space(8)
+  readonly property int railWidth: root.showRail ? root.railCrest + Style.space(24) : 0
+  readonly property int railHeight: root.showRail ? root.contentMargin * 2 + root.railItems.length * (root.railCrest + root.railGap) : 0
   property int visibleRowsHeight: root.dmenuActive ? dmenuRowListHeight(layoutSerial, displayModel.count, filterText) : rowListHeight(layoutSerial, displayModel.count, filterText, searchDivider)
   property int cardHeight: root.dmenuActive
     ? Math.min(contentMargin * 2 + headerHeight + (mode === "input" ? 0 : contentSpacing + visibleRowsHeight), panel.height - Style.gapsOut * 2)
-    : Math.min(contentMargin * 2 + headerHeight + contentSpacing + visibleRowsHeight, panel.height - Style.gapsOut * 2)
+    : Math.min(Math.max(contentMargin * 2 + headerHeight + contentSpacing + visibleRowsHeight, root.railHeight), panel.height - Style.gapsOut * 2)
 
   function finishRequest(selection) {
     if (!root.requestActive || !root.doneFile) {
@@ -1134,6 +1144,53 @@ Item {
 
         MouseArea { anchors.fill: parent; onClicked: {} }
 
+        // The rail of crests, with a hairline to its right.
+        Item {
+          id: rail
+          visible: root.showRail
+          x: card.contentLeftInset - root.contentMargin
+          y: card.contentTopInset
+          width: root.railWidth
+          height: card.height - card.contentTopInset - card.contentBottomInset
+          clip: true
+          Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: Util.alpha(root.foreground, 0.2) }
+          Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: -Style.space(4)
+            spacing: root.railGap
+            Repeater {
+              model: root.railItems
+              Item {
+                id: crestItem
+                required property var modelData
+                readonly property bool here: Batto.topOf(root.activeMenu) === modelData.id
+                width: root.railCrest
+                height: root.railCrest
+                Rectangle {
+                  anchors.fill: parent
+                  radius: width / 2
+                  color: crestItem.here ? root.foreground : "transparent"
+                  border.width: 1.3
+                  border.color: crestItem.here ? root.foreground : Util.alpha(root.foreground, crestTap.hovered ? 0.9 : 0.5)
+                }
+                Text {
+                  anchors.centerIn: parent
+                  text: crestItem.modelData.crest
+                  color: crestItem.here ? root.background : root.foreground
+                  opacity: crestItem.here ? 1 : 0.8
+                  font.family: "Noto Serif CJK JP"
+                  font.weight: Font.DemiBold
+                  font.pixelSize: Math.round(root.railCrest * 0.5)
+                }
+                HoverHandler { id: crestTap }
+                TapHandler {
+                  onTapped: { root.navStack = []; root.setActiveMenu(crestItem.modelData.id, false, true) }
+                }
+              }
+            }
+          }
+        }
+
         Item {
           id: keyCatcher
           anchors.fill: parent
@@ -1210,7 +1267,7 @@ Item {
           anchors.topMargin: card.contentTopInset
           anchors.rightMargin: card.contentRightInset
           anchors.bottomMargin: card.contentBottomInset
-          anchors.leftMargin: card.contentLeftInset
+          anchors.leftMargin: card.contentLeftInset + root.railWidth
           spacing: root.contentSpacing
 
           Rectangle {

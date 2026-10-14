@@ -46,6 +46,7 @@ const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urg
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
+const Bt = load("core/Batto.js", ["CRESTS", "crestFor", "rail", "topOf"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -2234,6 +2235,21 @@ test("kaisei: a quickshell core dump in the last two minutes means the shell ros
   assert.equal(Ks.crashedRecently(dump(-5000), now), false)
   assert.equal(Ks.crashedRecently("", now), false)
   assert.equal(Ks.crashedRecently("No coredumps found.", now), false)
+})
+
+test("batto: a crest per top-level menu, in the menu's order; actions and submenus have none", () => {
+  const items = {
+    root: { parent: "", kind: "menu" }, apps: { parent: "root", label: "Apps", provider: "apps" },
+    style: { parent: "root", label: "Style" }, "style.theme": { parent: "style", label: "Theme" },
+    about: { parent: "root", label: "About", action: "omarchy-launch-about" },
+    hanko: { parent: "root", label: "判子 Hanko", kind: "menu" }, odd: { parent: "root", label: "Odd", kind: "menu" }
+  }
+  const order = ["root", "apps", "style", "style.theme", "about", "hanko", "odd"]
+  const count = id => order.filter(k => (items[k].parent || "") === id).length
+  assert.deepEqual(Bt.rail(items, order, count).map(r => [r.id, r.crest]), [["apps", "器"], ["style", "彩"], ["hanko", "判"], ["odd", "文"]])
+  assert.equal(Bt.topOf("style.theme.font"), "style")
+  assert.equal(Bt.topOf("root"), "root")
+  assert.equal(Bt.crestFor("system", "System"), "政")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
