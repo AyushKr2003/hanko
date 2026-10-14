@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3600">
+<title>Kaze 10 · Shiki</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .cer { position: absolute; inset: 0; background: var(--paper); display: flex; align-items: center; justify-content: center; }
+  .cer .k { font: 520px/1 var(--brush); color: var(--ink); position: relative; }
+  .cer .k.red { color: var(--seal); }
+  .cer .side { position: absolute; left: calc(50% + 330px); top: 50%; transform: translateY(-40%); }
+  .cer .side .e { font: italic 300 64px var(--display); color: var(--inkDim); }
+  .cer .side .s { font: 18px var(--mono); letter-spacing: 4px; color: var(--inkFaint); margin-top: 18px; text-transform: uppercase; }
+  .cer .seal { position: absolute; left: calc(50% + 236px); top: calc(50% + 150px); width: 74px; height: 74px; font-size: 42px; border-radius: 6px; }
+  .cer .skip { position: absolute; right: 60px; bottom: 50px; font: 14px var(--mono); letter-spacing: 3px; color: var(--inkFaint); }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  table { width: 100%; border-collapse: collapse; font-size: 16px; }
+  td, th { text-align: left; padding: 14px; border-top: 1px solid var(--line); vertical-align: top; color: var(--inkMuted); }
+  th { font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); text-transform: uppercase; font-weight: 400; }
+  td.k { font: 34px var(--brush); color: var(--ink); width: 110px; white-space: nowrap; } td.k.red { color: var(--seal); }
+  td.n { color: var(--ink); font-size: 17px; white-space: nowrap; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>10 / 14 · ceremonies</div>
+  <div class="head"><span class="no">10</span><h1>Shiki, ceremony</h1><span class="kj">式</span></div>
+  <p class="lede">Sekiro's 死 fills the screen because death matters there. Kaze keeps that weight for a handful of moments that really are an event: shutting down, logging out, a battery about to die, an update finished. One brushed kanji, written in its stroke order, with English beside it. Rare, at most 1.2 s, and any key skips it.</p>
+
+  <div class="sec"><b>終, the end</b><i></i>shut down · the strokes in order, then the seal is pressed</div>
+  <div class="grid g4" id="end"></div>
+
+  <div class="sec"><b>危, danger</b><i></i>battery at 5% · the one ceremony that may show over a fullscreen app</div>
+  <div class="frame"><div class="fit"><div class="screen" id="danger"></div></div></div>
+
+  <div class="sec"><b>Every ceremony</b><i></i>and nothing else gets one</div>
+  <table>
+    <tr><th></th><th>When</th><th>What happens</th><th>Length</th></tr>
+    <tr><td class="k">終</td><td class="n">Shut down, restart</td><td>Paper fills the screen with the sheath curve. 終 is written stroke by stroke at 40% of the screen's height; the seal is pressed beside it; the screen goes black and the machine goes down. Restart writes 終 then 始 (begin) small beneath it.</td><td>1.2 s</td></tr>
+    <tr><td class="k">退</td><td class="n">Log out</td><td>The same, shorter, and no seal.</td><td>0.8 s</td></tr>
+    <tr><td class="k red">危</td><td class="n">Battery 5%</td><td>危 in red with "Battery 5% · plug in". Once per discharge; then the bar's battery keeps breathing red. Above a fullscreen app it is a band across the middle instead of the whole screen.</td><td>1.2 s</td></tr>
+    <tr><td class="k">新</td><td class="n">Update finished</td><td>On the first login after an Omarchy or Hanko update: 新 with the version beside it. Click it for the changes.</td><td>1.0 s</td></tr>
+    <tr><td class="k">回生</td><td class="n">The shell came back</td><td>If omarchy-shell restarted after a crash, a small 回生 "back" in the bar's corner for a few seconds. Not full screen: it should be rare, but it isn't an event you chose.</td><td>3 s, small</td></tr>
+  </table>
+
+  <div class="notes">
+    <div><b>Written, not set<i>筆</i></b>The kanji are drawn as stroke paths in their real stroke order (KanjiVG's stroke data, CC BY-SA, credited), each stroke revealed with a dash offset at brush speed, then filled with a brush-textured outline so the end frame looks written, not typed.</div>
+    <div><b>Why so few<i>稀</i></b>A ceremony that happens every day stops being one. Five events, all rare, all ones where pausing a second is right. Everything else stays quiet.</div>
+    <div><b>Never in the way<i>譲</i></b>Any key or click skips. Ceremonies never block a shutdown (it carries on underneath) and never show during a fullscreen app except 危, which is a band.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+// stroke reveal approximated with a sweeping mask; the build draws real strokes
+const masks = ['polygon(0 0, 30% 0, 30% 40%, 0 40%)', 'polygon(0 0, 100% 0, 100% 45%, 0 60%)', 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', 'none']
+const labs = ['120 ms · strokes 1–2', '420 ms · strokes 1–6', '800 ms · all 11', '1.2 s · the seal']
+document.getElementById('end').innerHTML = masks.map((m, i) => `<div class="frame"><div class="fit"><div class="screen"><div class="cer"><span class="k" style="${m !== 'none' ? `clip-path:${m}` : ''}">終</span>
+  ${i === 3 ? '<div class="seal">鑑</div><div class="side"><div class="e">The end</div><div class="s">Shutting down</div></div>' : ''}<span class="skip">ANY KEY · SKIP</span></div></div></div><div class="cap"><div class="t">${labs[i]}</div></div></div>`).join('')
+document.getElementById('danger').innerHTML = `<div class="wp" style="background-image:url(img/2-great-wave-dark.webp);opacity:.25"></div>${bar({ lowBattery: true, battery: 5 })}
+  <div style="position:absolute;left:0;right:0;top:330px;height:420px;background:var(--paper);border-top:1px solid var(--seal);border-bottom:1px solid var(--seal);display:flex;align-items:center;justify-content:center;gap:60px">
+   <span style="font:330px/1 var(--brush);color:var(--seal)">危</span>
+   <div><div style="font:italic 300 64px var(--display);color:var(--ink)">Battery 5%</div><div style="font:20px var(--mono);letter-spacing:4px;color:var(--seal);margin-top:16px">PLUG IN · ABOUT 9 MINUTES LEFT</div></div></div>
+  <span class="tag" style="left:60px;bottom:50px;font-size:16px">over a fullscreen window it is this band, not the whole screen</span>`
+ready()
+</script>
+</body></html>
