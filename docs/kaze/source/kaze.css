@@ -14,7 +14,7 @@
   --ui: 'Space Grotesk', sans-serif; --display: 'Fraunces', serif;
   --jp: 'Noto Sans CJK JP', sans-serif; --jps: 'Noto Serif CJK JP', serif; --brush: 'Yuji Boku', 'Noto Serif CJK JP', serif;
 }
-.light {
+.light { color: var(--ink);
   --paper: #ece6da; --paper2: #e4ddcf; --lift: #f3eee5; --sunk: #ddd5c6;
   --ink: #2a2723; --inkDim: #3d3934; --inkMuted: #5a554e; --inkFaint: #6d675f;
   --line: #d3cbbd; --lineSoft: #ddd6c9; --lineStrong: #bdb4a5;

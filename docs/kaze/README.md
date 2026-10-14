@@ -8,12 +8,13 @@ This file is three things:
 2. **The design** (§2–§6): principles, the motion grammar, every surface of the desktop and what it becomes, and the list of things we refuse to do.
 3. **The roadmap** (§7–§9): phases in the usual Hanko order (mockups first, then one surface per phase), what Omarchy allows for each one, risks and open questions.
 
-Nothing here is built yet. Research only, written 2026-10-14.
+Research written 2026-10-14. The mockups for every surface (KZ1) are in [§0](#0-the-mockups); nothing is built in QML yet.
 
 ---
 
 ## Contents
 
+0. [The mockups](#0-the-mockups)
 1. [What the research found](#1-what-the-research-found)
 2. [What it means for a desktop: the seven principles](#2-what-it-means-for-a-desktop-the-seven-principles)
 3. [Motion: Iai 居合, draw, cut, shake off, sheath](#3-motion-iai-居合-draw-cut-shake-off-sheath)
@@ -24,6 +25,37 @@ Nothing here is built yet. Research only, written 2026-10-14.
 8. [Roadmap](#8-roadmap)
 9. [Risks, things to verify, open questions](#9-risks-things-to-verify-open-questions)
 10. [Sources](#10-sources)
+
+---
+
+## 0. The mockups
+
+Fourteen sheets, drawn with the kit in `source/` (tokens, the bar, grass from a wind value; `source/shoot.sh` renders them with headless Chromium) on the user's own prints, re-inked. Pick, cut or change any of them before KZ2 starts.
+
+| # | Sheet | What it shows |
+|---|---|---|
+| 01 | [The desk 机](images/01-desk.webp) | One evening: the printed wave, the grass leaning toward a new letter, the focus sweep, the bar as it is. |
+| 02 | [Iai 居合](images/02-iai.webp) | The five beats on a millisecond ruler, each with its curve and frames, and the spring Kaze never uses. |
+| 03 | [Sumizuri 墨摺](images/03-sumizuri.webp) | Five prints, original / dark rubbing / light ink print, the rule for which tone becomes paper, the sky by the hour. |
+| 04 | [Kaze 風](images/04-kaze.webp) | Grass in four real winds, a gust toward a letter, where the wind state comes from, the frame budget, the edge-only variant. |
+| 05 | [Ha 刃](images/05-ha.webp) | Hairline windows, the focus sweep, open and close, red breathing, workspaces rolling, the Hyprland settings. |
+| 06 | [Taikan 体幹](images/06-taikan.webp) | Volume and brightness filling from the centre, the posture break, muted, crests for switches, the pill it replaces. |
+| 07 | [Fumi 文](images/07-fumi.webp) | Letters as hanging strips: arriving, several, one opened, urgent, cut away. |
+| 08 | [Battō 抜刀](images/08-batto.webp) | The launcher drawn from a line, kinds as crests, the jumping selection, the system menu, Enter as the cut. |
+| 09 | [Taiji 対峙](images/09-taiji.webp) | The lock: still, drawing, deflected, fingerprint, and the diagonal cut onto the desk. |
+| 10 | [Shiki 式](images/10-shiki.webp) | 終 written and sealed, 危 as a band, the table of the five ceremonies. |
+| 11 | [Sumi 墨](images/11-sumi.webp) | The screen in ink with only the theme's red kept, what changes together, riding mode. |
+| 12 | [Dōgu 道具](images/12-dogu.webp) | Greeting, prompt states, btop in four inks, the palette, the brush-tip cursors. |
+| 13 | [Oto 音](images/13-oto.webp) | The six sounds as waveforms, and an hour at the desk (1.4 s of sound in 3600). |
+| 14 | [Daylight 昼](images/14-light-settings.webp) | The desk on a light theme, and Settings › Kaze with every switch. |
+
+What the mockups settled that the text above didn't:
+
+- **Which tone becomes paper.** The print's mean brightness decides: above 0.5 the dark theme prints the negative (a rubbing), below it keeps the tones; the light theme does the opposite. A painting with a mount (the haboku) is cut from it first. No red is ever printed (sheet 03).
+- **The focus sweep needs a faint start.** Bone and ink are too close to see a highlight on an ink edge, so the new edge starts in faint ink, the light runs round, and the edge settles to full ink (sheet 05).
+- **Grass is clumps, not a comb.** Evenly spaced blades read as a barcode. Clumps of 3–8 blades fanning from one root, gaps between clumps and a few pampas plumes read as a field (sheet 04).
+- **Windows don't move when the bar recedes.** Riding mode leaves the print showing where the bar was instead of reflowing every window (sheet 11).
+- **The Settings page is "03 DESK › Kaze"**, next to Motion and Keys (sheet 14).
 
 ---
 
@@ -360,11 +392,12 @@ Same routine as every Hanko phase: design first with mockups, then one surface p
 ### KZ0 · Research and plan ✅
 This file.
 
-### KZ1 · Mockups for every surface ⬜
+### KZ1 · Mockups for every surface ✅
 - An HTML kit under `docs/kaze/source/` (same approach as `docs/mockups/typeset/source/`: one CSS of tokens, Playwright to render).
 - A sheet per surface: lock (idle, typing, wrong, right), wallpaper print (three prints × light/dark), living layer (calm, gust), windows (focus sweep), OSD (50%, 100%, muted), notifications (one, three, opened, urgent), launcher, ceremonies (終 危 新), Sumi mode, terminal.
 - Motion studies as short WebM loops for the Iai beats, the lock cut and the gust.
 - The user picks and trims before anything is built.
+- Done: the fourteen sheets in §0 (motion studies as video loops are left for KZ2, where the real curves run).
 
 ### KZ2 · Iai, the shared motion ⬜
 - `core/Motion.js`: the five beats as tokens (durations, curves), unit-tested; the bar's existing timings move onto them.

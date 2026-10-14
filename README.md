@@ -152,6 +152,7 @@ After a style change in Hanko, run `hyprctl reload` to bring the windows along. 
 - [Every component and combination](docs/COMPONENTS.md)
 - [Design overview](docs/DESIGN.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Kaze 風: the whole desk, research, mockups and plan](docs/kaze/README.md) (in design)
 - [Handoff: the full state of the build](docs/HANDOFF.md)
 - [Changelog](CHANGELOG.md)
 - Earlier design directions are on the `docs` branch.
