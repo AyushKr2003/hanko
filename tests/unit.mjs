@@ -2141,6 +2141,17 @@ test("settings: the Kaze page's switches read and write kaze.json the way the pl
 })
 
 
+test("theme: the Hanko theme ships what Omarchy reads, its paper the bar's", () => {
+  const dir = join(root, "theme")
+  for (const f of ["colors.toml", "hyprland.lua", "icons.theme", "shell.bar.toml", "shell.menu.toml", "shell.launcher.toml", "btop.theme", "neovim.lua", "preview.jpg"])
+    assert.ok(readFileSync(join(dir, f)).length > 0, f)
+  const colors = readFileSync(join(dir, "colors.toml"), "utf8")
+  assert.match(colors, /^background = "#0a0a09"$/m)
+  assert.match(colors, /^foreground = "#ddd5c7"$/m)
+  assert.match(colors, /^red = "#d8452f"$/m)
+  assert.match(readFileSync(join(dir, "neovim.lua"), "utf8"), /colorscheme = "hanko"/)
+})
+
 // Dōgu 道具: the Lua ramp the tools use (assets/kaze/nvim/lua/hanko/ink.lua)
 // must give the bar's inks, and btop's theme must name every key btop reads.
 // Skipped where no Lua is installed.
@@ -2162,6 +2173,12 @@ test("settings: the Kaze page's switches read and write kaze.json the way the pl
     assert.equal(keys.length, 42)
     assert.ok(theme.includes('theme[used_end]="#d8452f"'))
     assert.ok(theme.includes('theme[selected_bg]="#ddd5c7"') && theme.includes('theme[selected_fg]="#0a0a09"'))
+  })
+  test("theme: the Hanko theme's btop.theme is what btop.lua writes for its colours", () => {
+    if (!lua) return
+    const env = { ...process.env, LUA_PATH: join(root, "assets/kaze/nvim/lua/?.lua") + ";;" }
+    const made = execFileSync(lua, [join(root, "assets/kaze/btop.lua"), join(root, "theme/colors.toml")], { env, encoding: "utf8" })
+    assert.equal(readFileSync(join(root, "theme/btop.theme"), "utf8"), made)
   })
 }
 

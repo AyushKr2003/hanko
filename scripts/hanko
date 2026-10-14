@@ -25,6 +25,9 @@
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
 #   hanko sumi [on|off]      Sumi 墨: the whole screen in ink, letters held, the
 #                            wind stronger; toggles with no argument
+#   hanko theme install|remove|status  the Hanko theme (theme/) linked into
+#                            ~/.config/omarchy/themes/hanko; then `omarchy
+#                            theme set hanko`
 #   hanko tools on|off|status Dōgu 道具: btop and Neovim in the theme's inks
 #                            (btop's color_theme and a LazyVim spec; off puts
 #                            Omarchy's back)
@@ -119,6 +122,7 @@ cmd_uninstall() {
   rm -f "$PREVIOUS"
   if desk_on || desk_plugins_present; then cmd_desk off; fi
   if tools_on; then cmd_tools off; fi
+  if [[ -L $THEME_LINK ]]; then cmd_theme remove; fi
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
 }
@@ -470,6 +474,34 @@ LUA
   esac
 }
 
+# The Hanko theme lives in the repo as theme/ (colours, Hyprland, the
+# menu, launcher and bar, btop, Neovim, the prints). `theme install` links it
+# into Omarchy's user themes; a link to your own copy is staged whole (a
+# theme cloned from git may not ship Lua), and Omarchy's templates fill in
+# the terminals. `omarchy theme set hanko` then brings the whole set.
+# Omarchy looks in $HOME/.config (not XDG_CONFIG_HOME) for user themes.
+THEME_LINK="$HOME/.config/omarchy/themes/hanko"
+cmd_theme() {
+  case "${1:-status}" in
+    install)
+      if [[ -e $THEME_LINK && ! -L $THEME_LINK ]]; then fail "$THEME_LINK exists and is not Hanko's link; move it away first"; fi
+      mkdir -p "$(dirname "$THEME_LINK")"
+      ln -sfn "$SRC/theme" "$THEME_LINK"
+      say "The Hanko theme is installed: omarchy theme set hanko"
+      ;;
+    remove)
+      [[ -L $THEME_LINK ]] || { say "The Hanko theme is not installed."; return; }
+      if [[ $(cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null) == hanko ]]; then
+        say "  (Hanko is the theme in use; it stays until you pick another)"
+      fi
+      rm "$THEME_LINK"
+      say "The Hanko theme is removed."
+      ;;
+    status) if [[ -L $THEME_LINK ]]; then say installed; else say "not installed"; fi ;;
+    *) fail "usage: hanko theme install|remove|status" ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -524,6 +556,7 @@ case "${1:-}" in
   desk) shift; cmd_desk "$@" ;;
   sumi) shift; cmd_sumi "$@" ;;
   tools) shift; cmd_tools "$@" ;;
+  theme) shift; cmd_theme "$@" ;;
   doctor) cmd_doctor ;;
   -h|--help|"") awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;

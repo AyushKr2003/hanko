@@ -1,0 +1,32 @@
+# Hanko 判子 – one paper, warm ink, one vermilion seal. Matches the hanko.bar plugin.
+mode = "dark"
+accent = "#ddd5c7"
+selection = "#2a2723"
+muted = "#6e685f"
+
+background = "#0a0a09"
+dark_background = "#070706"
+darker_background = "#040403"
+lighter_background = "#161513"
+
+foreground = "#ddd5c7"
+dark_foreground = "#a39c90"
+light_foreground = "#e8e1d4"
+bright_foreground = "#f2ece0"
+
+red = "#d8452f"
+orange = "#c97a4a"
+yellow = "#c9a865"
+green = "#8a9a6b"
+cyan = "#7f9a96"
+blue = "#6f8aa8"
+magenta = "#a97f8f"
+brown = "#5a3e2e"
+
+bright_red = "#e8604a"
+bright_orange = "#d9946a"
+bright_yellow = "#dbbf82"
+bright_green = "#a3b285"
+bright_cyan = "#9bb3af"
+bright_blue = "#8ca3bd"
+bright_magenta = "#bf99a7"
