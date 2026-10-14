@@ -216,6 +216,16 @@ hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 2.4, bezier = "no
 hl.animation({ leaf = "workspaces", enabled = true, speed = 2.0, bezier = "nuki", style = "slidefade 8%" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2.0, bezier = "nuki", style = "slidefadevert 8%" })
 
+-- ── Sumi 墨, ink only (docs/kaze, mockup 11) ────────────────────────────────
+-- While `hanko sumi on` has left its shader in the state folder, the whole
+-- screen is drawn in ink (it overrides any shader you picked; `hanko sumi
+-- off` hands the screen back to yours on the next reload).
+
+local sumi_shader = state_home .. "/hanko/sumi/sumi.glsl"
+if read(sumi_shader) then
+  hl.config({ decoration = { screen_shader = sumi_shader } })
+end
+
 -- The overview is already animated by QML; keep Hyprland from sliding its
 -- full-screen layer in as well.
 hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, animation = "none" })

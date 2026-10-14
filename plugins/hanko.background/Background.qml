@@ -186,7 +186,16 @@ Item {
     }
   }
   Timer { interval: 15 * 60 * 1000; running: true; repeat: true; onTriggered: root.fetchWind() }
-  readonly property real lean: root.wind.wind === "calm" ? 0 : root.windLean
+  // Sumi 墨 (`hanko sumi on`): the wind blows harder, as Kurosawa Mode's did.
+  property bool sumi: false
+  FileView {
+    path: root.stateHome + "/hanko/sumi/sumi.glsl"
+    watchChanges: true
+    printErrors: false
+    onLoaded: root.sumi = true
+    onLoadFailed: root.sumi = false
+  }
+  readonly property real lean: root.wind.wind === "calm" ? 0 : root.windLean * (root.sumi ? 1.3 : 1)
 
   // Monitors whose shown workspace has a fullscreen window: the grass rests there.
   property var fullscreenOn: ({})
@@ -280,8 +289,11 @@ Item {
     enabled: false
     target: "hankowind"
     function gust(share: string): string { root.gust(parseFloat(share), "", true); return "ok" }
+    // `hanko sumi on|off` says so here (a file watch can't see a file that
+    // doesn't exist yet).
+    function setSumi(on: string): string { root.sumi = on === "true" || on === "on"; return "ok" }
     function state(): string {
-      return JSON.stringify({ lean: root.lean, grass: root.wind.grass, gusts: root.wind.gusts, still: root.still,
+      return JSON.stringify({ lean: root.lean, sumi: root.sumi, grass: root.wind.grass, gusts: root.wind.gusts, still: root.still,
         place: root.place.name || "", fullscreen: Object.keys(root.fullscreenOn) })
     }
   }

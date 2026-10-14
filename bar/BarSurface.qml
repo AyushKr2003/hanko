@@ -122,9 +122,25 @@ Item {
 
   implicitHeight: barHeight
 
+  // Riding 騎 (Kaze, mockup 11): the bar recedes to its rule; the pointer on
+  // it brings everything back. `worn` is 1 for the full bar, 0 for the rule.
+  property bool riding: false
+  HoverHandler { id: ridingHover }
+  readonly property bool recede: root.riding && !ridingHover.hovered
+  property real worn: recede ? 0 : 1
+  Behavior on worn {
+    enabled: !Motion.still
+    NumberAnimation {
+      duration: root.recede ? 600 : Motion.nuki
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: root.recede ? Motion.chiburiCurve : Motion.nukiCurve
+    }
+  }
+
   Rectangle {
     id: paper
     anchors.fill: parent
+    opacity: root.worn
     color: root.style.surface === "glass" ? Ink.paperAt(0.74) : Ink.paper
     radius: root.inset ? 7 : 0
     border.width: root.inset ? 1 : 0
@@ -144,6 +160,7 @@ Item {
   // space alone when dividers are off.
   Row {
     id: left
+    opacity: root.worn
     anchors.left: parent.left
     anchors.leftMargin: Type.px(6)
     anchors.top: parent.top
@@ -253,6 +270,7 @@ Item {
   // purpose when the clock joins the right zone.
   Clock {
     id: centreClock
+    opacity: root.worn
     anchors.centerIn: parent
     visible: !root.clockRight && root.shown("clock")
     mode: root.style.clock || "stacked"
@@ -268,6 +286,7 @@ Item {
   // has something showing before it.
   Row {
     id: right
+    opacity: root.worn
     anchors.right: parent.right
     anchors.rightMargin: Type.px(10)
     anchors.top: parent.top

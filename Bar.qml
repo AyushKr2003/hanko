@@ -522,6 +522,17 @@ Item {
   // ------------------------------------------------------------- hanko IPC
   //
   // omarchy-shell hanko <fn> ...  (scripts/hanko wraps these)
+  // Riding 騎 (docs/kaze, mockup 11): while Sumi is on, the bar recedes to
+  // its rule (the paper and every zone fade); the pointer on it brings them
+  // back. `hanko sumi` says so over IPC; at start the state folder says so.
+  property bool riding: false
+  FileView {
+    path: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/hanko/sumi/sumi.glsl"
+    printErrors: false
+    onLoaded: root.riding = true
+    onLoadFailed: root.riding = false
+  }
+
   IpcHandler {
     target: "hanko"
 
@@ -564,6 +575,8 @@ Item {
     // A press on the seal (Inkan), for a keybinding: prints No. 00, or
     // lifts it off.
     function press(): string { return root.pressSeal(root.focusedScreen()) }
+    // Kaze's riding mode (`hanko sumi on|off`): the bar recedes to its rule.
+    function riding(on: string): string { root.riding = on === "true" || on === "on"; return "ok" }
     function scrollTo(name: string): string {
       return Scroll.indexOf(name) >= 0 && root.openScroll(name, root.focusedScreen()) ? "open" : "unknown"
     }

@@ -23,6 +23,8 @@
 #   hanko press              press the seal: print No. 00 (every sheet on one),
 #                            or lift it off (bind it to a key: see the README)
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
+#   hanko sumi [on|off]      Sumi 墨: the whole screen in ink, letters held, the
+#                            wind stronger; toggles with no argument
 #   hanko desk on|off|status Kaze 風: give the whole desk Hanko's look and motion
 #                            (loads style.lua from looknfeel.lua and installs the
 #                            desk plugin, hanko.desk; any bar). Run `desk on` again
@@ -336,6 +338,51 @@ cmd_desk() {
   esac
 }
 
+# Sumi 墨, ink only (docs/kaze, mockup 11). The shader goes to the state
+# folder with the theme's red baked in (that red survives the ink); style.lua
+# applies it on every reload while it is there. Do-not-disturb holds the
+# letters, and is put back as it was; hanko.background's wind reads the same
+# folder and blows harder.
+SUMI_DIR="$STATE/sumi"
+sumi_on() { [[ -f $SUMI_DIR/sumi.glsl ]]; }
+cmd_sumi() {
+  local want="${1:-toggle}"
+  [[ $want == toggle ]] && { sumi_on && want=off || want=on; }
+  case "$want" in
+    on)
+      local colors red r g b
+      colors="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/current/theme/colors.toml"
+      red="$(grep -m1 -E '^\s*red\s*=' "$colors" 2>/dev/null | sed -E 's/.*"#([0-9a-fA-F]{6})".*/\1/')"
+      [[ $red =~ ^[0-9a-fA-F]{6}$ ]] || red="d8452f"
+      r=$(awk -v n=$((16#${red:0:2})) 'BEGIN { printf "%.3f", n / 255 }')
+      g=$(awk -v n=$((16#${red:2:2})) 'BEGIN { printf "%.3f", n / 255 }')
+      b=$(awk -v n=$((16#${red:4:2})) 'BEGIN { printf "%.3f", n / 255 }')
+      mkdir -p "$SUMI_DIR"
+      sed -E "s/^const vec3 SEAL = .*/const vec3 SEAL = vec3($r, $g, $b);   \/\/ the theme's red (#$red)/" "$SRC/assets/shaders/sumi.glsl" > "$SUMI_DIR/sumi.glsl"
+      if [[ ! -f $SUMI_DIR/dnd-before ]]; then
+        omarchy-shell notifications isDnd 2>/dev/null > "$SUMI_DIR/dnd-before" || echo off > "$SUMI_DIR/dnd-before"
+      fi
+      omarchy-shell -q notifications setDnd true >/dev/null
+      command -v hyprctl >/dev/null && hyprctl eval "hl.config({ decoration = { screen_shader = '$SUMI_DIR/sumi.glsl' } })" >/dev/null 2>&1 || true
+      omarchy-shell -q hankowind setSumi true >/dev/null
+      omarchy-shell -q hanko riding true >/dev/null
+      omarchy-osd -i 墨 -m "Sumi · ink only" -d 1400 >/dev/null 2>&1 || true
+      ;;
+    off)
+      sumi_on || { say "Sumi is off."; return; }
+      rm -f "$SUMI_DIR/sumi.glsl"
+      if [[ $(cat "$SUMI_DIR/dnd-before" 2>/dev/null) != on ]]; then omarchy-shell -q notifications setDnd false >/dev/null; fi
+      rm -f "$SUMI_DIR/dnd-before"
+      hypr_reload
+      omarchy-shell -q hankowind setSumi false >/dev/null
+      omarchy-shell -q hanko riding false >/dev/null
+      omarchy-osd -i 墨 -m "Sumi off" -d 1000 >/dev/null 2>&1 || true
+      ;;
+    status) if sumi_on; then say on; else say off; fi ;;
+    *) fail "usage: hanko sumi [on|off|status]" ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -378,6 +425,7 @@ case "${1:-}" in
     say "form: $form" ;;
   menu) shift; cmd_menu "$@" ;;
   desk) shift; cmd_desk "$@" ;;
+  sumi) shift; cmd_sumi "$@" ;;
   doctor) cmd_doctor ;;
   -h|--help|"") awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;

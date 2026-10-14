@@ -91,6 +91,7 @@ PanelWindow {
   BarSurface {
     id: classicSurface
     anchors.fill: parent
+    riding: win.bar.riding
     // Parked under Inkan: nothing of it is drawn.
     visible: !win.inkan
     style: win.shown
