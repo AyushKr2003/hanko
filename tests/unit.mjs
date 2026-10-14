@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -2118,6 +2118,23 @@ test("oto: silent by default; quiet and on; one sound off on its own; only the b
   assert.equal(Ot.play("nonsense", { sound: "on" }), null)
   assert.equal(Ot.mode({ sound: "loud" }), "off")
   for (const f of Object.values(Ot.EVENTS)) assert.ok(readFileSync(join(root, "assets/sounds/" + f + ".ogg")).length > 500, f)
+})
+
+test("settings: the Kaze page's switches read and write kaze.json the way the plugins read it", () => {
+  assert.deepEqual(Se.KAZE_SWITCHES.map(s => s.key), ["wallpaper", "grass", "gusts", "wind", "sound"])
+  assert.equal(Se.kazeValue({}, "wallpaper"), "print")
+  assert.equal(Se.kazeValue({}, "sound"), "off")
+  assert.equal(Se.kazeValue({}, "gusts"), "on")
+  assert.equal(Se.kazeValue({ gusts: false }, "gusts"), "off")
+  assert.equal(Se.kazeValue({ grass: "petals" }, "grass"), "grass")
+  const d = Se.kazeWith({ wallpaper: "print", extra: 1 }, "gusts", "off")
+  assert.deepEqual(d, { wallpaper: "print", extra: 1, gusts: false })
+  assert.equal(Se.kazeWith({}, "sound", "quiet").sound, "quiet")
+  // what the plugins make of them
+  assert.equal(Pt.wallpaperMode(Se.kazeWith({}, "wallpaper", "original")), "original")
+  assert.deepEqual(Wi.settings(Se.kazeWith(Se.kazeWith({}, "grass", "off"), "gusts", "off")), { grass: "off", gusts: false, wind: "weather" })
+  assert.equal(Ot.mode(Se.kazeWith({}, "sound", "on")), "on")
+  assert.ok(Se.PAGE_LINES.kaze)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

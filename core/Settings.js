@@ -33,6 +33,7 @@ var PAGE_LINES = {
   sheets: "A sheet drops from the cell you click. Pick a sheet, then the hand that draws it; hover a hand to see that sheet in it.",
   scroll: "The handscroll unrolls from the rod with every panel on it. Choose what sits between its sections and what follows Inbox.",
   overview: "The workspace overview: every space at once, its windows where they sit. Pick how it is laid out; each is drawn with your own spaces.",
+  kaze: "The desk beyond the bar: the printed wallpaper, the wind in its grass, sound, and Sumi. Every change is kept as you make it; Undo puts it back.",
   motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, only a new stamp overshoots. The timesheet below is every move Hanko makes; hover a row to play it.",
   keys: "Every key Hanko answers to, where it answers. Hover a key to read what it does; the commands at the foot are for your own Hyprland bindings."
 }
@@ -775,3 +776,40 @@ function pageMatches(page, query) {
   var q = String(query || "").trim().toLowerCase()
   return !q || (page.label + " " + page.jp + " " + page.key).toLowerCase().indexOf(q) >= 0
 }
+
+// Kaze 風 (docs/kaze, settings page): the switches kept in
+// ~/.config/hanko/kaze.json, read by the desk's plugins. The first option of
+// each is its default.
+var KAZE_SWITCHES = [
+  { key: "wallpaper", name: "Print", jp: "摺", line: "Your wallpaper printed again in the theme's paper and ink",
+    options: ["print", "original"], labels: { print: "Print", original: "Original" } },
+  { key: "grass", name: "Grass", jp: "風", line: "Grass at the foot of the print, leaning with the real wind",
+    options: ["grass", "off"], labels: { grass: "Grass", off: "Off" } },
+  { key: "gusts", name: "Gusts", jp: "颯", line: "A gust runs through the grass toward what needs you",
+    options: ["on", "off"], labels: { on: "On", off: "Off" } },
+  { key: "wind", name: "Wind", jp: "嵐", line: "The real wind where you are, or always calm",
+    options: ["weather", "calm"], labels: { weather: "Weather", calm: "Calm" } },
+  { key: "sound", name: "Sound", jp: "音", line: "Six short sounds: clappers, paper, a bell, a sheath's click",
+    options: ["off", "quiet", "on"], labels: { off: "Off", quiet: "Quiet", on: "On" } }
+]
+
+// The option a switch shows for a kaze.json document. `gusts` is a boolean
+// in the file (absent = on); the rest are words.
+function kazeValue(doc, key) {
+  doc = doc || {}
+  var sw = null
+  for (var i = 0; i < KAZE_SWITCHES.length; i++) if (KAZE_SWITCHES[i].key === key) sw = KAZE_SWITCHES[i]
+  if (!sw) return ""
+  if (key === "gusts") return doc.gusts === false ? "off" : "on"
+  return sw.options.indexOf(doc[key]) >= 0 ? doc[key] : sw.options[0]
+}
+
+// A new kaze.json document with one switch set (other keys kept as they are).
+function kazeWith(doc, key, value) {
+  var out = {}
+  for (var k in (doc || {})) out[k] = doc[k]
+  if (key === "gusts") out.gusts = value !== "off"
+  else out[key] = value
+  return out
+}
+
