@@ -2140,4 +2140,29 @@ test("settings: the Kaze page's switches read and write kaze.json the way the pl
   assert.ok(Se.PAGE_LINES.kaze)
 })
 
+
+// Dōgu 道具: the Lua ramp the tools use (assets/kaze/nvim/lua/hanko/ink.lua)
+// must give the bar's inks, and btop's theme must name every key btop reads.
+// Skipped where no Lua is installed.
+{
+  const { execFileSync } = await import("node:child_process")
+  const lua = ["lua", "luajit"].find(cmd => { try { execFileSync(cmd, ["-v"], { stdio: "ignore" }); return true } catch { return false } })
+  test("tools: the Lua ink ramp agrees with InkMath.js, and btop gets every key", () => {
+    if (!lua) return
+    const env = { ...process.env, LUA_PATH: join(root, "assets/kaze/nvim/lua/?.lua") + ";;" }
+    const themes = [["#f8ebeb", "#010000"], ["#2b2924", "#dfdacb"], ["#a9b1d6", "#1a1b26"], ["#575279", "#faf4ed"], ["#d4be98", "#282828"], ["#ddd5c7", "#0a0a09"]]
+    const code = `local I = require("hanko.ink") for _, t in ipairs({${themes.map(([f, b]) => `{"${f}","${b}"}`).join(",")}}) do local r = I.ramp(t[1], t[2]) print(r.ink, r.inkDim, r.inkMuted, r.inkFaint) end`
+    const out = execFileSync(lua, ["-e", code], { env, encoding: "utf8" }).trim().split("\n")
+    themes.forEach(([fg, bg], i) => {
+      const r = I.ramp(fg, bg)
+      assert.equal(out[i], [r.ink, r.inkDim, r.inkMuted, r.inkFaint].join("\t"), `${fg} on ${bg}`)
+    })
+    const theme = execFileSync(lua, [join(root, "assets/kaze/btop.lua"), join(root, "tests/harness/fixtures/colors.toml")], { env, encoding: "utf8" })
+    const keys = [...theme.matchAll(/^theme\[(\w+)\]="#[0-9a-f]{6}"$/gm)].map(m => m[1])
+    assert.equal(keys.length, 42)
+    assert.ok(theme.includes('theme[used_end]="#d8452f"'))
+    assert.ok(theme.includes('theme[selected_bg]="#ddd5c7"') && theme.includes('theme[selected_fg]="#0a0a09"'))
+  })
+}
+
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

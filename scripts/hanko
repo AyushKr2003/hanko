@@ -25,6 +25,9 @@
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
 #   hanko sumi [on|off]      Sumi 墨: the whole screen in ink, letters held, the
 #                            wind stronger; toggles with no argument
+#   hanko tools on|off|status Dōgu 道具: btop and Neovim in the theme's inks
+#                            (btop's color_theme and a LazyVim spec; off puts
+#                            Omarchy's back)
 #   hanko desk on|off|status Kaze 風: give the whole desk Hanko's look and motion
 #                            (loads style.lua from looknfeel.lua and installs the
 #                            desk plugin, hanko.desk; any bar). Run `desk on` again
@@ -115,6 +118,7 @@ cmd_uninstall() {
   fi
   rm -f "$PREVIOUS"
   if desk_on || desk_plugins_present; then cmd_desk off; fi
+  if tools_on; then cmd_tools off; fi
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
 }
@@ -384,6 +388,88 @@ cmd_sumi() {
   esac
 }
 
+# Dōgu 道具, the tools (docs/kaze, mockup 12): btop and Neovim on the bar's
+# paper and inks, from the current theme. Opt-in, like the prompt: `tools on`
+# writes btop's hanko.theme (a theme-set hook rewrites it), points btop.conf's
+# color_theme at it, and adds a LazyVim spec that loads colors/hanko.lua
+# (which reads the theme itself, so Neovim follows a theme switch on its
+# own). `tools off` puts btop's previous theme back and removes the spec.
+BTOP_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/btop/btop.conf"
+BTOP_THEME="${XDG_CONFIG_HOME:-$HOME/.config}/btop/themes/hanko.theme"
+NVIM_SPEC="${XDG_CONFIG_HOME:-$HOME/.config}/nvim/lua/plugins/zz-hanko-kaze.lua"
+TOOLS_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/theme-set.d/51-hanko-tools"
+tools_on() { [[ -f $NVIM_SPEC || -f $STATE/tools/btop-before ]]; }
+
+# A Lua to run the generators with: lua, luajit, or Neovim's own.
+lua_run() {
+  local path="$SRC/assets/kaze/nvim/lua/?.lua;;"
+  if command -v lua >/dev/null 2>&1; then LUA_PATH="$path" lua "$@"
+  elif command -v luajit >/dev/null 2>&1; then LUA_PATH="$path" luajit "$@"
+  elif command -v nvim >/dev/null 2>&1; then LUA_PATH="$path" nvim -l "$@"
+  else fail "no Lua found (lua, luajit or nvim)"; fi
+}
+btop_write() {
+  mkdir -p "$(dirname "$BTOP_THEME")"
+  lua_run "$SRC/assets/kaze/btop.lua" > "$BTOP_THEME.tmp" && mv "$BTOP_THEME.tmp" "$BTOP_THEME"
+}
+
+cmd_tools() {
+  case "${1:-status}" in
+    on)
+      btop_write
+      if [[ -f $BTOP_CONF ]]; then
+        mkdir -p "$STATE/tools"
+        if [[ ! -f $STATE/tools/btop-before ]]; then
+          sed -nE 's/^color_theme *= *"(.*)"/\1/p' "$BTOP_CONF" | head -1 > "$STATE/tools/btop-before"
+        fi
+        sed -i -E 's/^color_theme *=.*/color_theme = "hanko"/' "$BTOP_CONF"
+      else
+        mkdir -p "$STATE/tools" "$(dirname "$BTOP_CONF")"
+        echo "" > "$STATE/tools/btop-before"
+        printf 'color_theme = "hanko"\n' > "$BTOP_CONF"
+      fi
+      write_hook "$TOOLS_HOOK" "\"$SRC/scripts/hanko\" tools refresh >/dev/null 2>&1 || true"
+      if [[ -d $(dirname "$NVIM_SPEC") ]]; then
+        cat > "$NVIM_SPEC" <<LUA
+-- Hanko 判子 · Kaze 風: Neovim on the bar's paper (hanko tools off removes this).
+-- colors/hanko.lua reads the current Omarchy theme, so it follows a theme
+-- switch; Omarchy's hot reload applies its own scheme first, then this one.
+return {
+  {
+    name = "hanko-kaze",
+    dir = "$SRC/assets/kaze/nvim",
+    lazy = false,
+    priority = 1001,
+    config = function()
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "LazyReload",
+        callback = function() vim.defer_fn(function() pcall(vim.cmd.colorscheme, "hanko") end, 150) end,
+      })
+    end,
+  },
+  { "LazyVim/LazyVim", opts = { colorscheme = "hanko" } },
+}
+LUA
+      else
+        say "  (no ~/.config/nvim/lua/plugins: Neovim left alone; :colorscheme hanko works with $SRC/assets/kaze/nvim on the runtimepath)"
+      fi
+      say "Tools on: btop and Neovim in your theme's inks (restart btop and Neovim to see them)."
+      ;;
+    refresh) [[ -f $BTOP_THEME ]] && btop_write ;;
+    off)
+      tools_on || { say "Tools are off."; return; }
+      if [[ -f $STATE/tools/btop-before && -f $BTOP_CONF ]]; then
+        local before; before="$(cat "$STATE/tools/btop-before")"
+        sed -i -E "s/^color_theme *=.*/color_theme = \"${before:-current}\"/" "$BTOP_CONF"
+      fi
+      rm -f "$STATE/tools/btop-before" "$BTOP_THEME" "$NVIM_SPEC" "$TOOLS_HOOK"
+      say "Tools off: btop and Neovim are back on Omarchy's theme."
+      ;;
+    status) if tools_on; then say on; else say off; fi ;;
+    *) fail "usage: hanko tools on|off|status" ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -405,6 +491,7 @@ cmd_doctor() {
     else say "  FAIL  $id is installed but does not answer (Omarchy's own may be missing; hanko desk on retries)"; ok=0; fi
   done
   if sumi_on; then say "  --    Sumi is on (hanko sumi off)"; fi
+  if tools_on; then check "Tools: btop's hanko theme is written" "[[ -s '$BTOP_THEME' ]]"; fi
   if shell_up; then
     local w
     w="$(omarchy-shell hanko warnings 2>/dev/null || true)"
@@ -436,6 +523,7 @@ case "${1:-}" in
   menu) shift; cmd_menu "$@" ;;
   desk) shift; cmd_desk "$@" ;;
   sumi) shift; cmd_sumi "$@" ;;
+  tools) shift; cmd_tools "$@" ;;
   doctor) cmd_doctor ;;
   -h|--help|"") awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;
