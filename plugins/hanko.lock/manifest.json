@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "hanko.lock",
+  "name": "Hanko lock",
+  "version": "0.1.0",
+  "author": "AyushKr2003",
+  "description": "Kaze, Taiji: the lock screen as a standoff, still but for the grass, the time in the serif, a blade that grows a nick per key. Omarchy's lock service and both PAM flows unchanged; only the view is new.",
+  "omarchy": {
+    "capabilities": [
+      "authentication"
+    ],
+    "clonedFrom": "omarchy.lock"
+  },
+  "kinds": [
+    "service"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml"
+  },
+  "license": "MIT"
+}

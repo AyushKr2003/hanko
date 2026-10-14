@@ -43,6 +43,7 @@ const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "
 const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "view", "crestFor", "word", "halves"])
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare"])
+const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -2063,6 +2064,43 @@ test("fumi: five strips at most, then a count; bodies as plain words; time and g
   assert.equal(Fu.timeOf(new Date(2026, 9, 14, 9, 5).getTime()), "09:05")
   assert.equal(Fu.gustShare(96, 1920), 0.95)
   assert.equal(Fu.gustShare(5000, 1920), 0)
+})
+
+test("taiji: the blade grows a nick a key, never past its length, and draws no password", () => {
+  assert.equal(Tj.bladeWidth(0), 0)
+  assert.equal(Tj.bladeWidth(1), Tj.LEAD + Tj.NICK + 16)
+  assert.equal(Tj.bladeWidth(200, 640), 640)
+  assert.equal(Tj.nicks(0).length, 0)
+  assert.equal(Tj.nicks(9).length, 9)
+  const many = Tj.nicks(200, 640)
+  assert.ok(many.length > 0 && many.length < 200 && Math.max(...many) <= 632)
+})
+
+test("taiji: the hint says what the lock is doing; red only after a wrong password", () => {
+  assert.deepEqual(Tj.hint({}), { text: "Type to unlock", red: false })
+  assert.equal(Tj.hint({ fingerprint: true }).text, "Type to unlock · or touch the reader")
+  assert.equal(Tj.hint({ count: 9 }).text, "9 characters · Enter to cut")
+  assert.equal(Tj.hint({ count: 1 }).text, "1 character · Enter to cut")
+  assert.deepEqual(Tj.hint({ failure: "x", attempts: 2 }), { text: "Not that one · 2", red: true })
+  assert.equal(Tj.hint({ authenticating: true, failure: "x" }).text, "Checking…")
+  assert.equal(Tj.dayLine(new Date(2026, 9, 14)), "Wednesday · 14 October")
+  assert.equal(Tj.nameOf("shadow"), "Shadow")
+  assert.equal(Tj.sentence("chrysanthemums bloom"), "Chrysanthemums bloom")
+})
+
+test("taiji: the lock clone keeps Omarchy's service byte for byte and the view's whole interface", () => {
+  const ours = join(root, "plugins/hanko.lock")
+  const theirs = "/usr/share/omarchy/shell/plugins/lock"
+  let stock = null
+  try { stock = readFileSync(theirs + "/Service.qml", "utf8") } catch (e) {}
+  if (stock !== null) assert.equal(readFileSync(ours + "/Service.qml", "utf8"), stock, "Service.qml differs from Omarchy's")
+  const view = readFileSync(ours + "/LockView.qml", "utf8")
+  for (const p of ["backgroundPath", "backgroundVersion", "fingerprintConfigured", "authenticatingPassword", "failureMessage",
+    "failedAttempts", "inputEnabled", "loadBackground", "passwordText"]) assert.ok(new RegExp(`property \\w+ ${p}:`).test(view), "LockView lost " + p)
+  for (const sig of ["submitPassword(string password)", "passwordTextEdited(string password)", "clearFailureRequested()", "wakeRequested()"])
+    assert.ok(view.includes("signal " + sig), "LockView lost signal " + sig)
+  for (const keep of ["echoMode: TextInput.Password", "root.submitPassword(submitted)", "root.passwordTextEdited(text)", "forceActiveFocus()"])
+    assert.ok(view.includes(keep), "LockView lost " + keep)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

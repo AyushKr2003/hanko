@@ -198,12 +198,13 @@ hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 
 # Kaze's surfaces are plugins of their own under plugins/ (hanko.desk: the
 # focus sweep and urgent frames; hanko.background: the printed wallpaper, a
 # clone of omarchy.background; hanko.osd: posture, a clone of omarchy.osd;
-# hanko.notifications: letters; hanko.menu: the draw, a clone of omarchy.menu),
+# hanko.notifications: letters; hanko.menu: the draw, a clone of omarchy.menu;
+# hanko.lock: the standoff, a clone of omarchy.lock with only its view new),
 # all sharing Hanko's core/ and its fonts. Omarchy allows no
 # symlinks inside a plugin, so each is assembled as a copy: its own files,
 # core/, assets/fonts and bin/hanko-print. `desk build ID DIR` does only that (the tests
 # validate and lint the result).
-SURFACES=(hanko.desk hanko.background hanko.osd hanko.notifications hanko.menu)
+SURFACES=(hanko.desk hanko.background hanko.osd hanko.notifications hanko.menu hanko.lock)
 
 # Prints the files it changed (rsync's itemized list), nothing when up to date.
 surface_build() {
@@ -248,6 +249,7 @@ surface_probe() {
     hanko.osd) omarchy-shell osd ping ;;
     hanko.notifications) omarchy-shell notifications ping ;;
     hanko.menu) omarchy-shell shell call omarchy.menu ping "" | grep -x ok ;;
+    hanko.lock) omarchy-shell lock status ;;
   esac
 }
 desk_plugins_check() {

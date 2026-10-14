@@ -191,6 +191,7 @@ Item {
           text: root.v.muted ? root.v.word : Math.round(root.figure)
           color: root.v.red ? Ink.seal : Ink.ink
           font.family: Type.display
+          font.variableAxes: { "wght": 400 }
           font.pixelSize: Math.round(34 * panel.k)
           font.features: { "tnum": 1 }
         }
@@ -297,6 +298,7 @@ Item {
             text: root.v.word
             color: Ink.ink
             font.family: Type.display
+            font.variableAxes: { "wght": 400 }
             font.pixelSize: Math.round(30 * panel.k)
           }
         }
