@@ -1,0 +1,107 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3600">
+<title>Kaze 04 · The wind</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .strip { position: relative; height: 230px; overflow: hidden; background: var(--paper); }
+  .strip .wp { position: absolute; inset: 0; background-size: 1776px auto; background-position: center 82%; opacity: .5; }
+  .strip .grass { width: 100%; }
+  .strip .rd { position: absolute; right: 22px; top: 18px; text-align: right; }
+  .strip .rd .a { font: 13px var(--mono); letter-spacing: 2px; color: var(--inkFaint); text-transform: uppercase; }
+  .strip .rd .b { font: 400 30px var(--display); color: var(--ink); margin-top: 4px; }
+  .strip .rd .b i { font-style: normal; font-family: var(--jps); color: var(--inkDim); font-size: 22px; margin-left: 8px; }
+  .target { position: absolute; top: 0; width: 46px; height: 120px; border: 1px solid var(--lineStrong); border-top: 0; background: var(--lift); display: flex; flex-direction: column; align-items: center; padding-top: 12px; }
+  .target .mon { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font: 600 13px var(--jps); }
+  .seq { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .seq .strip { height: 220px; }
+  .flow { display: grid; grid-template-columns: 1fr 70px 1fr 70px 1fr; align-items: center; margin-top: 8px; }
+  .flow .bx { border: 1px solid var(--line); padding: 20px 22px; background: var(--paper); min-height: 150px; }
+  .flow .bx .h { font: 13px var(--mono); letter-spacing: 2.4px; color: var(--inkFaint); text-transform: uppercase; }
+  .flow .bx .v { font: 400 28px var(--display); margin-top: 10px; } .flow .bx .v small { font-family: var(--ui); font-size: 15px; color: var(--inkMuted); margin-left: 6px; }
+  .flow .bx .d { font-size: 15px; color: var(--inkMuted); margin-top: 8px; line-height: 1.45; }
+  .flow .ar { height: 1px; background: var(--inkFaint); margin: 0 12px; position: relative; } .flow .ar::after { content: ''; position: absolute; right: -1px; top: -4px; border-left: 7px solid var(--inkFaint); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+  .fps { position: relative; height: 150px; border: 1px solid var(--line); background: var(--paper); margin-top: 8px; }
+  .fps svg { position: absolute; inset: 0; }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  .edgebar { position: relative; height: 120px; background: var(--paper); overflow: hidden; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>04 / 14 · the living layer</div>
+  <div class="head"><span class="no">04</span><h1>Kaze, the wind is real</h1><span class="kj">風</span></div>
+  <p class="lede">A hundred blades of grass along the foot of the print, in the faintest ink. They lean with the actual wind outside (Hanko already reads the weather for the bar). A still day is still. And when something needs you, one gust runs through them toward it, the way Tsushima's wind shows the road, then the grass settles.</p>
+
+  <div class="sec"><b>Four days</b><i></i>the lean follows the reading</div>
+  <div class="grid" style="gap:16px" id="days"></div>
+
+  <div class="sec"><b>The gust</b><i></i>a letter arrives top right · 0, 300 and 600 ms</div>
+  <div class="seq" id="gust"></div>
+
+  <div class="sec"><b>Where it comes from</b><i></i>one state, every sense</div>
+  <div class="flow">
+    <div class="bx"><div class="h">Weather · now</div><div class="v">14 km/h<small>from the west</small></div><div class="d">Open-Meteo through Hanko's Weather service, every 15 minutes. Direction gives the sign, speed the size: lean = speed / 40, at most 1.</div></div>
+    <div class="ar"></div>
+    <div class="bx"><div class="h">Wind state</div><div class="v">lean 0.35<small>sway ±0.04</small></div><div class="d">One small service holds it. The grass, the sound of the wind (if on), Sumi mode's stronger wind and the lock screen all read the same value.</div></div>
+    <div class="ar"></div>
+    <div class="bx"><div class="h">Gusts</div><div class="v">toward<small>what needs you</small></div><div class="d">An urgent workspace, a letter that asks for action, a reminder. A gust starts at the far side and runs to it in 600 ms, once per event, never repeated.</div></div>
+  </div>
+
+  <div class="sec"><b>It rests</b><i></i>frames per second over two minutes</div>
+  <div class="fps" id="fps"></div>
+
+  <div class="sec"><b>Or only the edge</b><i></i>kaze: edge · the gust runs along the bar's rule instead</div>
+  <div class="frame"><div class="edgebar" id="edge"></div></div>
+
+  <div class="notes">
+    <div><b>Information, not decoration<i>知</i></b>Most "Japanese" desktops add falling petals for looks. Here the only moving nature means something: the weather, or a thing that needs you. If neither changed, nothing moves.</div>
+    <div><b>Budget<i>節</i></b>0 fps at rest. Sway is a slow 2 fps nudge on windy days; a gust is 30 fps for 600 ms. Paused under a fullscreen window and on battery below 30%. Blades are one static path set, bent in a vertex shader.</div>
+    <div><b>Switches<i>切</i></b>kaze: grass | edge | off. Gusts: on | off. Wind from weather, or a fixed calm. With motion still, the grass is drawn once at the day's lean and gusts don't run.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+const W = 1776
+const days = [
+  ['Calm', '0 km/h', '凪', 0, 'img/1-pines-night-dark.webp'],
+  ['A breeze from the west', '9 km/h', '微風', 0.22, 'img/1-pines-night-dark.webp'],
+  ['Strong wind from the east', '31 km/h', '強風', -0.75, 'img/6-sudden-shower-dark.webp'],
+  ['Storm', '58 km/h', '嵐', 1.25, 'img/6-sudden-shower-dark.webp'],
+]
+document.getElementById('days').innerHTML = days.map(([n, s, k, w, img], i) =>
+  `<div class="frame"><div class="strip"><div class="wp" style="background-image:url(${img})"></div><div class="ground" style="height:160px"></div>${grass({ width: W, height: 170, count: 260, wind: w, seed: 3 + i, color: 'var(--inkMuted)', opacity: .95 })}<div class="rd"><div class="a">${n}</div><div class="b">${s}<i>${k}</i></div></div></div></div>`).join('')
+
+const gw = 572
+document.getElementById('gust').innerHTML = [0, 0.5, 1].map((t, i) => {
+  const gx = 40 + t * (gw - 70)
+  return `<div class="frame"><div class="strip"><div class="wp" style="background-image:url(img/1-pines-night-dark.webp);background-size:auto 230%;background-position:right 85%"></div><div class="ground" style="height:150px"></div>
+   ${grass({ width: gw, height: 160, count: 150, gaps: 0.04, spacing: 0.6, wind: 0.08, gust: i ? { x: gx, width: 110, strength: 1.5 } : null, seed: 21, color: 'var(--inkMuted)', opacity: .95 })}
+   <div class="target" style="right:18px"><div class="mon">話</div></div>
+   <span class="tag" style="left:16px;top:16px">${[0, 300, 600][i]} ms</span></div></div>`
+}).join('')
+
+// fps timeline: 120 s; rest 0, sway 2 fps on wind, two gusts, a fullscreen pause
+const fw = 1776, fh = 150
+let d = '', x0 = 50, xs = (fw - 70) / 120
+const y = f => fh - 26 - f / 30 * (fh - 50)
+const pts = []
+for (let s = 0; s <= 120; s += 0.25) {
+  let f = 0
+  if (s > 20 && s < 90) f = 2
+  if ((s > 34 && s < 34.6) || (s > 71 && s < 71.6)) f = 30
+  if (s > 95 && s < 115) f = 0
+  pts.push([x0 + s * xs, y(f)])
+}
+d = 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(',')).join('L')
+let ax = ''
+for (let s = 0; s <= 120; s += 20) ax += `<text x="${x0 + s * xs}" y="${fh - 8}" fill="var(--inkFaint)" font-family="var(--mono)" font-size="11" text-anchor="middle">${s}s</text>`
+const lab = (s, t, yy, red) => `<text x="${x0 + s * xs}" y="${yy}" fill="${red ? 'var(--seal)' : 'var(--inkMuted)'}" font-family="var(--mono)" font-size="11.5" letter-spacing="1.5">${t}</text>`
+document.getElementById('fps').innerHTML = `<svg width="${fw}" height="${fh}"><line x1="${x0}" x2="${fw - 20}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)"/><line x1="${x0}" x2="${fw - 20}" y1="${y(30)}" y2="${y(30)}" stroke="var(--line)" stroke-dasharray="3 3"/>
+  <text x="12" y="${y(30) + 4}" fill="var(--inkFaint)" font-family="var(--mono)" font-size="11">30</text><text x="18" y="${y(0) + 4}" fill="var(--inkFaint)" font-family="var(--mono)" font-size="11">0</text>
+  <path d="${d}" fill="none" stroke="var(--ink)" stroke-width="1.6"/>${ax}
+  ${lab(2, 'CALM · 0 FPS', 40)}${lab(22, 'WIND · 2 FPS SWAY', 92)}${lab(35.5, 'GUST · 600 MS', 30)}${lab(72.5, 'GUST', 30)}${lab(96, 'FULLSCREEN · PAUSED', 92)}</svg>`
+
+// edge variant: bar + rodrule gust
+document.getElementById('edge').innerHTML = `<div style="position:absolute;left:0;top:0;width:1920px;transform:scale(${1776 / 1920});transform-origin:0 0">${bar({ gust: [62, 30] })}</div><span class="tag" style="left:24px;top:70px">the gust runs along the rule toward the letter's stamp, then the rule is plain again</span>`
+ready()
+</script>
+</body></html>

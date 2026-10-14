@@ -1,0 +1,99 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3400">
+<title>Kaze 05 · Ha, the edge</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .mini { position: relative; height: 250px; background: var(--paper2); overflow: hidden; }
+  .mini .wp { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: .35; }
+  .w { position: absolute; background: var(--paper); border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); }
+  .w.f { border-color: var(--ink); }
+  .w .l { position: absolute; left: 12px; height: 4px; background: var(--inkFaint); opacity: .7; }
+  .w.u { border-color: var(--seal); }
+  .sw { position: absolute; z-index: 2; }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  table { width: 100%; border-collapse: collapse; font-size: 16px; }
+  td, th { text-align: left; padding: 12px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); text-transform: uppercase; font-weight: 400; }
+  td.k { font-family: var(--mono); font-size: 14px; color: var(--ink); white-space: nowrap; } td { color: var(--inkMuted); } td.v { font-family: var(--mono); font-size: 14px; color: var(--inkDim); white-space: nowrap; }
+  .ws { position: absolute; top: 18px; bottom: 18px; width: 80%; border: 1px solid var(--line); background: var(--paper); }
+  .ws .n { position: absolute; left: 12px; top: 10px; font: 22px var(--jps); color: var(--inkDim); }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>05 / 14 · windows</div>
+  <div class="head"><span class="no">05</span><h1>Ha, the edge of the blade</h1><span class="kj">刃</span></div>
+  <p class="lede">Windows are plain sheets: square corners, a 1 px edge, no shadow, no blur. The focused one has a full-ink edge; the rest keep a fifth of it. When focus moves, the new edge starts faint, light runs once round it like light down a blade, and the edge is left in full ink. That is the only thing Hyprland ever animates on a still desk.</p>
+
+  <div class="sec"><b>The focus sweep</b><i></i>Super + → · 0 to 600 ms · borderangle, once</div>
+  <div class="grid g4" id="sweep"></div>
+
+  <div class="sec"><b>Open, close, needs you</b><i></i>nuki from the near edge · nōtō back into it · red breathes</div>
+  <div class="grid g4" id="oc"></div>
+
+  <div class="sec"><b>Workspaces roll like a scroll</b><i></i>参 → 肆 · slide 8% with the draw curve</div>
+  <div class="grid g4" id="roll"></div>
+
+  <div class="sec"><b>hanko.lua</b><i></i>loaded by looknfeel.lua while Hanko is the bar, the way Omacale loads its own</div>
+  <table>
+    <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+    <tr><td class="k">decoration.rounding</td><td class="v">0</td><td>A sheet of paper has corners.</td></tr>
+    <tr><td class="k">general.border_size</td><td class="v">1</td><td>Hairlines, not frames (Hanko rule 5).</td></tr>
+    <tr><td class="k">col.active_border</td><td class="v">ink ink 45deg → ink, bone, ink</td><td>A gradient whose bright part only shows while the angle animates; at rest it reads as plain ink.</td></tr>
+    <tr><td class="k">col.inactive_border</td><td class="v">ink @ 22%</td><td>Present, not loud.</td></tr>
+    <tr><td class="k">decoration.shadow.enabled</td><td class="v">false</td><td>No shadows anywhere.</td></tr>
+    <tr><td class="k">decoration.blur.enabled</td><td class="v">false</td><td>No glass. Paper is opaque.</td></tr>
+    <tr><td class="k">decoration.dim_inactive</td><td class="v">true · 0.06</td><td>Barely there: the focused sheet reads as the lit one.</td></tr>
+    <tr><td class="k">general.gaps_in / gaps_out</td><td class="v">6 / 12</td><td>Ma between sheets, enough to see the print.</td></tr>
+    <tr><td class="k">animation windowsIn</td><td class="v">1.6 · nuki · slide</td><td>Draw: 160 ms, from the nearest edge, no pop-in scale.</td></tr>
+    <tr><td class="k">animation windowsOut</td><td class="v">2.4 · noto · slide</td><td>Sheath: slower out than in.</td></tr>
+    <tr><td class="k">animation workspaces</td><td class="v">2.0 · nuki · slidefade 8%</td><td>A short roll, not a full-screen swipe.</td></tr>
+    <tr><td class="k">animation borderangle</td><td class="v">6 · nuki · once</td><td>The sweep: one pass on focus, then still.</td></tr>
+    <tr><td class="k">urgent windows</td><td class="v">red, breathing 1.1 s</td><td>Through Hanko's event watcher, since Hyprland has no urgent colour; never colour alone.</td></tr>
+  </table>
+
+  <div class="notes">
+    <div><b>Why only one motion<i>一</i></b>Hyprland can wobble, pop, bounce and blur. Kaze uses none of it. A desk that is still makes the one move (focus) unmissable.</div>
+    <div><b>Floating windows<i>浮</i></b>Floating dialogs get the same edge and a 4 px paper margin outside it (a mat, not a shadow), so they lift off the print without a drop shadow.</div>
+    <div><b>To verify<i>験</i></b>That borderangle with "once" runs on every focus change on the installed Hyprland, and its cost at 4K. If it doesn't, the sweep falls back to a 200 ms ink-up of the border (kamae).</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+const box = (inner, img = 'img/2-great-wave-dark.webp') => `<div class="frame"><div class="mini"><div class="wp" style="background-image:url(${img})"></div>${inner}</div></div>`
+const lines = n => Array.from({ length: n }, (_, i) => `<div class="l" style="top:${16 + i * 14}px;width:${40 + ((i * 37) % 50)}%"></div>`).join('')
+// a window and a sweep segment travelling round it (t: 0..1 of the perimeter)
+function sweepWin(t) {
+  const L = 10, T = 12, Wd = 400, H = 226
+  let seg = ''
+  if (t > 0 && t < 1) {
+    const P = 2 * (Wd + H), pos = t * P, len = 240
+    const pieces = []
+    // walk the perimeter from top-left, clockwise
+    const at = d => { d = ((d % P) + P) % P; if (d < Wd) return ['t', d]; d -= Wd; if (d < H) return ['r', d]; d -= H; if (d < Wd) return ['b', Wd - d]; d -= Wd; return ['l', H - d] }
+    for (let k = 0; k < 24; k++) {
+      const d = pos - len + k * len / 24, [side, o] = at(d), op = (k / 24) ** 1.6
+      const st = side === 't' ? `left:${L + o}px;top:${T}px;width:${len / 24 + 1}px;height:2px` : side === "b" ? `left:${L + o}px;top:${T + H - 1}px;width:${len / 24 + 1}px;height:2px` : side === 'r' ? `left:${L + Wd}px;top:${T + o}px;width:1px;height:${len / 24 + 1}px` : `left:${L}px;top:${T + o}px;width:1px;height:${len / 24 + 1}px`
+      pieces.push(`<div class="sw" style="${st};background:var(--bone);opacity:${op.toFixed(2)}"></div>`)
+    }
+    seg = pieces.join('')
+  }
+  return `<div class="w" style="left:-300px;top:12px;width:302px;height:226px">${lines(6)}</div><div class="w f" style="left:${L}px;top:${T}px;width:${Wd}px;height:${H}px;border-color:${t < 1 ? 'var(--inkFaint)' : 'var(--ink)'}">${lines(9)}</div>${seg}`
+}
+document.getElementById('sweep').innerHTML = [[0, '0 ms'], [0.33, '150 ms'], [0.7, '380 ms'], [1, '600 ms · plain ink']].map(([t, l]) => box(sweepWin(t) + `<span class="tag" style="right:14px;bottom:10px">${l}</span>`)).join('')
+
+const oc = [
+  [`<div class="w f" style="left:60%;top:12px;width:40%;height:226px;border-right:0">${lines(5)}</div><span class="tag" style="left:14px;bottom:10px">open · 62 ms</span>`],
+  [`<div class="w f" style="left:22px;top:12px;width:calc(100% - 22px);height:226px;border-right:0">${lines(9)}</div><span class="tag" style="left:14px;bottom:10px;background:var(--paper)">open · 190 ms · stops dead</span>`],
+  [`<div class="w" style="left:12px;top:12px;width:86%;height:226px">${lines(8)}</div><div class="w f" style="left:12px;top:12px;width:14%;height:226px;border-left:0"></div><span class="tag" style="right:14px;bottom:10px">close · 192 ms</span>`],
+  [`<div class="w u" style="left:12px;top:12px;width:420px;height:226px">${lines(8)}</div><span class="tag red" style="right:14px;bottom:10px">needs you · breathing</span>`],
+]
+document.getElementById('oc').innerHTML = oc.map(([i]) => box(i)).join('')
+
+const roll = [0, 0.35, 0.8, 1].map(t => {
+  const off = t * 100
+  return box(`<div class="ws" style="left:${10 - off}%"><span class="n">参</span></div><div class="ws" style="left:${110 - off}%"><span class="n">肆</span></div><span class="tag" style="right:14px;bottom:4px;background:var(--paper);padding:2px 6px">${Math.round(t * 200)} ms</span>`, 'img/1-pines-night-dark.webp')
+})
+document.getElementById('roll').innerHTML = roll.join('')
+ready()
+</script>
+</body></html>

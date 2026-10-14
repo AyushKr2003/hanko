@@ -7,30 +7,43 @@ function rng(seed) {
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296 }
 }
 
-// The living layer: brush blades along the foot of the screen.
-//   wind   -1..1, the real wind (sign = direction, size = strength)
+// The living layer: clumps of brush blades along the foot of the screen,
+// with gaps between them (ma) and a few pampas plumes, like susuki in a field.
+//   wind   -1..1+, the real wind (sign = direction, size = strength)
 //   gust   { x, width, strength } a gust passing, or null
-//   count  blades; height  the layer's height in px
-function grass({ width = 1920, height = 150, count = 110, wind = 0.25, gust = null, seed = 7, color = 'var(--inkFaint)', opacity = 0.75 } = {}) {
+//   count  roughly how many blades; height  the layer's height in px
+function grass({ width = 1920, height = 150, count = 110, wind = 0.25, gust = null, seed = 7, color = 'var(--inkFaint)', opacity = 0.75, gaps = 0.18, spacing = 1 } = {}) {
   const r = rng(seed)
   let paths = ''
-  for (let i = 0; i < count; i++) {
-    const x = (i + r() * 0.9) * (width / count)
-    const h = height * (0.32 + r() * 0.62)
-    let lean = wind * (0.7 + r() * 0.5)
-    if (gust) {
-      const d = (x - gust.x) / gust.width
-      lean += gust.strength * Math.exp(-d * d * 2)
+  const blade = (x, len, rest, w, op, plume) => {
+    let lean = wind * (0.75 + r() * 0.5)
+    if (gust) { const d = (x - gust.x) / gust.width; lean += gust.strength * Math.exp(-d * d * 2) }
+    // the angle from upright: the blade's own rest angle plus the wind, longer blades bend more
+    const ang = Math.max(-1.35, Math.min(1.35, rest + lean * (0.55 + len / height * 0.6)))
+    const tipX = x + Math.sin(ang) * len, tipY = height - Math.cos(ang) * len
+    // the bend: the lower half stays nearer upright
+    const cx = x + Math.sin(ang * 0.35) * len * 0.55, cy = height - Math.cos(ang * 0.35) * len * 0.55
+    paths += `<path d="M${(x - w).toFixed(1)},${height} Q${(cx - w * 0.45).toFixed(1)},${cy.toFixed(1)} ${tipX.toFixed(1)},${tipY.toFixed(1)} Q${(cx + w * 0.35).toFixed(1)},${cy.toFixed(1)} ${(x + w).toFixed(1)},${height} Z" opacity="${op.toFixed(2)}"/>`
+    if (plume) {
+      // a seed head: short strokes hanging off the tip, downwind
+      for (let k = 0; k < 7; k++) {
+        const t = k / 6, px = tipX - Math.sin(ang) * t * 26, py = tipY + Math.cos(ang) * t * 26
+        const fl = 7 + r() * 6, fa = ang + 0.5 + r() * 0.4
+        paths += `<path d="M${px.toFixed(1)},${py.toFixed(1)} L${(px + Math.sin(fa) * fl).toFixed(1)},${(py - Math.cos(fa) * fl * 0.4 + fl * 0.5).toFixed(1)}" stroke="currentColor" stroke-width="1" opacity="${(op * 0.7).toFixed(2)}" fill="none"/>`
+      }
     }
-    const tipX = x + lean * h * 0.9
-    const tipY = height - h * (1 - Math.min(0.5, Math.abs(lean) * 0.35))
-    const cx = x + lean * h * 0.15
-    const cy = height - h * 0.55
-    const w = 1.2 + r() * 2.2
-    // a blade: a thin closed curve, broad at the root, a point at the tip
-    paths += `<path d="M${(x - w).toFixed(1)},${height} Q${(cx - w * 0.5).toFixed(1)},${cy.toFixed(1)} ${tipX.toFixed(1)},${tipY.toFixed(1)} Q${(cx + w * 0.4).toFixed(1)},${cy.toFixed(1)} ${(x + w).toFixed(1)},${height} Z" opacity="${(0.45 + r() * 0.55).toFixed(2)}"/>`
   }
-  return `<svg class="grass" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="opacity:${opacity}"><g fill="${color}">${paths}</g></svg>`
+  let x = r() * 30, n = 0
+  while (x < width && n < count) {
+    const blades = 3 + Math.floor(r() * 6), tall = 0.45 + r() * 0.55
+    for (let k = 0; k < blades; k++) {
+      const len = height * tall * (0.45 + r() * 0.55)
+      blade(x + (r() - 0.5) * 10, len, (k / (blades - 1 || 1) - 0.5) * 0.7 + (r() - 0.5) * 0.15, 0.9 + r() * 1.6, 0.4 + r() * 0.6, k === 1 && r() < 0.28)
+      n++
+    }
+    x += (10 + r() * 34) * spacing + (r() < gaps ? 60 + r() * 120 : 0)   // now and then, a gap
+  }
+  return `<svg class="grass" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="opacity:${opacity};color:${color}"><g fill="${color}">${paths}</g></svg>`
 }
 
 // The Hanko bar, Kamon preset. opts: { ws, title, app, time, gust, urgent, hours }
