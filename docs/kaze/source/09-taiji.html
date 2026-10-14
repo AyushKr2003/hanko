@@ -1,0 +1,97 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x4200">
+<title>Kaze 09 · Taiji</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .lock { position: absolute; inset: 0; background: var(--paper); }
+  .lock .wp { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: .42; }
+  .lk { position: absolute; left: 230px; top: 330px; }
+  .lk .tm { font: 300 200px var(--display); line-height: .9; font-variant-numeric: tabular-nums; letter-spacing: -4px; color: var(--ink); }
+  .lk .tm em { font-style: normal; color: var(--seal); }
+  .lk .dy { font: 15px var(--mono); letter-spacing: 4px; color: var(--inkMuted); text-transform: uppercase; margin-top: 26px; }
+  .lk .ko { margin-top: 18px; display: flex; gap: 18px; align-items: baseline; }
+  .lk .ko .j { font: 30px var(--jps); color: var(--inkDim); letter-spacing: 4px; }
+  .lk .ko .e { font: italic 400 24px var(--display); color: var(--inkMuted); }
+  .blade { position: absolute; left: 230px; top: 690px; height: 1px; background: var(--ink); }
+  .blade .tick { position: absolute; top: -7px; width: 1px; height: 8px; background: var(--ink); }
+  .blade .hilt { position: absolute; left: -1px; top: -9px; width: 2px; height: 19px; background: var(--ink); }
+  .blade .spark { position: absolute; top: -10px; width: 2px; height: 21px; background: var(--seal); }
+  .hint { position: absolute; left: 230px; top: 716px; font: 13px var(--mono); letter-spacing: 3px; color: var(--inkFaint); text-transform: uppercase; }
+  .hint.red { color: var(--seal); }
+  .who { position: absolute; right: 120px; bottom: 120px; text-align: right; }
+  .who .n { font: 400 28px var(--display); color: var(--inkDim); }
+  .who .h { font: 13px var(--mono); letter-spacing: 3px; color: var(--inkFaint); margin-top: 6px; }
+  .finger { position: absolute; left: 230px; top: 670px; display: flex; gap: 18px; align-items: center; }
+  .finger svg { width: 54px; height: 54px; }
+  .finger .w { font: 13px var(--mono); letter-spacing: 3px; color: var(--inkMuted); }
+  .half { position: absolute; inset: 0; z-index: 10; }
+  .cutline { z-index: 11; }
+  .cutline { position: absolute; left: 0; top: 0; width: 2400px; height: 2px; background: var(--bone); transform-origin: 0 0; }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  .desk .win { background: var(--paper); }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>09 / 14 · lock</div>
+  <div class="head"><span class="no">09</span><h1>Taiji, the standoff</h1><span class="kj">対峙</span></div>
+  <p class="lede">Tsushima's duels begin in stillness: two figures, wind in the grass, one cut. The lock screen is that moment. Nothing moves but the grass. When you type, a blade draws out under the time and each key is a nick on it. A wrong password is deflected. The right one is a single diagonal cut, and the two halves slide apart onto your desk.</p>
+
+  <div class="sec"><b>Still</b><i></i>the time, the day, the microseason · the grass in the real wind</div>
+  <div class="frame"><div class="fit"><div class="screen" id="idle"></div></div></div>
+
+  <div class="sec"><b>Drawing, deflected, fingerprint</b><i></i>typing · a wrong password · the reader waiting</div>
+  <div class="grid g3" id="states"></div>
+
+  <div class="sec"><b>The cut</b><i></i>the right password · 1 frame, then the halves part along it · 240 ms</div>
+  <div class="grid g3" id="cut"></div>
+
+  <div class="notes">
+    <div><b>Only the view is ours<i>守</i></b>hanko.lock is a clone of omarchy.lock with every file of its service and both PAM flows (password, fingerprint) kept byte for byte; a test diffs them against Omarchy's on every run. Only LockView.qml changes. If the view fails to load, Omarchy's lock still locks.</div>
+    <div><b>Deflection, not alarm<i>弾</i></b>A wrong password: a red spark where the blade ends, the blade shudders 2 px once, the nicks fade, and the hint says "Not that one · 1 of 5" (Omarchy's own attempt count). No red box, no shaking form.</div>
+    <div><b>What it says<i>候</i></b>The 72 microseasons come from Hanko's almanac (core/Leaf.js). Mid-October is 菊花開, "chrysanthemums bloom". The name in the corner is your account's full name; nothing else about you is shown.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+const IMG = 'img/1-pines-night-dark.webp'
+function lockScreen(inner = '', opts = {}) {
+  return `<div class="lock"><div class="wp" style="background-image:url(${IMG})"></div><div class="ground" style="height:300px"></div>${grass({ height: 200, count: 340, wind: .3, seed: 13, color: 'var(--inkMuted)', opacity: .85 })}
+    <div class="lk"><div class="tm">21<em>:</em>44</div><div class="dy">Wednesday · 14 October</div><div class="ko"><span class="j">菊花開</span><span class="e">Chrysanthemums bloom</span></div></div>
+    ${inner}<div class="who"><div class="n">Ayush</div><div class="h">LOCKED · 鍵</div></div></div>`
+}
+const blade = (w, nicks = 0, opts = {}) => {
+  let t = ''; for (let i = 0; i < nicks; i++) t += `<i class="tick" style="left:${24 + i * 22}px;opacity:${opts.fade ? .3 : 1}"></i>`
+  return `<div class="blade" style="width:${w}px;${opts.shift ? 'transform:translateX(2px)' : ''}"><i class="hilt"></i>${t}${opts.spark ? `<i class="spark" style="left:${w}px"></i>` : ''}</div>`
+}
+document.getElementById('idle').innerHTML = lockScreen(`<div class="hint">Type to unlock · or touch the reader</div>`)
+
+const finger = `<div class="finger"><svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="25" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="27" cy="27" r="21" fill="none" stroke="var(--ink)" stroke-width=".6" opacity=".5"/>
+  <path d="M27 14c-7 0-12 5-12 12v5M27 18c-5 0-8 4-8 8v6c0 3 1 5 2 7M27 22c-2.5 0-4 2-4 4v7c0 3 1 5 3 7M27 26v8c0 3 1 5 3 7M31 22c2 1 4 3 4 6v4M35 18c3 2 5 5 5 9v3" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M27 14c-7 0-12 5-12 12v5M27 18c-5 0-8 4-8 8v6c0 3 1 5 2 7" fill="none" stroke="var(--seal)" stroke-width="1.5" stroke-linecap="round"/></svg><span class="w">READING · 指 · 2 OF 5 RIDGES</span></div>`
+const st = [
+  [blade(260, 9) + `<div class="hint">9 characters · Enter to cut</div>`, 'Drawing 抜', 'Each key is a nick on the blade; the blade grows by one nick. The password itself is never drawn.'],
+  [blade(260, 9, { spark: true, fade: true, shift: true }) + `<div class="hint red">Not that one · 1 of 5</div>`, 'Deflected 弾', 'A red spark at the blade\'s tip, a 2 px shudder, the nicks fade. Then the blade sheathes back to nothing.'],
+  [finger, 'Fingerprint 指', 'A crest that inks in, in red, as the reader matches. The password blade still works at the same time.'],
+]
+document.getElementById('states').innerHTML = st.map(([i, t, d]) => `<div class="frame"><div class="fit"><div class="screen">${lockScreen(i)}</div></div><div class="cap"><div class="t">${t}</div><div class="d">${d}</div></div></div>`).join('')
+
+// the desk behind
+const desk = `<div class="screen desk" style="position:absolute;inset:0"><div class="wp" style="background-image:url(img/2-great-wave-dark.webp);opacity:.6"></div>${bar({})}
+  <div class="win" style="left:170px;top:52px;width:784px;height:1016px"><div class="term"><span class="p">鑑</span> <span class="d">~/code/</span>hanko <span class="f">dev</span>\n<span class="m">›</span> tests/run --quick\n<span class="f">unit</span>     214 passed</div></div><div class="win focus" style="left:960px;top:52px;width:790px;height:1016px"><div class="term"><span class="f">1</span>  import QtQuick\n<span class="f">2</span>  import qs.Commons\n<span class="f">3</span>\n<span class="f">4</span>  <span class="f">// Iai 居合</span></div></div></div>`
+// a diagonal from bottom-left to top-right; the halves part along it
+const ang = Math.atan2(1080, 1920) // rise
+function cutFrame(p) {
+  // along the cut: the upper half leaves up and to the right, the lower half down and to the left,
+  // with a little air opening between them
+  const along = p * 1500, apart = p * 60
+  const ux = Math.cos(ang), uy = -Math.sin(ang), nx = -Math.sin(ang), ny = -Math.cos(ang)
+  const lockA = `<div class="half" style="clip-path:polygon(0 0, 100% 0, 0 100%);transform:translate(${ux * along + nx * apart}px, ${uy * along + ny * apart}px)">${lockScreen(blade(260, 9))}</div>`
+  const lockB = `<div class="half" style="clip-path:polygon(100% 0, 100% 100%, 0 100%);transform:translate(${-ux * along - nx * apart}px, ${-uy * along - ny * apart}px)">${lockScreen(blade(260, 9))}</div>`
+  const line = p === 0 ? `<div class="cutline" style="top:1080px;transform:rotate(${-ang}rad)"></div>` : ''
+  return desk + lockA + lockB + line
+}
+document.getElementById('cut').innerHTML = [[0, 'The cut 斬', 'One frame: a hairline from corner to corner, across the time.'], [0.22, '80 ms', 'The two halves start to part along the cut; the desk shows through.'], [0.9, '240 ms', 'They leave by the corners they point to. The desk is already live behind them.']].map(([p, t, d]) =>
+  `<div class="frame"><div class="fit"><div class="screen">${cutFrame(p)}</div></div><div class="cap"><div class="t">${t}</div><div class="d">${d}</div></div></div>`).join('')
+ready()
+</script>
+</body></html>

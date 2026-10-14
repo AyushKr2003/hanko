@@ -1,0 +1,74 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3600">
+<title>Kaze 08 · Battō</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .scrim { position: absolute; inset: 40px 0 0 0; background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .col { position: absolute; top: 40px; bottom: 0; left: 640px; width: 680px; background: var(--paper); border-left: 1px solid var(--ink); border-right: 1px solid var(--lineStrong); overflow: hidden; }
+  .col .in { position: absolute; left: 0; top: 0; width: 680px; bottom: 0; }
+  .cats { position: absolute; left: 0; top: 0; bottom: 0; width: 76px; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding-top: 34px; gap: 24px; }
+  .cats .c { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 10px var(--mono); letter-spacing: 1.6px; color: var(--inkFaint); }
+  .cats .c .m { width: 34px; height: 34px; border-radius: 50%; border: 1.3px solid var(--inkMuted); display: grid; place-items: center; font: 600 15px var(--jps); color: var(--inkDim); }
+  .cats .c.on .m { background: var(--bone); border-color: var(--bone); color: var(--onBone); } .cats .c.on { color: var(--ink); }
+  .q { position: absolute; left: 112px; right: 40px; top: 44px; }
+  .q .lab { font: 12px var(--mono); letter-spacing: 2.6px; color: var(--inkFaint); }
+  .q .t { font: 400 36px var(--display); color: var(--ink); margin-top: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--ink); }
+  .q .t .ph { color: var(--inkFaint); font-style: italic; }
+  .q .t .cur { display: inline-block; width: 2px; height: 34px; background: var(--seal); vertical-align: -5px; margin-left: 2px; }
+  .res { position: absolute; left: 96px; right: 24px; top: 168px; }
+  .res .h { font: 12px var(--mono); letter-spacing: 2.4px; color: var(--inkFaint); padding: 14px 16px 8px; }
+  .res .r { display: flex; align-items: center; gap: 14px; padding: 12px 16px; font-size: 18px; color: var(--inkDim); }
+  .res .r .s { font-size: 14px; color: var(--inkFaint); }
+  .res .r .k { margin-left: auto; font: 12px var(--mono); color: var(--inkFaint); letter-spacing: 1px; }
+  .res .r.on { background: var(--bone); color: var(--onBone); } .res .r.on .s, .res .r.on .k { color: var(--onBone); opacity: .7; }
+  .res .r b { font-weight: 500; color: var(--ink); } .res .r.on b { color: var(--onBone); }
+  .foot { position: absolute; left: 96px; right: 24px; bottom: 22px; display: flex; gap: 22px; font: 12px var(--mono); letter-spacing: 1.6px; color: var(--inkFaint); border-top: 1px solid var(--line); padding-top: 14px; }
+  .foot b { color: var(--inkDim); font-weight: 400; }
+  .flash { position: absolute; left: 96px; right: 24px; height: 1px; background: var(--bone); }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>08 / 14 · launcher and menu</div>
+  <div class="head"><span class="no">08</span><h1>Battō, the draw</h1><span class="kj">抜刀</span></div>
+  <p class="lede">Super+Space draws the launcher the way a blade leaves the scabbard: a 1 px line appears a third of the way across the screen and opens into a column, on one axis, in 190 ms. You type onto an underline in the serif. The chosen result is an inverted plate that jumps (never slides) as you move. Enter is the cut.</p>
+
+  <div class="sec"><b>The draw</b><i></i>30 ms held · line → column · 190 ms</div>
+  <div class="grid g4" id="draw"></div>
+
+  <div class="sec"><b>Open</b><i></i>"term" typed · applications</div>
+  <div class="frame"><div class="fit"><div class="screen" id="open"></div></div></div>
+
+  <div class="sec"><b>The Omarchy menu, same hand</b><i></i>Super+Alt+Space · system</div>
+  <div class="grid g2" id="menu"></div>
+
+  <div class="notes">
+    <div><b>Kinds as crests<i>紋</i></b>Apps 器, files 書, the system menu 政, emoji 顔, clipboard 写, calculator 算. Tab walks them; the crest inverts. Each is the Omarchy launcher or menu mode it stands for.</div>
+    <div><b>Never slides<i>斬</i></b>The selection plate moves instantly to the next row (the cut). Sliding plates look smooth and feel slow; a jump feels exact. The row's secondary text inks in after it (shake off).</div>
+    <div><b>Two steps<i>段</i></b>First the theme files Omarchy already reads (shell.launcher.toml, shell.menu.toml): colours, no radius, fonts. Then, if the draw and the crests are wanted, a hanko.menu clone of omarchy.menu for the column.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+function launcher({ w = 680, q = 'term', sel = 1, flash = false, cat = 0, rows, head = 'APPLICATIONS · 4' } = {}) {
+  const cats = [['器', 'APPS'], ['書', 'FILES'], ['政', 'MENU'], ['顔', 'EMOJI'], ['写', 'CLIP'], ['算', 'CALC']]
+  rows = rows ?? [['<b>Term</b>inal', 'Alacritty', 'Super ⏎'], ['<b>Term</b>inal in this folder', '~/code/hanko', ''], ['Ghostty', 'a <b>term</b>inal', ''], ['Btop', 'in a <b>term</b>inal', 'Super ⇧ T']]
+  return `<div class="scrim"></div><div class="col" style="width:${w}px"><div class="in">
+    <div class="cats">${cats.map(([m, l], i) => `<div class="c${i === cat ? ' on' : ''}"><span class="m">${m}</span>${l}</div>`).join('')}</div>
+    <div class="q"><div class="lab">SEARCH · 探</div><div class="t">${q ? q : '<span class="ph">Type to search</span>'}<span class="cur"></span></div></div>
+    <div class="res"><div class="h">${head}</div>${rows.map(([a, b, k], i) => `<div class="r${i === sel ? ' on' : ''}"><span>${i === sel ? '// ' : ''}${a}</span><span class="s">${b}</span><span class="k">${k}</span></div>`).join('')}</div>
+    ${flash ? `<div class="flash" style="top:${168 + 40 + sel * 50 + 25}px"></div>` : ''}
+    <div class="foot"><span><b>↑↓</b> choose</span><span><b>Tab</b> kind</span><span><b>⏎</b> open</span><span style="margin-left:auto"><b>Esc</b> sheathe</span></div></div></div>`
+}
+const screen = inner => `<div class="wp" style="background-image:url(img/2-great-wave-dark.webp)"></div>${grass({ height: 150, count: 300, wind: .12, seed: 9, color: 'var(--inkFaint)', opacity: .7 })}<div style="position:absolute;inset:0">${bar({ app: 'Desktop', title: '' })}</div>${inner}`
+// draw frames as small screens
+document.getElementById('draw').innerHTML = [[1, '30 ms · the line'], [150, '70 ms'], [520, '120 ms'], [680, '190 ms · stops dead']].map(([w, l]) =>
+  `<div class="frame"><div class="fit"><div class="screen">${screen(launcher({ w, q: '' }))}<span class="tag" style="left:40px;bottom:40px;font-size:30px">${l}</span></div></div></div>`).join('')
+document.getElementById('open').innerHTML = screen(launcher({ sel: 0 }))
+const menuRows = [['Lock', 'Super Esc', ''], ['Suspend', 'sleep, keep the session', ''], ['Restart', 'with the 終 ceremony', ''], ['Shut down', 'with the 終 ceremony', '']]
+document.getElementById('menu').innerHTML =
+  `<div class="frame"><div class="fit"><div class="screen">${screen(launcher({ q: '', cat: 2, sel: 3, rows: menuRows, head: 'SYSTEM · 政' }))}</div></div><div class="cap"><div class="t">System</div><div class="d">Omarchy's power menu in the same column. Shut down and restart go through the end ceremony (sheet 11).</div></div></div>` +
+  `<div class="frame"><div class="fit"><div class="screen">${screen(launcher({ q: '', cat: 2, sel: 3, rows: menuRows, head: 'SYSTEM · 政', flash: true }))}</div></div><div class="cap"><div class="t">Enter, the cut <span class="k">斬</span></div><div class="d">The chosen plate flashes a hairline across it for one frame, then the column sheathes back into its line (240 ms).</div></div></div>`
+ready()
+</script>
+</body></html>
