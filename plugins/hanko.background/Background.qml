@@ -226,6 +226,8 @@ Item {
   property real gustTarget: 0.5
   property string gustScreen: ""
   property real gustProgress: 0
+  // 1 for a gust toward something; softer for the wind's own puffs.
+  property real gustScale: 1
   NumberAnimation {
     id: gustAnim
     target: root
@@ -243,6 +245,7 @@ Item {
     if (root.wind.grass !== "grass") return
     if (!preview && (!root.wind.gusts || root.still)) return
     root.previewing = !!preview
+    root.gustScale = 1
     root.gustTarget = Math.max(0, Math.min(1, Number(share)))
     root.gustScreen = String(screenName || "")
     gustAnim.restart()
@@ -301,13 +304,34 @@ Item {
   }
   Timer { interval: 500; running: true; onTriggered: windIpc.enabled = true }
 
-  // The sway: a slow nudge on windy days, twice a second.
-  property real swayTick: 0
+  // The ripple: in a felt wind (real or virtual) the grass waves, the wave
+  // running downwind; 30 times a second the shader is told the time (the
+  // GPU does the bending); none in calm, with motion still or on low
+  // battery, and each screen rests under a fullscreen window.
+  readonly property bool windMoves: Math.abs(root.lean) >= 0.15
+    && Wind.mayMove(root.still, false, UPower.onBattery, UPower.displayDevice ? UPower.displayDevice.percentage : 1)
+  property real windTime: 0
   Timer {
-    interval: 500
+    interval: 33
     repeat: true
-    running: Math.abs(root.lean) >= 0.15 && Wind.mayMove(root.still, false, UPower.onBattery, UPower.displayDevice ? UPower.displayDevice.percentage : 1)
-    onTriggered: root.swayTick += 0.5
+    running: root.windMoves && root.wind.grass === "grass"
+    onTriggered: root.windTime += 0.033
+  }
+  // The wind's own puffs: in a strong wind, now and then a soft gust runs
+  // across every screen, downwind (only with gusts on).
+  Timer {
+    id: puffTimer
+    repeat: false
+    running: root.windMoves && root.wind.gusts && root.wind.grass === "grass" && !gustAnim.running
+    interval: Math.max(1000, Wind.puffAfter(root.lean, Math.random()))
+    onTriggered: {
+      puffTimer.interval = Math.max(1000, Wind.puffAfter(root.lean, Math.random()))
+      if (Wind.puffAfter(root.lean, 0) === 0) return
+      root.gustScale = 0.55
+      root.gustTarget = root.lean > 0 ? 1 : 0
+      root.gustScreen = ""
+      gustAnim.restart()
+    }
   }
 
   // ── The sky keeps the hour ──
@@ -639,55 +663,10 @@ Item {
       Rectangle {
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
         height: Math.round(parent.height * 0.24)
-        visible: grass.visible
+        visible: root.wind.grass === "grass"
         gradient: Gradient {
           GradientStop { position: 0; color: "transparent" }
           GradientStop { position: 0.7; color: Color.background }
-        }
-      }
-
-      // The grass. Drawn when the lean, the sway or a gust changes; it rests
-      // (no sway, no gust) under a fullscreen window and on low battery.
-      Canvas {
-        id: grass
-        anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
-        height: Math.round(parent.height * 170 / 1080)
-        visible: root.wind.grass === "grass"
-        renderStrategy: Canvas.Cooperative
-        readonly property bool moves: Wind.mayMove(root.still, !!root.fullscreenOn[panel.modelData.name],
-          UPower.onBattery, UPower.displayDevice ? UPower.displayDevice.percentage : 1)
-        readonly property var blades: Wind.field(width, height, 11)
-        readonly property real sway: moves ? Wind.swayAt(root.lean, root.swayTick) : 0
-        readonly property var gustNow: (moves || root.previewing) && (root.gustScreen === "" || root.gustScreen === panel.modelData.name)
-          ? Wind.gustAt(root.gustProgress, root.gustTarget) : null
-        // The faintest ink: the grass is the quietest thing on the desk.
-        readonly property color ink: Ink.inkFaint
-        onBladesChanged: requestPaint()
-        onSwayChanged: requestPaint()
-        onGustNowChanged: requestPaint()
-        onInkChanged: requestPaint()
-        Connections { target: root; function onLeanChanged() { grass.requestPaint() } }
-        onPaint: {
-          var ctx = getContext("2d")
-          ctx.reset()
-          var c = grass.ink
-          for (var i = 0; i < blades.length; i++) {
-            var g = Wind.blade(blades[i], height, width, root.lean, sway, gustNow)
-            ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, g.alpha * 0.85)
-            ctx.beginPath()
-            ctx.moveTo(g.root[0] - g.w, g.root[1])
-            ctx.quadraticCurveTo(g.ctrl[0] - g.w * 0.45, g.ctrl[1], g.tip[0], g.tip[1])
-            ctx.quadraticCurveTo(g.ctrl[0] + g.w * 0.35, g.ctrl[1], g.root[0] + g.w, g.root[1])
-            ctx.closePath()
-            ctx.fill()
-            if (g.plume.length) {
-              ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, g.alpha * 0.63)
-              ctx.lineWidth = 1
-              ctx.beginPath()
-              for (var k = 0; k < g.plume.length; k++) { var p = g.plume[k]; ctx.moveTo(p[0], p[1]); ctx.lineTo(p[2], p[3]) }
-              ctx.stroke()
-            }
-          }
         }
       }
 
@@ -707,6 +686,96 @@ Item {
           else root.openSelector()
           mouse.accepted = true
         }
+      }
+
+    }
+  }
+
+  // ── The grass, on a layer of its own ──
+  // A 170 px strip per screen just above the print (WlrLayer.Bottom, still
+  // under every window). The blades are drawn on a Canvas only when the lean
+  // or a gust changes; the wave that runs through them is a shader
+  // (assets/shaders/grass.frag) bending that picture on the GPU. Redrawing
+  // every blade per frame instead cost the shell 30-40% of a core. It takes
+  // no input (an empty mask), so the desktop's double-clicks still reach
+  // the background.
+  Variants {
+    model: Quickshell.screens
+    PanelWindow {
+      id: grassPanel
+      required property var modelData
+      screen: modelData
+      visible: root.wind.grass === "grass"
+      anchors { bottom: true; left: true; right: true }
+      implicitHeight: Math.round(modelData.height * 170 / 1080)
+      color: "transparent"
+      mask: Region {}
+      WlrLayershell.namespace: "hanko-grass"
+      WlrLayershell.layer: WlrLayer.Bottom
+      WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+      exclusionMode: ExclusionMode.Ignore
+
+      // The grass. Drawn when the lean or a gust changes; it rests (no wave,
+      // no gust) under a fullscreen window and on low battery.
+      Canvas {
+        id: grass
+        anchors.fill: parent
+        visible: root.wind.grass === "grass"
+        renderStrategy: Canvas.Cooperative
+        readonly property bool moves: Wind.mayMove(root.still, !!root.fullscreenOn[grassPanel.modelData.name],
+          UPower.onBattery, UPower.displayDevice ? UPower.displayDevice.percentage : 1)
+        readonly property var blades: Wind.field(width, height, 11)
+        readonly property var gustNow: (moves || root.previewing) && (root.gustScreen === "" || root.gustScreen === grassPanel.modelData.name)
+          ? Wind.gustAt(root.gustProgress, root.gustTarget, root.gustScale) : null
+        // The faintest ink: the grass is the quietest thing on the desk.
+        readonly property color ink: Ink.inkFaint
+        onBladesChanged: requestPaint()
+        onGustNowChanged: requestPaint()
+        onInkChanged: requestPaint()
+        Connections { target: root; function onLeanChanged() { grass.requestPaint() } }
+        onPaint: {
+          var ctx = getContext("2d")
+          ctx.reset()
+          var c = grass.ink
+          for (var i = 0; i < blades.length; i++) {
+            var g = Wind.blade(blades[i], height, width, root.lean, 0, gustNow)
+            ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, g.alpha * 0.85)
+            ctx.beginPath()
+            ctx.moveTo(g.root[0] - g.w, g.root[1])
+            ctx.quadraticCurveTo(g.ctrl[0] - g.w * 0.45, g.ctrl[1], g.tip[0], g.tip[1])
+            ctx.quadraticCurveTo(g.ctrl[0] + g.w * 0.35, g.ctrl[1], g.root[0] + g.w, g.root[1])
+            ctx.closePath()
+            ctx.fill()
+            if (g.plume.length) {
+              ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, g.alpha * 0.63)
+              ctx.lineWidth = 1
+              ctx.beginPath()
+              for (var k = 0; k < g.plume.length; k++) { var p = g.plume[k]; ctx.moveTo(p[0], p[1]); ctx.lineTo(p[2], p[3]) }
+              ctx.stroke()
+            }
+          }
+        }
+      }
+
+      // The wave: the picture above, bent row by row (roots still, tips
+      // most), downwind. Only `time` changes per frame.
+      ShaderEffectSource {
+        id: grassPicture
+        anchors.fill: parent
+        sourceItem: grass
+        hideSource: true
+        visible: false
+      }
+      ShaderEffect {
+        anchors.fill: parent
+        visible: root.wind.grass === "grass"
+        readonly property var wave: Wind.rippleUniforms(grass.moves && root.windMoves ? root.lean : 0, height, width)
+        property variant source: grassPicture
+        property real time: root.windTime
+        property real amp: wave.amp
+        property real freq: wave.freq
+        property real dir: wave.dir
+        fragmentShader: Qt.resolvedUrl("assets/shaders/grass.frag.qsb")
       }
     }
   }

@@ -63,18 +63,56 @@ function field(width, height, seed) {
 }
 
 // How far a gust at progress t (0..1) has come, as a share of the width,
-// running from the far side toward `target` (0..1).
-function gustAt(t, target) {
+// running from the far side toward `target` (0..1). `scale` softens it (the
+// wind's own puffs are gentler than a gust toward something that needs you).
+function gustAt(t, target, scale) {
   if (!(t > 0) || t >= 1) return null
   var from = target > 0.5 ? 0 : 1
-  return { x: from + (target - from) * t, width: GUST_WIDTH, strength: GUST_STRENGTH * Math.sin(Math.PI * Math.min(1, t * 1.15)) }
+  var k = scale === undefined ? 1 : scale
+  return { x: from + (target - from) * t, width: GUST_WIDTH, strength: k * GUST_STRENGTH * Math.sin(Math.PI * Math.min(1, t * 1.15)) }
 }
 
-// One blade's shape for a lean, a sway (a small extra lean) and a gust
+// The ripple: in a felt wind the grass doesn't hold one lean, it waves, and
+// the wave runs downwind across the field. `t` in seconds, `x` the blade's
+// share of the width. Stronger and quicker as the wind rises; none in calm.
+function ripple(windLean, t, x) {
+  var a = Math.abs(windLean)
+  if (a < 0.15) return 0
+  var s = windLean < 0 ? -1 : 1
+  var f = 0.3 + 0.4 * Math.min(1, a)            // Hz
+  var amp = 0.05 + 0.11 * Math.min(1, a)        // rad, at the blade's root
+  var p = 2 * Math.PI * (f * t - s * x * 2.6)
+  return s * amp * (0.65 * Math.sin(p) + 0.35 * Math.sin(1.7 * p + 1.3))
+}
+
+// The same wave for the grass shader (assets/shaders/grass.frag): the tips'
+// furthest shift as a share of the width, its frequency and its side.
+// The shift is the ripple's angle carried up a tall blade (1.2 × height).
+function rippleUniforms(windLean, height, width) {
+  var a = Math.abs(windLean)
+  if (a < 0.15 || !(width > 0)) return { amp: 0, freq: 0, dir: 1 }
+  return {
+    amp: (0.05 + 0.11 * Math.min(1, a)) * height * 1.2 / width,
+    freq: 0.3 + 0.4 * Math.min(1, a),
+    dir: windLean < 0 ? -1 : 1
+  }
+}
+
+// How long until the wind's next puff (ms), for a random r in 0..1; 0 when
+// the wind is too light to puff. Every 3–12 s, more often as it rises.
+function puffAfter(windLean, r) {
+  var a = Math.abs(windLean)
+  if (a < 0.5) return 0
+  return Math.round(3000 + r * (9000 - 6000 * Math.min(1, (a - 0.5) / 0.9)))
+}
+
+// One blade's shape for a lean, a sway (a small extra lean, or the ripple) and a gust
 // ({ x, width, strength } in shares of `width`, or null):
 //   { root: [x, y], ctrl: [x, y], tip: [x, y], w, alpha, plume: [[x0,y0,x1,y1], …] }
 function blade(b, height, width, windLean, sway, gust) {
-  var l = windLean * b.jitter + (sway || 0)
+  // `sway` is a number, or { t } for the ripple at time t (per blade).
+  var sw = sway && typeof sway === "object" ? ripple(windLean, sway.t, b.x / width) : (sway || 0)
+  var l = windLean * b.jitter + sw
   if (gust) {
     var d = (b.x / width - gust.x) / gust.width
     l += gust.strength * Math.exp(-d * d * 2)

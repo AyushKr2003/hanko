@@ -1,7 +1,7 @@
 // Unit tests for the pure logic in core/*.js. Run: node tests/unit.mjs
 // The files are QML JavaScript libraries (".pragma library"), so they are
 // loaded as text with that line removed and evaluated in a function scope.
-import { readFileSync } from "node:fs"
+import { readFileSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import assert from "node:assert/strict"
@@ -40,7 +40,7 @@ const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "c
 const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
 const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "perimeter", "pointAt", "lit", "onScreen"])
 const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "wallpaperMode"])
-const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX"])
+const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX", "ripple", "puffAfter", "rippleUniforms"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
@@ -2010,6 +2010,31 @@ test("wind: it rests under fullscreen, with motion still and on low battery; set
   assert.equal(Wi.mayMove(false, false, true, 0.2), false)
   assert.equal(Wi.mayMove(false, false, true, 0.5), true)
   assert.equal(Wi.swayAt(0.05, 3), 0)
+  // The ripple: none in calm, bigger in a strong wind, running downwind.
+  assert.equal(Wi.ripple(0.1, 2, 0.5), 0)
+  const peak = l => Math.max(...Array.from({ length: 200 }, (_, i) => Math.abs(Wi.ripple(l, i * 0.05, 0.3))))
+  assert.ok(peak(1.2) > peak(0.3) && peak(1.2) <= 0.16 + 1e-9)
+  // A crest at x moves to a larger x a moment later when the wind leans right.
+  const crest = (l, t) => { let best = 0, at = 0; for (let x = 0; x <= 0.38; x += 0.002) { const v = Wi.ripple(l, t, x) * Math.sign(l); if (v > best) { best = v; at = x } } return at }
+  assert.ok(crest(1, 0.1) > crest(1, 0))
+  assert.ok(crest(-1, 0.1) < crest(-1, 0) || crest(-1, 0) === 0)
+  const rb = Wi.blade({ x: 300, len: 100, rest: 0, w: 1, alpha: 1, plume: false, jitter: 1 }, 170, 1920, 1, { t: 0.4 }, null)
+  assert.ok(Array.isArray(rb.tip) && isFinite(rb.tip[0]))
+  // Puffs: none in a light wind, every 3–12 s in a strong one.
+  assert.equal(Wi.puffAfter(0.3, 0.5), 0)
+  assert.ok(Wi.puffAfter(1.2, 0) >= 3000 && Wi.puffAfter(1.2, 1) <= 12000 && Wi.puffAfter(1.4, 1) < Wi.puffAfter(0.6, 1))
+  assert.ok(Wi.gustAt(0.5, 1, 0.5).strength < Wi.gustAt(0.5, 1).strength)
+  // The shader's wave: none in calm, the tips' shift a few % of the width,
+  // and the shader reads exactly these uniforms (and is compiled).
+  assert.equal(Wi.rippleUniforms(0.1, 170, 1920).amp, 0)
+  const u = Wi.rippleUniforms(-1.2, 170, 1920)
+  assert.equal(u.dir, -1)
+  assert.ok(u.amp > 0.01 && u.amp < 0.03 && u.freq > 0.5)
+  const frag = readFileSync(join(root, "assets/shaders/grass.frag"), "utf8")
+  for (const name of ["time", "amp", "freq", "dir"]) assert.match(frag, new RegExp(`float ${name};`))
+  const qml = readFileSync(join(root, "plugins/hanko.background/Background.qml"), "utf8")
+  assert.match(qml, /grass\.frag\.qsb/)
+  assert.ok(statSync(join(root, "assets/shaders/grass.frag.qsb")).mtimeMs >= statSync(join(root, "assets/shaders/grass.frag")).mtimeMs - 1000, "grass.frag changed: run scripts/hanko-shaders")
   assert.ok(Math.abs(Wi.swayAt(0.5, 1)) <= 0.04 + 1e-9)
   assert.deepEqual(Wi.settings({}), { grass: "grass", gusts: true, wind: "weather", speed: 15, from: "west" })
   assert.deepEqual(Wi.settings({ grass: "off", gusts: false, wind: "calm" }), { grass: "off", gusts: false, wind: "calm", speed: 15, from: "west" })

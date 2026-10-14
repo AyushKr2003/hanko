@@ -232,6 +232,7 @@ hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, anim
 -- The desk's overlay (the focus sweep, red frames) maps and unmaps with
 -- every sweep: it must appear at once, not fade.
 hl.layer_rule({ match = { namespace = "^hanko-desk$" }, no_anim = true, animation = "none" })
+hl.layer_rule({ match = { namespace = "^hanko-grass$" }, no_anim = true, animation = "none" })
 -- The OSD draws and sheathes itself (Iai); Hyprland mustn't fade it too.
 hl.layer_rule({ match = { namespace = "^hanko-osd$" }, no_anim = true, animation = "none" })
 -- The menu draws open itself; Hyprland mustn't fade it in as well.

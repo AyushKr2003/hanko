@@ -227,6 +227,7 @@ surface_build() {
   mkdir -p "$dest/assets"
   rsync -a --delete --itemize-changes "$SRC/assets/fonts/" "$dest/assets/fonts/"
   rsync -a --delete --itemize-changes "$SRC/assets/sounds/" "$dest/assets/sounds/"
+  rsync -a --delete --itemize-changes --include '*.qsb' --exclude '*' "$SRC/assets/shaders/" "$dest/assets/shaders/"
   rsync -a --itemize-changes "$SRC/scripts/hanko-print" "$dest/bin/hanko-print"
 }
 
