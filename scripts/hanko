@@ -23,6 +23,8 @@
 #   hanko press              press the seal: print No. 00 (every sheet on one),
 #                            or lift it off (bind it to a key: see the README)
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
+#   hanko cursor [on|off]    the brush-tip cursor (Hanko-Brush) in the theme's ink;
+#                            off puts your own cursor back
 #   hanko sumi [on|off]      Sumi 墨: the whole screen in ink, letters held, the
 #                            wind stronger; toggles with no argument
 #   hanko theme install|remove|status  the Hanko theme (theme/) linked into
@@ -121,6 +123,7 @@ cmd_uninstall() {
   fi
   rm -f "$PREVIOUS"
   if desk_on || desk_plugins_present; then cmd_desk off; fi
+  [[ -f $CURSOR_FLAG ]] && cmd_cursor off
   if tools_on; then cmd_tools off; fi
   if [[ -L $THEME_LINK ]]; then cmd_theme remove; fi
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
@@ -309,7 +312,9 @@ write_hook() {
 }
 desk_theme_on() {
   "$SRC/scripts/hanko-kaze-theme" || say "  (the menu keeps its theme's look: no colors.toml found)"
-  write_hook "$KAZE_HOOK" "exec \"$SRC/scripts/hanko-kaze-theme\""
+  write_hook "$KAZE_HOOK" "\"$SRC/scripts/hanko-kaze-theme\"
+# the brush-tip cursor, when it is on, in the new theme's ink
+if [[ -f \"$CURSOR_FLAG\" ]]; then \"$SRC/scripts/hanko-cursor\" >/dev/null && hyprctl setcursor Hanko-Brush \"\$(cat \"$CURSOR_FLAG\")\" >/dev/null; fi"
   write_hook "$KAZE_BATTERY_HOOK" 'omarchy-osd -i danger -m "Battery ${1:-}%" -d 1600 >/dev/null 2>&1 || true'
   write_hook "$KAZE_UPDATE_HOOK" 'omarchy-osd -i new -m "Omarchy $(omarchy version 2>/dev/null | head -1)" -d 1400 >/dev/null 2>&1 || true'
 }
@@ -503,6 +508,34 @@ cmd_theme() {
   esac
 }
 
+# Dōgu 道具: the brush-tip cursor. scripts/hanko-cursor builds Hanko-Brush for
+# the current theme into ~/.local/share/icons; the flag file holds its size,
+# style.lua re-applies it after your own autostart on every reload, and the
+# theme-set hook rebuilds it in the new theme's ink. `off` deletes the flag
+# and reloads Hyprland, so your autostart's cursor comes back.
+CURSOR_FLAG="$STATE/cursor"
+cmd_cursor() {
+  local want="${1:-toggle}" size
+  [[ $want == toggle ]] && { [[ -f $CURSOR_FLAG ]] && want=off || want=on; }
+  case "$want" in
+    on)
+      "$SRC/scripts/hanko-cursor" >/dev/null || fail "the cursor didn't build"
+      size="${HYPRCURSOR_SIZE:-${XCURSOR_SIZE:-22}}"
+      mkdir -p "$STATE"; printf '%s\n' "$size" > "$CURSOR_FLAG"
+      command -v hyprctl >/dev/null && hyprctl setcursor Hanko-Brush "$size" >/dev/null 2>&1 || true
+      say "The brush-tip cursor is on (hanko cursor off puts yours back)."
+      ;;
+    off)
+      [[ -f $CURSOR_FLAG ]] || { say "The brush-tip cursor is off."; return; }
+      rm -f "$CURSOR_FLAG"
+      hypr_reload
+      say "Your own cursor is back."
+      ;;
+    status) if [[ -f $CURSOR_FLAG ]]; then say on; else say off; fi ;;
+    *) fail "usage: hanko cursor [on|off|status]" ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -556,6 +589,7 @@ case "${1:-}" in
   menu) shift; cmd_menu "$@" ;;
   desk) shift; cmd_desk "$@" ;;
   sumi) shift; cmd_sumi "$@" ;;
+  cursor) shift; cmd_cursor "$@" ;;
   tools) shift; cmd_tools "$@" ;;
   theme) shift; cmd_theme "$@" ;;
   doctor) cmd_doctor ;;

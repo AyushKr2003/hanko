@@ -534,3 +534,8 @@ Linux and shaders:
 - Khronos forum, real-time film grain: https://community.khronos.org/t/film-grain-in-opengl/36953
 - Godot Shaders, film grain (CC0): https://godotshaders.com/shader/film-grain-shader/
 - Omarchy, installed: `/usr/share/omarchy/shell/README.md`, `/usr/share/omarchy/shell/services/PluginRegistry.qml`, `/usr/bin/omarchy-plugin-clone`, `/usr/share/omarchy/default/hypr/looknfeel.lua`
+
+### After KZ12: the last pieces
+
+- **The brush cursor ✅.** `scripts/hanko-cursor` writes twelve SVG shapes (the brush-tip pointer, the link ring, text, the busy ensō, progress, move, not-allowed in the theme's red, four resize arrows, crosshair) with every CSS and X cursor name they stand for as overrides, in the current theme's foreground with a background rim, builds them with `hyprcursor-util` and installs `~/.local/share/icons/Hanko-Brush`. `hanko cursor on` builds it, sets it live (`hyprctl setcursor`) and leaves a flag (`~/.local/state/hanko/cursor`, holding the size) that `style.lua` reads to re-apply it after the user's own autostart on every reload; the Kaze theme-set hook rebuilds it in the new theme's ink; `off` deletes the flag and reloads, so the user's autostart cursor comes back. Hyprcursor only: X11 apps keep the XCursor theme.
+- **The screenshot sound ✅**, **Super+N ✅**, **回生 ✅**, **the menu's crest rail ✅**: see KZ7, KZ12, KZ10 and KZ8 above.

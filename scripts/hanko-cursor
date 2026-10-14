@@ -1,0 +1,60 @@
+#!/bin/bash
+# hanko-cursor · Dōgu 道具 (docs/kaze, mockup 12): the brush-tip cursor theme,
+# "Hanko-Brush", built for the current Omarchy theme: ink with a paper rim,
+# red only for "not allowed". Writes SVGs, builds them with hyprcursor-util
+# and installs the theme in ~/.local/share/icons/Hanko-Brush.
+#   hanko-cursor            build and install for the current theme
+set -euo pipefail
+
+NAME="Hanko-Brush"
+DEST="${XDG_DATA_HOME:-$HOME/.local/share}/icons/$NAME"
+colors="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/current/theme/colors.toml"
+get() { grep -m1 -E "^\s*$1\s*=" "$colors" 2>/dev/null | sed -E 's/.*"(#[0-9a-fA-F]{6})".*/\1/'; }
+INK="$(get foreground)"; PAPER="$(get background)"; RED="$(get red)"
+[[ $INK == \#* ]] || INK="#ddd5c7"; [[ $PAPER == \#* ]] || PAPER="#0a0a09"; [[ $RED == \#* ]] || RED="#d8452f"
+command -v hyprcursor-util >/dev/null || { echo "hanko-cursor: hyprcursor-util is not installed" >&2; exit 1; }
+
+work="$(mktemp -d "${TMPDIR:-/tmp}/hanko-cursor.XXXXXX")"; trap 'rm -rf "$work"' EXIT
+src="$work/src"; mkdir -p "$src/hyprcursors"
+cat > "$src/manifest.hl" <<M
+name = $NAME
+description = Kaze: a brush tip in your theme's ink, with a paper rim (Hanko)
+version = 0.1
+cursors_directory = hyprcursors
+M
+
+svg() { printf '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">%s</svg>\n' "$1"; }
+RIM="stroke=\"$PAPER\" stroke-width=\"2.4\" stroke-linejoin=\"round\""
+# The brush tip: a pointer whose edges swell and taper like a stroke.
+TIP="<path d=\"M14 8 C16 23 18 35 20 51 L26 41 L38 53 L44 47 L32 35 L44 31 C34 23 24 15 14 8Z\" fill=\"$INK\" $RIM/>"
+
+shape() { # name hotspot_x hotspot_y svg-body overrides...
+  local name="$1" hx="$2" hy="$3" body="$4"; shift 4
+  local dir="$src/hyprcursors/$name"; mkdir -p "$dir"
+  svg "$body" > "$dir/$name.svg"
+  { printf 'resize_algorithm = bilinear\nhotspot_x = %s\nhotspot_y = %s\n' "$hx" "$hy"
+    local o; for o in "$@"; do printf 'define_override = %s\n' "$o"; done
+    printf 'define_size = 0, %s.svg\n' "$name"; } > "$dir/meta.hl"
+}
+
+shape left_ptr 0.22 0.13 "$TIP" default arrow top_left_arrow left_arrow
+shape pointer 0.22 0.13 "$TIP<circle cx=\"50\" cy=\"14\" r=\"6\" fill=\"none\" stroke=\"$PAPER\" stroke-width=\"5\"/><circle cx=\"50\" cy=\"14\" r=\"6\" fill=\"none\" stroke=\"$INK\" stroke-width=\"2.4\"/>" hand1 hand2 pointing_hand hand link
+shape text 0.5 0.5 "<path d=\"M25 12 Q32 16 39 12 M32 14 V50 M25 52 Q32 48 39 52\" fill=\"none\" stroke=\"$PAPER\" stroke-width=\"5.5\" stroke-linecap=\"round\"/><path d=\"M25 12 Q32 16 39 12 M32 14 V50 M25 52 Q32 48 39 52\" fill=\"none\" stroke=\"$INK\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>" xterm ibeam vertical-text
+ENSO="<path d=\"M32 10 A22 22 0 1 1 11 39\" fill=\"none\" stroke=\"$PAPER\" stroke-width=\"7\" stroke-linecap=\"round\"/><path d=\"M32 10 A22 22 0 1 1 11 39\" fill=\"none\" stroke=\"$INK\" stroke-width=\"4\" stroke-linecap=\"round\"/>"
+shape wait 0.5 0.5 "$ENSO" watch busy
+shape progress 0.22 0.13 "$TIP<g transform=\"translate(30 30) scale(0.45)\">$ENSO</g>" left_ptr_watch half-busy
+MOVE="<path d=\"M32 8 V56 M8 32 H56\" stroke=\"$PAPER\" stroke-width=\"6\"/><path d=\"M32 8 V56 M8 32 H56\" stroke=\"$INK\" stroke-width=\"2.6\"/><path d=\"M32 5 l-7 9 h14z M32 59 l-7 -9 h14z M5 32 l9 -7 v14z M59 32 l-9 -7 v14z\" fill=\"$INK\" $RIM/>"
+shape move 0.5 0.5 "$MOVE" fleur all-scroll size_all grab grabbing closedhand openhand dnd-move
+shape not-allowed 0.5 0.5 "<circle cx=\"32\" cy=\"32\" r=\"19\" fill=\"none\" stroke=\"$PAPER\" stroke-width=\"7\"/><path d=\"M18 46 L46 18\" stroke=\"$PAPER\" stroke-width=\"7\"/><circle cx=\"32\" cy=\"32\" r=\"19\" fill=\"none\" stroke=\"$RED\" stroke-width=\"3.6\"/><path d=\"M18 46 L46 18\" stroke=\"$RED\" stroke-width=\"3.6\"/>" crossed_circle forbidden no-drop dnd-no-drop circle
+arrow2() { printf '<path d="%s" stroke="%s" stroke-width="6" stroke-linecap="round"/><path d="%s" stroke="%s" stroke-width="2.6" stroke-linecap="round"/><path d="%s" fill="%s" %s/>' "$1" "$PAPER" "$1" "$INK" "$2" "$INK" "$RIM"; }
+shape ew-resize 0.5 0.5 "$(arrow2 'M12 32 H52' 'M6 32 l10 -8 v16z M58 32 l-10 -8 v16z')" sb_h_double_arrow h_double_arrow e-resize w-resize col-resize left_side right_side
+shape ns-resize 0.5 0.5 "$(arrow2 'M32 12 V52' 'M32 6 l-8 10 h16z M32 58 l-8 -10 h16z')" sb_v_double_arrow v_double_arrow n-resize s-resize row-resize top_side bottom_side
+shape nwse-resize 0.5 0.5 "$(arrow2 'M17 17 L47 47' 'M11 11 l13 2 l-11 11z M53 53 l-13 -2 l11 -11z')" bd_double_arrow nw-resize se-resize top_left_corner bottom_right_corner size_fdiag
+shape nesw-resize 0.5 0.5 "$(arrow2 'M47 17 L17 47' 'M53 11 l-2 13 l-11 -11z M11 53 l2 -13 l11 11z')" fd_double_arrow ne-resize sw-resize top_right_corner bottom_left_corner size_bdiag
+shape crosshair 0.5 0.5 "$(arrow2 'M32 10 V54 M10 32 H54' 'M32 30 l0 0z')" cross tcross cell
+
+hyprcursor-util --create "$src" -o "$work" >/dev/null
+built="$(find "$work" -maxdepth 1 -type d -name "theme_*" | head -1)"
+[[ -n $built ]] || { echo "hanko-cursor: hyprcursor-util built nothing" >&2; exit 1; }
+rm -rf "$DEST"; mkdir -p "$(dirname "$DEST")"; cp -r "$built" "$DEST"
+echo "$DEST"

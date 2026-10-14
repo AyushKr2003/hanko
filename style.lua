@@ -226,6 +226,16 @@ if read(sumi_shader) then
   hl.config({ decoration = { screen_shader = sumi_shader } })
 end
 
+-- ── The brush-tip cursor (hanko cursor on) ────────────────────────────────
+-- Re-applied after your own autostart's setcursor on every reload while the
+-- flag is there; `hanko cursor off` deletes it and your cursor comes back.
+
+local cursor_size = read(state_home .. "/hanko/cursor")
+if cursor_size then
+  cursor_size = tonumber(cursor_size:match("%d+")) or 22
+  hl.exec_cmd("sleep 0.6; hyprctl setcursor Hanko-Brush " .. cursor_size)
+end
+
 -- The overview is already animated by QML; keep Hyprland from sliding its
 -- full-screen layer in as well.
 hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, animation = "none" })
