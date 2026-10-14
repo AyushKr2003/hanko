@@ -1,6 +1,6 @@
 # Kaze 風 · the whole desk, in the way of the sword
 
-Hanko made the bar. Kaze carries the same paper, ink and seal into every part of the computer: boot, lock, windows, wallpaper, launcher, notifications, on-screen displays, terminal, sound and shutdown. The feeling to aim for is the one that *Ghost of Tsushima*, *Ghost of Yōtei*, *Sekiro: Shadows Die Twice* and *Assassin's Creed Shadows* give: stillness, then a sudden, exact action; a world that tells you things without boxes on the screen; rare moments of ceremony.
+Hanko made the bar. Kaze carries the same paper, ink and seal into every part of the computer: lock, windows, wallpaper, launcher, notifications, on-screen displays, terminal, sound and shutdown. The feeling to aim for is the one that *Ghost of Tsushima*, *Ghost of Yōtei*, *Sekiro: Shadows Die Twice* and *Assassin's Creed Shadows* give: stillness, then a sudden, exact action; a world that tells you things without boxes on the screen; rare moments of ceremony.
 
 This file is three things:
 
@@ -74,7 +74,7 @@ These are the lessons, sorted by how much they matter to us. For each one: what 
 - AC Shadows has a seasonal cycle that changes the world and even gates content (a sumi-e painting of macaques that only bathe in hot springs in winter). Its hideout is a place you arrange yourself.
 - Yōtei swaps Tsushima's autumn for "contrast and volatility": sudden snowstorms, shifting light.
 
-**For us:** Hanko already knows the 24 sekki and 72 kō (`core/Leaf.js`). Kaze lets the microseason (七十二候) quietly set the wallpaper's treatment, the lock screen's line and the boot's first words. No new colours (rule 1 stays): the season changes light and words, never the palette.
+**For us:** Hanko already knows the 24 sekki and 72 kō (`core/Leaf.js`). Kaze lets the microseason (七十二候) quietly set the wallpaper's treatment and the lock screen's line. No new colours (rule 1 stays): the season changes light and words, never the palette.
 
 ### 1.7 Stillness, then the cut (samurai film, the duel standoff, iai)
 
@@ -110,7 +110,7 @@ Hanko's six rules (one paper four inks one red; red means you or now; emphasis b
 3. **抜 Fast to draw, slow to sheath.** Opening is quick and exact. Closing is unhurried and ends in a click. See §3.
 4. **体幹 One reading at a time.** Whatever matters most right now is large; the rest is faint or gone. Like posture over health.
 5. **紋 Every sign is a crest.** Icons are kamon: symmetric, flat, one weight, legible at 16 px. Kanji are real words, with English, one meaning each.
-6. **式 Ceremony is rare.** A few events get a full-screen moment (boot, shutdown, critical battery, a finished update). Everything else is quiet. Ceremonies are skippable and never block input for more than 1.2 s.
+6. **式 Ceremony is rare.** A few events get a full-screen moment (shutdown, critical battery, a finished update). Everything else is quiet. Ceremonies are skippable and never block input for more than 1.2 s.
 7. **一 One state, every sense.** Time, microseason, weather, focus and power are one shared state that the wallpaper, borders, bar, lock, sound and motion all read, so they always agree.
 
 ---
@@ -154,7 +154,10 @@ hl.animation({ leaf = "borderangle", enabled = true, speed = 6, bezier = "nuki",
 
 Each surface gets a Japanese name that is the thing itself, an English name beside it, what it becomes, and why. Hanko's rule for Japanese touches still applies: kanji only where they mean something, large, with English, each one switchable off.
 
-### 4.1 Boot · 押印 Ōin, the seal pressed (Plymouth, Limine)
+### 4.1 Boot · 押印 Ōin, the seal pressed (Plymouth, Limine) · *left out*
+
+*The user chose to leave the boot screen out (§9). Kept here as a record of the idea.*
+
 
 - Limine: paper-coloured background, ink text, no logo art. Only colours and the font.
 - Plymouth: black-to-paper. The seal (the user's `sealGlyph`, default 鑑) is **pressed**: a red square grows from nothing over 6–8 frames with a slightly uneven ink spread (a pre-rendered image sequence, so it is the same every boot), then holds. Under it, a 1 px hairline draws left to right as the progress bar. The disk passphrase prompt, if any, is a single underline with dots.
@@ -343,7 +346,6 @@ Findings from the installed Omarchy (`/usr/share/omarchy/shell/README.md`, `serv
 | Lock 対峙 | `hanko.lock`, `clonedFrom: omarchy.lock`, view only | L, security review |
 | Ceremonies 式 | a `hanko.shiki` overlay plugin + Omarchy hooks and power-menu commands | M |
 | Sumi 墨 | a GLSL file + a toggle script + the bar | S |
-| Boot 押印 | a Plymouth theme installed by `scripts/hanko` (needs sudo, opt-in) | M |
 | Terminal, prompt, cursor, btop, nvim | the theme folder, a starship config, a hyprcursor theme | M |
 | Sound 音 | `pw-play` from the plugins, files in `assets/sound/` | S |
 
@@ -360,7 +362,7 @@ This file.
 
 ### KZ1 · Mockups for every surface ⬜
 - An HTML kit under `docs/kaze/source/` (same approach as `docs/mockups/typeset/source/`: one CSS of tokens, Playwright to render).
-- A sheet per surface: boot, lock (idle, typing, wrong, right), wallpaper print (three prints × light/dark), living layer (calm, gust), windows (focus sweep), OSD (50%, 100%, muted), notifications (one, three, opened, urgent), launcher, ceremonies (終 危 新), Sumi mode, terminal.
+- A sheet per surface: lock (idle, typing, wrong, right), wallpaper print (three prints × light/dark), living layer (calm, gust), windows (focus sweep), OSD (50%, 100%, muted), notifications (one, three, opened, urgent), launcher, ceremonies (終 危 新), Sumi mode, terminal.
 - Motion studies as short WebM loops for the Iai beats, the lock cut and the gust.
 - The user picks and trims before anything is built.
 
@@ -395,9 +397,9 @@ This file.
 - A test that diffs our Service against Omarchy's on every run, and a `doctor` check that warns when Omarchy's lock changed upstream.
 - Hardware test checklist: wrong password, right password, fingerprint, multiple monitors, suspend/resume while locked, the shell crashing while locked.
 
-### KZ10 · Shiki 式, ceremonies and boot ⬜
+### KZ10 · Shiki 式, ceremonies ⬜
 - `hanko.shiki` overlay: 終 退 危 新 回生 with stroke-order brush animation in QML `Shape`.
-- Plymouth 押印 theme and Limine colours, installed only with `hanko install --boot` (needs sudo).
+- (Boot 押印 is left out, §9.)
 
 ### KZ11 · Sumi 墨 and riding mode ⬜
 - `hanko-sumi.glsl` (S-curve, grain, vignette, red kept), the toggle, DND, the bar receding, stronger wind.
@@ -433,16 +435,14 @@ Order rationale: motion first (everything depends on it), then the cheapest high
 4. Whether Hyprland's screen shader gets a `time` uniform in the installed version, and the cost of `damage_tracking = 0`.
 5. Whether screenshots and screen recordings capture before or after the screen shader (Sumi mode must not tint screenshots unless the user wants that).
 6. That a third-party plugin with `clonedFrom` set, not made by `omarchy plugin clone`, is routed and stamped the same way (the code says yes; test it).
-7. Plymouth script theme support for an image sequence at boot speed, and the disk-passphrase prompt.
 
-**Open questions for the user**
+**Decisions (the user, 2026-10-14)**
 
-1. Which surfaces matter most to you? (Suggested first set: motion, windows, wallpaper, OSD, lock.)
-2. Should the lock be in scope at all, given the security weight? Or a theme-only lock (wallpaper and colours) first?
-3. Sound: in or out?
-4. Boot: worth needing sudo, or skip?
-5. One repo with a `plugins/` folder, or a separate `hanko-desk` repo for the other surfaces?
-6. A name for the direction: Kaze 風 (proposed), or something you prefer.
+1. Every surface is in scope, the lock included.
+2. The boot screen (§4.1) is left out: no Plymouth or Limine work, nothing that needs sudo.
+3. One repo for everything: `hanko.bar` at the root, the other surfaces under `plugins/`.
+4. Sound is in (still off by default, one switch turns it on).
+5. Kaze is the working name; it can change later.
 
 ---
 

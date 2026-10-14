@@ -1,0 +1,106 @@
+/* Kaze 風 mockup kit: the whole desk in Hanko's paper, inks and seal.
+   Tokens are the Hanko theme (colors.toml) run through core/InkMath.js. */
+@font-face { font-family: 'Fraunces'; src: url('../../../assets/fonts/Fraunces.ttf'); font-weight: 100 900; }
+@font-face { font-family: 'Fraunces'; src: url('../../../assets/fonts/Fraunces-Italic.ttf'); font-style: italic; font-weight: 100 900; }
+@font-face { font-family: 'Space Grotesk'; src: url('../../../assets/fonts/SpaceGrotesk.ttf'); font-weight: 300 700; }
+@font-face { font-family: 'Yuji Boku'; src: url('../../../assets/fonts/YujiBoku.ttf'); }
+
+:root, .dark {
+  --paper: #0a0a09; --paper2: #070706; --lift: #121110; --sunk: #050504;
+  --ink: #d0c9bc; --inkDim: #b5aea3; --inkMuted: #959086; --inkFaint: #7e7a71;
+  --line: #22201d; --lineSoft: #191816; --lineStrong: #3a3732;
+  --bone: #ddd5c7; --onBone: #0a0a09; --seal: #d8452f;
+  --mono: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
+  --ui: 'Space Grotesk', sans-serif; --display: 'Fraunces', serif;
+  --jp: 'Noto Sans CJK JP', sans-serif; --jps: 'Noto Serif CJK JP', serif; --brush: 'Yuji Boku', 'Noto Serif CJK JP', serif;
+}
+.light {
+  --paper: #ece6da; --paper2: #e4ddcf; --lift: #f3eee5; --sunk: #ddd5c6;
+  --ink: #2a2723; --inkDim: #3d3934; --inkMuted: #5a554e; --inkFaint: #6d675f;
+  --line: #d3cbbd; --lineSoft: #ddd6c9; --lineStrong: #bdb4a5;
+  --bone: #2a2723; --onBone: #ece6da; --seal: #c23a26;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--paper2); color: var(--ink); font-family: var(--ui); -webkit-font-smoothing: antialiased; }
+body { width: 1920px; }
+
+/* ===== the sheet: how each mockup page is laid out ===== */
+.sheet { padding: 56px 72px 64px; }
+.crumb { font-family: var(--mono); font-size: 13px; letter-spacing: 3.2px; text-transform: uppercase; color: var(--inkFaint); display: flex; gap: 14px; align-items: center; }
+.crumb .s { color: var(--seal); letter-spacing: 0; font-family: var(--jps); font-size: 15px; }
+.crumb .rl { flex: 1; height: 1px; background: var(--line); }
+.head { display: flex; align-items: baseline; gap: 22px; margin: 22px 0 10px; }
+.head .no { font-family: var(--display); font-size: 84px; font-weight: 300; color: var(--inkFaint); line-height: 1; font-variant-numeric: tabular-nums; }
+.head h1 { font-family: var(--display); font-weight: 400; font-size: 72px; line-height: 1; letter-spacing: -0.5px; }
+.head .kj { font-family: var(--jps); font-size: 44px; color: var(--inkDim); }
+.lede { font-size: 21px; line-height: 1.5; color: var(--inkDim); max-width: 1320px; margin-bottom: 40px; }
+.grid { display: grid; gap: 28px; }
+.g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: 1fr 1fr 1fr; } .g4 { grid-template-columns: repeat(4, 1fr); }
+.frame { border: 1px solid var(--line); background: var(--paper); position: relative; overflow: hidden; }
+.cap { padding: 16px 20px 18px; border-top: 1px solid var(--line); background: var(--paper); }
+.cap .t { font-size: 19px; color: var(--ink); display: flex; gap: 10px; align-items: baseline; }
+.cap .t .n { font-family: var(--mono); font-size: 12px; color: var(--inkFaint); letter-spacing: 2px; }
+.cap .t .k { font-family: var(--jps); font-size: 17px; color: var(--inkDim); }
+.cap .d { font-size: 15.5px; color: var(--inkMuted); margin-top: 5px; line-height: 1.45; }
+.cap.on { background: var(--bone); } .cap.on .t, .cap.on .d, .cap.on .k, .cap.on .n { color: var(--onBone); }
+.notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 48px; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); }
+.notes div { font-size: 16px; line-height: 1.5; color: var(--inkMuted); }
+.notes b { display: block; font-weight: 500; color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+.notes b i { font-style: normal; font-family: var(--jps); color: var(--inkDim); margin-left: 6px; }
+
+/* a full 1920×1080 screen, scaled into a frame by data-scale */
+.screen { width: 1920px; height: 1080px; position: relative; overflow: hidden; background: var(--paper); transform-origin: 0 0; }
+.screen .wp { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.fit { position: relative; overflow: hidden; }
+
+/* ===== the bar (Kamon preset, simplified) ===== */
+.bar { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: var(--paper); display: flex; align-items: center; padding: 0 14px 0 8px; z-index: 5; }
+.bar .l, .bar .r { flex: 1 1 0; display: flex; align-items: center; min-width: 0; }
+.bar .r { justify-content: flex-end; gap: 22px; }
+.bar .c { flex: none; display: flex; align-items: baseline; gap: 9px; }
+.bar .div { width: 1px; height: 18px; background: var(--line); margin: 0 14px; }
+.seal { width: 26px; height: 26px; background: var(--seal); border-radius: 3px; display: grid; place-items: center; color: var(--paper); font-family: var(--jps); font-weight: 600; font-size: 15px; position: relative; flex: none; }
+.seal::after { content: ''; position: absolute; inset: 2px; border: 1px solid color-mix(in srgb, var(--paper) 45%, transparent); border-radius: 2px; }
+.kws { display: flex; gap: 3px; }
+.kws span { position: relative; width: 24px; height: 24px; display: grid; place-items: center; font-family: var(--jps); font-size: 13.5px; color: var(--inkFaint); border-radius: 3px; }
+.kws span.occ { color: var(--inkDim); }
+.kws span.on { background: var(--bone); color: var(--onBone); }
+.kws span.u::after { content: ''; position: absolute; right: 2px; top: 2px; width: 4px; height: 4px; border-radius: 50%; background: var(--seal); }
+.byline { font-family: var(--display); font-style: italic; font-size: 16px; color: var(--ink); }
+.byline small { font-family: var(--ui); font-style: normal; font-size: 13px; color: var(--inkFaint); margin-left: 8px; }
+.clk { font-family: var(--display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.clk em { font-style: normal; color: var(--seal); }
+.date { font-family: var(--mono); font-size: 10px; letter-spacing: 1.8px; color: var(--inkMuted); text-transform: uppercase; }
+.cell { display: flex; flex-direction: column; gap: 1px; }
+.cell .lab { font-family: var(--mono); font-size: 8.5px; letter-spacing: 1.6px; color: var(--inkFaint); }
+.cell .lab i { font-style: normal; font-family: var(--jps); margin-left: 4px; }
+.cell .val { font-size: 13px; color: var(--ink); }
+.cell .val small { color: var(--inkFaint); font-size: 10px; margin-left: 2px; }
+.cell.red .val { color: var(--seal); }
+.stamps { display: flex; gap: 4px; }
+.stamps b { width: 18px; height: 18px; border: 1px solid var(--inkMuted); display: grid; place-items: center; font: 500 11px var(--jps); color: var(--inkDim); border-radius: 2px; }
+.stamps b.red { border-color: var(--seal); color: var(--seal); }
+.rodrule { position: absolute; left: 10px; right: 10px; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--line) 6%, var(--line) 94%, transparent); }
+.rodrule .spent { position: absolute; left: 0; top: -1px; height: 2px; background: linear-gradient(90deg, transparent, var(--inkDim)); }
+.rodrule .now { position: absolute; top: -6px; width: 2px; height: 8px; background: var(--seal); }
+.rodrule .gust { position: absolute; top: -1px; height: 3px; background: linear-gradient(90deg, transparent, var(--ink) 70%, transparent); }
+
+/* ===== windows (Hyprland, edge 刃) ===== */
+.win { position: absolute; background: var(--paper); border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); overflow: hidden; }
+.win.focus { border-color: var(--ink); }
+.win.urgent { border-color: var(--seal); }
+.win .tb { height: 0; }
+.term { font-family: var(--mono); font-size: 14px; line-height: 1.6; padding: 14px 16px; color: var(--ink); white-space: pre; }
+.term .f { color: var(--inkFaint); } .term .m { color: var(--inkMuted); } .term .d { color: var(--inkDim); } .term .r { color: var(--seal); }
+.term .p { color: var(--seal); font-family: var(--jps); }
+
+/* ===== the living layer (grass) ===== */
+.grass { position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none; }
+
+/* ===== labels on pictures ===== */
+.tag { position: absolute; font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--inkMuted); text-transform: uppercase; white-space: nowrap; }
+.tag::before { content: ''; display: inline-block; width: 14px; height: 1px; background: var(--inkFaint); vertical-align: middle; margin-right: 8px; }
+.tag.red { color: var(--seal); } .tag.red::before { background: var(--seal); }
+/* the print fades to paper along the ground, so the grass reads */
+.ground { position: absolute; left: 0; right: 0; bottom: 0; height: 260px; background: linear-gradient(180deg, transparent, var(--paper) 70%); }
