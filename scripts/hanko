@@ -112,7 +112,7 @@ cmd_uninstall() {
     rm -rf "$DEST"
   fi
   rm -f "$PREVIOUS"
-  if desk_on || [[ -d $DESK_DEST ]]; then cmd_desk off; fi
+  if desk_on || desk_plugins_present; then cmd_desk off; fi
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
 }
@@ -195,48 +195,60 @@ desk_on() { [[ -f $LOOK_FILE ]] && grep -q -- '-- hanko desk$' "$LOOK_FILE"; }
 
 hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true; }
 
-# The desk plugin (plugins/hanko.desk) shares Hanko's core/. Omarchy allows no
-# symlinks inside a plugin, so it is assembled as a copy: its own files, then
-# core/ beside them. `desk build DIR` does only that (the tests lint the result).
-DESK_ID="hanko.desk"
-DESK_DEST="$PLUGINS/$DESK_ID"
+# Kaze's surfaces are plugins of their own under plugins/ (hanko.desk: the
+# focus sweep and urgent frames; hanko.background: the printed wallpaper, a
+# clone of omarchy.background), all sharing Hanko's core/. Omarchy allows no
+# symlinks inside a plugin, so each is assembled as a copy: its own files,
+# core/, and bin/hanko-print. `desk build ID DIR` does only that (the tests
+# validate and lint the result).
+SURFACES=(hanko.desk hanko.background)
+
 # Prints the files it changed (rsync's itemized list), nothing when up to date.
-desk_build() {
-  local dest="$1"
+surface_build() {
+  local id="$1" dest="$2"
   need rsync
-  mkdir -p "$dest"
-  rsync -a --delete --itemize-changes --exclude core "$SRC/plugins/$DESK_ID/" "$dest/"
+  [[ -d $SRC/plugins/$id ]] || fail "no such surface: $id"
+  mkdir -p "$dest/bin"
+  rsync -a --delete --itemize-changes --exclude core --exclude bin "$SRC/plugins/$id/" "$dest/"
   rsync -a --delete --itemize-changes "$SRC/core/" "$dest/core/"
+  rsync -a --itemize-changes "$SRC/scripts/hanko-print" "$dest/bin/hanko-print"
 }
+
 # Omarchy reloads a plugin when its files change, but a service keeps the
-# QML it first compiled until the shell restarts; so when a running desk
-# gets new files, the shell is restarted (a second without a bar).
-desk_plugin_on() {
-  local was_running=0 changed
-  [[ -d $DESK_DEST ]] && omarchy-shell -q hankodesk state >/dev/null 2>&1 && was_running=1
-  changed="$(desk_build "$DESK_DEST")"
-  omarchy plugin validate "$DESK_DEST" >/dev/null || fail "the desk plugin did not validate"
+# QML it first compiled until the shell restarts; so when a surface is new
+# or gets new files, the shell is restarted once (a second without a bar).
+desk_plugins_on() {
+  local id dest changed="" new=0
+  for id in "${SURFACES[@]}"; do
+    dest="$PLUGINS/$id"
+    [[ -d $dest ]] || new=1
+    changed+="$(surface_build "$id" "$dest")"
+    omarchy plugin validate "$dest" >/dev/null || fail "$id did not validate"
+  done
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
-  omarchy plugin enable "$DESK_ID" >/dev/null 2>&1 || true
-  if (( was_running )) && [[ -n $changed ]] && command -v omarchy-restart-shell >/dev/null 2>&1; then
-    say "The desk plugin changed: restarting the Omarchy shell to load it."
+  for id in "${SURFACES[@]}"; do omarchy plugin enable "$id" >/dev/null 2>&1 || true; done
+  if { (( new )) || [[ -n $changed ]]; } && command -v omarchy-restart-shell >/dev/null 2>&1; then
+    say "Kaze's plugins changed: restarting the Omarchy shell to load them."
     omarchy-restart-shell >/dev/null 2>&1 || true
   fi
 }
-desk_plugin_off() {
-  if [[ -d $DESK_DEST ]]; then
-    omarchy plugin disable "$DESK_ID" >/dev/null 2>&1 || true
-    rm -rf "$DESK_DEST"
-    omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
-  fi
+# Removing a clone hands its job back to the Omarchy plugin it came from.
+desk_plugins_off() {
+  local id
+  for id in "${SURFACES[@]}"; do
+    [[ -d $PLUGINS/$id ]] || continue
+    omarchy plugin remove "$id" --yes >/dev/null 2>&1 || { omarchy plugin disable "$id" >/dev/null 2>&1 || true; rm -rf "${PLUGINS:?}/$id"; }
+  done
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
 }
+desk_plugins_present() { local id; for id in "${SURFACES[@]}"; do [[ -d $PLUGINS/$id ]] && return 0; done; return 1; }
 
 cmd_desk() {
   case "${1:-status}" in
     on)
       need omarchy
-      desk_plugin_on
-      if desk_on; then hypr_reload; say "Kaze is on (the desk plugin is refreshed; $LOOK_FILE already loads style.lua)."; return; fi
+      desk_plugins_on
+      if desk_on; then hypr_reload; say "Kaze is on (its plugins are up to date; $LOOK_FILE already loads style.lua)."; return; fi
       mkdir -p "$(dirname "$LOOK_FILE")"
       [[ -f $LOOK_FILE ]] && cp "$LOOK_FILE" "$LOOK_FILE.bak"
       printf '\n-- Kaze 風: Hanko'"'"'s look and motion for the whole desk (hanko desk off removes it).\n%s\n' "$LOOK_LINE" >> "$LOOK_FILE"
@@ -244,7 +256,7 @@ cmd_desk() {
       say "Kaze is on: windows move on Iai and wear the bar's paper ($LOOK_FILE; the old file is at .bak)."
       ;;
     off)
-      desk_plugin_off
+      desk_plugins_off
       desk_on || { say "Kaze is off."; return; }
       cp "$LOOK_FILE" "$LOOK_FILE.bak"
       grep -v -e '-- hanko desk$' -e "^-- Kaze 風: Hanko's look and motion" "$LOOK_FILE.bak" > "$LOOK_FILE"
@@ -252,7 +264,7 @@ cmd_desk() {
       say "Kaze is off: Hyprland is back to your own look'n'feel."
       ;;
     status) if desk_on; then say "on"; else say "off"; fi ;;
-    build) [[ -n ${2:-} ]] || fail "usage: hanko desk build DIR"; desk_build "$2" >/dev/null ;;
+    build) [[ -n ${2:-} && -n ${3:-} ]] || fail "usage: hanko desk build ID DIR"; surface_build "$2" "$3" >/dev/null ;;
     *) fail "usage: hanko desk on|off|status" ;;
   esac
 }

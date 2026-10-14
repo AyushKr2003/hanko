@@ -39,6 +39,7 @@ const Lf = load("core/Leaf.js", ["KINDS", "kindOf", "labels", "uptime", "uptimeS
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
 const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "perimeter", "pointAt", "lit", "onScreen"])
+const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "wallpaperMode"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -1926,6 +1927,38 @@ test("sweep: a window is drawn on its own screen only, in that screen's coordina
   const screen = { x: 1920, y: 0, width: 2560, height: 1440 }
   assert.equal(Sw.onScreen({ x: 10, y: 10, width: 100, height: 100 }, screen), null)
   assert.deepEqual(Sw.onScreen({ x: 2000, y: 50, width: 100, height: 100 }, screen), { x: 80, y: 50, width: 100, height: 100 })
+})
+
+test("print: the majority tone becomes the paper, on dark and light themes", () => {
+  // Great Wave (0.65) and Sudden Shower (0.59) flip on a dark desk; the night pines (0.18) don't.
+  assert.deepEqual(Pt.steps(0.65, false, "#000", "#888"), { negate: true, from: "#000", to: "#888" })
+  assert.deepEqual(Pt.steps(0.18, false, "#000", "#888"), { negate: false, from: "#000", to: "#888" })
+  // On a light desk the light end is paper, and a mostly dark picture flips.
+  assert.deepEqual(Pt.steps(0.18, true, "#eee", "#333"), { negate: true, from: "#333", to: "#eee" })
+  assert.deepEqual(Pt.steps(0.65, true, "#eee", "#333"), { negate: false, from: "#333", to: "#eee" })
+  assert.equal(Pt.steps(NaN, false, "a", "b").negate, false)
+  const ramp = I.ramp("#ddd5c7", "#0a0a09")
+  assert.equal(Pt.inkFor(ramp, false), ramp.inkFaint)
+  assert.equal(Pt.inkFor(ramp, true), ramp.inkMuted)
+  assert.equal(Pt.wallpaperMode({}), "print")
+  assert.equal(Pt.wallpaperMode({ wallpaper: "original" }), "original")
+  assert.equal(Pt.wallpaperMode({ wallpaper: "nonsense" }), "print")
+})
+
+test("print: the sky lifts by day, settles at night, a few percent at most", () => {
+  assert.deepEqual(Pt.skyAt(12), { lift: 0.07, shade: 0 })
+  assert.deepEqual(Pt.skyAt(0), { lift: 0, shade: 0.22 })
+  assert.equal(Pt.skyAt(6).lift, 0)
+  assert.equal(Pt.skyAt(24).shade, Pt.skyAt(0).shade)
+  for (let h = 0; h < 24; h += 0.5) {
+    const s = Pt.skyAt(h)
+    assert.ok(s.lift <= 0.07 && s.shade <= 0.22 && (s.lift === 0 || s.shade === 0), String(h))
+  }
+})
+
+test("print: hanko-print and Print.js crush to the same tones", () => {
+  const sh = readFileSync(join(root, "scripts/hanko-print"), "utf8")
+  assert.ok(sh.includes(`TONES=${Pt.TONES} CLIP=${Pt.CLIP}`))
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

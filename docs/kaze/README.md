@@ -413,6 +413,7 @@ This file.
 ### KZ4 · Sumizuri 墨刷, the printed wallpaper ⬜
 - The duotone/crush shader in theme inks, paper grain, sky by the hour, season character.
 - Render tests with the user's seven prints in dark and light themes.
+- Built as a print, not a live shader: `scripts/hanko-print` (ImageMagick, part of Omarchy) greys the picture, negates it when its mean puts the majority tone on the wrong side (core/Print.js `steps`), clips 6%, crushes to 5 tones, maps them paper → ink (`inkFaint` on dark themes, `inkMuted` on light) and lays a fixed grain; `--cache DIR` names the print from the picture's real path, age and the two colours and keeps it in `~/.cache/hanko/prints` (8 s for a 4K picture the first time, 5 ms after). `plugins/hanko.background` is Omarchy's Background.qml (MIT) with `clonedFrom: omarchy.background`, so Omarchy's calls reach it and enabling it disables the built-in; every picture it's asked for goes through the print first (a theme switch prints in the new theme's colours, decoded from the switch's payload), and if a print isn't ready in 400 ms the original goes up and the print follows. The sky is a wash over the top 40% (`skyAt`: up to 7% lift by day toward the lighter colour, up to 22% shade at night). `"wallpaper": "original"` in `~/.config/hanko/kaze.json` turns the print off. The season's character (grain and crush by kō) is not built yet.
 
 ### KZ5 · Kaze 風, the living layer ⬜
 - Grass strokes from real weather; gusts toward what needs you; 0 fps when idle; pauses for fullscreen and low battery.

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "hanko.background",
+  "name": "Hanko background",
+  "version": "0.1.0",
+  "author": "AyushKr2003",
+  "license": "MIT",
+  "description": "Kaze, Sumizuri: your wallpaper printed again in the theme's paper and ink, and a sky that keeps the hour. Omarchy's background with one step added; works with any bar.",
+  "kinds": ["service"],
+  "entryPoints": {
+    "service": "Background.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.background"
+  }
+}
