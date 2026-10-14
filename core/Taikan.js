@@ -7,8 +7,8 @@
 //
 //   level     a reading with a value: volume, brightness, the keyboard light
 //   switch    a word and a crest: the microphone, the touchpad, anything else
-//   end       shutting down, rebooting, logging out (the ceremonies take
-//             these over in KZ10; until then they show as a switch)
+//   ceremony  shutting down, restarting, logging out, a battery about to die,
+//             an update: the whole screen (or a band), one brushed kanji
 
 // Omarchy's icon names → { label, kanji } for levels.
 var LEVELS = {
@@ -50,11 +50,25 @@ var SWITCHES = {
   "media-previous": { crest: "曲", label: "BACK", red: false },
   "player-previous": { crest: "曲", label: "BACK", red: false }
 }
-var ENDS = {
-  "shutdown": { crest: "終", label: "SHUT DOWN" }, "power": { crest: "終", label: "SHUT DOWN" }, "poweroff": { crest: "終", label: "SHUT DOWN" },
-  "reboot": { crest: "終", label: "RESTART" }, "restart": { crest: "終", label: "RESTART" },
-  "logout": { crest: "退", label: "LOG OUT" }, "sign-out": { crest: "退", label: "LOG OUT" }, "leave": { crest: "退", label: "LOG OUT" }
+// Ceremonies (Shiki 式, mockup 10): the few events that get the whole screen.
+// Omarchy's own shutdown, reboot and log-out scripts call the OSD with these
+// icons; `danger` and `new` come from the battery-low and post-update hooks
+// `hanko desk on` installs.
+//   kanji, english (beside it), sub (the mono line), red, band (a band across
+//   the middle instead of the whole screen), sealed (the seal is pressed)
+var CEREMONIES = {
+  "shutdown": { kanji: "終", english: "The end", sub: "Shutting down", sealed: true },
+  "power": { kanji: "終", english: "The end", sub: "Shutting down", sealed: true },
+  "poweroff": { kanji: "終", english: "The end", sub: "Shutting down", sealed: true },
+  "reboot": { kanji: "終", english: "The end", sub: "Restarting", sealed: true },
+  "restart": { kanji: "終", english: "The end", sub: "Restarting", sealed: true },
+  "logout": { kanji: "退", english: "Withdraw", sub: "Logging out", sealed: false },
+  "sign-out": { kanji: "退", english: "Withdraw", sub: "Logging out", sealed: false },
+  "leave": { kanji: "退", english: "Withdraw", sub: "Logging out", sealed: false },
+  "danger": { kanji: "危", english: "Danger", sub: "Plug in", red: true, band: true, sealed: false },
+  "new": { kanji: "新", english: "New", sub: "Updated", sealed: false }
 }
+var ENDS = CEREMONIES
 
 // What to draw for one of Omarchy's OSD states (OsdModel.stateForShow):
 //   { iconKey, maxValue, hasProgress, value, message, duration }
@@ -73,10 +87,17 @@ function view(st) {
     return { kind: "level", label: lv.label, kanji: lv.kanji, crest: "", red: muted, fill: fill, full: !muted && value >= max,
              muted: muted, figure: Math.round(value * 100 / max), word: muted ? "無音 Muted" : "", duration: duration }
   }
-  if (ENDS[key]) {
-    var e = ENDS[key]
-    return { kind: "end", label: e.label, kanji: "", crest: e.crest, red: false, fill: 0, full: false, muted: false,
-             figure: -1, word: String(st.message || ""), duration: duration }
+  if (CEREMONIES[key]) {
+    var c = CEREMONIES[key]
+    var msg = String(st.message || "")
+    // Omarchy's own words ("Shutting down") read the same; a hook's message
+    // ("Battery 5%", "Omarchy 4.1") becomes the English beside the kanji.
+    var english = c.english, sub = c.sub
+    if (key === "danger" && msg) english = msg
+    else if (key === "new" && msg) sub = msg
+    return { kind: "ceremony", label: "", kanji: c.kanji, crest: c.kanji, red: !!c.red, band: !!c.band, sealed: !!c.sealed,
+             english: english, sub: sub, fill: 0, full: false, muted: false, figure: -1, word: msg,
+             duration: Math.max(duration, 1200) }
   }
   var sw = SWITCHES[key] || { crest: crestFor(key), label: "", red: false }
   return { kind: "switch", label: sw.label, kanji: "", crest: sw.crest, red: !!sw.red, fill: 0, full: false, muted: false,

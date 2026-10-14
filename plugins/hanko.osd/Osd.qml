@@ -6,6 +6,7 @@ import qs.Commons
 import "core"
 import "core/Iai.js" as Iai
 import "core/Taikan.js" as Taikan
+import "core/Strokes.js" as Strokes
 import "OsdModel.js" as OsdModel
 
 // Taikan 体幹, posture (docs/kaze, mockup 06): Omarchy's on-screen display,
@@ -54,6 +55,7 @@ Item {
       drawIn.restart()
     }
     if (root.v.full && !wasOpen) cut.restart()
+    if (root.v.kind === "ceremony") ceremony.begin()
     var d = root.v.duration
     if (d > 0) { hideTimer.interval = d; hideTimer.restart() } else hideTimer.stop()
   }
@@ -152,6 +154,160 @@ Item {
       border.width: 1
       border.color: Ink.lineSoft
       opacity: root.shown
+      visible: root.v.kind !== "ceremony"
+    }
+
+    // ── Shiki 式, a ceremony: the whole screen (or a band), one brushed kanji ──
+    Item {
+      id: ceremony
+      anchors.fill: parent
+      visible: root.v.kind === "ceremony" && root.shown > 0
+      readonly property bool band: !!root.v.band
+
+      // The paper: the whole screen, or a band across the middle.
+      Rectangle {
+        x: 0
+        width: parent.width
+        y: ceremony.band ? Math.round(parent.height * 0.3) : 0
+        height: ceremony.band ? Math.round(parent.height * 0.4) : parent.height
+        color: Ink.paper
+        opacity: root.shown
+        Rectangle { visible: ceremony.band; width: parent.width; height: 1; color: Ink.seal }
+        Rectangle { visible: ceremony.band; y: parent.height - 1; width: parent.width; height: 1; color: Ink.seal }
+      }
+
+      Row {
+        anchors.centerIn: parent
+        spacing: Math.round(60 * panel.k)
+
+        // The kanji, written stroke by stroke in its real order (core/
+        // Strokes.js, from KanjiVG): each stroke pressed at its start and
+        // lifted at its end, like a brush. A kanji without stroke data is
+        // set in the brush face instead.
+        Item {
+          id: brushBox
+          readonly property var strokes: Strokes.STROKES[root.v.kanji || ""] || null
+          width: Math.round(panel.height * (ceremony.band ? 0.3 : 0.4))
+          height: width
+          Canvas {
+            id: brush
+            anchors.fill: parent
+            visible: brushBox.strokes !== null
+            renderStrategy: Canvas.Cooperative
+            property real written: ceremony.reveal * (brushBox.strokes ? brushBox.strokes.length : 0)
+            onWrittenChanged: requestPaint()
+            onPaint: {
+              var ctx = getContext("2d")
+              ctx.reset()
+              var st = brushBox.strokes
+              if (!st) return
+              var k = width / Strokes.SIZE
+              var c = root.v.red ? Ink.seal : Ink.ink
+              ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 1)
+              ctx.lineCap = "round"
+              ctx.lineJoin = "round"
+              var base = width * 0.062
+              for (var s = 0; s < st.length && s < written; s++) {
+                var pts = st[s], upto = Math.min(1, written - s)
+                var n = Math.max(2, Math.round(pts.length * upto))
+                for (var i = 1; i < n; i++) {
+                  var t = i / (pts.length - 1)
+                  // pressed at the start, full in the middle, lifted at the end
+                  var w = t < 0.12 ? 0.8 + t / 0.12 * 0.2 : (t > 0.7 ? 1 - (t - 0.7) / 0.3 * 0.62 : 1)
+                  ctx.lineWidth = base * w
+                  ctx.beginPath()
+                  ctx.moveTo(pts[i - 1][0] * k, pts[i - 1][1] * k)
+                  ctx.lineTo(pts[i][0] * k, pts[i][1] * k)
+                  ctx.stroke()
+                }
+              }
+            }
+          }
+          Item {
+            visible: brushBox.strokes === null
+            width: parent.width
+            height: parent.height * ceremony.reveal
+            clip: true
+            Text {
+              text: root.v.kanji || ""
+              color: root.v.red ? Ink.seal : Ink.ink
+              font.family: Type.brush
+              font.pixelSize: brushBox.width
+              renderType: Text.CurveRendering
+            }
+          }
+          // The seal, pressed beside the last stroke.
+          Rectangle {
+            visible: !!root.v.sealed
+            width: Math.round(74 * panel.k)
+            height: width
+            radius: Math.round(6 * panel.k)
+            x: parent.width - width * 0.4
+            y: parent.height - height * 1.1
+            color: Ink.seal
+            opacity: ceremony.press
+            scale: 1.15 - 0.15 * ceremony.press
+            Text {
+              anchors.centerIn: parent
+              text: ceremony.sealGlyph
+              color: Ink.paper
+              font.family: "Noto Serif CJK JP"
+              font.weight: Font.DemiBold
+              font.pixelSize: Math.round(42 * panel.k)
+            }
+          }
+        }
+        Column {
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: Math.round(18 * panel.k)
+          opacity: ceremony.words
+          Text {
+            text: root.v.english || ""
+            color: Ink.ink
+            font.family: Type.display
+            font.variableAxes: { "wght": 320 }
+            font.italic: true
+            font.pixelSize: Math.round(64 * panel.k)
+            renderType: Text.CurveRendering
+          }
+          Text {
+            text: String(root.v.sub || "").toUpperCase()
+            color: root.v.red ? Ink.seal : Ink.inkFaint
+            font.family: Type.mono
+            font.pixelSize: Math.round(18 * panel.k)
+            font.letterSpacing: 4 * panel.k
+          }
+        }
+      }
+
+      // The beats: the strokes over 800 ms, the words after them and the
+      // seal pressed. With motion still, all at once.
+      property real reveal: 0
+      property real words: 0
+      property real press: 0
+      property string sealGlyph: "鑑"
+      SequentialAnimation {
+        id: ceremonyAnim
+        PropertyAction { target: ceremony; property: "reveal"; value: 0 }
+        PropertyAction { target: ceremony; property: "words"; value: 0 }
+        PropertyAction { target: ceremony; property: "press"; value: 0 }
+        PauseAnimation { duration: 120 }
+        // Every stroke in turn, 800 ms in all.
+        NumberAnimation { target: ceremony; property: "reveal"; to: 1; duration: 800 }
+        ParallelAnimation {
+          NumberAnimation { target: ceremony; property: "words"; to: 1; duration: Iai.BEATS.chiburi.ms }
+          NumberAnimation { target: ceremony; property: "press"; to: 1; duration: 140; easing.type: Easing.OutCubic }
+        }
+      }
+      function begin() {
+        if (root.still) { ceremony.reveal = 1; ceremony.words = 1; ceremony.press = 1 }
+        else ceremonyAnim.restart()
+      }
+      FileView {
+        path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/hanko/style.json"
+        printErrors: false
+        onLoaded: { var m = /"sealGlyph"\s*:\s*"([^"]+)"/.exec(text()); ceremony.sealGlyph = m ? m[1] : "鑑" }
+      }
     }
 
     Item {
@@ -247,7 +403,7 @@ Item {
 
       // ── A switch (or an end): a crest and its word, where the line would be ──
       Row {
-        visible: root.v.kind !== "level"
+        visible: root.v.kind === "switch"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         spacing: Math.round(18 * panel.k)

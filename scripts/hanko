@@ -286,15 +286,24 @@ desk_plugins_off() {
 # Battō 抜刀: the menu in Kaze's grammar through the user-level shell.toml
 # (scripts/hanko-kaze-theme), refreshed by a theme-set hook on every theme.
 KAZE_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/theme-set.d/50-hanko-kaze"
+# Shiki 式: two more hooks call the OSD's ceremonies: 危 when the battery is
+# low (Omarchy's battery service runs the battery-low hooks), 新 after an update.
+KAZE_BATTERY_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/battery-low.d/50-hanko-kaze"
+KAZE_UPDATE_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/post-update.d/50-hanko-kaze"
+write_hook() {
+  mkdir -p "$(dirname "$1")"
+  printf '#!/bin/bash\n# Kaze 風 (hanko desk off removes this).\n%s\n' "$2" > "$1"
+  chmod +x "$1"
+}
 desk_theme_on() {
   "$SRC/scripts/hanko-kaze-theme" || say "  (the menu keeps its theme's look: no colors.toml found)"
-  mkdir -p "$(dirname "$KAZE_HOOK")"
-  printf '#!/bin/bash\n# Kaze 風: Omarchy'"'"'s menu in Hanko'"'"'s grammar for the new theme (hanko desk off removes this).\nexec "%s/scripts/hanko-kaze-theme"\n' "$SRC" > "$KAZE_HOOK"
-  chmod +x "$KAZE_HOOK"
+  write_hook "$KAZE_HOOK" "exec \"$SRC/scripts/hanko-kaze-theme\""
+  write_hook "$KAZE_BATTERY_HOOK" 'omarchy-osd -i danger -m "Battery ${1:-}%" -d 1600 >/dev/null 2>&1 || true'
+  write_hook "$KAZE_UPDATE_HOOK" 'omarchy-osd -i new -m "Omarchy $(omarchy version 2>/dev/null | head -1)" -d 1400 >/dev/null 2>&1 || true'
 }
 desk_theme_off() {
   "$SRC/scripts/hanko-kaze-theme" --remove || true
-  rm -f "$KAZE_HOOK"
+  rm -f "$KAZE_HOOK" "$KAZE_BATTERY_HOOK" "$KAZE_UPDATE_HOOK"
 }
 
 desk_plugins_present() { local id; [[ -f $KAZE_HOOK ]] && return 0; for id in "${SURFACES[@]}"; do [[ -d $PLUGINS/$id ]] && return 0; done; return 1; }
