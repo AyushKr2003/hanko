@@ -132,11 +132,13 @@ hl.layer_rule({ match = { namespace = "hanko-overview" }, blur = true })
 hl.layer_rule({ match = { namespace = "hanko-bar" }, blur = true, ignore_alpha = 0.5 })
 ```
 
-**Windows that match the bar.** `style.lua` gives Hyprland windows the bar's look: 1 px hairline frames in your theme's ink, square corners (7 px with the `inset` surface, whose 8 px gap the windows share), a short black shadow down and right, darker under the focused window, flat mono group tabs and the bar's motion timings (`motion: still` stops window animations too). It reads `colors.toml` and `~/.config/hanko/style.json`, so it follows `omarchy theme set`. Load it last in `~/.config/hypr/looknfeel.lua`:
+**Windows that match the bar.** `style.lua` gives Hyprland windows the bar's look: 1 px hairline frames in your theme's ink, square corners (7 px with the `inset` surface, whose 8 px gap the windows share), a short black shadow down and right, darker under the focused window, flat mono group tabs and the bar's motion (Iai) (`motion: still` stops window animations too). It reads `colors.toml` and `~/.config/hanko/style.json`, so it follows `omarchy theme set`. Load it last in `~/.config/hypr/looknfeel.lua`:
 
 ```lua
 pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/hanko.bar/style.lua")
 ```
+
+Or let Hanko do it for the whole desk, whichever bar you use: `hanko desk on` adds one marked line that loads it last, `hanko desk off` takes it out (Kaze 風, [docs/kaze](docs/kaze/README.md)). Windows then move on Iai 居合, the five beats the bar moves on: they draw in from the nearest edge with a dead stop and sheathe out more slowly, workspaces roll a short way, nothing pops or springs.
 
 After a style change in Hanko, run `hyprctl reload` to bring the windows along. Set `shadow_style` near the top of the file to `print` (a hard black offset), `seal` (the same in seal red) or `none` (hairlines only).
 

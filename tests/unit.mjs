@@ -37,6 +37,7 @@ const Lf = load("core/Leaf.js", ["KINDS", "kindOf", "labels", "uptime", "uptimeS
   "themesView", "TOOLS", "tool", "toolsLine", "focusState", "focusStep", "focusView", "clock", "notes", "toggled", "notesView", "clipboard",
   "afterword", "SEKKI", "KO"])
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
+const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -631,7 +632,7 @@ test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.equal(S.resolve({ hours: "13h" }).hours, "auto")
   assert.equal(S.withSetting({}, "hours", "24h").hours, "24h")
   assert.equal(Se.selected("numerals", S.resolve({ numerals: "kanji" }), "鑑"), "kanji")
-  assert.equal(Se.MOTION_ROWS.length, 8)
+  assert.equal(Se.MOTION_ROWS.length, 13)  // the five Iai beats, then the eight moves
   assert.equal(Se.nameOf("clockAt"), "Clock position")
   assert.equal(Se.nameOf("bluetooth"), "Bluetooth")
   assert.ok(S.KEYS.every((k) => Se.nameOf(k) !== k))
@@ -1829,6 +1830,59 @@ test("settings: the timesheet has every motion, the keymap lights its keys", () 
     assert.ok(code.includes('o.bind("' + b.keys + '", "' + b.name + '", "omarchy-shell hanko '))
   }
   assert.equal(Se.bindingsCode().split("hl.unbind").length - 1, Se.BINDINGS.length)
+})
+
+test("iai: five beats, none overshoots, the sheath slower than the draw, all under 320 ms", () => {
+  assert.deepEqual(Ia.ORDER, ["kamae", "nuki", "kiri", "chiburi", "noto"])
+  assert.deepEqual(Object.keys(Ia.BEATS).sort(), [...Ia.ORDER].sort())
+  for (const name of Ia.ORDER) {
+    const b = Ia.BEATS[name]
+    assert.equal(b.curve.length, 4, name)
+    assert.ok(Ia.total(name) <= 320, name + " " + Ia.total(name))
+    assert.deepEqual(Ia.qml(name), [...b.curve, 1, 1])
+    let last = 0
+    for (let i = 0; i <= 100; i++) {
+      const v = Ia.ease(b.curve, i / 100)
+      assert.ok(v >= -1e-9 && v <= 1 + 1e-9, `${name} leaves 0..1 at ${i}%: ${v}`)
+      assert.ok(v >= last - 1e-9, `${name} goes back at ${i}%`)
+      last = v
+    }
+  }
+  assert.ok(Ia.BEATS.noto.ms > Ia.BEATS.nuki.ms)
+  assert.ok(Ia.BEATS.nuki.hold > 0)
+})
+
+test("iai: the draw is mostly there by half its time; the sheath has barely left", () => {
+  assert.ok(Ia.ease(Ia.BEATS.nuki.curve, 0.5) > 0.9)
+  assert.ok(Ia.ease(Ia.BEATS.noto.curve, 0.5) < 0.2)
+  assert.equal(Ia.at("nuki", 0), 0)
+  assert.equal(Ia.at("nuki", Ia.BEATS.nuki.hold), 0)
+  assert.equal(Ia.at("nuki", Ia.total("nuki")), 1)
+  assert.equal(Ia.at("chiburi", Ia.BEATS.chiburi.delay - 1), 0)
+  assert.equal(Ia.hyprSpeed("nuki"), 1.6)
+  assert.equal(Ia.hyprSpeed("noto"), 2.4)
+})
+
+test("iai: style.lua and the Motion timesheet carry the same curves and speeds", () => {
+  const lua = readFileSync(join(root, "style.lua"), "utf8")
+  for (const name of ["kamae", "nuki", "chiburi", "noto"]) {
+    const m = lua.match(new RegExp(`hl\\.curve\\("${name}", \\{ type = "bezier", points = \\{ \\{ ([\\d.]+), ([\\d.]+) \\}, \\{ ([\\d.]+), ([\\d.]+) \\} \\} \\}\\)`))
+    assert.ok(m, "style.lua has no curve " + name)
+    assert.deepEqual(m.slice(1, 5).map(Number), Ia.BEATS[name].curve, name)
+  }
+  const anim = leaf => {
+    const m = lua.match(new RegExp(`leaf = "${leaf}", enabled = true, speed = ([\\d.]+), bezier = "(\\w+)"`))
+    assert.ok(m, "style.lua has no animation " + leaf)
+    return { speed: Number(m[1]), bezier: m[2] }
+  }
+  for (const [leaf, beat] of [["windowsIn", "nuki"], ["windowsOut", "noto"], ["border", "kamae"], ["layersIn", "nuki"], ["layersOut", "noto"], ["fadeIn", "chiburi"]])
+    assert.deepEqual(anim(leaf), { speed: Ia.hyprSpeed(beat), bezier: beat }, leaf)
+  assert.ok(!/popin|bounce|elastic|overshot/i.test(lua.replace(/^\s*--.*$/gm, "")), "no pop-in or springs in style.lua")
+  for (const name of Ia.ORDER) {
+    const row = Se.MOTION_SHEET.find(r => r.prop === name)
+    assert.ok(row, "timesheet has no " + name)
+    assert.deepEqual(row.curve, Ia.BEATS[name].curve, name)
+  }
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

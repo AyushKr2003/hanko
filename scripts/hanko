@@ -23,6 +23,8 @@
 #   hanko press              press the seal: print No. 00 (every sheet on one),
 #                            or lift it off (bind it to a key: see the README)
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
+#   hanko desk on|off|status Kaze 風: give the whole desk Hanko's look and motion
+#                            (loads style.lua from looknfeel.lua; any bar)
 #   hanko doctor             check the installation
 #
 # Style commands talk to the running shell over IPC (omarchy-shell hanko ...),
@@ -108,6 +110,7 @@ cmd_uninstall() {
     rm -rf "$DEST"
   fi
   rm -f "$PREVIOUS"
+  desk_on && cmd_desk off
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
 }
@@ -176,6 +179,42 @@ cmd_menu() {
   esac
 }
 
+# Kaze 風, the whole desk (docs/kaze). `desk on` loads style.lua last from
+# ~/.config/hypr/looknfeel.lua with one marked line, so Hyprland's windows
+# move on Iai and wear the bar's paper whichever bar is in use; `desk off`
+# deletes exactly that line.
+LOOK_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/looknfeel.lua"
+LOOK_LINE='pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/hanko.bar/style.lua") -- hanko desk'
+
+# On when the marked line is there. A line of your own inside `if bar ==
+# "hanko"` (the README's) only loads it while Hanko is the bar, so it
+# doesn't count, and `desk off` leaves it alone.
+desk_on() { [[ -f $LOOK_FILE ]] && grep -q -- '-- hanko desk$' "$LOOK_FILE"; }
+
+hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true; }
+
+cmd_desk() {
+  case "${1:-status}" in
+    on)
+      if desk_on; then say "The desk is already Hanko's ($LOOK_FILE)."; return; fi
+      mkdir -p "$(dirname "$LOOK_FILE")"
+      [[ -f $LOOK_FILE ]] && cp "$LOOK_FILE" "$LOOK_FILE.bak"
+      printf '\n-- Kaze 風: Hanko'"'"'s look and motion for the whole desk (hanko desk off removes it).\n%s\n' "$LOOK_LINE" >> "$LOOK_FILE"
+      hypr_reload
+      say "Kaze is on: windows move on Iai and wear the bar's paper ($LOOK_FILE; the old file is at .bak)."
+      ;;
+    off)
+      desk_on || { say "Kaze is not on."; return; }
+      cp "$LOOK_FILE" "$LOOK_FILE.bak"
+      grep -v -e '-- hanko desk$' -e "^-- Kaze 風: Hanko's look and motion" "$LOOK_FILE.bak" > "$LOOK_FILE"
+      hypr_reload
+      say "Kaze is off: Hyprland is back to your own look'n'feel."
+      ;;
+    status) if desk_on; then say "on"; else say "off"; fi ;;
+    *) fail "usage: hanko desk on|off|status" ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -187,6 +226,7 @@ cmd_doctor() {
   check "Hanko is the active bar" "[[ \$(active_bar) == '$ID' ]]"
   check "Noto CJK fonts for the kanji" "fc-list | grep -qi 'Noto Sans CJK'"
   check "jq is installed" "command -v jq"
+  if desk_on; then say "  ok    Kaze: style.lua loads from looknfeel.lua"; else say "  --    Kaze is off (hanko desk on)"; fi
   if shell_up; then
     local w
     w="$(omarchy-shell hanko warnings 2>/dev/null || true)"
@@ -216,6 +256,7 @@ case "${1:-}" in
     [[ $(ipc styleSet form "$form") == ok ]] || fail "could not set form $form"
     say "form: $form" ;;
   menu) shift; cmd_menu "$@" ;;
+  desk) shift; cmd_desk "$@" ;;
   doctor) cmd_doctor ;;
   -h|--help|"") awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;

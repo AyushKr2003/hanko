@@ -364,13 +364,13 @@ Findings from the installed Omarchy (`/usr/share/omarchy/shell/README.md`, `serv
 - **Cloning first-party plugins is the supported way to restyle them.** `omarchy plugin clone omarchy.osd` copies the plugin into `~/.config/omarchy/plugins/<user>.osd` with `"omarchy": { "clonedFrom": "omarchy.osd" }` in its manifest. Shortcuts and IPC calls made to the built-in id are then **routed to the clone**, and the registry gives the clone the source's host capabilities (`stampHostCapabilities`). So a Hanko-shipped plugin with `clonedFrom` set takes over that surface without changing any keybinding.
 - **This includes the lock.** `omarchy.lock` is a `service` with the `authentication` capability, and a clone inherits it. That is powerful and must be handled with care (§9).
 - **Themes** (`~/.config/omarchy/themes/<name>/`) carry `colors.toml`, `hyprland.lua`, `shell.bar.toml`, `shell.launcher.toml`, `shell.menu.toml`, `icons.theme`, `neovim.lua`, backgrounds and an `unlock.png`. Hooks run on `theme-set`, `font-set`, `post-boot`, `battery-low`.
-- **Hyprland** is configured in Lua (`hl.config`, `hl.curve`, `hl.animation`). `looknfeel.lua` already loads a bar's own look file when that bar is active (Omacale does it with `pcall(dofile, …omacale.lua)`): Hanko can ship `hanko.lua` the same way.
+- **Hyprland** is configured in Lua (`hl.config`, `hl.curve`, `hl.animation`). `looknfeel.lua` already loads a bar's own look file when that bar is active (Omacale does it with `pcall(dofile, …omacale.lua)`): Hanko can ship `style.lua` the same way.
 - **Screen shaders** live in `~/.config/hypr/shaders/`, selected by `decoration.screen_shader` (managed by `omarchy-menu-shaders`).
 - **Boot:** `/usr/share/omarchy/default/plymouth/` (a Plymouth script theme with PNGs) and `default/limine/`.
 
 | Surface | Route | Effort |
 |---|---|---|
-| Motion tokens, windows, borders | `hanko.lua` loaded from `looknfeel.lua` + theme `hyprland.lua` | S |
+| Motion tokens, windows, borders | `style.lua` (already Hanko's Hyprland file) loaded from `looknfeel.lua` + theme `hyprland.lua` | S |
 | Wallpaper print + living layer | clone of `omarchy.background` (verify kind and how it draws) with a QML `ShaderEffect` | L |
 | OSD 体幹 | `hanko.osd`, `clonedFrom: omarchy.osd` | M |
 | Notifications 文 | `hanko.notifications`, `clonedFrom: omarchy.notifications` | L |
@@ -399,10 +399,11 @@ This file.
 - The user picks and trims before anything is built.
 - Done: the fourteen sheets in §0 (motion studies as video loops are left for KZ2, where the real curves run).
 
-### KZ2 · Iai, the shared motion ⬜
+### KZ2 · Iai, the shared motion ✅
 - `core/Motion.js`: the five beats as tokens (durations, curves), unit-tested; the bar's existing timings move onto them.
-- `hanko.lua`: the Hyprland curves and animations of §3, loaded by `looknfeel.lua` when Hanko is the bar (the Omacale pattern), plus borders, rounding, gaps, `dim_inactive`.
+- `style.lua` (Hanko's existing Hyprland file): the curves and animations of §3. `hanko desk on|off` adds or removes its `dofile` line in `looknfeel.lua`, whichever bar is in use.
 - Done when: windows open with nuki and close with nōtō, and the bar and windows feel like one hand.
+- Built: `core/Iai.js` (BEATS, ORDER, `qml()`, `total()`, `ease()`, `at()`, `hyprSpeed()`, 3 unit tests); `Motion.qml` exposes `kamae`, `nuki`/`nukiHold`/`nukiCurve`, `kiri`, `chiburi`/`chiburiDelay`, `noto`/`notoCurve`, and `sheetPrint` is now the draw (190 ms); sheets draw open and sheathe shut (`SheetView`, `SheetWindow`'s close timer and Inkan lift-off); the Motion timesheet lists the five beats first. Hyprland: Hanko already had `style.lua`, so its motion section became Iai (windows slide in on nuki and out on noto, no pop-in; fades, layers, workspaces and the border on the same curves), and a test keeps it in step with `Iai.js`. `hanko desk on|off|status` adds or removes one marked line in `looknfeel.lua`, independent of the bar.
 
 ### KZ3 · Ha 刃, windows ⬜
 - The focus sweep (gradient border + `borderangle once`), urgent border breathing, workspace slide.

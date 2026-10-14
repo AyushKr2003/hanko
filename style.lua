@@ -23,7 +23,8 @@
 --   * Windows lie on the desk like sheets of paper: a short, tight black
 --     shadow falling down and right, darker under the focused sheet, which
 --     sits a little higher. Pick another below (`shadow_style`).
---   * Motion follows core/Motion.qml: no springs, nothing over 320 ms, and
+--   * Motion is Iai 居合 (core/Iai.js), the beats every Kaze surface moves
+--     on: windows draw in and sheathe out, nothing springs, and
 --     `motion: still` in style.json cuts window animations too.
 
 local home = os.getenv("HOME")
@@ -162,27 +163,47 @@ hl.config({
   },
 })
 
--- ── Motion (core/Motion.qml) ────────────────────────────────────────────────
--- Hyprland's speed is in deciseconds, so speed = ms / 100.
+-- ── Motion: Iai 居合 (core/Iai.js, docs/kaze §3) ─────────────────────────────
+-- What opens draws, what closes sheathes, nothing springs. Hyprland's speed
+-- is in tenths of a second (speed = ms / 100); tests/unit.mjs checks every
+-- curve and speed here against core/Iai.js.
 
-hl.curve("hankoUnroll", { type = "bezier", points = { { 0.2, 0.9 }, { 0.25, 1 } } })
-hl.curve("hankoInk", { type = "bezier", points = { { 0.4, 0 }, { 0.2, 1 } } })
-hl.curve("hankoPan", { type = "bezier", points = { { 0.16, 1 }, { 0.3, 1 } } })
+-- 構 kamae, ready: 90 ms
+hl.curve("kamae", { type = "bezier", points = { { 0.2, 0 }, { 0, 1 } } })
+-- 抜 nuki, draw: 160 ms, a fast travel and a dead stop, no overshoot
+hl.curve("nuki", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1 } } })
+-- 振 chiburi, shake off: 220 ms
+hl.curve("chiburi", { type = "bezier", points = { { 0.25, 0.1 }, { 0.25, 1 } } })
+-- 納 noto, sheath: 240 ms, slow away, then into the edge
+hl.curve("noto", { type = "bezier", points = { { 0.7, 0 }, { 0.84, 0 } } })
 
 hl.config({ animations = { enabled = not still } })
 
--- A window prints in like a sheet (180 ms) and rolls up quicker than it came.
-hl.animation({ leaf = "windows", enabled = true, speed = 2.6, bezier = "hankoUnroll" })
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 1.8, bezier = "hankoUnroll", style = "popin 96%" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.4, bezier = "hankoInk", style = "popin 96%" })
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 2.6, bezier = "hankoPan" })
-hl.animation({ leaf = "border", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fade", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fadeIn", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fadeShadow", enabled = true, speed = 1.4, bezier = "hankoInk" })
--- Workspaces pan like the scroll does between sections (260 ms).
-hl.animation({ leaf = "workspaces", enabled = true, speed = 2.6, bezier = "hankoPan", style = "slide" })
+hl.animation({ leaf = "global", enabled = true, speed = 1.6, bezier = "nuki" })
+-- Windows draw in from the nearest edge and sheathe back into it. No pop-in.
+hl.animation({ leaf = "windows", enabled = true, speed = 1.6, bezier = "nuki" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 1.6, bezier = "nuki", style = "slide" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.4, bezier = "noto", style = "slide" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 1.6, bezier = "nuki" })
+-- The border inks up (ready) when focus arrives.
+hl.animation({ leaf = "border", enabled = true, speed = 0.9, bezier = "kamae" })
+-- Fades settle like a shake-off and leave like a sheath.
+hl.animation({ leaf = "fade", enabled = true, speed = 0.9, bezier = "kamae" })
+hl.animation({ leaf = "fadeIn", enabled = true, speed = 2.2, bezier = "chiburi" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 2.4, bezier = "noto" })
+hl.animation({ leaf = "fadeDim", enabled = true, speed = 0.9, bezier = "kamae" })
+hl.animation({ leaf = "fadeShadow", enabled = true, speed = 0.9, bezier = "kamae" })
+hl.animation({ leaf = "fadeSwitch", enabled = false })
+-- Layer surfaces (launcher, menus, Hanko's sheets) only fade: their own QML
+-- draws and sheathes them, so Hyprland mustn't slide them as well.
+hl.animation({ leaf = "layers", enabled = true, speed = 1.6, bezier = "nuki" })
+hl.animation({ leaf = "layersIn", enabled = true, speed = 1.6, bezier = "nuki", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2.4, bezier = "noto", style = "fade" })
+hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 1.6, bezier = "nuki" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 2.4, bezier = "noto" })
+-- Workspaces roll a short way, like a scroll, not a full-screen swipe.
+hl.animation({ leaf = "workspaces", enabled = true, speed = 2.0, bezier = "nuki", style = "slidefade 8%" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2.0, bezier = "nuki", style = "slidefadevert 8%" })
 
 -- The overview is already animated by QML; keep Hyprland from sliding its
 -- full-screen layer in as well.

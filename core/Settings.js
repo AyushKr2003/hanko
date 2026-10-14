@@ -379,10 +379,15 @@ var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", 
 
 // [name, what moves, Motion.qml property for its time]
 var MOTION_ROWS = [
+  ["Ready 構", "Hover or focus inks a thing up one tier; nothing moves", "kamae"],
+  ["Draw 抜", "Anything opens: a held beat, a fast travel, a hard stop", "nuki"],
+  ["Cut 斬", "A commit inverts at once; a hairline flashes and fades", "kiri"],
+  ["Shake off 振", "Values and labels settle in after their plate", "chiburi"],
+  ["Sheath 納", "Anything closes: slow away, into its edge, then the click", "noto"],
   ["Unroll", "The rod drops and the scroll's paper follows it", "unroll"],
   ["Ink", "Section ink arrives after the paper has moved", "ink"],
   ["Pan", "A pan carries on and lands centred on a section", "pan"],
-  ["Print", "A sheet prints top-down from the cell you clicked", "sheetPrint"],
+  ["Print", "A sheet draws down from the cell you clicked", "sheetPrint"],
   ["Plates", "The live page's plate slides to the next one", "slide"],
   ["Values", "A changed reading fades through to the new one", "fade"],
   ["Stamp", "A new notification is pressed down, then settles: the only overshoot", "stamp"],
@@ -394,10 +399,16 @@ var MOTION_ROWS = [
 // cubic bézier (x1, y1, x2, y2), named as the code eases it. `dip` draws a
 // fade (down to a trace, then back) instead of a rise.
 var MOTION_SHEET = [
+  // Iai 居合 (core/Iai.js): the five beats every Kaze surface moves on.
+  { name: "Ready 構", line: "Hover or focus inks a thing up one tier; nothing moves", prop: "kamae", delay: 0, curve: [0.2, 0, 0, 1], ease: "bézier .2 0 0 1" },
+  { name: "Draw 抜", line: "Anything opens: a held beat, a fast travel, a hard stop", prop: "nuki", delayProp: "nukiHold", curve: [0.05, 0.9, 0.1, 1], ease: "bézier .05 .9 .1 1" },
+  { name: "Cut 斬", line: "A commit inverts at once; a hairline flashes and fades", prop: "kiri", delay: 0, curve: [0, 1, 0, 1], ease: "step, then fade" },
+  { name: "Shake off 振", line: "Values and labels settle in after their plate", prop: "chiburi", delayProp: "chiburiDelay", curve: [0.25, 0.1, 0.25, 1], ease: "bézier .25 .1 .25 1" },
+  { name: "Sheath 納", line: "Anything closes: slow away, into its edge, then the click", prop: "noto", delay: 0, curve: [0.7, 0, 0.84, 0], ease: "bézier .7 0 .84 0" },
   { name: "Unroll", line: "The rod drops and the scroll's paper follows it", prop: "unroll", delay: 0, curve: [0.2, 0.9, 0.25, 1], ease: "bézier .2 .9 .25 1" },
   { name: "Ink", line: "Section ink arrives after the paper has moved", prop: "ink", delayProp: "inkDelay", curve: [0.4, 0, 0.2, 1], ease: "bézier .4 0 .2 1" },
   { name: "Pan", line: "A pan carries on and lands centred on a section", prop: "pan", delay: 0, curve: [0.16, 1, 0.3, 1], ease: "bézier .16 1 .3 1" },
-  { name: "Print", line: "A sheet prints top-down from the cell you clicked", prop: "sheetPrint", delay: 0, curve: [0.33, 1, 0.68, 1], ease: "out cubic" },
+  { name: "Print", line: "A sheet draws down from the cell you clicked (the draw, held beat included)", prop: "sheetPrint", delay: 0, curve: [0.05, 0.9, 0.1, 1], ease: "the draw" },
   { name: "Plates", line: "A sliding plate moves to its new place", prop: "slide", delay: 0, curve: [0.33, 1, 0.68, 1], ease: "out cubic" },
   { name: "Values", line: "A changed reading fades to a trace and back", prop: "fade", delay: 0, curve: [0.11, 0, 0.5, 0], ease: "in quad, out quad", dip: true },
   { name: "Stamp", line: "A new letter is pressed down, then settles: the only overshoot", prop: "stamp", delay: 0, curve: [0.3, 1.4, 0.5, 1], ease: "bézier .3 1.4 .5 1" },

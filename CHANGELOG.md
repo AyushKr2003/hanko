@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Kaze 風, the whole desk, KZ2: Iai 居合, five beats every surface moves on (ready 90 ms, draw 30 + 160 ms, cut 70 ms, shake off 220 ms, sheath 240 ms; no overshoot), in `core/Iai.js`. Sheets now draw open and sheathe shut on them, Settings › Motion lists them, and `style.lua` moves Hyprland's windows, fades, layers and workspaces on the same curves (no more pop-in). `hanko desk on|off|status` loads `style.lua` from `looknfeel.lua` for any bar.
 - Margin and Leaf are removed: Settings › Design offers Hanko and Shōji, without the borrow rows or Surprise me, and `hanko borrow` is gone. A style.json that names Margin or Leaf loads as Hanko; a saved `borrow` is ignored.
 - One design: the design switch is gone, with Settings › Design, `hanko design` and `hanko touch` (use `hanko style preset shoji` and `hanko style set season english`). Panel opacity is on Settings › Sheets.
 - Shōji is a preset now, not a separate design: `hanko style preset shoji` (or its card in Typesetting) gives the Shōji bar on the Hanko engine, with every sheet in the Shōji hand and the overview framed, and with Hanko's indicators, tray, hosted widgets, brightness cell, scroll and per-monitor settings, which the Shōji design never had. A style.json with `"design": "shoji"` loads as the Shōji preset (keeping its height, position and Bluetooth edits);
