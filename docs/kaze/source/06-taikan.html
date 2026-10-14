@@ -1,0 +1,97 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3400">
+<title>Kaze 06 · Taikan</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .st { position: relative; height: 270px; background: var(--paper); overflow: hidden; }
+  .st .wp { position: absolute; inset: 0; background-size: 1920px auto; background-position: center 92%; opacity: .45; }
+  .osd { position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%); width: 560px; }
+  .osd .rd { display: flex; justify-content: center; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .osd .rd .lab { font: 12px var(--mono); letter-spacing: 2.4px; color: var(--inkMuted); }
+  .osd .rd .lab i { font-style: normal; font-family: var(--jps); margin-left: 6px; color: var(--inkDim); font-size: 14px; letter-spacing: 0; }
+  .osd .rd .v { font: 400 34px var(--display); font-variant-numeric: tabular-nums; color: var(--ink); min-width: 56px; text-align: center; }
+  .osd .rd .v small { font-family: var(--ui); font-size: 14px; color: var(--inkFaint); margin-left: 2px; }
+  .osd .line { position: relative; height: 1px; background: var(--lineStrong); }
+  .osd .line .ec { position: absolute; top: -4px; width: 1px; height: 9px; background: var(--inkMuted); }
+  .osd .line .mid { position: absolute; left: 50%; top: -3px; width: 1px; height: 7px; background: var(--inkFaint); }
+  .osd .line .fill { position: absolute; top: -1px; height: 3px; background: var(--ink); }
+  .osd .line .tk { position: absolute; top: 4px; width: 1px; height: 3px; background: var(--lineStrong); }
+  .osd.red .line .fill { background: var(--seal); } .osd.red .rd .v, .osd.red .rd .lab { color: var(--seal); }
+  .osd.full .line { background: var(--ink); height: 1px; } .osd.full .line .ec { background: var(--ink); height: 13px; top: -6px; width: 2px; }
+  .crest { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); display: flex; align-items: center; gap: 18px; }
+  .crest .mon { width: 64px; height: 64px; }
+  .crest .w .a { font: 12px var(--mono); letter-spacing: 2.4px; color: var(--inkMuted); }
+  .crest .w .b { font: 400 30px var(--display); margin-top: 4px; }
+  .crest .w .b i { font-style: normal; font-family: var(--jps); font-size: 20px; color: var(--inkDim); margin-left: 8px; }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  .roll { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .roll .c { border: 1px solid var(--line); background: var(--paper); height: 150px; position: relative; overflow: hidden; }
+  .roll .c .n { position: absolute; left: 0; right: 0; text-align: center; font: 400 34px var(--display); font-variant-numeric: tabular-nums; }
+  .roll .c .t { position: absolute; left: 10px; bottom: 8px; font: 11px var(--mono); color: var(--inkFaint); }
+  .bad .pill { position: absolute; left: 50%; bottom: 50px; transform: translateX(-50%); width: 300px; height: 64px; border-radius: 32px; background: rgba(40,40,40,.7); backdrop-filter: blur(8px); display: flex; align-items: center; gap: 16px; padding: 0 22px; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+  .bad .pill .ic { width: 26px; height: 26px; border-radius: 6px; background: #7aa2f7; }
+  .bad .pill .tr { flex: 1; height: 8px; border-radius: 4px; background: #333; position: relative; } .bad .pill .tr i { position: absolute; left: 0; top: 0; bottom: 0; width: 62%; border-radius: 4px; background: #7aa2f7; }
+  .x { position: absolute; inset: 0; background: linear-gradient(to top right, transparent calc(50% - 1px), var(--seal) 50%, transparent calc(50% + 1px)); opacity: .8; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>06 / 14 · on-screen display</div>
+  <div class="head"><span class="no">06</span><h1>Taikan, posture</h1><span class="kj">体幹</span></div>
+  <p class="lede">In Sekiro, posture matters more than health, and its bar fills from the centre outward. Kaze's volume and brightness do the same: one hairline at the bottom centre of the screen, filling both ways from the middle. At the top the ends meet their caps and the whole line inks for a moment, the posture break: it can't go further. No pill, no blur, no icon.</p>
+
+  <div class="sec"><b>Levels</b><i></i>bottom centre · 30% of the screen's width · drawn, held 900 ms, sheathed</div>
+  <div class="grid g2" id="levels"></div>
+
+  <div class="sec"><b>Switches</b><i></i>a crest and its word, where the line would be</div>
+  <div class="grid g3" id="crests"></div>
+
+  <div class="sec"><b>A change, frame by frame</b><i></i>58 → 62 · the figure rolls, the line fills from where it was</div>
+  <div class="roll" id="roll"></div>
+
+  <div class="sec"><b>Not this</b><i></i>the usual volume pill</div>
+  <div class="grid g2"><div class="frame bad"><div class="st"><div class="wp" style="background-image:url(img/2-great-wave-dark.webp)"></div><div class="pill"><span class="ic"></span><span class="tr"><i></i></span></div><div class="x"></div></div><div class="cap"><div class="t">Rounded, blurred, shadowed, coloured</div><div class="d">Four things Hanko never does, in one widget. It also sits on the print like a sticker, instead of being part of the page.</div></div></div>
+  <div class="frame"><div class="st" id="good"></div><div class="cap"><div class="t">One line, one figure <span class="k">一</span></div><div class="d">The same information in a hairline and a number. It belongs to the screen's foot like the grass does.</div></div></div></div>
+
+  <div class="notes">
+    <div><b>Why from the centre<i>中</i></b>Filling from the left makes the line a progress bar. From the centre it reads as balance, like posture: full means "at the limit", not "finished".</div>
+    <div><b>The break<i>崩</i></b>At 100% the ends ink up and the caps grow for 1 frame + 70 ms (the cut). Muted, the line turns red and collapses to the centre mark (the sheath, backwards), with 無音 Muted beside it.</div>
+    <div><b>Where it plugs in<i>接</i></b>hanko.osd, a plugin with clonedFrom: omarchy.osd. Omarchy's volume and brightness keys keep calling omarchy.osd; the registry routes them to ours.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+function osd(lab, k, v, opts = {}) {
+  const half = Math.min(1, v / 100) * 50
+  let tk = ''; for (let i = 0; i <= 10; i++) tk += `<i class="tk" style="left:${i * 10}%"></i>`
+  const fill = opts.mute ? `<div class="fill" style="left:calc(50% - 3px);width:6px"></div>` : `<div class="fill" style="left:${50 - half}%;width:${half * 2}%"></div>`
+  return `<div class="osd${opts.red ? ' red' : ''}${v >= 100 ? ' full' : ''}"><div class="rd"><span class="lab">${lab}<i>${k}</i></span><span class="v">${opts.word ?? v}${opts.word ? '' : '<small>%</small>'}</span></div>
+    <div class="line"><i class="ec" style="left:0"></i><i class="ec" style="right:0"></i><i class="mid"></i>${fill}${tk}</div></div>`
+}
+const scene = (inner, img = 'img/2-great-wave-dark.webp') => `<div class="st"><div class="wp" style="background-image:url(${img})"></div><div class="ground" style="height:200px"></div>${grass({ width: 900, height: 90, count: 240, wind: .15, seed: 5, color: 'var(--inkFaint)', opacity: .7 })}${inner}</div>`
+const lv = [
+  ['VOL', '音', 62, {}, 'Volume 62%', 'Both halves at 31% of their length.'],
+  ['VOL', '音', 100, {}, 'Volume 100% · the break', 'The ends meet their caps; the whole line is ink for a moment.'],
+  ['VOL', '音', 0, { mute: true, red: true, word: '無音 Muted' }, 'Muted', 'Red, collapsed to the centre mark. Red means "you": you turned it off.'],
+  ['LIGHT', '光', 40, {}, 'Brightness 40%', 'The same line for the screen and the keyboard light (灯).'],
+]
+document.getElementById('levels').innerHTML = lv.map(([l, k, v, o, t, d]) => `<div class="frame">${scene(osd(l, k, v, o))}<div class="cap"><div class="t">${t}</div><div class="d">${d}</div></div></div>`).join('')
+
+function mon(ch, red) {
+  return `<svg class="mon" viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" fill="${red ? 'var(--seal)' : 'none'}" stroke="${red ? 'var(--seal)' : 'var(--ink)'}" stroke-width="2.4"/><circle cx="32" cy="32" r="24.5" fill="none" stroke="${red ? 'var(--paper)' : 'var(--ink)'}" stroke-width=".8" opacity=".6"/><text x="32" y="42" text-anchor="middle" font-family="Noto Serif CJK JP" font-weight="600" font-size="27" fill="${red ? 'var(--paper)' : 'var(--ink)'}">${ch}</text></svg>`
+}
+const cr = [['大', 'CAPS LOCK', 'On', '大', false], ['黙', 'MICROPHONE', 'Muted', '黙', true], ['迅', 'POWER', 'Performance', '迅', false]]
+document.getElementById('crests').innerHTML = cr.map(([c, a, b, k, red]) => `<div class="frame">${scene(`<div class="crest">${mon(c, red)}<div class="w"><div class="a" style="${red ? 'color:var(--seal)' : ''}">${a}</div><div class="b">${b}</div></div></div>`, 'img/1-pines-night-dark.webp')}</div>`).join('')
+
+// rolling digits: 58 → 62 over 6 frames
+const seq = [58, 59, 60, 61, 62, 62]
+document.getElementById('roll').innerHTML = seq.map((n, i) => {
+  const half = (58 + (62 - 58) * Math.min(1, i / 4)) / 2
+  const off = i < 5 ? (i % 2 ? -10 : 0) : 0
+  return `<div class="c"><span class="n" style="top:${32 + off}px;opacity:${i < 5 && i % 2 ? .55 : 1}">${n}</span>
+   <div style="position:absolute;left:12%;right:12%;top:104px;height:1px;background:var(--lineStrong)"><div style="position:absolute;top:-1px;height:3px;background:var(--ink);left:${50 - half}%;width:${half * 2}%"></div><i style="position:absolute;left:50%;top:-3px;width:1px;height:7px;background:var(--inkFaint)"></i></div>
+   <span class="t">${[0, 30, 60, 90, 120, 160][i]} ms</span></div>`
+}).join('')
+document.getElementById('good').outerHTML = scene(osd('VOL', '音', 62))
+ready()
+</script>
+</body></html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3400">
+<title>Kaze 07 · Fumi</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .corner { position: relative; height: 470px; background: var(--paper); overflow: hidden; }
+  .corner .wp { position: absolute; inset: 0; background-size: 1920px auto; background-position: right top; opacity: .55; }
+  .corner .barw { position: absolute; right: 0; top: 0; width: 1920px; }
+  .tz { position: absolute; top: 40px; width: 46px; background: var(--lift); border: 1px solid var(--lineStrong); border-top: 0; display: flex; flex-direction: column; align-items: center; padding: 12px 0 14px; gap: 12px; overflow: hidden; }
+  .tz::before { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 7px; background: var(--inkFaint); }
+  .tz .mon { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font: 600 13px var(--jps); color: var(--ink); flex: none; }
+  .tz.red .mon { background: var(--seal); border-color: var(--seal); color: var(--paper); }
+  .tz .vj { writing-mode: vertical-rl; font: 15px var(--jps); color: var(--inkDim); letter-spacing: 3px; white-space: nowrap; flex: none; }
+  .tz .v { writing-mode: vertical-rl; text-orientation: upright; font: 11px var(--mono); color: var(--inkMuted); white-space: nowrap; flex: none; }
+  .tz .mon, .tz .vj, .tz .v { flex-shrink: 0; }
+  .tz { justify-content: flex-start; }
+  .card { position: absolute; top: 40px; width: 430px; background: var(--paper); border: 1px solid var(--lineStrong); border-top: 0; border-right: 0; padding: 18px 22px 16px; }
+  .card .ap { font: 12px var(--mono); letter-spacing: 2.4px; color: var(--inkFaint); text-transform: uppercase; display: flex; justify-content: space-between; }
+  .card .ti { font-size: 19px; color: var(--ink); margin-top: 10px; }
+  .card .bd { font-size: 15.5px; color: var(--inkDim); margin-top: 6px; line-height: 1.5; }
+  .card .ac { display: flex; gap: 6px; margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .card .ac span { font-size: 14px; padding: 5px 10px; color: var(--inkMuted); }
+  .card .ac span.on { background: var(--bone); color: var(--onBone); }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  .cut { position: absolute; height: 1px; background: var(--bone); transform-origin: 0 0; }
+  .more { position: absolute; top: 48px; font: 12px var(--mono); color: var(--inkFaint); letter-spacing: 1.5px; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>07 / 14 · notifications</div>
+  <div class="head"><span class="no">07</span><h1>Fumi, letters on a branch</h1><span class="kj">文</span></div>
+  <p class="lede">A notification doesn't slide in as a rounded card. It hangs from the bar as a tanzaku, the narrow paper strip people tie to a bamboo branch: only the sender's crest and the time, set vertically. It unrolls down from the bar's edge. Hover it, or press Super+N, and it opens sideways into the letter.</p>
+
+  <div class="sec"><b>Arriving</b><i></i>the strip unrolls from the bar · 0, 90 and 190 ms</div>
+  <div class="grid g3" id="arrive"></div>
+
+  <div class="sec"><b>Several, and one opened</b><i></i>newest nearest the centre · at most five, then a count</div>
+  <div class="grid g2" id="many"></div>
+
+  <div class="sec"><b>Urgent, and dismissed</b><i></i>red crest only when it asks something of you · the cut, then it falls away</div>
+  <div class="grid g3" id="cut"></div>
+
+  <div class="notes">
+    <div><b>Vertical only where it fits<i>縦</i></b>The strip carries a crest, two kanji for the kind of letter (便り a message, 予定 an event, 警告 a warning, 完了 done) and the time. Latin text is never set vertically: the letter itself reads across, as normal.</div>
+    <div><b>The crest is the sender<i>紋</i></b>Each app gets a moji crest (a ring and one kanji: 話 chat, 郵 mail, 暦 calendar, 器 system), chosen once in a small table and editable. Unknown apps get 文.</div>
+    <div><b>Where it plugs in<i>接</i></b>hanko.notifications, clonedFrom: omarchy.notifications, keeping Omarchy's notification server and history files; only the view is ours. The bar's inbox (stamps) reads the same list.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+const corner = (inner, w = 572) => `<div class="frame"><div class="corner"><div class="wp" style="background-image:url(img/6-sudden-shower-dark.webp)"></div><div class="barw">${bar({ stamps: '<b>静</b><b class="red">文</b>' })}</div>${inner}</div></div>`
+const tz = (right, opts = {}) => `<div class="tz${opts.red ? ' red' : ''}" style="right:${right}px;${opts.h != null ? `height:${opts.h}px;` : ''}${opts.style ?? ''}"><div class="mon">${opts.m ?? '話'}</div><div class="vj">${opts.k ?? '便り'}</div><div class="v">${opts.t ?? '21:44'}</div></div>`
+
+document.getElementById('arrive').innerHTML = [[12, '0 ms'], [104, '90 ms'], [null, '190 ms · stops dead']].map(([h, l]) =>
+  corner(tz(96, { h }) + `<span class="tag" style="left:16px;bottom:14px">${l}</span>`)).join('')
+
+const many = tz(96, { m: '話', k: '便り', t: '21:44' }) + tz(150, { m: '郵', k: '便り', t: '21:31' }) + tz(204, { m: '暦', k: '予定', t: '21:10' }) +
+  `<span class="tag" style="left:16px;bottom:14px">three letters · the bar's 文 stamp counts them</span>`
+const opened = tz(96, { m: '話', k: '便り', t: '21:44' }) + `<div class="card" style="right:141px"><div class="ap"><span>Signal · Aiko</span><span>21:44</span></div><div class="ti">Are we still on for Saturday?</div><div class="bd">The ramen place near the station opens at eleven. I can book for four of us if you're in.</div><div class="ac"><span class="on">// Reply</span><span>Mark read</span><span style="margin-left:auto">Esc</span></div></div>` +
+  `<span class="tag" style="left:16px;bottom:14px">opened sideways · the strip stays as its spine</span>`
+document.getElementById('many').innerHTML = corner(many) + corner(opened)
+
+const urgent = tz(96, { m: '器', k: '警告', t: '21:52', red: true }) + `<span class="tag red" style="left:16px;bottom:14px">needs you · the wind gusts toward it</span>`
+const cutting = tz(96, { m: '暦', k: '予定', t: '21:10' }) + `<div class="cut" style="right:70px;top:120px;width:80px;transform:rotate(-38deg)"></div><span class="tag" style="left:16px;bottom:14px">the cut · 1 frame</span>`
+const falling = `<div class="tz" style="right:96px;top:40px;height:66px;clip-path:polygon(0 0,100% 0,100% 30%,0 100%)"><div class="mon">暦</div></div>
+  <div class="tz" style="right:84px;top:150px;transform:rotate(9deg);opacity:.75;border-top:1px solid var(--lineStrong);clip-path:polygon(0 18%,100% 0,100% 100%,0 100%)"><div class="vj" style="margin-top:20px">予定</div><div class="v">21:10</div></div><span class="tag" style="left:16px;bottom:14px">falls away · nōtō 240 ms</span>`
+document.getElementById('cut').innerHTML = corner(urgent) + corner(cutting) + corner(falling)
+ready()
+</script>
+</body></html>
