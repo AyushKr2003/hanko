@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import QtQuick
 import qs.Commons
 import qs.Ui
+import qs.services as OmarchyServices
 import "MenuModel.js" as MenuModel
 import "core"
 import "core/Iai.js" as Iai
@@ -113,7 +114,17 @@ Item {
 
   // Shared application engine (entries, hidden filters, icons, launch,
   // removal), owned by the shell and also used by the standalone launcher.
-  readonly property var appLibrary: root.shell ? root.shell.appLibrary : null
+  // Omarchy hands a third-party menu its app library through the shell
+  // facade, but on this Omarchy that facade arrives without one, and Apps
+  // came up empty. So the clone keeps its own copy of Omarchy's AppLibrary
+  // (the same component the shell uses) for when the facade has none.
+  readonly property var appLibrary: (root.shell && root.shell.appLibrary) ? root.shell.appLibrary : (ownLibrary.item || null)
+  Loader {
+    id: ownLibrary
+    active: !!root.shell && !root.shell.appLibrary
+    sourceComponent: Component { OmarchyServices.AppLibrary { } }
+    onLoaded: if (root.providersLoaded["apps"]) root.mergeAppRows()
+  }
   property bool deleteConfirmOpen: false
   property var deleteTarget: null
   onOpenedChanged: {
