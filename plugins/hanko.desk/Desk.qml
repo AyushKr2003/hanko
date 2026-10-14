@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import "core"
 import "core/Iai.js" as Iai
 import "core/Sweep.js" as Sweep
+import "core/Kaisei.js" as Kaisei
 
 // Kaze 風, the desk (docs/kaze): the parts of Hanko's look that belong to
 // the whole desk rather than the bar, so they run whichever bar is in use.
@@ -20,6 +21,10 @@ import "core/Sweep.js" as Sweep
 //   A window that needs you: Hyprland has no urgent border colour, so the
 //   desk frames an urgent window in seal red, breathing (never colour
 //   alone), until you go to it.
+//
+//   Kaisei 回生: when the shell comes back from a crash (a fresh quickshell
+//   core dump, core/Kaisei.js), a small tab says so at the top right for a
+//   few seconds.
 Item {
   id: root
 
@@ -207,7 +212,8 @@ Item {
       readonly property var urgentHere: root.urgentRects.map(function(r) { return Sweep.onScreen(r, win.area) }).filter(function(r) { return !!r })
 
       // No surface unless there is something to draw.
-      visible: (local !== null && root.progress > 0) || urgentHere.length > 0
+      visible: (local !== null && root.progress > 0) || urgentHere.length > 0 || (root.kaisei > 0 && win.isFocusedScreen)
+      readonly property bool isFocusedScreen: !Hyprland.focusedMonitor || Hyprland.focusedMonitor.name === modelData.name
       color: "transparent"
       anchors { top: true; bottom: true; left: true; right: true }
       exclusionMode: ExclusionMode.Ignore
@@ -243,6 +249,29 @@ Item {
             ctx.lineTo(s.b.x, s.b.y)
             ctx.stroke()
           }
+        }
+      }
+
+      // 回生: a small paper tab under the top right corner.
+      Rectangle {
+        visible: root.kaisei > 0 && win.isFocusedScreen
+        anchors.right: parent.right
+        anchors.rightMargin: 24
+        y: 52
+        width: kaiseiRow.implicitWidth + 36
+        height: 52
+        clip: true
+        color: Ink.paper
+        border.width: 1
+        border.color: Ink.lineStrong
+        opacity: root.kaisei
+        transform: Translate { x: (1 - root.kaisei) * 30 }
+        Row {
+          id: kaiseiRow
+          anchors.centerIn: parent
+          spacing: 14
+          Text { anchors.verticalCenter: parent.verticalCenter; text: "回生"; color: Ink.ink; font.family: "Noto Serif CJK JP"; font.pixelSize: 22; font.letterSpacing: 2 }
+          Text { anchors.verticalCenter: parent.verticalCenter; text: "BACK · AFTER A CRASH"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: 11; font.letterSpacing: 2.2 }
         }
       }
 
@@ -284,6 +313,7 @@ Item {
       if (!active.running) active.running = true
       return "ok"
     }
+    function kaisei(): string { root.showKaisei(); return "ok" }
     function state(): string {
       return JSON.stringify({ still: root.still, border: root.border, sweeping: root.sweepRect !== null, urgent: Object.keys(root.urgentSet).length, screens: Quickshell.screens.length })
     }
@@ -291,5 +321,23 @@ Item {
 
   Timer { interval: 500; running: true; onTriggered: ipc.enabled = true }
 
-  Component.onCompleted: active.running = true
+  // ── Kaisei 回生: back after a crash ───────────────────────────────────
+  property real kaisei: 0
+  Process {
+    id: crashLook
+    command: ["coredumpctl", "--no-pager", "list", "/usr/bin/quickshell", "--since=-120s", "--json=short"]
+    stdout: StdioCollector {
+      onStreamFinished: if (Kaisei.crashedRecently(text, Date.now())) root.showKaisei()
+    }
+  }
+  function showKaisei() { kaiseiAnim.restart() }
+  SequentialAnimation {
+    id: kaiseiAnim
+    PauseAnimation { duration: 800 }
+    NumberAnimation { target: root; property: "kaisei"; to: 1; duration: root.still ? 0 : Iai.BEATS.nuki.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("nuki") }
+    PauseAnimation { duration: 4000 }
+    NumberAnimation { target: root; property: "kaisei"; to: 0; duration: root.still ? 0 : Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
+  }
+
+  Component.onCompleted: { active.running = true; crashLook.running = true }
 }

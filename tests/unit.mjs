@@ -45,6 +45,7 @@ const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
+const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -2223,5 +2224,16 @@ test("theme: the Hanko theme ships what Omarchy reads, its paper the bar's", () 
     assert.equal(readFileSync(join(root, "theme/btop.theme"), "utf8"), made)
   })
 }
+
+test("kaisei: a quickshell core dump in the last two minutes means the shell rose again", () => {
+  const now = 1790000000000
+  const dump = (ms, exe) => JSON.stringify([{ exe: exe || "/usr/bin/quickshell", time: (now - ms) * 1000 }])
+  assert.equal(Ks.crashedRecently(dump(30000), now), true)
+  assert.equal(Ks.crashedRecently(dump(300000), now), false)
+  assert.equal(Ks.crashedRecently(dump(30000, "/usr/bin/python3"), now), false)
+  assert.equal(Ks.crashedRecently(dump(-5000), now), false)
+  assert.equal(Ks.crashedRecently("", now), false)
+  assert.equal(Ks.crashedRecently("No coredumps found.", now), false)
+})
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
