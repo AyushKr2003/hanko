@@ -156,6 +156,8 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **R5 · Sheets 紙, Scroll 巻, Overview 一覧**: the sheet printed large with every hand as a picture of it; how panels open drawn in small; dividers and end leaves as tiles; the three overviews drawn with your spaces.
   - ✅ **R6 · Motion 動, the timesheet; Keys 鍵, the keymap**: every move on a ms ruler with its real curve, hover to run it; Hanko's keys inked on a keyboard by context, and the bindings to copy.
 
+- ⬜ **Kaze 風, the whole desk** (asked for: "not only the bar, the whole PC should feel like Ghost of Yōtei, Sekiro, Ghost of Tsushima, Assassin's Creed Shadows … research how people create this, then something unique and premium"): boot, lock, windows, wallpaper, the wind, OSD, notifications, launcher, ceremonies, a focus mode, tools and sound, all on one motion grammar (Iai: draw, cut, shake off, sheath). Research, design and phases KZ0–KZ13 in [kaze/](kaze/README.md). KZ0 (research and plan) ✅; next is KZ1, mockups.
+
 ## Dev loop
 
 ```sh
