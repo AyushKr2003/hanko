@@ -1430,8 +1430,9 @@ Item {
                     width: parent.width
                     text: row.detail
                     visible: (root.filterText || row.kind === "dmenu") && row.detail.length > 0
-                    color: root.foreground
-                    opacity: 0.52
+                    // On the selected row's ink plate the detail reads in paper.
+                    color: row.hasCursor ? root.selectedText : root.foreground
+                    opacity: row.hasCursor ? 0.78 : 0.52
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.bodySmall
                     elide: Text.ElideRight
@@ -1450,8 +1451,8 @@ Item {
                     textFormat: Text.PlainText
                     visible: false
                     text: row.childCount
-                    color: root.foreground
-                    opacity: 0.45
+                    color: row.hasCursor ? root.selectedText : root.foreground
+                    opacity: row.hasCursor ? 0.7 : 0.45
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.body
                     anchors.verticalCenter: parent.verticalCenter
