@@ -2,9 +2,9 @@
 
 A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-![Settings › Typesetting, set as a proof](docs/settings-kosei/images/01-status.webp)
+![Settings › Typesetting, set as a proof](docs/images/settings.webp)
 
-![The Shōji preset on the Hanko bar](docs/revision2/images/r2-shoji-preset.webp)
+![The Shōji preset on the Hanko bar](docs/images/shoji-preset.webp)
 
 ## What you get
 
@@ -152,7 +152,6 @@ After a style change in Hanko, run `hyprctl reload` to bring the windows along. 
 ## Docs
 
 - [Every component and combination](docs/COMPONENTS.md)
-- [Design overview](docs/DESIGN.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Kaze 風: the whole desk, research, mockups and plan](docs/kaze/README.md)
 - [Handoff: the full state of the build](docs/HANDOFF.md)

@@ -71,7 +71,7 @@ The design directions, in the order they were drawn:
 
 1. **Sheet**: the bar as a printed running head. Seal, label-over-value cells, tick meters, the 24-hour day rule along the foot, folio workspaces, flush sheets that drop from a cell. 5 mockups. Lives on as the Sheet preset.
 2. **Scroll**: a calm one-line bar that unrolls into a horizontal handscroll (emakimono) holding every panel, with rollers, an index plate and dithered interludes (since replaced by the `interlude` setting). Workspace-numeral seal, real-layout workspace glyphs, serif byline, kanji glyph status, notification stamps, the rod. 6 mockups. Lives on as the Scroll preset.
-3. **Typeset** (chosen): the two merged; every part of the bar is a setting, with a Typesetting 組版 settings page. 19 mockups in `docs/mockups/typeset/`, spec in `docs/COMPONENTS.md`, overview in `docs/DESIGN.md`. This is the spec the plugin implements.
+3. **Typeset** (chosen): the two merged; every part of the bar is a setting, with a Typesetting 組版 settings page. 19 mockups in `docs/mockups/typeset/`, spec in `docs/COMPONENTS.md`. This is the spec the plugin implements.
 
 Older commit messages call these designs beta1, alpha1 and gama1.
 
@@ -204,7 +204,7 @@ node shootq.mjs "file://$PWD/desk.html?preset=Quiet&o={\"spaces\":\"kanji\"}&pan
 
 `cat.html` pages: `identity | time | status | signals | edge | frame | presets | shuffle | themes`. `desk.html` takes `preset`, `theme`, `o` (JSON overrides), `panel` (`sheet-sound`, `sheet-time`, `scroll-0`…`scroll-5`) and `wins=1`. When a phase needs a detail the sheets don't show (sheet contents, scroll sections), read the HTML/CSS in this kit: it is the exact design.
 
-Sheet and Scroll mockups: `docs/mockups/sheet/`, `docs/mockups/scroll/`.
+Sheet and Scroll mockups were removed from `dev` on 2026-10-15 (they are on the `docs` branch and in git history).
 
 ## 6. How a bar plugin plugs into Omarchy
 
@@ -399,8 +399,8 @@ tests/
   harness/params/*.json  one per phase (phase1, phase2, phase2-light, phase3, phase4, phase5, phase5-light); a strip may set `now` (its own time) and `backdrop: true` (stripes behind the bar, for glass)
   harness/stubs/         fake Quickshell, Quickshell.Io/Hyprland/Wayland/Services.*,
                          qs.Commons, just enough to lint and render
-docs/                    ROADMAP, COMPONENTS (spec), DESIGN, HANDOFF (this), history/,
-                         mockups/{sheet,scroll,typeset}
+docs/                    ROADMAP, COMPONENTS (spec), HANDOFF (this), kaze/ (the desk),
+                         images/ (README pictures), mockups/typeset
 ```
 
 **IPC target `hanko`** (Bar.qml): `press` (Inkan's seal: No. 00, or lift it off), `version`, `styleGet`, `styleDoc`, `styleSet(key, value)`, `stylePreset(name)`, `styleReset`, `styleShuffle`, `warnings` (Kata's `design*` and `touch` went with the design switch; `styleSet season english` and `stylePreset shoji` do their work). All typed, all return strings.
@@ -1115,5 +1115,6 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 - Omarchy: `github.com/omacom/omarchy` (manual `manual/32-shell-plugins.md`, `docs/omarchy-shell.md`, `shell/`, `bin/`, `default/hypr/`).
 - Ryoku (style only): `github.com/Ryoku-dev/ryoku` branch `unstable-dev` (the Settings app), and `ryoku.dev` (blocked by the cloud network; use a web fetch tool).
 - Plugin integration references (not design): `AyushKr2003/omacale` (closest model: a full `bar` plugin; its `CLAUDE.md` is worth reading), `HANCORE-linux/Shibumi-Shell`, `gitcoder89431/ruixen-shell`.
-- In this repo: [ROADMAP.md](ROADMAP.md), [COMPONENTS.md](COMPONENTS.md), [DESIGN.md](DESIGN.md), [history/sheet-DESIGN.md](history/sheet-DESIGN.md), [history/scroll-DESIGN.md](history/scroll-DESIGN.md), `docs/mockups/`.
+- In this repo: [ROADMAP.md](ROADMAP.md), [COMPONENTS.md](COMPONENTS.md), [kaze/README.md](kaze/README.md), `docs/mockups/typeset/`.
+- **Removed on 2026-10-15** (asked for: "delete old irrelevant docs except the kaze"): `DESIGN.md`, `history/`, `kata/`, `revision2/`, `right-side/`, `settings-kosei/`, `shell-concepts/`, `mockups/{sheet,scroll}/`. Code comments still name some of them (`docs/settings-kosei`, `docs/shell-concepts/inkan`, `docs/right-side`, `docs/kata`); read them from git with `git show 3558812:docs/<path>`.
 - Project files (Claude project): `/mnt/project-files/ryoku-shell/{scroll,typeset}/` hold mockups and phase renders; project memory notes `hanko-bar-design`.
