@@ -1,0 +1,47 @@
+# Kaze 風 · Dōgu 道具: a starship prompt in Hanko's grammar (docs/kaze, mockup 12).
+# The seal, the path with its parents receding, the branch in mono, ±changes,
+# and red only when the last command failed. No icons, no arrows, no right side.
+# Use it:  set -gx STARSHIP_CONFIG ~/.config/omarchy/plugins/hanko.bar/assets/kaze/starship.toml   (fish)
+#          export STARSHIP_CONFIG=~/.config/omarchy/plugins/hanko.bar/assets/kaze/starship.toml  (bash, zsh)
+
+add_newline = true
+format = "${custom.seal}$directory$git_branch$git_status$status\n$character"
+
+# The seal: the theme's red (the terminal's red), the glyph from Hanko's default.
+[custom.seal]
+command = "echo 鑑"
+when = true
+format = "[$output]($style) "
+style = "red"
+
+[directory]
+truncation_length = 3
+truncate_to_repo = false
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "white"
+read_only = " 錠"
+home_symbol = "~"
+
+[git_branch]
+format = "[$branch]($style) "
+style = "bright-black"
+
+[git_status]
+format = "[$modified$staged$untracked]($style)"
+modified = "±${count} "
+staged = "+${count} "
+untracked = "?${count} "
+style = "white"
+
+[status]
+disabled = false
+format = "[$status]($style) "
+style = "red"
+
+[character]
+success_symbol = "[›](bright-black)"
+error_symbol = "[›](red)"
+vimcmd_symbol = "[‹](bright-black)"
+
+[cmd_duration]
+disabled = true

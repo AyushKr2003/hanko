@@ -55,7 +55,10 @@ Item {
       drawIn.restart()
     }
     if (root.v.full && !wasOpen) cut.restart()
-    if (root.v.kind === "ceremony") ceremony.begin()
+    if (root.v.kind === "ceremony") {
+      ceremony.begin()
+      if (root.v.kanji === "終" && !wasOpen) Oto.play("end")
+    }
     var d = root.v.duration
     if (d > 0) { hideTimer.interval = d; hideTimer.restart() } else hideTimer.stop()
   }

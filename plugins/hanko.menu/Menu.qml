@@ -119,6 +119,7 @@ Item {
     if (!opened) {
       deleteConfirmOpen = false; deleteTarget = null
       drawAnim.stop()
+      Oto.play("sheath")
       if (root.kazeStill) root.drawn = 0
       else { root.sheathing = true; sheathAnim.restart() }
     } else {

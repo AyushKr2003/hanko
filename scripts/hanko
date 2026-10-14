@@ -218,6 +218,7 @@ surface_build() {
   rsync -a --delete --itemize-changes "$SRC/core/" "$dest/core/"
   mkdir -p "$dest/assets"
   rsync -a --delete --itemize-changes "$SRC/assets/fonts/" "$dest/assets/fonts/"
+  rsync -a --delete --itemize-changes "$SRC/assets/sounds/" "$dest/assets/sounds/"
   rsync -a --itemize-changes "$SRC/scripts/hanko-print" "$dest/bin/hanko-print"
 }
 

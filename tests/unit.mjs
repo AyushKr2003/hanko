@@ -44,6 +44,7 @@ const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lea
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
+const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -2105,6 +2106,18 @@ test("taiji: the lock clone keeps Omarchy's service byte for byte and the view's
     assert.ok(view.includes("signal " + sig), "LockView lost signal " + sig)
   for (const keep of ["echoMode: TextInput.Password", "root.submitPassword(submitted)", "root.passwordTextEdited(text)", "forceActiveFocus()"])
     assert.ok(view.includes(keep), "LockView lost " + keep)
+})
+
+test("oto: silent by default; quiet and on; one sound off on its own; only the bell in Sumi", () => {
+  assert.equal(Ot.play("letter", {}), null)
+  assert.deepEqual(Ot.play("letter", { sound: "quiet" }), { file: "kami", volume: 0.15 })
+  assert.deepEqual(Ot.play("workspace", { sound: "on" }), { file: "hyoshigi", volume: 0.3 })
+  assert.equal(Ot.play("workspace", { sound: "on", sounds: { workspace: false } }), null)
+  assert.equal(Ot.play("letter", { sound: "on" }, true), null)
+  assert.deepEqual(Ot.play("end", { sound: "on" }, true), { file: "kane", volume: 0.3 })
+  assert.equal(Ot.play("nonsense", { sound: "on" }), null)
+  assert.equal(Ot.mode({ sound: "loud" }), "off")
+  for (const f of Object.values(Ot.EVENTS)) assert.ok(readFileSync(join(root, "assets/sounds/" + f + ".ogg")).length > 500, f)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

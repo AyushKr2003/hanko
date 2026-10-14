@@ -990,8 +990,10 @@ Item {
   Connections {
     target: popupModel
     function onCountChanged() {
-      if (popupModel.count > service.lastCount && !service._hydrating)
+      if (popupModel.count > service.lastCount && !service._hydrating) {
         Quickshell.execDetached(["omarchy-shell", "-q", "hankowind", "gust", "0.94"])
+        Oto.play("letter")
+      }
       service.lastCount = popupModel.count
     }
   }

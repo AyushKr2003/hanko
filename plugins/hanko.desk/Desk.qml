@@ -170,6 +170,9 @@ Item {
         if (data !== "" && data !== ",") { if (!active.running) active.running = true }
       } else if (n === "urgent") {
         root.setUrgent(address, true)
+        Oto.play("urgent")
+      } else if (n === "workspacev2") {
+        Oto.play("workspace")
       } else if (n === "openwindow") {
         var o = Object.assign({}, root.opened); o[address] = Date.now(); root.opened = o
       } else if (n === "closewindow") {
