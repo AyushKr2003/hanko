@@ -202,7 +202,7 @@ hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 
 # symlinks inside a plugin, so each is assembled as a copy: its own files,
 # core/, assets/fonts and bin/hanko-print. `desk build ID DIR` does only that (the tests
 # validate and lint the result).
-SURFACES=(hanko.desk hanko.background hanko.osd)
+SURFACES=(hanko.desk hanko.background hanko.osd hanko.notifications)
 
 # Prints the files it changed (rsync's itemized list), nothing when up to date.
 surface_build() {
@@ -233,7 +233,42 @@ desk_plugins_on() {
   if { (( new )) || [[ -n $changed ]]; } && command -v omarchy-restart-shell >/dev/null 2>&1; then
     say "Kaze's plugins changed: restarting the Omarchy shell to load them."
     omarchy-restart-shell >/dev/null 2>&1 || true
+    desk_plugins_check || true
   fi
+}
+
+# Each surface answers one IPC call once it is up. A surface that replaced
+# an Omarchy one (notifications, the OSD, the background) and didn't come up
+# would leave the desk without it, so it is handed back at once.
+surface_probe() {
+  case "$1" in
+    hanko.desk) omarchy-shell hankodesk state ;;
+    hanko.background) omarchy-shell hankowind state ;;
+    hanko.osd) omarchy-shell osd ping ;;
+    hanko.notifications) omarchy-shell notifications ping ;;
+  esac
+}
+desk_plugins_check() {
+  local id tries failed=()
+  for (( tries = 0; tries < 40; tries++ )); do shell_up && break; sleep 0.25; done
+  sleep 1.5
+  for id in "${SURFACES[@]}"; do
+    local ok=0
+    for (( tries = 0; tries < 12; tries++ )); do
+      [[ -n $(surface_probe "$id" 2>/dev/null | grep -v '^Target not found') ]] && { ok=1; break; }
+      sleep 0.5
+    done
+    (( ok )) || failed+=("$id")
+  done
+  (( ${#failed[@]} == 0 )) && return 0
+  say "These didn't start, so Omarchy's own are back in their place: ${failed[*]}"
+  say "  (the shell's log says why: qs log --id \$(qs list --all | grep -oP 'Instance \\K\\w+' | head -1) | grep 'load failed')"
+  for id in "${failed[@]}"; do
+    omarchy plugin remove "$id" --yes >/dev/null 2>&1 || { omarchy plugin disable "$id" >/dev/null 2>&1 || true; rm -rf "${PLUGINS:?}/$id"; }
+  done
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  omarchy-restart-shell >/dev/null 2>&1 || true
+  return 1
 }
 # Removing a clone hands its job back to the Omarchy plugin it came from.
 desk_plugins_off() {

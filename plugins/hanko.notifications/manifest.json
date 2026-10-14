@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "hanko.notifications",
+  "name": "Hanko notifications",
+  "version": "0.1.0",
+  "author": "AyushKr2003",
+  "license": "MIT",
+  "description": "Kaze, Fumi: notifications hang from the bar as narrow paper strips with the sender's crest and the time, and open sideways into the letter. Omarchy's notification service, kept, with a new view; works with any bar.",
+  "kinds": ["service"],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.notifications"
+  }
+}
