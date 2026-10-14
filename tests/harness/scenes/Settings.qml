@@ -6,7 +6,7 @@ import "../../../bar/settings"
 
 // The settings window's page at its design size. render.py passes `params`:
 //   { theme, now, ...bar data as in Strips.qml...,
-//     settings: { saved, draft, page, part, trial, query, monitors, screens, monitor, lastChange, themes, theme, scrollEnd,
+//     settings: { saved, draft, kaze, desk, sumi, busy, page, part, trial, query, monitors, screens, monitor, lastChange, themes, theme, scrollEnd,
 //                 width, height } }
 // settings.width/height size the window (logical px) instead of its design size.
 // saved and draft are style.json documents.
@@ -62,6 +62,10 @@ Rectangle {
     version: "0.1.0"
     profileEditing: !!sheet.s.editing
     undoCount: sheet.s.undo || 0
+    kaze: sheet.s.kaze || ({})
+    kazeDesk: !!sheet.s.desk
+    kazeSumi: !!sheet.s.sumi
+    kazeBusy: sheet.s.busy || ""
     sheetFeed: Object.assign({ now: new Date(sheet.p.now || "2026-10-06T21:44:00") }, sheet.s.sheetFeed || {})
     barData: ({
       now: new Date(sheet.p.now || "2026-10-06T21:44:00"),

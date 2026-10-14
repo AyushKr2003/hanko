@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -624,7 +624,7 @@ test("settings: six cards hold every one of the twenty-four settings once", () =
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS).sort(), [...S.PRESET_NAMES].sort())
   // Typesetting, Presets, Parts, Colour, Screens · Sheets, Scroll, Overview · Motion, Keys · Profile, About, Credits
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 13)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 14)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -2134,6 +2134,9 @@ test("settings: the Kaze page's switches read and write kaze.json the way the pl
   assert.equal(Pt.wallpaperMode(Se.kazeWith({}, "wallpaper", "original")), "original")
   assert.deepEqual(Wi.settings(Se.kazeWith(Se.kazeWith({}, "grass", "off"), "gusts", "off")), { grass: "off", gusts: false, wind: "weather" })
   assert.equal(Ot.mode(Se.kazeWith({}, "sound", "on")), "on")
+  assert.equal(Se.kazeChange({}, { sound: "quiet" }), "Sound · off → quiet")
+  assert.equal(Se.kazeChange({ gusts: true }, {}), "")
+  assert.deepEqual(Se.kazeOn({ wallpaper: "print" }, true, true, false), { on: 5, of: 8 })
   assert.ok(Se.PAGE_LINES.kaze)
 })
 

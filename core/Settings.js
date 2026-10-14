@@ -13,7 +13,8 @@ var RAIL = [
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
                                 { key: "scroll", label: "Scroll", jp: "巻" },
                                 { key: "overview", label: "Overview", jp: "一覧" }] },
-  { group: "03 FEEL",   pages: [{ key: "motion", label: "Motion", jp: "動" },
+  { group: "03 FEEL",   pages: [{ key: "kaze", label: "Kaze", jp: "風" },
+                                { key: "motion", label: "Motion", jp: "動" },
                                 { key: "keys", label: "Keys", jp: "鍵" }] },
   { group: "04 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" },
                                 { key: "about", label: "About", jp: "由来" },
@@ -813,3 +814,22 @@ function kazeWith(doc, key, value) {
   return out
 }
 
+// The action bar's words for a kaze.json change ("Sound · off → quiet").
+function kazeChange(before, after) {
+  for (var i = 0; i < KAZE_SWITCHES.length; i++) {
+    var sw = KAZE_SWITCHES[i], a = kazeValue(before, sw.key), b = kazeValue(after, sw.key)
+    if (a !== b) return sw.name + " · " + a + " → " + b
+  }
+  return ""
+}
+
+// How many of the desk's switches are on, for the page's eyebrow: the
+// desk itself, motion, Sumi, then each kaze.json switch not at off.
+function kazeOn(doc, desk, still, sumi) {
+  var n = (desk ? 1 : 0) + (still ? 0 : 1) + (sumi ? 1 : 0)
+  for (var i = 0; i < KAZE_SWITCHES.length; i++) {
+    var v = kazeValue(doc, KAZE_SWITCHES[i].key)
+    if (v !== "off" && v !== "original" && v !== "calm") n++
+  }
+  return { on: n, of: KAZE_SWITCHES.length + 3 }
+}

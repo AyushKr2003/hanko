@@ -396,6 +396,15 @@ cmd_doctor() {
   check "Noto CJK fonts for the kanji" "fc-list | grep -qi 'Noto Sans CJK'"
   check "jq is installed" "command -v jq"
   if desk_on; then say "  ok    Kaze: style.lua loads from looknfeel.lua"; else say "  --    Kaze is off (hanko desk on)"; fi
+  # Each of the desk's surfaces: installed, and answering its IPC call.
+  local id
+  for id in "${SURFACES[@]}"; do
+    if [[ ! -d $PLUGINS/$id ]]; then desk_on && say "  FAIL  $id is not installed (hanko desk on)" && ok=0; continue; fi
+    if ! shell_up; then say "  --    $id is installed (the shell is not running)"; continue; fi
+    if [[ -n $(surface_probe "$id" 2>/dev/null | grep -v '^Target not found') ]]; then say "  ok    $id answers"
+    else say "  FAIL  $id is installed but does not answer (Omarchy's own may be missing; hanko desk on retries)"; ok=0; fi
+  done
+  if sumi_on; then say "  --    Sumi is on (hanko sumi off)"; fi
   if shell_up; then
     local w
     w="$(omarchy-shell hanko warnings 2>/dev/null || true)"
