@@ -197,12 +197,13 @@ hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 
 
 # Kaze's surfaces are plugins of their own under plugins/ (hanko.desk: the
 # focus sweep and urgent frames; hanko.background: the printed wallpaper, a
-# clone of omarchy.background; hanko.osd: posture, a clone of omarchy.osd),
+# clone of omarchy.background; hanko.osd: posture, a clone of omarchy.osd;
+# hanko.notifications: letters; hanko.menu: the draw, a clone of omarchy.menu),
 # all sharing Hanko's core/ and its fonts. Omarchy allows no
 # symlinks inside a plugin, so each is assembled as a copy: its own files,
 # core/, assets/fonts and bin/hanko-print. `desk build ID DIR` does only that (the tests
 # validate and lint the result).
-SURFACES=(hanko.desk hanko.background hanko.osd hanko.notifications)
+SURFACES=(hanko.desk hanko.background hanko.osd hanko.notifications hanko.menu)
 
 # Prints the files it changed (rsync's itemized list), nothing when up to date.
 surface_build() {
@@ -246,6 +247,7 @@ surface_probe() {
     hanko.background) omarchy-shell hankowind state ;;
     hanko.osd) omarchy-shell osd ping ;;
     hanko.notifications) omarchy-shell notifications ping ;;
+    hanko.menu) omarchy-shell shell call omarchy.menu ping "" | grep -x ok ;;
   esac
 }
 desk_plugins_check() {
@@ -279,13 +281,28 @@ desk_plugins_off() {
   done
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
 }
-desk_plugins_present() { local id; for id in "${SURFACES[@]}"; do [[ -d $PLUGINS/$id ]] && return 0; done; return 1; }
+# Battō 抜刀: the menu in Kaze's grammar through the user-level shell.toml
+# (scripts/hanko-kaze-theme), refreshed by a theme-set hook on every theme.
+KAZE_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/theme-set.d/50-hanko-kaze"
+desk_theme_on() {
+  "$SRC/scripts/hanko-kaze-theme" || say "  (the menu keeps its theme's look: no colors.toml found)"
+  mkdir -p "$(dirname "$KAZE_HOOK")"
+  printf '#!/bin/bash\n# Kaze 風: Omarchy'"'"'s menu in Hanko'"'"'s grammar for the new theme (hanko desk off removes this).\nexec "%s/scripts/hanko-kaze-theme"\n' "$SRC" > "$KAZE_HOOK"
+  chmod +x "$KAZE_HOOK"
+}
+desk_theme_off() {
+  "$SRC/scripts/hanko-kaze-theme" --remove || true
+  rm -f "$KAZE_HOOK"
+}
+
+desk_plugins_present() { local id; [[ -f $KAZE_HOOK ]] && return 0; for id in "${SURFACES[@]}"; do [[ -d $PLUGINS/$id ]] && return 0; done; return 1; }
 
 cmd_desk() {
   case "${1:-status}" in
     on)
       need omarchy
       desk_plugins_on
+      desk_theme_on
       if desk_on; then hypr_reload; say "Kaze is on (its plugins are up to date; $LOOK_FILE already loads style.lua)."; return; fi
       mkdir -p "$(dirname "$LOOK_FILE")"
       [[ -f $LOOK_FILE ]] && cp "$LOOK_FILE" "$LOOK_FILE.bak"
@@ -295,6 +312,7 @@ cmd_desk() {
       ;;
     off)
       desk_plugins_off
+      desk_theme_off
       desk_on || { say "Kaze is off."; return; }
       cp "$LOOK_FILE" "$LOOK_FILE.bak"
       grep -v -e '-- hanko desk$' -e "^-- Kaze 風: Hanko's look and motion" "$LOOK_FILE.bak" > "$LOOK_FILE"

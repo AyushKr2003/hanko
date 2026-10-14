@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "hanko.menu",
+  "name": "Hanko menu",
+  "version": "0.1.0",
+  "author": "AyushKr2003",
+  "description": "Kaze, Battō: Omarchy's menu, drawn open from a 1 px line like a blade from its scabbard, with the search set in the serif and the chosen row inverted. Works with any bar.",
+  "kinds": [
+    "menu",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "menu": "Menu.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Hanko menu",
+    "description": "Launches the Omarchy menu",
+    "category": "Compositor",
+    "allowMultiple": false
+  },
+  "license": "MIT",
+  "omarchy": {
+    "clonedFrom": "omarchy.menu"
+  }
+}

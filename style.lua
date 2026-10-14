@@ -224,6 +224,8 @@ hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, anim
 hl.layer_rule({ match = { namespace = "^hanko-desk$" }, no_anim = true, animation = "none" })
 -- The OSD draws and sheathes itself (Iai); Hyprland mustn't fade it too.
 hl.layer_rule({ match = { namespace = "^hanko-osd$" }, no_anim = true, animation = "none" })
+-- The menu draws open itself; Hyprland mustn't fade it in as well.
+hl.layer_rule({ match = { namespace = "^hanko-menu$" }, no_anim = true, animation = "none" })
 
 -- ── Settings window ─────────────────────────────────────────────────────────
 -- Hanko's settings open as a floating sheet in the middle of the screen,
