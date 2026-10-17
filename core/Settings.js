@@ -168,7 +168,7 @@ var CARDS = [
     { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
     { key: "sides", name: "Scroll sides", detail: "Bare paper, or paper curling under" },
     { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both or none" },
-    { key: "overview", name: "Overview", detail: "Printed pages in a grid, Ryoku's busy spaces and a +, or Shōji's washi in lattice frames" },
+    { key: "overview", name: "Overview", detail: "Printed pages in a grid, Ryoku's busy spaces and a +, or the live space's windows spread out with search" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
@@ -374,7 +374,7 @@ var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
-var OVERVIEW_OPTIONS = ["grid", "dynamic"]
+var OVERVIEW_OPTIONS = ["grid", "dynamic", "mission"]
 // Shōji's touches, beside the twenty-six (Style.js SEASONS, NUMERALS, GRAINS).
 var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
                      hours: ["auto", "24h", "12h"] }
@@ -448,7 +448,8 @@ var KEYMAP = [
     { caps: ["0–9"], what: "Go to a space by number" },
     { caps: ["Enter"], what: "Go there" },
     { caps: ["Esc"], what: "Close" },
-    { caps: ["Alt", "Tab"], what: "Busy spaces: the next desktop" }] }
+    { caps: ["Alt", "Tab"], what: "Busy spaces: the next desktop" },
+    { caps: ["Tab"], what: "Mission: the strip or the windows; type to search" }] }
 ]
 
 // Hyprland bindings for what Hanko has no key of its own for (README).

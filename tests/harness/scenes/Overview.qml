@@ -3,13 +3,15 @@ import qs.Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../core/Overview.js" as O
+import "../../../core/Mission.js" as M
 import "../../../bar"
 import "../../../bar/settings"
 import "../../../bar/overview"
 
 // The workspace overview over a desk with the bar on top. render.py passes
 // `params`: { theme, now, spaces (Hypr.spacesFor() rows with `all`),
-//   overview: { layout, active, selected, aspect, screen, width, height, rows, columns, fold } }
+//   overview: { layout, active, selected, aspect, screen, width, height, rows, columns, fold,
+//               query, result, region, index, apps, menu } }
 Rectangle {
   id: sheet
   readonly property var p: JSON.parse(params)
@@ -57,8 +59,28 @@ Rectangle {
     Component.onCompleted: { seed(); if (sheet.o.selected !== undefined) selected = sheet.o.selected }
   }
 
+  // overview.layout: mission draws the spread; `query` searches the
+  // sample's windows and `apps` / `menu`.
+  MissionView {
+    visible: sheet.o.layout === "mission"
+    anchors.fill: parent
+    topInset: sheet.bar.height
+    spaces: sheet.p.spaces
+    allIds: sheet.p.spaces.map(function(s) { return s.id })
+    activeId: sheet.o.active || 1
+    aspect: sheet.o.aspect || 0.5625
+    screenName: sheet.o.screen || "DP-1"
+    query: sheet.o.query || ""
+    results: M.find(sheet.o.query || "", { spaces: sheet.p.spaces, apps: sheet.o.apps || [], menu: sheet.o.menu || [] })
+    resultIndex: sheet.o.result || 0
+    Component.onCompleted: {
+      seed()
+      if (sheet.o.region) { region = sheet.o.region; index = sheet.o.index || 0 }
+    }
+  }
+
   OverviewView {
-    visible: sheet.o.layout !== "dynamic"
+    visible: sheet.o.layout !== "dynamic" && sheet.o.layout !== "mission"
     anchors.fill: parent
     topInset: sheet.bar.height
     pages: O.pages(sheet.p.spaces, sheet.o.active || 1, sheet.o.rows || O.ROWS, sheet.o.columns || O.COLUMNS, sheet.o.fold !== false)

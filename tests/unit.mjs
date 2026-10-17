@@ -1300,7 +1300,7 @@ test("dynamic overview: desktops, dots, packing and the selection", () => {
   assert.equal(Ov.packRows(3, 1000, 0.5625, 500, 18), null)
   assert.equal(Ov.cycle(4, 1, 5), 0)
   assert.equal(Ov.cycle(0, -1, 5), 4)
-  assert.deepEqual(Ov.LAYOUTS, ["grid", "dynamic"])
+  assert.deepEqual(Ov.LAYOUTS, ["grid", "dynamic", "mission"])
 })
 
 test("overview layout is a setting beside the counted ones", () => {
@@ -1311,7 +1311,8 @@ test("overview layout is a setting beside the counted ones", () => {
   assert.equal(d.overview, "dynamic")
   assert.equal(S.withPreset(d, "Quiet").overview, "dynamic")
   assert.equal(S.withSetting({}, "overview", "tiles"), null)
-  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic"])
+  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic", "mission"])
+  assert.equal(S.resolve({ overview: "mission" }).overview, "mission")
   // Shōji's framed pages are gone: a file that names them opens the grid.
   assert.equal(S.withSetting({}, "overview", "framed"), null)
   assert.equal(S.resolve({ overview: "framed" }).overview, "grid")
@@ -2263,6 +2264,75 @@ test("Paths: a plugin file as a path, from file:// or qs://", () => {
   assert.equal(Pa.local("qs:///home/a/my%20dots/hanko"), "/home/a/my dots/hanko")
   assert.equal(Pa.local("/already/a/path"), "/already/a/path")
   assert.equal(Pa.local(undefined), "")
+})
+
+
+// ── The mission overview (core/Mission.js) ──────────────────────────────
+const Mi = load("core/Mission.js", ["layout", "order", "neighbour", "windowsOf", "stripKeys", "idOfKey", "freeId", "stripCell", "stepId",
+  "score", "find", "menuEntries", "evaluate", "format", "CATEGORIES", "KEYS"])
+
+test("mission: the spread fits the room, keeps sizes and reads in the desk's order", () => {
+  const area = { x: 0, y: 0, w: 1000, h: 500 }
+  const r = Mi.layout([{ key: "a", w: 800, h: 900, cx: 400, cy: 450 }, { key: "b", w: 800, h: 900, cx: 1200, cy: 450 }], area, { gap: 20 })
+  assert.equal(r.rows, 1)
+  assert.ok(r.slots.a.x < r.slots.b.x)
+  assert.equal(r.slots.a.w, r.slots.b.w)
+  for (const k of ["a", "b"]) assert.ok(r.slots[k].x >= 0 && r.slots[k].x + r.slots[k].w <= 1000 && r.slots[k].y + r.slots[k].h <= 500)
+  // Four quarters in a 10:7 room go to two rows.
+  const q = Mi.layout([0, 1, 2, 3].map(i => ({ key: "w" + i, w: 400, h: 300, cx: (i % 2) * 400, cy: Math.floor(i / 2) * 300 })), { x: 0, y: 0, w: 1000, h: 700 }, { gap: 10 })
+  assert.equal(q.rows, 2)
+  assert.deepEqual(Mi.order(q.slots), ["w0", "w1", "w2", "w3"])
+  assert.deepEqual(Mi.layout([], area, {}).slots, {})
+})
+
+test("mission: arrows pick the neighbour in line", () => {
+  const rects = [{ x: 0, y: 0, w: 10, h: 10 }, { x: 20, y: 0, w: 10, h: 10 }, { x: 0, y: 20, w: 10, h: 10 }]
+  assert.equal(Mi.neighbour(rects, 0, "right"), 1)
+  assert.equal(Mi.neighbour(rects, 0, "down"), 2)
+  assert.equal(Mi.neighbour(rects, 0, "left"), -1)
+  assert.equal(Mi.neighbour(rects, 9, "left"), 0)
+})
+
+test("mission: the live space's windows, tiled under floating", () => {
+  const spaces = [{ id: 3, all: [{ address: "f", floating: true, focus: 0 }, { address: "a", focus: 2 }, { address: "b", focus: 1 }] }]
+  assert.deepEqual(Mi.windowsOf(spaces, 3).map(w => w.address), ["a", "b", "f"])
+  assert.deepEqual(Mi.windowsOf(spaces, 4), [])
+})
+
+test("mission: the strip, the new space and stepping", () => {
+  const keys = Mi.stripKeys([{ id: 3 }, { id: 1 }, { id: -98 }], 5)
+  assert.deepEqual(keys, ["ws:1", "ws:3", "ws:5", "new"])
+  assert.equal(Mi.idOfKey("ws:3"), 3)
+  assert.equal(Mi.idOfKey("new"), -1)
+  assert.equal(Mi.freeId([1, 2, 4]), 3)
+  assert.equal(Mi.stepId(keys, 3, 1), 5)
+  assert.equal(Mi.stepId(keys, 5, 1), -1)
+  assert.equal(Mi.stepId(keys, 1, -1), -1)
+  const c = Mi.stripCell(4, 100, 2000, 0.5, 10)
+  assert.equal(c.w, 200)
+  assert.equal(c.h, 100)
+  assert.ok(Mi.stripCell(40, 100, 1000, 0.5, 10).w < 25)
+})
+
+test("mission: search finds sums, windows, apps and menu leaves", () => {
+  assert.equal(Mi.evaluate("2 + 3 * 4"), 14)
+  assert.equal(Mi.evaluate("(1+1)^3"), 8)
+  assert.equal(Mi.evaluate("sqrt(16)"), 4)
+  assert.equal(Mi.evaluate("12"), null)
+  assert.equal(Mi.evaluate("firefox"), null)
+  assert.equal(Mi.evaluate("2 +"), null)
+  assert.equal(Mi.format(0.1 + 0.2), "0.3")
+  assert.equal(Mi.score("Firefox web", "Firefox", ["fire"]), 3)
+  assert.equal(Mi.score("Firefox web", "Firefox", ["chrome"]), -1)
+  const menu = Mi.menuEntries('{ "items": { "style": { "label": "Style" }, "style.bg": { "label": "Background", "action": "omarchy-theme-bg-next", }, \n // a note\n "x": { "label": "Hidden", "action": "y", "when": "z" } } }', "")
+  assert.deepEqual(menu.map(e => e.label), ["Background"])
+  assert.equal(menu[0].path, "Style")
+  const r = Mi.find("back", { spaces: [{ id: 2, all: [{ address: "0x1", name: "Firefox", title: "Backend docs" }] }],
+    apps: [{ id: "a.desktop", name: "Backup" }, { id: "h.desktop", name: "Back hidden", noDisplay: true }], menu })
+  assert.deepEqual(r.map(x => x.kind), ["window", "app", "menu"])
+  assert.equal(Mi.find("1+1", {})[0].value, "2")
+  assert.deepEqual(Mi.find("  ", {}), [])
+  for (const k of ["calc", "window", "app", "menu"]) assert.ok(Mi.CATEGORIES[k].jp)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

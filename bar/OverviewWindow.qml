@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../core"
 import "../core/Overview.js" as O
+import "../core/Mission.js" as M
 import "../services"
 import "overview"
 
@@ -33,6 +34,12 @@ PanelWindow {
   // Which overview (style.json `overview`): grid, Hanko's pages; dynamic,
   // Ryoku's (bar/overview/DynamicView.qml).
   readonly property bool dynamic: Typeset.current.overview === "dynamic"
+  // mission, omarchy-overview's mission control (bar/overview/MissionView.qml).
+  readonly property bool mission: Typeset.current.overview === "mission"
+  // The mission overview's search, typed on this screen.
+  property string query: ""
+  property int resultIndex: 0
+  readonly property var results: mission && query.trim() !== "" ? Finder.find(query) : []
   // This screen's workspaces, for the dynamic overview.
   readonly property var screenSpaces: Hypr.workspaces.filter(function(w) { return w.id > 0 && (!w.monitor || w.monitor === win.screenName) })
 
@@ -97,12 +104,18 @@ PanelWindow {
       view.reveal = 1
       ryoku.reveal = 1
       ryoku.seed()
+      query = ""
+      resultIndex = 0
+      spread.reveal = 1
+      spread.seed()
       grabLater.restart()
       if (focusedHere) keys.forceActiveFocus()
     } else {
       grab.active = false
       view.reveal = 0
       ryoku.reveal = 0
+      spread.reveal = 0
+      spread.endDrag()
       closing.restart()
       // Letting go of the keyboard hands it back to the window that had it,
       // and Hyprland follows that window to the workspace the overview
@@ -161,7 +174,7 @@ PanelWindow {
 
   OverviewView {
     id: view
-    visible: !win.dynamic
+    visible: !win.dynamic && !win.mission
     anchors.fill: parent
     topInset: win.atBottom ? 0 : win.strip
     bottomInset: win.atBottom ? win.strip : 0
@@ -225,12 +238,73 @@ PanelWindow {
     onDismissed: win.bar.closeOverview()
   }
 
-  // A window's live picture, while the overview is open.
+  MissionView {
+    id: spread
+    visible: win.mission
+    anchors.fill: parent
+    topInset: win.atBottom ? 0 : win.strip
+    bottomInset: win.atBottom ? win.strip : 0
+    spaces: win.screenSpaces
+    allIds: Hypr.workspaces.filter(function(w) { return w.id > 0 }).map(function(w) { return w.id })
+    activeId: win.activeId
+    aspect: Hypr.aspectFor(win.screenName)
+    screenName: win.screenName
+    // Kept through the close, so the windows zoom home with their pictures.
+    snapshot: win.visible && win.mission ? snapshotComponent : null
+    query: win.query
+    results: win.results
+    resultIndex: win.resultIndex
+    reveal: 0
+    Behavior on reveal { NumberAnimation { duration: Motion.ms(280); easing.type: Easing.OutCubic } }
+
+    onWorkspacePicked: function(id, go) {
+      if (go) win.closeThen(function() { Hypr.focusWorkspace(id) })
+      else Hypr.focusWorkspace(id)
+    }
+    onWindowPicked: function(address) { win.closeThen(function() { Hypr.focusWindow(address) }) }
+    onWindowClosed: function(address) { Hypr.closeWindow(address) }
+    onWindowMoved: function(address, id) { Hypr.moveWindow(address, id) }
+    onWindowsSwapped: function(a, b) { Hypr.swapWindows(a, b, win.spaceOfWindow(a), win.spaceOfWindow(b)) }
+    onResultPicked: function(r) { win.runResult(r) }
+    onResultHovered: function(i) { win.resultIndex = i }
+    onDismissed: win.bar.closeOverview()
+
+    WheelHandler {
+      acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+      enabled: !spread.searching
+      property real held: 0
+      onWheel: function(event) {
+        held += event.angleDelta.y !== 0 ? event.angleDelta.y : -event.angleDelta.x
+        if (Math.abs(held) < 120) return
+        var id = M.stepId(spread.keys, win.activeId, held > 0 ? -1 : 1)
+        held = 0
+        if (id > 0) Hypr.focusWorkspace(id)
+      }
+    }
+  }
+
+  function spaceOfWindow(address) {
+    var all = Hypr.workspaces
+    for (var i = 0; i < all.length; i++) {
+      var list = all[i].all || []
+      for (var j = 0; j < list.length; j++) if (list[j].address === address) return all[i].id
+    }
+    return -1
+  }
+  // A result: a window is focused once the overview has let go; the rest
+  // run after it closes.
+  function runResult(r) {
+    if (!r) return
+    if (r.kind === "window") win.closeThen(function() { Hypr.focusWindow(r.address) })
+    else win.closeThen(function() { Finder.run(r) })
+  }
+
+  // A window's live picture, while the overview is up.
   Component {
     id: snapshotComponent
     ScreencopyView {
       property string address: ""
-      captureSource: win.open && address !== "" ? Hypr.toplevelFor(address) : null
+      captureSource: win.visible && address !== "" ? Hypr.toplevelFor(address) : null
       live: true
     }
   }
@@ -243,6 +317,7 @@ PanelWindow {
     focus: win.open && win.focusedHere
     Keys.onPressed: function(event) {
       if (win.dynamic) { win.dynamicKey(event); return }
+      if (win.mission) { win.missionKey(event); return }
       var k = event.key, dir = ""
       if (k === Qt.Key_Escape || k === Qt.Key_Return || k === Qt.Key_Enter) { win.bar.closeOverview(); event.accepted = true; return }
       if (k === Qt.Key_Left || k === Qt.Key_H) dir = "left"
@@ -256,6 +331,50 @@ PanelWindow {
         event.accepted = true
       }
     }
+  }
+
+  // omarchy-overview's keys for the mission overview. With a query: the
+  // results (arrows, Tab, Page keys, Enter runs, Esc clears, Backspace and
+  // Ctrl+Backspace, Ctrl+U). Without: arrows choose (along the strip they
+  // switch), Tab hops between the strip and the windows, Page Up/Down and
+  // Ctrl+arrows switch, Super+digit goes to a space, Enter goes, Delete or
+  // Ctrl+W closes the chosen window, Esc is done; any other text searches.
+  function missionKey(event) {
+    var k = event.key, mods = event.modifiers
+    var ctrl = (mods & Qt.ControlModifier) !== 0, meta = (mods & Qt.MetaModifier) !== 0
+    var shift = (mods & Qt.ShiftModifier) !== 0
+    var printable = !(mods & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && event.text.length > 0
+      && event.text.charCodeAt(0) >= 32 && event.text.charCodeAt(0) !== 127
+    event.accepted = true
+    if (query.length > 0) {
+      var n = results.length
+      if (k === Qt.Key_Escape) { query = ""; resultIndex = 0 }
+      else if (k === Qt.Key_Up || k === Qt.Key_Backtab || (k === Qt.Key_Tab && shift)) resultIndex = Math.max(0, resultIndex - 1)
+      else if (k === Qt.Key_Down || k === Qt.Key_Tab) resultIndex = Math.min(Math.max(0, n - 1), resultIndex + 1)
+      else if (k === Qt.Key_PageDown) resultIndex = Math.min(Math.max(0, n - 1), resultIndex + 6)
+      else if (k === Qt.Key_PageUp) resultIndex = Math.max(0, resultIndex - 6)
+      else if (k === Qt.Key_Return || k === Qt.Key_Enter) runResult(results[Math.min(resultIndex, n - 1)])
+      else if (k === Qt.Key_Backspace) { query = ctrl ? query.replace(/\S*\s*$/, "") : query.slice(0, -1); resultIndex = 0 }
+      else if (k === Qt.Key_U && ctrl) { query = ""; resultIndex = 0 }
+      else if (printable) { query += event.text; resultIndex = 0 }
+      else event.accepted = false
+      return
+    }
+    if (k === Qt.Key_Escape) win.bar.closeOverview()
+    else if (meta && k >= Qt.Key_0 && k <= Qt.Key_9) Hypr.focusWorkspace(k === Qt.Key_0 ? 10 : k - Qt.Key_0)
+    else if (k === Qt.Key_PageUp || k === Qt.Key_PageDown || ((ctrl || meta) && (k === Qt.Key_Left || k === Qt.Key_Right))) {
+      var id = M.stepId(spread.keys, win.activeId, k === Qt.Key_PageUp || k === Qt.Key_Left ? -1 : 1)
+      if (id > 0) Hypr.focusWorkspace(id)
+    }
+    else if (k === Qt.Key_Left) spread.navigate("left")
+    else if (k === Qt.Key_Right) spread.navigate("right")
+    else if (k === Qt.Key_Up) spread.navigate("up")
+    else if (k === Qt.Key_Down) spread.navigate("down")
+    else if (k === Qt.Key_Tab || k === Qt.Key_Backtab) spread.hop()
+    else if (k === Qt.Key_Return || k === Qt.Key_Enter) spread.activate()
+    else if (k === Qt.Key_Delete || (k === Qt.Key_W && ctrl)) { var a = spread.selectedAddress(); if (a) Hypr.closeWindow(a) }
+    else if (printable && event.text !== " ") { query = event.text; resultIndex = 0 }
+    else event.accepted = false
   }
 
   // Ryoku's keys for the dynamic overview: Tab and the arrows move the

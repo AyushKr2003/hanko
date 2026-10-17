@@ -129,6 +129,15 @@ Singleton {
     if (/^0x[0-9a-fA-F]+$/.test(String(address)) && Number(workspace) > 0)
       Hyprland.dispatch("hl.dsp.window.move({ window = " + luaStr("address:" + address) + ", workspace = " + luaStr(String(workspace)) + ", follow = false })")
   }
+  // Two windows trade places: in the layout on one workspace, else each
+  // moves to the other's workspace (the mission overview's hold-to-swap).
+  function swapWindows(a, b, spaceA, spaceB) {
+    var ok = /^0x[0-9a-fA-F]+$/
+    if (!ok.test(String(a)) || !ok.test(String(b)) || a === b) return
+    if (spaceA === spaceB)
+      Hyprland.dispatch("hl.dsp.window.swap({ window = " + luaStr("address:" + a) + ", target = " + luaStr("address:" + b) + " })")
+    else { moveWindow(a, spaceB); moveWindow(b, spaceA) }
+  }
   function closeWindow(address) {
     if (/^0x[0-9a-fA-F]+$/.test(String(address)))
       Hyprland.dispatch("hl.dsp.window.close({ window = " + luaStr("address:" + address) + " })")

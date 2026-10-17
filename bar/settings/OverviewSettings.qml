@@ -6,8 +6,9 @@ import "../overview"
 
 // Settings › Overview 一覧 (docs/settings-kosei): the workspace overview
 // three ways, each drawn live with your spaces and windows, a screen in
-// small: printed pages in a grid, Ryoku's busy spaces with a +, or Shōji's
-// washi in lattice frames. A click keeps it; a right-click on the
+// small: printed pages in a grid, Ryoku's busy spaces with a +, or the
+// live space's windows spread out under a strip and a search field
+// (omarchy-overview's mission control). A click keeps it; a right-click on the
 // workspaces (or `hanko overview`) opens it.
 Column {
   id: root
@@ -39,7 +40,7 @@ Column {
   spacing: 0
   topPadding: Type.px(22)
 
-  SectionLabel { jp: "一覧"; text: "The overview · 2 ways · drawn with your spaces" }
+  SectionLabel { jp: "一覧"; text: "The overview · 3 ways · drawn with your spaces" }
   Item { width: 1; height: Type.px(12) }
 
   Grid {
@@ -50,7 +51,8 @@ Column {
     Repeater {
       model: [
         { key: "grid", jp: "頁", name: "Pages", line: "Printed pages in a grid, the live one inverted" },
-        { key: "dynamic", jp: "動", name: "Busy spaces", line: "Ryoku's: only the spaces in use, and a + for a new one" }
+        { key: "dynamic", jp: "動", name: "Busy spaces", line: "Ryoku's: only the spaces in use, and a + for a new one" },
+        { key: "mission", jp: "見開", name: "Spread", line: "This space's windows spread out, a strip of spaces, type to search" }
       ]
       Tile {
         id: way
@@ -74,7 +76,7 @@ Column {
           Rectangle { anchors.fill: parent; color: Ink.paper }
           Loader {
             anchors.fill: parent
-            sourceComponent: way.modelData.key === "dynamic" ? dynamicView : pagesView
+            sourceComponent: way.modelData.key === "dynamic" ? dynamicView : way.modelData.key === "mission" ? missionView : pagesView
           }
           Component {
             id: pagesView
@@ -84,6 +86,16 @@ Column {
               aspect: 0.5625
               screenName: "DP-1"
               now: root.barData.now || new Date()
+            }
+          }
+          Component {
+            id: missionView
+            MissionView {
+              spaces: root.spaces
+              allIds: root.spaces.map(function(s) { return s.id })
+              activeId: root.activeId
+              aspect: 0.5625
+              screenName: "DP-1"
             }
           }
           Component {

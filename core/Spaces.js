@@ -36,7 +36,7 @@ function layoutOf(windows, area, keepFloating) {
     if (r - x < 0.01 || b - y < 0.01) continue
     var o = { x: x, y: y, w: r - x, h: b - y, focused: !!w.focused,
               name: String(w.name || ""), address: String(w.address || "") }
-    if (keepFloating) { o.floating = !!w.floating; o.title = String(w.title || ""); o.fullscreen = !!w.fullscreen; o.cls = String(w.cls || "") }
+    if (keepFloating) { o.floating = !!w.floating; o.title = String(w.title || ""); o.fullscreen = !!w.fullscreen; o.cls = String(w.cls || ""); o.focus = w.focus === undefined ? 1e9 : w.focus }
     out.push(o)
   }
   // Fullscreen or a single window still reads as one pane.

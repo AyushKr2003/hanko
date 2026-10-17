@@ -83,7 +83,8 @@ scripts/hanko uninstall
 | Hide or show a part | `scripts/hanko hide tray` / `scripts/hanko show tray` |
 | Unroll the scroll | `scripts/hanko scroll` |
 | Lay out every workspace (the overview) | `omarchy-shell hanko overview`, or right-click the workspaces |
-| Ryoku's overview instead (busy spaces and a +) | `scripts/hanko style set overview dynamic` (`grid`, `dynamic`) |
+| Ryoku's overview instead (busy spaces and a +) | `scripts/hanko style set overview dynamic` (`grid`, `dynamic`, `mission`) |
+| The live space's windows spread out, a strip of spaces, type to search | `scripts/hanko style set overview mission` |
 | Pick the scroll's dividers | `scripts/hanko style set interlude kotoba` |
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
 | Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |

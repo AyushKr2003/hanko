@@ -194,10 +194,12 @@ function normalizeOpacity(o) {
 
 // Which workspace overview 一覧 opens, beside the twenty-six like motion:
 // grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
-// overview (only workspaces with windows, a + for a new one, desktops).
+// overview (only workspaces with windows, a + for a new one, desktops);
+// mission, omarchy-overview's mission control (the live space's windows
+// spread out, a strip of spaces, type to search; core/Mission.js).
 // A file that still says `framed` (Shōji's lattice pages, since removed)
 // opens the grid.
-var OVERVIEWS = ["grid", "dynamic"]
+var OVERVIEWS = ["grid", "dynamic", "mission"]
 var DEFAULT_OVERVIEW = "grid"
 
 function normalizeOverview(o) {
