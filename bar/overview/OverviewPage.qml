@@ -170,8 +170,11 @@ Item {
           opacity: tile.carried ? 0.25 : 1
           clip: true
 
-          // Ink fallback: the app's name large and faint until a snapshot lands.
+          // Ink fallback: the app's name large and faint, only where there
+          // are no snapshots (Settings, the harness). Live, it flashed on
+          // every workspace switch while the snapshots came back.
           Text {
+            visible: root.snapshot === null
             anchors.centerIn: parent
             width: parent.width - Type.px(8)
             horizontalAlignment: Text.AlignHCenter

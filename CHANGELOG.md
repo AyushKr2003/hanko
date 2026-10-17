@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Overview (Pages): switching workspace no longer flashes each window's app name in large italic while its live picture comes back.
 - Overview: the framed overview (Shōji's washi pages in lattice frames) is gone; the overview is Pages or Busy spaces. A style.json that says `"overview": "framed"` opens Pages, and the Shōji preset leaves your overview alone.
 - Overview: after moving with the arrows (or digits, or the wheel), Enter and Esc leave you on the workspace you moved to. Closing used to hand the keyboard back to the window you started from, and Hyprland flashed back to its workspace; now the overview hands the keyboard to the new workspace's window before it lets go.
 - Kaze: in Settings › Kaze, Desk Off now goes on the first click (it never restarts the shell); On still asks for a second click, now within 10 s instead of 5, so the warning can be read first. What `hanko desk` says goes to `~/.local/state/hanko/desk.log`.
