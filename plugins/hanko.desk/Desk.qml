@@ -25,7 +25,7 @@ import "core/Kaisei.js" as Kaisei
 //   Taiji 対峙, the cut: when a password goes to be checked, hanko.lock's
 //   view leaves a note; the desk lays the lock's own picture (core/
 //   Standoff.qml) under the lock, and the moment the session unlocks, cuts
-//   it along the diagonal and parts the halves onto the desk.
+//   it along the diagonal and folds the halves away into the desk.
 //
 //   Kaisei 回生: when the shell comes back from a crash (a fresh quickshell
 //   core dump, core/Kaisei.js), a small tab says so at the top right for a
@@ -258,7 +258,10 @@ Item {
       }
 
       // The cut: two copies of the lock's picture, each clipped to one side of
-      // the diagonal from the bottom left to the top right, parting along it.
+      // the diagonal from the bottom left to the top right. They part a hand's
+      // width along it, then each folds away from you on the cut as its hinge
+      // (a 3D turn about the diagonal, in perspective), darkening as it turns
+      // from the light while the crease catches it, until both lie edge on.
       Item {
         id: cutLayer
         anchors.fill: parent
@@ -269,8 +272,12 @@ Item {
         // along the cut, toward the top right; and out from it, toward each half
         readonly property real ux: hyp > 0 ? width / hyp : 1
         readonly property real uy: hyp > 0 ? -height / hyp : 0
-        readonly property real along: root.cutParted * hyp * 0.9
-        readonly property real apart: root.cutParted * 60
+        readonly property real along: root.cutParted * hyp * 0.04
+        readonly property real apart: root.cutParted * 24
+        // the fold, in degrees: 0 flat, 90 edge on
+        readonly property real fold: root.cutFolded * 90
+        readonly property real shade: 0.6 * (1 - Math.cos(fold * Math.PI / 180))
+        readonly property real crease: 0.7 * Math.sin(root.cutFolded * Math.PI)
 
         Item {
           x: cutLayer.ux * cutLayer.along - cutLayer.uy * -cutLayer.apart
@@ -283,16 +290,30 @@ Item {
             clip: true
             transformOrigin: Item.BottomLeft
             rotation: cutLayer.deg
-            Standoff {
-              x: 0; y: cutLayer.big - cutLayer.height
-              width: cutLayer.width; height: cutLayer.height
-              transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
-              backgroundPath: root.cutNote.backgroundPath || ""
-              backgroundVersion: root.cutNote.backgroundVersion || 0
-              loadBackground: root.cutPhase !== ""
-              authenticating: root.cutPhase === "armed"
-              fingerprint: !!root.cutNote.fingerprint
+            Item {
+              anchors.fill: parent
+              transform: Rotation { origin.x: cutLayer.hyp / 2; origin.y: cutLayer.big; axis: Qt.vector3d(1, 0, 0); angle: cutLayer.fold; distanceToPlane: cutLayer.hyp }
+              Standoff {
+                x: 0; y: cutLayer.big - cutLayer.height
+                width: cutLayer.width; height: cutLayer.height
+                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
+                backgroundPath: root.cutNote.backgroundPath || ""
+                backgroundVersion: root.cutNote.backgroundVersion || 0
+                loadBackground: root.cutPhase !== ""
+                authenticating: root.cutPhase === "armed"
+                fingerprint: !!root.cutNote.fingerprint
+              }
+              // the picture turning from the light (the picture's own size: the
+              // square around it lies over bare desk)
+              Rectangle {
+                x: 0; y: cutLayer.big - cutLayer.height
+                width: cutLayer.width; height: cutLayer.height
+                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
+                color: "black"
+                opacity: cutLayer.shade
+              }
             }
+            Rectangle { x: 0; y: cutLayer.big - 2; width: cutLayer.hyp; height: 2; color: Ink.bone; opacity: cutLayer.crease }
           }
         }
         Item {
@@ -306,16 +327,30 @@ Item {
             clip: true
             transformOrigin: Item.TopLeft
             rotation: cutLayer.deg
-            Standoff {
-              x: 0; y: -cutLayer.height
-              width: cutLayer.width; height: cutLayer.height
-              transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
-              backgroundPath: root.cutNote.backgroundPath || ""
-              backgroundVersion: root.cutNote.backgroundVersion || 0
-              loadBackground: root.cutPhase !== ""
-              authenticating: root.cutPhase === "armed"
-              fingerprint: !!root.cutNote.fingerprint
+            Item {
+              anchors.fill: parent
+              transform: Rotation { origin.x: cutLayer.hyp / 2; origin.y: 0; axis: Qt.vector3d(1, 0, 0); angle: cutLayer.fold; distanceToPlane: cutLayer.hyp }
+              Standoff {
+                x: 0; y: -cutLayer.height
+                width: cutLayer.width; height: cutLayer.height
+                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
+                backgroundPath: root.cutNote.backgroundPath || ""
+                backgroundVersion: root.cutNote.backgroundVersion || 0
+                loadBackground: root.cutPhase !== ""
+                authenticating: root.cutPhase === "armed"
+                fingerprint: !!root.cutNote.fingerprint
+              }
+              // the picture turning from the light (the picture's own size: the
+              // square around it lies over bare desk)
+              Rectangle {
+                x: 0; y: -cutLayer.height
+                width: cutLayer.width; height: cutLayer.height
+                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
+                color: "black"
+                opacity: cutLayer.shade
+              }
             }
+            Rectangle { x: 0; y: 0; width: cutLayer.hyp; height: 2; color: Ink.bone; opacity: cutLayer.crease }
           }
         }
         // The cut itself: a hairline from corner to corner.
@@ -413,6 +448,7 @@ Item {
   property var cutNote: ({})
   property real cutFlash: 0
   property real cutParted: 0
+  property real cutFolded: 0
   // The note must exist before it can be watched.
   Process {
     running: true
@@ -435,6 +471,7 @@ Item {
   function armCut(n) {
     root.cutNote = n
     root.cutParted = 0
+    root.cutFolded = 0
     root.cutFlash = 0
     root.cutPhase = "armed"
     cutTimeout.restart()
@@ -476,8 +513,16 @@ Item {
     PropertyAction { target: root; property: "cutFlash"; value: 1 }
     PauseAnimation { duration: 16 + Iai.BEATS.kiri.ms }
     PropertyAction { target: root; property: "cutFlash"; value: 0 }
-    // the halves part along it and leave by their corners
-    NumberAnimation { target: root; property: "cutParted"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
+    // the halves part along it on the draw; on the shake-off's delay each
+    // starts to fold away, slow, then falls the last of the way (the sheath,
+    // half again as long so the turn reads)
+    ParallelAnimation {
+      NumberAnimation { target: root; property: "cutParted"; to: 1; duration: Iai.BEATS.nuki.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("nuki") }
+      SequentialAnimation {
+        PauseAnimation { duration: Iai.BEATS.chiburi.delay }
+        NumberAnimation { target: root; property: "cutFolded"; to: 1; duration: Iai.BEATS.noto.ms * 1.5; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
+      }
+    }
     ScriptAction { script: { root.cutPhase = ""; cutFile.setText("{}") } }
   }
 
