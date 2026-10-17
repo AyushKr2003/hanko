@@ -203,6 +203,91 @@ Item {
     onTriggered: root.refreshUrgent()
   }
 
+  // ── The cut's halves ──────────────────────────────────────────────────
+  // One side of the cut, in a frame turned so the cut runs along x: three
+  // strips parallel to it, from the cut out to the far corner. Fold 1 turns
+  // the strip at the cut over its outer crease, out of the screen toward you,
+  // onto the next; fold 2 turns those two over the next crease; fold 3 turns
+  // all of it over the last, past the corner and off the screen. A strip
+  // facing away shows the back of the sheet; turning, it darkens.
+  component CutStrip: Item {
+    id: strip
+    required property Item picture
+    required property real picY
+    required property real deg
+    required property real screenWidth
+    required property real screenHeight
+    // its whole turn, the folds it rides on included (degrees)
+    required property real turned
+    readonly property real lean: Math.abs(Math.sin(turned * Math.PI / 180))
+    readonly property bool back: Math.cos(turned * Math.PI / 180) < 0
+    clip: true
+    ShaderEffect {
+      visible: !strip.back
+      x: 0; y: strip.picY - strip.y
+      width: strip.screenWidth; height: strip.screenHeight
+      transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
+      property variant source: strip.picture
+    }
+    Rectangle {
+      x: 0; y: strip.picY - strip.y
+      width: strip.screenWidth; height: strip.screenHeight
+      transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
+      color: strip.back ? Ink.paper2 : "black"
+      opacity: strip.back ? 1 : 0.5 * strip.lean
+    }
+    Rectangle {
+      visible: strip.back
+      x: 0; y: strip.picY - strip.y
+      width: strip.screenWidth; height: strip.screenHeight
+      transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
+      color: "black"
+      opacity: 0.4 * strip.lean
+    }
+  }
+  component CutHalf: Item {
+    id: half
+    required property bool above
+    required property Item picture
+    required property real screenWidth
+    required property real screenHeight
+    required property real hyp
+    required property real deg
+    required property real big
+    required property real reach
+    required property real fold1
+    required property real fold2
+    required property real fold3
+    readonly property real band: reach / 3
+    // the crease of fold k, and the near edge of strip k, in this frame
+    // (above the cut, y runs toward it; below, away from it)
+    function creaseAt(k) { return above ? big - k * band : k * band }
+    function bandAt(k) { return above ? big - k * band : (k - 1) * band }
+    readonly property real picY: above ? big - screenHeight : -screenHeight
+    // out of the screen, toward you, on either side
+    readonly property real toward: above ? 180 : -180
+    readonly property real eye: hyp * 1.5
+    width: big; height: big
+    transformOrigin: above ? Item.BottomLeft : Item.TopLeft
+    rotation: deg
+    Item {
+      anchors.fill: parent
+      transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(3); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold3; distanceToPlane: half.eye }
+      // a pixel over the next strip, so no seam shows between them
+      CutStrip { x: 0; y: half.bandAt(3) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * half.fold3 }
+      Item {
+        anchors.fill: parent
+        transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(2); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold2; distanceToPlane: half.eye }
+        CutStrip { x: 0; y: half.bandAt(2) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * (half.fold2 + half.fold3) }
+        Item {
+          anchors.fill: parent
+          transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(1); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold1; distanceToPlane: half.eye }
+          CutStrip { x: 0; y: half.bandAt(1) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * (half.fold1 + half.fold2 + half.fold3) }
+        }
+      }
+    }
+  }
+
   // ── Drawing: one input-transparent overlay per screen ─────────────────
   Variants {
     model: Quickshell.screens
@@ -257,11 +342,9 @@ Item {
         }
       }
 
-      // The cut: two copies of the lock's picture, each clipped to one side of
-      // the diagonal from the bottom left to the top right. They part a hand's
-      // width along it, then each folds away from you on the cut as its hinge
-      // (a 3D turn about the diagonal, in perspective), darkening as it turns
-      // from the light while the crease catches it, until both lie edge on.
+      // The cut: the lock's picture, once, as a texture; over it two folding
+      // halves either side of the diagonal from the bottom left to the top
+      // right (CutHalf, below).
       Item {
         id: cutLayer
         anchors.fill: parent
@@ -269,89 +352,36 @@ Item {
         readonly property real hyp: Math.sqrt(width * width + height * height)
         readonly property real deg: -Math.atan2(height, width) * 180 / Math.PI
         readonly property real big: hyp * 1.6
-        // along the cut, toward the top right; and out from it, toward each half
-        readonly property real ux: hyp > 0 ? width / hyp : 1
-        readonly property real uy: hyp > 0 ? -height / hyp : 0
-        readonly property real along: root.cutParted * hyp * 0.04
-        readonly property real apart: root.cutParted * 24
-        // the fold, in degrees: 0 flat, 90 edge on
-        readonly property real fold: root.cutFolded * 90
-        readonly property real shade: 0.6 * (1 - Math.cos(fold * Math.PI / 180))
-        readonly property real crease: 0.7 * Math.sin(root.cutFolded * Math.PI)
+        // how far the far corners lie from the cut
+        readonly property real reach: hyp > 0 ? width * height / hyp : 0
 
-        Item {
-          x: cutLayer.ux * cutLayer.along - cutLayer.uy * -cutLayer.apart
-          y: cutLayer.uy * cutLayer.along - cutLayer.ux * cutLayer.apart
-          width: cutLayer.width
-          height: cutLayer.height
-          Item {
-            x: 0; y: cutLayer.height - cutLayer.big
-            width: cutLayer.big; height: cutLayer.big
-            clip: true
-            transformOrigin: Item.BottomLeft
-            rotation: cutLayer.deg
-            Item {
-              anchors.fill: parent
-              transform: Rotation { origin.x: cutLayer.hyp / 2; origin.y: cutLayer.big; axis: Qt.vector3d(1, 0, 0); angle: cutLayer.fold; distanceToPlane: cutLayer.hyp }
-              Standoff {
-                x: 0; y: cutLayer.big - cutLayer.height
-                width: cutLayer.width; height: cutLayer.height
-                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
-                backgroundPath: root.cutNote.backgroundPath || ""
-                backgroundVersion: root.cutNote.backgroundVersion || 0
-                loadBackground: root.cutPhase !== ""
-                authenticating: root.cutPhase === "armed"
-                fingerprint: !!root.cutNote.fingerprint
-              }
-              // the picture turning from the light (the picture's own size: the
-              // square around it lies over bare desk)
-              Rectangle {
-                x: 0; y: cutLayer.big - cutLayer.height
-                width: cutLayer.width; height: cutLayer.height
-                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
-                color: "black"
-                opacity: cutLayer.shade
-              }
-            }
-            Rectangle { x: 0; y: cutLayer.big - 2; width: cutLayer.hyp; height: 2; color: Ink.bone; opacity: cutLayer.crease }
-          }
+        Standoff {
+          id: cutPicture
+          width: cutLayer.width; height: cutLayer.height
+          // drawn only through the halves
+          layer.enabled: true
+          opacity: 0
+          backgroundPath: root.cutNote.backgroundPath || ""
+          backgroundVersion: root.cutNote.backgroundVersion || 0
+          loadBackground: root.cutPhase !== ""
+          authenticating: root.cutPhase === "armed"
+          fingerprint: !!root.cutNote.fingerprint
         }
-        Item {
-          x: -cutLayer.ux * cutLayer.along + cutLayer.uy * -cutLayer.apart
-          y: -cutLayer.uy * cutLayer.along + cutLayer.ux * cutLayer.apart
-          width: cutLayer.width
-          height: cutLayer.height
-          Item {
-            x: 0; y: cutLayer.height
-            width: cutLayer.big; height: cutLayer.big
-            clip: true
-            transformOrigin: Item.TopLeft
-            rotation: cutLayer.deg
-            Item {
-              anchors.fill: parent
-              transform: Rotation { origin.x: cutLayer.hyp / 2; origin.y: 0; axis: Qt.vector3d(1, 0, 0); angle: cutLayer.fold; distanceToPlane: cutLayer.hyp }
-              Standoff {
-                x: 0; y: -cutLayer.height
-                width: cutLayer.width; height: cutLayer.height
-                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
-                backgroundPath: root.cutNote.backgroundPath || ""
-                backgroundVersion: root.cutNote.backgroundVersion || 0
-                loadBackground: root.cutPhase !== ""
-                authenticating: root.cutPhase === "armed"
-                fingerprint: !!root.cutNote.fingerprint
-              }
-              // the picture turning from the light (the picture's own size: the
-              // square around it lies over bare desk)
-              Rectangle {
-                x: 0; y: -cutLayer.height
-                width: cutLayer.width; height: cutLayer.height
-                transform: Rotation { origin.x: 0; origin.y: cutLayer.height; angle: -cutLayer.deg }
-                color: "black"
-                opacity: cutLayer.shade
-              }
-            }
-            Rectangle { x: 0; y: 0; width: cutLayer.hyp; height: 2; color: Ink.bone; opacity: cutLayer.crease }
-          }
+        CutHalf {
+          above: true
+          x: 0; y: cutLayer.height - cutLayer.big
+          picture: cutPicture
+          screenWidth: cutLayer.width; screenHeight: cutLayer.height
+          hyp: cutLayer.hyp; deg: cutLayer.deg; big: cutLayer.big; reach: cutLayer.reach
+          fold1: root.cutFold1; fold2: root.cutFold2; fold3: root.cutFold3
+        }
+        CutHalf {
+          above: false
+          x: 0; y: cutLayer.height
+          picture: cutPicture
+          screenWidth: cutLayer.width; screenHeight: cutLayer.height
+          hyp: cutLayer.hyp; deg: cutLayer.deg; big: cutLayer.big; reach: cutLayer.reach
+          fold1: root.cutFold1; fold2: root.cutFold2; fold3: root.cutFold3
         }
         // The cut itself: a hairline from corner to corner.
         Rectangle {
@@ -447,8 +477,10 @@ Item {
   property string cutPhase: ""
   property var cutNote: ({})
   property real cutFlash: 0
-  property real cutParted: 0
-  property real cutFolded: 0
+  // the three folds of each half, 0 flat to 1 turned over
+  property real cutFold1: 0
+  property real cutFold2: 0
+  property real cutFold3: 0
   // The note must exist before it can be watched.
   Process {
     running: true
@@ -470,8 +502,9 @@ Item {
   }
   function armCut(n) {
     root.cutNote = n
-    root.cutParted = 0
-    root.cutFolded = 0
+    root.cutFold1 = 0
+    root.cutFold2 = 0
+    root.cutFold3 = 0
     root.cutFlash = 0
     root.cutPhase = "armed"
     cutTimeout.restart()
@@ -513,14 +546,18 @@ Item {
     PropertyAction { target: root; property: "cutFlash"; value: 1 }
     PauseAnimation { duration: 16 + Iai.BEATS.kiri.ms }
     PropertyAction { target: root; property: "cutFlash"; value: 0 }
-    // the halves part along it on the draw; on the shake-off's delay each
-    // starts to fold away, slow, then falls the last of the way (the sheath,
-    // half again as long so the turn reads)
+    // then the halves fold out from it, a crease at a time: each fold on
+    // the shake-off's curve over a sheath's length, the next starting a
+    // draw's length after
     ParallelAnimation {
-      NumberAnimation { target: root; property: "cutParted"; to: 1; duration: Iai.BEATS.nuki.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("nuki") }
+      NumberAnimation { target: root; property: "cutFold1"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("chiburi") }
       SequentialAnimation {
-        PauseAnimation { duration: Iai.BEATS.chiburi.delay }
-        NumberAnimation { target: root; property: "cutFolded"; to: 1; duration: Iai.BEATS.noto.ms * 1.5; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
+        PauseAnimation { duration: Iai.BEATS.nuki.ms }
+        NumberAnimation { target: root; property: "cutFold2"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("chiburi") }
+      }
+      SequentialAnimation {
+        PauseAnimation { duration: Iai.BEATS.nuki.ms * 2 }
+        NumberAnimation { target: root; property: "cutFold3"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("chiburi") }
       }
     }
     ScriptAction { script: { root.cutPhase = ""; cutFile.setText("{}") } }
