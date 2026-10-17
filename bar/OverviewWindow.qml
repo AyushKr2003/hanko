@@ -43,7 +43,9 @@ PanelWindow {
 
   WlrLayershell.namespace: "hanko-overview"
   WlrLayershell.layer: WlrLayer.Overlay
-  WlrLayershell.keyboardFocus: win.open && win.focusedHere ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: !win.focusedHere ? WlrKeyboardFocus.None
+    : win.handing ? WlrKeyboardFocus.OnDemand
+    : win.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
   anchors {
     top: true
@@ -89,6 +91,9 @@ PanelWindow {
   onOpenChanged: {
     if (open) {
       closing.stop()
+      handOver.stop()
+      letGo.stop()
+      handing = false
       view.reveal = 1
       ryoku.reveal = 1
       ryoku.seed()
@@ -99,15 +104,44 @@ PanelWindow {
       view.reveal = 0
       ryoku.reveal = 0
       closing.restart()
-      // Closing hands the keyboard back to the window that had it, and
-      // Hyprland follows it to the workspace the overview opened on. Stay
-      // where the arrows, digits or wheel left you (unless closeThen has
-      // somewhere else to go).
-      if (focusedHere && !pending) {
-        var here = activeId
-        pending = function() { if (win.activeId !== here) Hypr.focusWorkspace(here) }
-        later.restart()
+      // Letting go of the keyboard hands it back to the window that had it,
+      // and Hyprland follows that window to the workspace the overview
+      // opened on, then the arrows' one again: a flash. So hand it over
+      // first: on demand (Hyprland ignores a focus while it's exclusive),
+      // focus the live workspace's last window, then let go.
+      if (focusedHere) {
+        here = activeId
+        handing = true
+        handOver.restart()
       }
+    }
+  }
+
+  // The keyboard's handover on closing (above).
+  property bool handing: false
+  property int here: 0
+  Timer {
+    id: handOver
+    interval: 30
+    onTriggered: {
+      var address = Hypr.lastWindowOn(win.here)
+      if (address) Hypr.focusWindow(address)
+      letGo.restart()
+    }
+  }
+  Timer {
+    id: letGo
+    interval: 40
+    onTriggered: {
+      win.handing = false
+      // An empty workspace has no window to take the keyboard, so Hyprland
+      // may still go back: come back here (unless closeThen has somewhere
+      // else to go).
+      if (!win.pending) {
+        var id = win.here
+        win.pending = function() { if (win.activeId !== id) Hypr.focusWorkspace(id) }
+      }
+      later.restart()
     }
   }
 
@@ -117,7 +151,7 @@ PanelWindow {
   function closeThen(fn) {
     pending = fn
     bar.closeOverview()
-    later.restart()
+    if (!handing) later.restart()   // else letGo starts it
   }
   Timer {
     id: later

@@ -109,6 +109,18 @@ Singleton {
       Hyprland.dispatch("hl.dsp.focus({ window = " + luaStr("address:" + address) + " })")
   }
 
+  // The window last focused on a workspace (floating ones too), or "".
+  function lastWindowOn(id) {
+    var tops = Hyprland.toplevels.values, best = "", at = 1e9
+    for (var i = 0; i < tops.length; i++) {
+      var d = tops[i].lastIpcObject
+      if (!d || !d.workspace || d.workspace.id !== id || !d.address) continue
+      var f = d.focusHistoryID === undefined ? 1e9 - 1 : d.focusHistoryID
+      if (f < at) { at = f; best = d.address }
+    }
+    return best
+  }
+
   // Read windows and workspaces again now (the overview opening).
   function refresh() { refreshTimer.restart() }
 
