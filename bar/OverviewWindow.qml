@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import Quickshell.Io
 import "../core"
 import "../core/Overview.js" as O
 import "../core/Mission.js" as M
@@ -249,7 +250,7 @@ PanelWindow {
     activeId: win.activeId
     aspect: Hypr.aspectFor(win.screenName)
     screenName: win.screenName
-    wallpaper: "file://" + Quickshell.env("HOME") + "/.local/state/omarchy/current/background"
+    wallpaper: win.wallpaper
     // Kept through the close, so the windows zoom home with their pictures.
     snapshot: win.visible && win.mission ? snapshotComponent : null
     query: win.query
@@ -283,6 +284,20 @@ PanelWindow {
       }
     }
   }
+
+  // The wallpaper's real file. Omarchy repoints the link on a theme switch;
+  // a new path loads the new picture, the same one stays decoded, so the
+  // Spread opens on it at once.
+  property string wallpaper: ""
+  Process {
+    id: wallLink
+    command: ["readlink", "-e", Quickshell.env("HOME") + "/.local/state/omarchy/current/background"]
+    running: win.mission
+    stdout: StdioCollector {
+      onStreamFinished: { var p = text.trim(); if (p) win.wallpaper = "file://" + p }
+    }
+  }
+  onVisibleChanged: if (visible && mission) { wallLink.running = false; wallLink.running = true }
 
   function spaceOfWindow(address) {
     var all = Hypr.workspaces

@@ -217,9 +217,10 @@ Item {
       source: root.wallpaper
       fillMode: Image.PreserveAspectCrop
       asynchronous: true
-      // The link is repointed on a theme switch; never serve the old one.
-      cache: false
-      sourceSize.width: Math.round(root.width / 2)
+      // Small: it is blurred anyway, and a full-size decode held the blur
+      // back a second or two on every open. Kept loaded between opens.
+      sourceSize.width: 640
+      sourceSize.height: 360
     }
     MultiEffect {
       anchors.fill: parent
