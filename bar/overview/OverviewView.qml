@@ -152,12 +152,14 @@ Item {
     width: root.layout.width
     height: root.layout.height
 
+    // Counted, not the array, so the pages (and their snapshots) stay put
+    // when the workspaces change; each reads its entry.
     Repeater {
-      model: root.pages
+      model: root.pages.length
       OverviewPage {
         id: pageItem
-        required property var modelData
         required property int index
+        readonly property var modelData: root.pages[pageItem.index] || ({ id: 0, col: 0, row: 0, active: false, urgent: false, count: 0, windows: [] })
         readonly property var box: root.boxOf(pageItem.modelData)
         x: pageItem.box.x
         y: pageItem.box.y

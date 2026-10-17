@@ -152,11 +152,14 @@ Item {
         onClicked: if (root.view) root.view.pagePicked(root.page.id)
       }
 
+      // Counted, not the array: a new array (every workspace switch) would
+      // rebuild each tile, and its snapshot blinked while it captured again.
       Repeater {
-        model: root.windows
+        model: root.windows.length
         Rectangle {
           id: tile
-          required property var modelData
+          required property int index
+          readonly property var modelData: root.windows[tile.index] || ({ x: 0, y: 0, w: 0, h: 0, name: "", address: "", focused: false, floating: false })
           readonly property bool lifted: tileArea.containsMouse
           readonly property bool carried: !!root.view && root.view.dragging && root.view.dragAddress === tile.modelData.address
           x: Math.round(tile.modelData.x * screen.width) + 2
@@ -189,11 +192,17 @@ Item {
           }
 
           Loader {
+            id: snap
             anchors.fill: parent
             anchors.margins: 1
             active: root.snapshot !== null
             sourceComponent: root.snapshot
-            onLoaded: item.address = tile.modelData.address
+          }
+          Binding {
+            when: snap.item !== null
+            target: snap.item
+            property: "address"
+            value: tile.modelData.address
           }
 
           // The name tab, paper on the snapshot.
