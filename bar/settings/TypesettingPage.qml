@@ -27,8 +27,20 @@ Column {
   signal tried(string key, string value)
   signal untried()
   // The galley grew or shrank (a specimen tried on, a window resized), by
-  // `by` px, so the page can hold what's under the pointer still.
-  signal galleyResized(Item galley, real by)
+  // `by` px, so the page can hold what's under the pointer still. `held`:
+  // the pointer is over the case, trying.
+  signal galleyResized(Item galley, real by, bool held)
+
+  // While the pointer is in the case the galley only grows (Inkan's sketch
+  // and the two lines differ a lot), and it gives the room back a moment
+  // after the pointer leaves: stepping from one specimen to the next never
+  // reflows the page under it.
+  readonly property bool holding: caseHover.hovered || release.running
+  Timer { id: release; interval: 300 }
+  Connections {
+    target: caseHover
+    function onHoveredChanged() { if (!caseHover.hovered) release.restart() }
+  }
 
   width: parent ? parent.width : 0
 
@@ -38,9 +50,9 @@ Column {
     id: galley
     property real held: 0
     width: parent.width
-    height: implicitHeight
+    height: root.holding ? Math.max(implicitHeight, held) : implicitHeight
     onHeightChanged: {
-      if (held > 0) root.galleyResized(galley, height - held)
+      if (held > 0 && height !== held) root.galleyResized(galley, height - held, root.holding)
       held = height
     }
     style: root.proofStyle
@@ -144,5 +156,6 @@ Column {
     onPicked: function(key, value) { root.untried(); root.settingPicked(key, value) }
     onTried: function(key, value) { root.tried(key, value) }
     onUntried: root.untried()
+    HoverHandler { id: caseHover }
   }
 }
