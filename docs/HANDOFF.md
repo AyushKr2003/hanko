@@ -1109,6 +1109,9 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 - A Canvas redrawn every frame is expensive in the real shell (30–40% of a core for ~200 blades at 12–20 fps), though its onPaint takes ~1.5 ms; the offscreen platform can't show this. Animate a picture drawn once with a `ShaderEffect` (a `.qsb` built with `qsb`, see `scripts/hanko-shaders`) or transforms instead. Offscreen grabs of a ShaderEffect come out blank; check shaders on the real desk.
 - A property named `left`, `right`, `top` or `bottom` on an Item clashes with the FINAL anchor-line properties ("Cannot override FINAL property"); use `east`, `west`, `high`, `low`.
 - Never find a Repeater's item with a binding over `itemAt(i)`: nothing tells the binding when the Repeater builds its items (`count` can change first), so it can stay null for good and the sliding plate vanished in places. Let the delegates report themselves (`onOnChanged` / `Component.onCompleted` / `onDestruction`), as `Segmented` and `Workspaces` do.
+- `Qt.resolvedUrl()` in a plugin outside the shell's config folder gives `qs:///<absolute path>`, not `file://`: stripping only `file://` hands a process a path that doesn't exist (the Settings desk and Sumi switches did nothing). Use `core/Paths.js` `local()` for any file a process runs or reads.
+- `omarchy-shell -q` now prints nothing, the call's answer included: never read output from a `-q` call (`active_bar` came back empty). `omarchy plugin enable` right after `rescanPlugins` can answer "not known": the rescan finishes after its call returns, so ask again (`surface_enable`).
+- `grep -q` at the end of a pipe under `set -o pipefail` can fail a check that matched (the writer dies of SIGPIPE): use the tool's own quiet flag (`fc-list -q`) or drop `-q`.
 
 ## 14. Reference material
 

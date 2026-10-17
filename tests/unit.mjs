@@ -45,6 +45,7 @@ const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
+const Pa = load("core/Paths.js", ["local"])
 const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
 const Bt = load("core/Batto.js", ["CRESTS", "crestFor", "rail", "topOf"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
@@ -2252,6 +2253,14 @@ test("batto: a crest per top-level menu, in the menu's order; actions and submen
   assert.equal(Bt.topOf("style.theme.font"), "style")
   assert.equal(Bt.topOf("root"), "root")
   assert.equal(Bt.crestFor("system", "System"), "政")
+})
+
+test("Paths: a plugin file as a path, from file:// or qs://", () => {
+  assert.equal(Pa.local("file:///home/a/hanko.bar/scripts/hanko"), "/home/a/hanko.bar/scripts/hanko")
+  assert.equal(Pa.local("qs:///home/a/.config/omarchy/plugins/hanko.bar/scripts/hanko"), "/home/a/.config/omarchy/plugins/hanko.bar/scripts/hanko")
+  assert.equal(Pa.local("qs:///home/a/my%20dots/hanko"), "/home/a/my dots/hanko")
+  assert.equal(Pa.local("/already/a/path"), "/already/a/path")
+  assert.equal(Pa.local(undefined), "")
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

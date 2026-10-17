@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../core/Settings.js" as Settings
+import "../core/Paths.js" as Paths
 
 // Kaze 風 for the settings page: the switches in ~/.config/hanko/kaze.json
 // (read by the desk's plugins; written at once, with its own Undo), whether
@@ -14,7 +15,7 @@ Singleton {
 
   readonly property string configHome: Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")
   readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")
-  readonly property string cli: String(Qt.resolvedUrl("../scripts/hanko")).replace(/^file:\/\//, "")
+  readonly property string cli: Paths.local(Qt.resolvedUrl("../scripts/hanko"))
 
   // Read while the settings window is open.
   property bool wanted: false

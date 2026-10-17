@@ -20,16 +20,22 @@ Item {
   id: root
 
   property string backgroundPath: ""
+  property string videoPosterPath: ""
   property int backgroundVersion: 0
   property bool fingerprintConfigured: false
+  property bool fingerprintUnavailable: false
   property bool authenticatingPassword: false
   property string failureMessage: ""
   property int failedAttempts: 0
   property bool inputEnabled: true
   property bool loadBackground: true
+  property bool displaysBlank: false
+  property bool powerSaverActive: false
   property string passwordText: ""
   property bool syncingPasswordText: false
 
+  // A video wallpaper is drawn from the still the service cut from it.
+  readonly property string picturePath: Util.isVideoPath(backgroundPath) ? videoPosterPath : backgroundPath
   readonly property bool showPasswordCursor: inputEnabled && !authenticatingPassword && failureMessage.length === 0
   readonly property bool errorState: failureMessage.length > 0
   // 1 at 1080 px tall.
@@ -77,7 +83,7 @@ Item {
   }
   onSubmitPassword: function(password) {
     if (root.inputEnabled)
-      cutNote.setText(JSON.stringify({ at: Date.now(), backgroundPath: root.backgroundPath, backgroundVersion: root.backgroundVersion,
+      cutNote.setText(JSON.stringify({ at: Date.now(), backgroundPath: root.picturePath, backgroundVersion: root.backgroundVersion,
         fingerprint: root.fingerprintConfigured }))
   }
   onErrorStateChanged: if (errorState) cutNote.setText("{}")
@@ -86,7 +92,7 @@ Item {
   Standoff {
     id: picture
     anchors.fill: parent
-    backgroundPath: root.backgroundPath
+    backgroundPath: root.picturePath
     backgroundVersion: root.backgroundVersion
     loadBackground: root.loadBackground
     count: passwordInput.text.length

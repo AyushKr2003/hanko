@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Kaze: Settings › Kaze › Desk works again. The shell loads a plugin outside its config folder from `qs:///…` URLs, so the switch ran `qs:///…/scripts/hanko` and nothing happened (Sumi's switch, Kaze's sounds and the printed wallpaper's printer had the same fault); `core/Paths.js` now turns either kind of URL into a path. `hanko desk on` also asks again until the shell knows each new surface (hanko.desk was enabled before the rescan finished, so it never started and was handed back), the lock clone is back in step with Omarchy's new lock service, and `hanko doctor` reads the active bar and the CJK fonts correctly again.
 - Kaze: Settings › Kaze has an OSD card switch: the sheet of paper under volume and brightness, on (as before) or off for the bare line; `"osdCard": "off"` in kaze.json does the same.
 - Kaze: the menu's Apps (Super+Alt+Space) was empty under hanko.menu: Omarchy hands a third-party menu a shell facade without its app library. The clone now keeps its own copy of Omarchy's AppLibrary for that case, so every app is listed and launches again.
 - Kaze: in the menu, the chosen row's second line (an app's place, a shortcut) and its count now read in paper on the ink plate; they had vanished into it.

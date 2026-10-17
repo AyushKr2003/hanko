@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "Oto.js" as OtoJs
+import "Paths.js" as Paths
 
 // Oto 音: plays Kaze's six sounds (core/Oto.js decides which and how loud;
 // assets/sounds holds them) with PipeWire's pw-play. Silent unless
@@ -31,7 +32,7 @@ QtObject {
     try { doc = JSON.parse(_kaze.text() || "{}") } catch (e) { doc = {} }
     var p = OtoJs.play(event, doc, _sumi.text().length > 0)
     if (!p) return
-    var file = String(Qt.resolvedUrl("../assets/sounds/" + p.file + ".ogg")).replace(/^file:\/\//, "")
+    var file = Paths.local(Qt.resolvedUrl("../assets/sounds/" + p.file + ".ogg"))
     Quickshell.execDetached(["pw-play", "--volume", String(p.volume), file])
   }
 }

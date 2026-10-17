@@ -10,6 +10,7 @@ import Quickshell.Hyprland
 import Quickshell.Services.UPower
 import "core/InkMath.js" as InkMath
 import "core/Print.js" as Print
+import "core/Paths.js" as Paths
 import "core/Wind.js" as Wind
 import "core/Weather.js" as Weather
 import "core/Iai.js" as Iai
@@ -38,7 +39,7 @@ Item {
   readonly property string configHome: Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")
   readonly property string cacheHome: Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")
   readonly property string printDir: cacheHome + "/hanko/prints"
-  readonly property string printer: String(Qt.resolvedUrl("bin/hanko-print")).replace(/^file:\/\//, "")
+  readonly property string printer: Paths.local(Qt.resolvedUrl("bin/hanko-print"))
   property var kaze: ({})
   readonly property string mode: Print.wallpaperMode(kaze)
   // The picture asked for, before printing (currentBackground is the print).
