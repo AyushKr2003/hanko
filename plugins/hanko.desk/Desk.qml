@@ -7,6 +7,7 @@ import "core"
 import "core/Iai.js" as Iai
 import "core/Sweep.js" as Sweep
 import "core/Kaisei.js" as Kaisei
+import "core/Taiji.js" as Taiji
 
 // Kaze 風, the desk (docs/kaze): the parts of Hanko's look that belong to
 // the whole desk rather than the bar, so they run whichever bar is in use.
@@ -25,7 +26,8 @@ import "core/Kaisei.js" as Kaisei
 //   Taiji 対峙, the cut: when a password goes to be checked, hanko.lock's
 //   view leaves a note; the desk lays the lock's own picture (core/
 //   Standoff.qml) under the lock, and the moment the session unlocks, cuts
-//   it along the diagonal and folds the halves away into the desk.
+//   it along the diagonal and rolls the halves away from it, fold over fold
+//   (core/Taiji.js holds the timeline).
 //
 //   Kaisei 回生: when the shell comes back from a crash (a fresh quickshell
 //   core dump, core/Kaisei.js), a small tab says so at the top right for a
@@ -208,8 +210,11 @@ Item {
   // strips parallel to it, from the cut out to the far corner. Fold 1 turns
   // the strip at the cut over its outer crease, out of the screen toward you,
   // onto the next; fold 2 turns those two over the next crease; fold 3 turns
-  // all of it over the last, past the corner and off the screen. A strip
-  // facing away shows the back of the sheet; turning, it darkens.
+  // all of it over the last, past the corner and off the screen. The folds
+  // overlap, so the half rolls rather than steps. A strip facing away shows
+  // the back of the sheet; turning edge-on, either face darkens alike, so
+  // nothing jumps as it passes over; a flap coming down over a strip shades
+  // it first.
   component CutStrip: Item {
     id: strip
     required property Item picture
@@ -219,6 +224,8 @@ Item {
     required property real screenHeight
     // its whole turn, the folds it rides on included (degrees)
     required property real turned
+    // the shadow of the flap above it (0..1)
+    property real shade: 0
     readonly property real lean: Math.abs(Math.sin(turned * Math.PI / 180))
     readonly property bool back: Math.cos(turned * Math.PI / 180) < 0
     clip: true
@@ -233,16 +240,29 @@ Item {
       x: 0; y: strip.picY - strip.y
       width: strip.screenWidth; height: strip.screenHeight
       transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
-      color: strip.back ? Ink.paper2 : "black"
-      opacity: strip.back ? 1 : 0.5 * strip.lean
+      visible: strip.back
+      color: Ink.paper2
     }
     Rectangle {
-      visible: strip.back
       x: 0; y: strip.picY - strip.y
       width: strip.screenWidth; height: strip.screenHeight
       transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
       color: "black"
-      opacity: 0.4 * strip.lean
+      opacity: Math.min(0.7, 0.55 * strip.lean + (strip.back ? 0 : 0.3 * strip.shade))
+    }
+  }
+  // Where a strip lay, the desk under it, shaded by the flap lifting off
+  // it: darkest at the crease, where the flap still touches, gone at the
+  // cut; strongest edge-on, none once the flap is down.
+  component CutShadow: Rectangle {
+    required property bool above
+    required property real fold
+    x: 0
+    opacity: 0.4 * Math.sin(Math.PI * Math.min(1, fold))
+    visible: opacity > 0.005
+    gradient: Gradient {
+      GradientStop { position: 0; color: Qt.rgba(0, 0, 0, above ? 1 : 0) }
+      GradientStop { position: 1; color: Qt.rgba(0, 0, 0, above ? 0 : 1) }
     }
   }
   component CutHalf: Item {
@@ -266,20 +286,31 @@ Item {
     readonly property real picY: above ? big - screenHeight : -screenHeight
     // out of the screen, toward you, on either side
     readonly property real toward: above ? 180 : -180
-    readonly property real eye: hyp * 1.5
+    // near enough that a lifting flap swells toward you, as paper does
+    readonly property real eye: hyp * 1.1
+    // Qt draws in order, not by depth: once a fold passes edge-on, the
+    // strip it turns is nearer than the flaps folded onto its face, so it
+    // is drawn over them (else the first strip's picture shows through).
+    readonly property real over1: Math.sin(Math.PI * Math.min(1, fold1))
+    readonly property real over2: Math.sin(Math.PI * Math.min(1, fold2))
     width: big; height: big
     transformOrigin: above ? Item.BottomLeft : Item.TopLeft
     rotation: deg
+    CutShadow { above: half.above; fold: half.fold3; y: half.bandAt(3); width: half.hyp; height: half.band }
     Item {
       anchors.fill: parent
       transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(3); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold3; distanceToPlane: half.eye }
       // a pixel over the next strip, so no seam shows between them
-      CutStrip { x: 0; y: half.bandAt(3) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * half.fold3 }
+      CutStrip { z: half.fold3 > 0.5 ? 2 : 0; x: 0; y: half.bandAt(3) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * half.fold3; shade: half.over2 }
+      CutShadow { z: 1; above: half.above; fold: half.fold2; y: half.bandAt(2); width: half.hyp; height: half.band }
       Item {
+        z: 1
         anchors.fill: parent
         transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(2); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold2; distanceToPlane: half.eye }
-        CutStrip { x: 0; y: half.bandAt(2) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * (half.fold2 + half.fold3) }
+        CutStrip { z: half.fold2 > 0.5 ? 2 : 0; x: 0; y: half.bandAt(2) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * (half.fold2 + half.fold3); shade: half.over1 }
+        CutShadow { z: 1; above: half.above; fold: half.fold1; y: half.bandAt(1); width: half.hyp; height: half.band }
         Item {
+          z: 1
           anchors.fill: parent
           transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(1); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold1; distanceToPlane: half.eye }
           CutStrip { x: 0; y: half.bandAt(1) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * (half.fold1 + half.fold2 + half.fold3) }
@@ -383,14 +414,17 @@ Item {
           hyp: cutLayer.hyp; deg: cutLayer.deg; big: cutLayer.big; reach: cutLayer.reach
           fold1: root.cutFold1; fold2: root.cutFold2; fold3: root.cutFold3
         }
-        // The cut itself: a hairline from corner to corner.
-        Rectangle {
+        // The cut itself: a hairline from corner to corner, lit at once in
+        // a faint glow of its own, fading as the halves lift.
+        Item {
           visible: root.cutFlash > 0
+          opacity: root.cutFlash
           x: 0; y: cutLayer.height
-          width: cutLayer.hyp; height: 2
+          width: cutLayer.hyp; height: 0
           transformOrigin: Item.TopLeft
           rotation: cutLayer.deg
-          color: Ink.bone
+          Rectangle { y: -4; width: parent.width; height: 10; color: Ink.bone; opacity: 0.18 }
+          Rectangle { y: 0; width: parent.width; height: 2; color: Qt.tint(Ink.bone, Qt.rgba(1, 1, 1, 0.55)) }
         }
       }
 
@@ -476,11 +510,13 @@ Item {
   // "" nothing; "armed" laid under the lock, waiting; "cutting" parting.
   property string cutPhase: ""
   property var cutNote: ({})
-  property real cutFlash: 0
-  // the three folds of each half, 0 flat to 1 turned over
-  property real cutFold1: 0
-  property real cutFold2: 0
-  property real cutFold3: 0
+  // how far into the cut (ms, 0 to Taiji.CUT_MS); the hairline and the
+  // three folds of each half (0 flat to 1 turned over) follow from it
+  property real cutMs: 0
+  readonly property real cutFlash: cutPhase === "cutting" ? Taiji.cutFlash(cutMs) : 0
+  readonly property real cutFold1: Taiji.cutFold(1, cutMs)
+  readonly property real cutFold2: Taiji.cutFold(2, cutMs)
+  readonly property real cutFold3: Taiji.cutFold(3, cutMs)
   // The note must exist before it can be watched.
   Process {
     running: true
@@ -502,10 +538,8 @@ Item {
   }
   function armCut(n) {
     root.cutNote = n
-    root.cutFold1 = 0
-    root.cutFold2 = 0
-    root.cutFold3 = 0
-    root.cutFlash = 0
+    cutAnim.stop()
+    root.cutMs = 0
     root.cutPhase = "armed"
     cutTimeout.restart()
     lockPoll.restart()
@@ -542,24 +576,8 @@ Item {
   }
   SequentialAnimation {
     id: cutAnim
-    // the cut: a hairline across, for a frame and 70 ms
-    PropertyAction { target: root; property: "cutFlash"; value: 1 }
-    PauseAnimation { duration: 16 + Iai.BEATS.kiri.ms }
-    PropertyAction { target: root; property: "cutFlash"; value: 0 }
-    // then the halves fold out from it, a crease at a time: each fold on
-    // the shake-off's curve over a sheath's length, the next starting a
-    // draw's length after
-    ParallelAnimation {
-      NumberAnimation { target: root; property: "cutFold1"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("chiburi") }
-      SequentialAnimation {
-        PauseAnimation { duration: Iai.BEATS.nuki.ms }
-        NumberAnimation { target: root; property: "cutFold2"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("chiburi") }
-      }
-      SequentialAnimation {
-        PauseAnimation { duration: Iai.BEATS.nuki.ms * 2 }
-        NumberAnimation { target: root; property: "cutFold3"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("chiburi") }
-      }
-    }
+    // one even clock; Taiji.js shapes the hairline and each fold from it
+    NumberAnimation { target: root; property: "cutMs"; from: 0; to: Taiji.CUT_MS; duration: Taiji.CUT_MS; easing.type: Easing.Linear }
     ScriptAction { script: { root.cutPhase = ""; cutFile.setText("{}") } }
   }
 

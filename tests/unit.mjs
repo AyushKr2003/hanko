@@ -43,7 +43,7 @@ const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "
 const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX", "ripple", "puffAfter", "rippleUniforms"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot"])
-const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence"])
+const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence", "CUT_MS", "CUT_FOLDS", "cutFlash", "cutFold"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const Pa = load("core/Paths.js", ["local"])
 const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
@@ -2128,6 +2128,18 @@ test("taiji: the hint says what the lock is doing; red only after a wrong passwo
   assert.equal(Tj.hint({ fingerprint: true }).text, "Type to unlock · or touch the reader")
   assert.equal(Tj.hint({ count: 9 }).text, "9 characters · Enter to cut")
   assert.equal(Tj.hint({ count: 1 }).text, "1 character · Enter to cut")
+  // the unlock cut: the hairline at once, then faded; the folds overlap,
+  // move only forward, and are all turned by the end
+  assert.equal(Tj.cutFlash(0), 1)
+  assert.equal(Tj.cutFlash(Tj.CUT_MS), 0)
+  for (let k = 1; k <= 3; k++) {
+    assert.equal(Tj.cutFold(k, 0), 0)
+    assert.equal(Tj.cutFold(k, Tj.CUT_MS), 1)
+    let last = 0
+    for (let ms = 0; ms <= Tj.CUT_MS; ms += 10) { const f = Tj.cutFold(k, ms); assert.ok(f >= last - 1e-9); last = f }
+  }
+  for (let k = 1; k < 3; k++) assert.ok(Tj.CUT_FOLDS[k].at < Tj.CUT_FOLDS[k - 1].at + Tj.CUT_FOLDS[k - 1].ms)
+  assert.ok(Tj.CUT_FOLDS[2].at + Tj.CUT_FOLDS[2].ms <= Tj.CUT_MS)
   assert.deepEqual(Tj.hint({ failure: "x", attempts: 2 }), { text: "Not that one · 2", red: true })
   assert.equal(Tj.hint({ authenticating: true, failure: "x" }).text, "Checking…")
   assert.equal(Tj.dayLine(new Date(2026, 9, 14)), "Wednesday · 14 October")
