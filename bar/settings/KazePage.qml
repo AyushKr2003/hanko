@@ -7,8 +7,9 @@ import "../../core/Wind.js" as Wind
 // Settings › Kaze 風 (docs/kaze, mockup 14): the desk beyond the bar, one
 // card per switch, each a small picture of what it does over its words. The
 // desk itself and Sumi run the `hanko` CLI; motion is style.json's; the rest
-// are kaze.json's, kept at once (Undo puts them back). Turning the desk on or
-// off restarts the shell, so that one asks for a second click.
+// are kaze.json's, kept at once (Undo puts them back). Turning the desk on
+// can restart the shell (when its parts are new), so On asks for a second
+// click; Off never does, and goes at once.
 Column {
   id: root
 
@@ -34,9 +35,10 @@ Column {
   readonly property real gap: Type.px(10)
   readonly property real cardWidth: (width - (columns - 1) * gap) / columns
 
-  // The desk's on/off waiting for its second click ("on" | "off" | "").
+  // The desk's On waiting for its second click ("on" | ""); long enough to
+  // read the warning before it lapses.
   property string armed: ""
-  Timer { id: disarm; interval: 5000; onTriggered: root.armed = "" }
+  Timer { id: disarm; interval: 10000; onTriggered: root.armed = "" }
 
   function value(key) {
     if (key === "desk") return desk ? "on" : "off"
@@ -47,7 +49,7 @@ Column {
   function pick(key, v) {
     if (v === value(key)) { if (key === "desk") armed = ""; return }
     if (key === "desk") {
-      if (armed !== v) { armed = v; disarm.restart(); return }
+      if (v === "on" && armed !== v) { armed = v; disarm.restart(); return }
       armed = ""
       deskPicked(v === "on")
     }
@@ -152,7 +154,7 @@ Column {
               elide: Text.ElideRight
               readonly property bool warn: card.key === "desk" && root.armed !== ""
               text: card.key === root.busy ? "Working…"
-                : warn ? "Restarts the shell; this window closes. Click " + (root.armed === "on" ? "On" : "Off") + " again."
+                : warn ? "May restart the shell and close this window. Click On again."
                 : card.modelData.line
               color: warn ? Ink.seal : Ink.inkMuted
               font.family: Type.text

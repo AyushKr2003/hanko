@@ -61,11 +61,13 @@ Singleton {
   }
   function forget() { history = [] }
 
-  // `hanko desk on|off` restarts the shell when its plugins change (this
-  // window closes with it), so it runs detached and outlives the shell.
+  // `hanko desk on` restarts the shell when its plugins change (this window
+  // closes with it), so it runs detached and outlives the shell. What it
+  // says goes to the state folder's desk.log, to read when it didn't take.
   function setDesk(on) {
     busy = "desk"
-    Quickshell.execDetached(["sh", "-c", "\"$0\" desk " + (on ? "on" : "off") + " >/dev/null 2>&1", cli])
+    Quickshell.execDetached(["sh", "-c", "mkdir -p \"$1\" && \"$0\" desk " + (on ? "on" : "off") + " >\"$1/desk.log\" 2>&1",
+      cli, stateHome + "/hanko"])
     _settle.restart()
   }
   function setSumi(on) {
