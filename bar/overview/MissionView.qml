@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Effects
 import "../../core"
 import "../../core/Mission.js" as M
 import "../../core/Spaces.js" as Spaces
@@ -29,6 +30,9 @@ Item {
   property int topInset: 0
   property int bottomInset: 0
   property Component snapshot: null
+  // file:// wallpaper the spread lies on, blurred and dimmed (as
+  // omarchy-overview's mission control does); "" lays it on plain paper.
+  property string wallpaper: ""
   // The search, as OverviewWindow keeps it.
   property string query: ""
   property var results: []
@@ -191,14 +195,49 @@ Item {
     dragging = false; dragAddress = ""; dragKey = ""; dragTile = ""; swapProgress = 0
   }
 
-  // ------------------------------------------------ the sheet
+  // ------------------------------------------------ the backdrop
+  // The desk stepped back: an opaque paper base (nothing behind shows
+  // through), the wallpaper over it blurred, a touch desaturated and
+  // settling in as it opens, then dimmed with the paper so the ink reads.
   // A click on it (not on a window, a cell or the search) dismisses.
-  Rectangle {
+  Item {
+    id: backdrop
     y: root.topInset
     width: parent.width
     height: parent.height - root.topInset - root.bottomInset
-    color: Ink.alpha(Ink.paper, 0.94)
     opacity: root.reveal
+    clip: true
+    readonly property bool pictured: wall.status === Image.Ready
+
+    Rectangle { anchors.fill: parent; color: Ink.paper }
+    Image {
+      id: wall
+      anchors.fill: parent
+      visible: false
+      source: root.wallpaper
+      fillMode: Image.PreserveAspectCrop
+      asynchronous: true
+      // The link is repointed on a theme switch; never serve the old one.
+      cache: false
+      sourceSize.width: Math.round(root.width / 2)
+    }
+    MultiEffect {
+      anchors.fill: parent
+      visible: backdrop.pictured
+      source: wall
+      blurEnabled: true
+      blur: 1.0
+      blurMax: 64
+      blurMultiplier: 2.5
+      saturation: -0.15
+      // Oversized so the blur's soft edges sit off screen.
+      scale: 1.18 - 0.06 * root.reveal
+    }
+    Rectangle {
+      anchors.fill: parent
+      visible: backdrop.pictured
+      color: Ink.alpha(Ink.paper, 0.5)
+    }
     MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons; onClicked: root.dismissed() }
   }
 

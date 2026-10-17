@@ -11,7 +11,7 @@ import "../../../bar/overview"
 // The workspace overview over a desk with the bar on top. render.py passes
 // `params`: { theme, now, spaces (Hypr.spacesFor() rows with `all`),
 //   overview: { layout, active, selected, aspect, screen, width, height, rows, columns, fold,
-//               query, result, region, index, apps, menu } }
+//               query, result, region, index, apps, menu, wallpaper } }
 Rectangle {
   id: sheet
   readonly property var p: JSON.parse(params)
@@ -70,6 +70,7 @@ Rectangle {
     activeId: sheet.o.active || 1
     aspect: sheet.o.aspect || 0.5625
     screenName: sheet.o.screen || "DP-1"
+    wallpaper: sheet.o.wallpaper || ""
     query: sheet.o.query || ""
     results: M.find(sheet.o.query || "", { spaces: sheet.p.spaces, apps: sheet.o.apps || [], menu: sheet.o.menu || [] })
     resultIndex: sheet.o.result || 0

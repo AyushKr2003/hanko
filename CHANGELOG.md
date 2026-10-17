@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Overview (Spread): it now lies on your wallpaper, blurred and dimmed, as omarchy-overview does, so the windows behind the overview no longer show through. Without a wallpaper it lies on plain paper.
 - Overview: a third layout, Spread 見開 (`overview: mission`), ported from the omarchy-overview plugin's mission control and printed in Hanko's paper and ink. The live workspace's windows zoom out of their places and lie side by side at the largest size that fits, with their names set under them; a strip of this screen's workspaces runs along the top with their folios and a + for a new one. Type to search windows, apps, Omarchy menu actions and sums. Arrows choose (along the strip they switch), Tab hops between the strip and the windows, Enter goes, Delete closes a window; drag a window onto a space to move it, onto + for a new space, or hold it over another window until the red rule fills to swap them. Pick it in Settings › Overview or with `hanko style set overview mission`.
 - Overview (Pages): switching workspace no longer blinks the windows' live pictures (the pages stay put and only their contents change), and no longer flashes each window's app name in large italic while its live picture comes back.
 - Overview: the framed overview (Shōji's washi pages in lattice frames) is gone; the overview is Pages or Busy spaces. A style.json that says `"overview": "framed"` opens Pages, and the Shōji preset leaves your overview alone.

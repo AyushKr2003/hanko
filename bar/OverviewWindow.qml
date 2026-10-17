@@ -249,6 +249,7 @@ PanelWindow {
     activeId: win.activeId
     aspect: Hypr.aspectFor(win.screenName)
     screenName: win.screenName
+    wallpaper: "file://" + Quickshell.env("HOME") + "/.local/state/omarchy/current/background"
     // Kept through the close, so the windows zoom home with their pictures.
     snapshot: win.visible && win.mission ? snapshotComponent : null
     query: win.query
