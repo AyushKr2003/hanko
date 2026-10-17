@@ -76,13 +76,9 @@ Item {
     return /h/.test(f.replace(/HH?/g, "")) || /ap/i.test(f) ? "h:mm AP" : "HH:mm"
   }
   readonly property string omarchyClockFormat: {
-    var layout = barConfig && barConfig.layout ? barConfig.layout : {}
-    var sections = ["left", "center", "right"]
-    for (var s = 0; s < sections.length; s++) {
-      var list = Array.isArray(layout[sections[s]]) ? layout[sections[s]] : []
-      for (var i = 0; i < list.length; i++)
-        if (list[i] && list[i].id === "omarchy.clock" && list[i].format) return String(list[i].format)
-    }
+    var list = Hosted.entries(barConfig)
+    for (var i = 0; i < list.length; i++)
+      if (list[i] && list[i].id === "omarchy.clock" && list[i].format) return String(list[i].format)
     return "HH:mm"
   }
 

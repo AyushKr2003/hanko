@@ -435,6 +435,7 @@ test("Elsewhen zones: parsed from Omarchy's bar layout, seeded when unset", () =
   const cfg = { layout: { right: [{ id: "omarchy.clock" }, { id: "omarchy.elsewhen", zones: "Home|America/New_York" }] } }
   assert.deepEqual(Tm.zonesFromBarConfig(cfg), [{ label: "Home", id: "America/New_York" }])
   assert.equal(Tm.zonesFromBarConfig({}).length, 3)
+  assert.deepEqual(Tm.zonesFromBarConfig({ layout: { centerEnd: [{ id: "omarchy.elsewhen", zones: "Tokyo|Asia/Tokyo" }] } }), [{ label: "Tokyo", id: "Asia/Tokyo" }])
   assert.deepEqual(Tm.probeCommand(["Asia/Tokyo"]).slice(-1), ["Asia/Tokyo"])
 })
 
@@ -704,6 +705,12 @@ test("hosting: Omarchy's default layout, minus what Hanko draws itself", () => {
   assert.deepEqual(H.own(cfg), { tray: true, indicators: true, keyboard: true, mic: false })
   assert.deepEqual(H.own({}), { tray: true, indicators: true, keyboard: true, mic: false })
   assert.deepEqual(H.own({ layout: { right: [{ id: "omarchy.microphone" }] } }), { tray: false, indicators: false, keyboard: false, mic: true })
+  // centerBegin and centerEnd count, in reading order; the tray drawer doesn't.
+  const centred = { layout: { centerBegin: [{ id: "omarchy.indicators" }], center: [{ id: "omarchy.clock" }],
+    centerEnd: [{ id: "omarchy.weather" }], right: [{ id: "omarchy.tray" }], tray: [{ id: "omarchy.microphone" }] } }
+  assert.deepEqual(H.own(centred), { tray: true, indicators: true, keyboard: false, mic: false })
+  assert.deepEqual(H.entries(centred).map(e => e.id), ["omarchy.indicators", "omarchy.clock", "omarchy.weather", "omarchy.tray"])
+  assert.deepEqual(H.hosted(centred, all, () => false).map(h => h.id), ["omarchy.weather"])
   assert.equal(H.idOfCell(H.cell("omarchy.weather")), "omarchy.weather")
   assert.equal(H.idOfCell("volume"), "")
 })
