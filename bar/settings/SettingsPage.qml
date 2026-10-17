@@ -542,6 +542,13 @@ Rectangle {
       onPartPicked: function(key) { root.partPicked(key) }
       onTried: function(key, value) { root.trial = { key: key, value: value } }
       onUntried: root.trial = null
+      // Scrolled past the galley's top, it grows upward: what lies below
+      // stays put, so a specimen tried at the foot of the page doesn't slide
+      // out from under the pointer (and untry, and try again).
+      onGalleyResized: function(galley, by) {
+        if (galley.mapToItem(scroller.contentItem, 0, 0).y < scroller.contentY)
+          scroller.contentY = Math.max(0, scroller.contentY + by)
+      }
     }
   }
   Component {

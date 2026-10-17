@@ -26,14 +26,23 @@ Column {
   signal partPicked(string key)
   signal tried(string key, string value)
   signal untried()
+  // The galley grew or shrank (a specimen tried on, a window resized), by
+  // `by` px, so the page can hold what's under the pointer still.
+  signal galleyResized(Item galley, real by)
 
   width: parent ? parent.width : 0
 
   Item { width: 1; height: Type.px(18) }
 
   Galley {
+    id: galley
+    property real held: 0
     width: parent.width
     height: implicitHeight
+    onHeightChanged: {
+      if (held > 0) root.galleyResized(galley, height - held)
+      held = height
+    }
     style: root.proofStyle
     barData: root.barData
     part: root.part
