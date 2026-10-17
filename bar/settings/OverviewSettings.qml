@@ -1,9 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
-import "../../core/Style.js" as S
 import "../../core/Overview.js" as O
-import "../../core/Skin.js" as Sk
 import "../overview"
 
 // Settings › Overview 一覧 (docs/settings-kosei): the workspace overview
@@ -41,7 +39,7 @@ Column {
   spacing: 0
   topPadding: Type.px(22)
 
-  SectionLabel { jp: "一覧"; text: "The overview · 3 ways · drawn with your spaces" }
+  SectionLabel { jp: "一覧"; text: "The overview · 2 ways · drawn with your spaces" }
   Item { width: 1; height: Type.px(12) }
 
   Grid {
@@ -52,8 +50,7 @@ Column {
     Repeater {
       model: [
         { key: "grid", jp: "頁", name: "Pages", line: "Printed pages in a grid, the live one inverted" },
-        { key: "dynamic", jp: "動", name: "Busy spaces", line: "Ryoku's: only the spaces in use, and a + for a new one" },
-        { key: "framed", jp: "障子", name: "Framed", line: "Shōji's washi pages in lattice frames" }
+        { key: "dynamic", jp: "動", name: "Busy spaces", line: "Ryoku's: only the spaces in use, and a + for a new one" }
       ]
       Tile {
         id: way
@@ -82,7 +79,6 @@ Column {
           Component {
             id: pagesView
             OverviewView {
-              skin: way.modelData.key === "framed" ? Sk.fromStyle(S.resolve({ preset: "Shōji" })) : ({})
               pages: O.pages(root.spaces, root.activeId, O.ROWS, O.COLUMNS, true)
               columns: O.COLUMNS
               aspect: 0.5625

@@ -374,7 +374,7 @@ var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
-var OVERVIEW_OPTIONS = ["grid", "dynamic", "framed"]
+var OVERVIEW_OPTIONS = ["grid", "dynamic"]
 // Shōji's touches, beside the twenty-six (Style.js SEASONS, NUMERALS, GRAINS).
 var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
                      hours: ["auto", "24h", "12h"] }

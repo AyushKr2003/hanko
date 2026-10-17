@@ -1311,9 +1311,10 @@ test("overview layout is a setting beside the counted ones", () => {
   assert.equal(d.overview, "dynamic")
   assert.equal(S.withPreset(d, "Quiet").overview, "dynamic")
   assert.equal(S.withSetting({}, "overview", "tiles"), null)
-  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic", "framed"])
-  // Shōji's framed pages are a choice on any bar.
-  assert.equal(S.resolve(S.withSetting({}, "overview", "framed")).overview, "framed")
+  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic"])
+  // Shōji's framed pages are gone: a file that names them opens the grid.
+  assert.equal(S.withSetting({}, "overview", "framed"), null)
+  assert.equal(S.resolve({ overview: "framed" }).overview, "grid")
 })
 
 // ── Shōji, folded into Hanko: the preset, the migration, its skin ──────
@@ -1325,7 +1326,7 @@ test("shōji: a saved Shōji design loads as the Shōji preset; touches become s
   assert.equal(n.preset, "Shōji"); assert.deepEqual(n.edits, { height: 36 })      // only what Shōji's bar honoured
   assert.equal(n.design, undefined); assert.equal(n.borrow, undefined); assert.equal(n.touches, undefined)
   assert.deepEqual([n.season, n.numerals, n.grain], ["english", "arabic", "fine"])
-  assert.equal(n.overview, "framed")
+  assert.equal(n.overview, "grid")
   assert.equal(n.sheetStyles.inbox, "tanzaku"); assert.equal(n.sheetStyles.sound, "shoji")  // a hand you picked stays
   // A monitor in the other design gets that preset's values, under its own.
   assert.equal(n.monitors["DP-2"].seal, "stamp"); assert.equal(n.monitors["DP-2"].height, 32)
@@ -1340,13 +1341,13 @@ test("shōji: a saved Shōji design loads as the Shōji preset; touches become s
   assert.equal(S.withSetting(n, "clock", "mono").preset, "Shōji")
 })
 
-test("the Shōji preset: picked by any spelling, it puts every sheet in the Shōji hand and frames the overview", () => {
+test("the Shōji preset: picked by any spelling, it puts every sheet in the Shōji hand", () => {
   for (const name of ["Shōji", "shoji", "SHOJI", "shōji"]) assert.equal(S.withPreset({}, name).preset, "Shōji")
   const d = S.withPreset({ sheetStyles: { time: "kasumi" }, overview: "dynamic" }, "shoji")
   assert.ok(S.SHEET_KEYS.every(k => S.resolve(d).sheetStyles[k] === "shoji"))
-  assert.equal(d.overview, "framed")
+  assert.equal(d.overview, "dynamic")   // the overview is yours
   // Kept afterwards, like anything beside the settings.
-  const h = S.withPreset(d, "Hanko"); assert.equal(h.overview, "framed"); assert.equal(h.sheetStyles.time, "shoji")
+  const h = S.withPreset(d, "Hanko"); assert.equal(h.sheetStyles.time, "shoji")
   const st = S.resolve(d)
   assert.deepEqual([st.seal, st.spaces, st.status, st.notif, st.surface, st.pointer, st.panels], ["carved", "brush", "ink", "seal", "washi", "brush", "sheets"])
 })
@@ -1385,10 +1386,11 @@ test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () 
   assert.ok(Br.enso(0, 20).length > 0 && Br.enso(2, 20).length > 0)   // clamped, never empty
 })
 
-test("kata K6: the second wave: Shōji's rows, framed pages and brush-stroke hold", () => {
+test("kata K6: the second wave: Shōji's rows and brush-stroke hold", () => {
   const s = Sk.fromStyle(S.resolve({}))
-  assert.deepEqual([s.notify, s.overview, s.hold], ["rows", "framed", "stroke"])
-  assert.equal(Object.keys(Sk.SHOJI).length, 15)
+  assert.deepEqual([s.notify, s.hold], ["rows", "stroke"])
+  assert.equal(s.overview, undefined)
+  assert.equal(Object.keys(Sk.SHOJI).length, 14)
 })
 test("panel opacity: 30..100 or the design's own, kept beside the edits and through presets", () => {
   assert.equal(S.normalize({}).panelOpacity, undefined)

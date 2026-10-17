@@ -125,7 +125,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 - ✅ **The Hanko preset is the user's bar**: a stamped seal, kanji pages, named kanji indicators shown only when on, flush sheets and no scroll guides, as the user runs it.
 - ✅ **Shōji into Hanko** (asked for: "Shōji should be part of Hanko, not a separate design; tweak Hanko to get the Shōji design, and all its sheets move to the sheets in Hanko"). One design, Hanko; Shōji becomes a sheet hand, new option values and a preset. Steps, each its own commit (plan in HANDOFF §10):
   - ✅ **S1 · Shōji as a sheet hand**: the panels move to `bar/sheets/`, a new Shōji Display panel, the rail kept, a seventh card on Settings › Sheets.
-  - ✅ **S2 · The framed overview** as `overview: framed`, on any bar.
+  - ✅ **S2 · The framed overview** as `overview: framed`, on any bar. (Removed 2026-10-17 at the user's request: the overview is grid or dynamic.)
   - ✅ **S3 · Shōji's bar parts as Hanko options** (`surface: washi`, `seal: carved`, `notif: seal`, `spaces: brush`, `title: ink`, `clock: season`, `media: ink`, `status: ink`, `pointer`, and global `season`, `numerals`, `grain`).
   - ✅ **S4 · The Shōji preset and migration** (a saved `design: shoji` loads as the preset).
   - ✅ **S5 · Removal**: the design switch, `KataBar`, Settings › Design, `core/Kata.js`, `hanko design` and `hanko touch`; Panel opacity moved to Settings › Sheets.

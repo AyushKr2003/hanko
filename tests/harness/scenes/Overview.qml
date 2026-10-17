@@ -3,7 +3,6 @@ import qs.Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../core/Overview.js" as O
-import "../../../core/Skin.js" as Sk
 import "../../../bar"
 import "../../../bar/settings"
 import "../../../bar/overview"
@@ -11,12 +10,10 @@ import "../../../bar/overview"
 // The workspace overview over a desk with the bar on top. render.py passes
 // `params`: { theme, now, spaces (Hypr.spacesFor() rows with `all`),
 //   overview: { layout, active, selected, aspect, screen, width, height, rows, columns, fold } }
-// overview.layout "framed" prints Shōji's framed pages.
 Rectangle {
   id: sheet
   readonly property var p: JSON.parse(params)
   readonly property var o: p.overview || {}
-  readonly property var skin: o.layout === "framed" ? Sk.fromStyle(S.resolve({})) : ({})
   readonly property Item bar: classicBar
   width: o.width || 1600
   height: o.height || 900
@@ -64,7 +61,6 @@ Rectangle {
     visible: sheet.o.layout !== "dynamic"
     anchors.fill: parent
     topInset: sheet.bar.height
-    skin: sheet.skin
     pages: O.pages(sheet.p.spaces, sheet.o.active || 1, sheet.o.rows || O.ROWS, sheet.o.columns || O.COLUMNS, sheet.o.fold !== false)
     columns: sheet.o.columns || O.COLUMNS
     aspect: sheet.o.aspect || 0.5625

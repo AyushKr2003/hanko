@@ -125,11 +125,10 @@ var PRESET_GROUPS = [
   { title: "Right-side studies", jp: "右", names: ["Ma", "Shizuka", "Suji", "Inrō"] }
 ]
 // What picking a preset also sets beside the twenty-six (only Shōji does:
-// its panels are a sheet hand and its overview is framed). Kept afterwards,
-// like anything beside the settings.
+// its panels are a sheet hand). Kept afterwards, like anything beside the
+// settings.
 var PRESET_BESIDE = {
-  "Shōji": { sheetStyles: { time: "shoji", sound: "shoji", network: "shoji", bluetooth: "shoji", power: "shoji", display: "shoji", inbox: "shoji" },
-             overview: "framed" }
+  "Shōji": { sheetStyles: { time: "shoji", sound: "shoji", network: "shoji", bluetooth: "shoji", power: "shoji", display: "shoji", inbox: "shoji" } }
 }
 // A preset name as typed: any case, with or without the macron (shoji).
 function foldName(name) { return String(name || "").toLowerCase().replace(/ō/g, "o") }
@@ -195,10 +194,10 @@ function normalizeOpacity(o) {
 
 // Which workspace overview 一覧 opens, beside the twenty-six like motion:
 // grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
-// overview (only workspaces with windows, a + for a new one, desktops);
-// framed, the same grid as Shōji prints it: each page washi in a lattice
-// frame, its kanji numeral in the head (the `overview` part, bar/parts).
-var OVERVIEWS = ["grid", "dynamic", "framed"]
+// overview (only workspaces with windows, a + for a new one, desktops).
+// A file that still says `framed` (Shōji's lattice pages, since removed)
+// opens the grid.
+var OVERVIEWS = ["grid", "dynamic"]
 var DEFAULT_OVERVIEW = "grid"
 
 function normalizeOverview(o) {
@@ -375,8 +374,8 @@ function withoutKata(obj) {
 // A file from before Shōji was folded into Hanko may name a design. Shōji
 // (`design: "shoji"`) loads as the Shōji preset: its bar honoured only the
 // height, position and Bluetooth of the Typeset edits, so only those are
-// kept; every sheet not given a hand of its own takes the Shōji hand, and
-// the overview is framed, as that design drew them. A monitor that named
+// kept; every sheet not given a hand of its own takes the Shōji hand, as
+// that design drew them. A monitor that named
 // the other design than the file's gets that preset's values as overrides.
 // `borrow` is dropped.
 var SHOJI_KEPT_EDITS = ["height", "position", "bluetooth"]
@@ -442,7 +441,6 @@ function fromShojiDesign(doc) {
   var all = PRESET_BESIDE["Shōji"].sheetStyles
   for (var k in all) if (!ss[k] || ss[k] === "ledger") ss[k] = all[k]
   next.sheetStyles = ss
-  next.overview = "framed"
   return next
 }
 
