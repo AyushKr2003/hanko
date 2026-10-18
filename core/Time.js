@@ -121,7 +121,7 @@ function parseZones(spec) {
 // cities Elsewhen seeds when it has none.
 function zonesFromBarConfig(barConfig) {
   var layout = barConfig && barConfig.layout ? barConfig.layout : {}
-  var sections = ["left", "center", "right"]
+  var sections = ["left", "centerBegin", "center", "centerEnd", "right"]  // as core/Hosted.js SECTIONS
   for (var s = 0; s < sections.length; s++) {
     var list = Array.isArray(layout[sections[s]]) ? layout[sections[s]] : []
     for (var i = 0; i < list.length; i++) {

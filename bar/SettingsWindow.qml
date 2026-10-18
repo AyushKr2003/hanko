@@ -35,12 +35,22 @@ FloatingWindow {
 
   // The Profile plate's machine facts, read while the window is open.
   Binding { target: Machine; property: "wanted"; value: win.visible }
+  Binding { target: Kaze; property: "wanted"; value: win.visible }
+
+  // Kaze's changes have their own history; on its page Undo walks back
+  // whichever was made last.
+  readonly property bool kazeLast: page === "kaze" && Kaze.history.length > 0
+    && (!Typeset.history.length || Kaze.lastAt >= Typeset._lastAt)
+  function undo() { if (kazeLast) Kaze.undo(); else Typeset.undo() }
 
   // Colour 色 lists Omarchy's themes: read them when the page opens.
   onPageChanged: if (page === "colour") Leaf.loadThemes()
 
   // Closed by the window manager (Super+W, the close button).
-  onVisibleChanged: if (!visible && bar.settingsOpen) bar.closeSettings()
+  onVisibleChanged: {
+    if (!visible) Kaze.forget()
+    if (!visible && bar.settingsOpen) bar.closeSettings()
+  }
 
   Item {
     id: keys
@@ -48,7 +58,7 @@ FloatingWindow {
     focus: true
 
     Keys.onPressed: function(event) {
-      if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { Typeset.undo(); event.accepted = true }
+      if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { win.undo(); event.accepted = true }
       // Typesetting: Left/Right walk the proof's parts, 1-9 and 0 open one.
       else if (win.page === "typesetting" && (event.key === Qt.Key_Left || event.key === Qt.Key_Right) && !(event.modifiers & Qt.ControlModifier)) {
         settings.stepPart(event.key === Qt.Key_Right ? 1 : -1); event.accepted = true
@@ -69,14 +79,22 @@ FloatingWindow {
       anchors.fill: parent
       draft: Typeset.live
       saved: Typeset.doc
-      undoCount: Typeset.history.length
+      undoCount: Typeset.history.length + (win.page === "kaze" ? Kaze.history.length : 0)
       page: win.page
       query: win.query
       themes: Leaf.themes
       theme: Leaf.theme
       onThemePicked: function(slug) { Leaf.setTheme(slug) }
       onCopyText: function(text) { Quickshell.execDetached(["wl-copy", text]) }
-      lastChange: Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
+      kaze: Kaze.doc
+      kazeDesk: Kaze.desk
+      kazeSumi: Kaze.sumi
+      kazeBusy: Kaze.busy
+      onKazePicked: function(key, value) { Kaze.set(key, value) }
+      onDeskPicked: function(on) { Kaze.setDesk(on) }
+      onSumiPicked: function(on) { Kaze.setSumi(on) }
+      onWindSpeedPicked: function(speed) { Kaze.set("windSpeed", speed, "windSpeed") }
+      lastChange: win.kazeLast ? Kaze.lastChange : Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
       screens: Quickshell.screens.map(function(s) { return { name: s.name, x: s.x, y: s.y, width: s.width, height: s.height } })
       monitors: Quickshell.screens.map(function(s) { return s.name })
       machine: Machine.info
@@ -133,7 +151,7 @@ FloatingWindow {
       }
       onPresetPicked: function(name) { Typeset.draftPreset(name); Typeset.keep() }
       onResetToPreset: { Typeset.draftReset(); Typeset.keep() }
-      onUndo: Typeset.undo()
+      onUndo: win.undo()
       onPagePicked: function(key) { win.page = key }
       // A search shows Typesetting, unless you are searching Widgets or Presets.
       onQueryEdited: function(text) { win.query = text; if (text !== "" && win.page !== "parts" && win.page !== "presets") win.page = "typesetting" }

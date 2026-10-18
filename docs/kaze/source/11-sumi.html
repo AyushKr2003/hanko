@@ -1,0 +1,75 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3400">
+<title>Kaze 11 · Sumi</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .apps { position: absolute; inset: 0; }
+  .sumi .apps { filter: grayscale(1) contrast(1.22) brightness(.93); }
+  .grain { position: absolute; inset: 0; pointer-events: none; opacity: .16; mix-blend-mode: overlay; z-index: 8; }
+  .vig { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.42)); z-index: 8; pointer-events: none; }
+  .img { position: absolute; inset: 0; background: url(img/orig-3-red-fuji.webp) center/cover; }
+  .web { position: absolute; inset: 0; background: #f5f6f8; font-family: system-ui, sans-serif; color: #1d2433; }
+  .web .nav { height: 64px; background: #2a5bd7; display: flex; align-items: center; padding: 0 28px; color: #fff; font-size: 20px; font-weight: 600; gap: 30px; }
+  .web .nav span { font-weight: 400; opacity: .85; font-size: 16px; }
+  .web .hero { margin: 40px 28px; padding: 36px; background: linear-gradient(135deg, #ffd26a, #ff8a5b); border-radius: 14px; font-size: 38px; font-weight: 700; }
+  .web .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 0 28px; }
+  .web .cards div { height: 180px; border-radius: 12px; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.08); padding: 22px; font-size: 18px; }
+  .web .btn { display: inline-block; margin-top: 18px; padding: 10px 18px; background: #18a058; color: #fff; border-radius: 8px; font-size: 15px; }
+  .web .lnk { color: #2a5bd7; }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  .topstrip { position: relative; height: 130px; background: var(--paper); overflow: hidden; }
+  .topstrip .wp { position: absolute; inset: 0; background: url(img/2-great-wave-dark.webp) center top/1920px auto; opacity: .5; }
+  .riding .bar > *:not(.rodrule) { opacity: 0; }
+  .riding .bar { background: transparent; }
+  .half .bar > *:not(.rodrule) { opacity: .35; }
+  table { width: 100%; border-collapse: collapse; font-size: 16px; }
+  td, th { text-align: left; padding: 13px 14px; border-top: 1px solid var(--line); color: var(--inkMuted); vertical-align: top; }
+  th { font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); text-transform: uppercase; font-weight: 400; }
+  td.n { color: var(--ink); white-space: nowrap; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>11 / 14 · focus</div>
+  <div class="head"><span class="no">11</span><h1>Sumi, ink only</h1><span class="kj">墨</span></div>
+  <p class="lede">Tsushima's Kurosawa Mode wasn't a black-and-white filter. The team re-tuned the film curve, the lighting and the wind together. Sumi is that for the desk: the whole screen in ink, with a film curve and paper grain, letters held back, the bar stepping away and the wind a little stronger. Only the seal red survives, so "you" and "now" still show.</p>
+
+  <div class="sec"><b>Before and after</b><i></i>a photo and a web page · the theme's red is kept, nothing else</div>
+  <div class="grid g2" id="ba"></div>
+
+  <div class="sec"><b>What changes together</b><i></i>one switch · Super+Ctrl+S, the seal's menu, or a schedule</div>
+  <table>
+    <tr><th>Part</th><th>Normal</th><th>Sumi 墨</th></tr>
+    <tr><td class="n">Screen</td><td>As it is</td><td>hanko-sumi.glsl: luminance through a film S-curve, a fixed paper grain, a soft vignette; pixels within a small distance of the theme's red keep their colour.</td></tr>
+    <tr><td class="n">Letters</td><td>Hang from the bar</td><td>Held (Omarchy's do-not-disturb). The bar's 文 stamp still counts them.</td></tr>
+    <tr><td class="n">Bar</td><td>Shown</td><td>Riding mode: only the rule and the now-notch.</td></tr>
+    <tr><td class="n">Wind</td><td>The real wind</td><td>The real wind × 1.3, as Sucker Punch strengthened it for Kurosawa Mode.</td></tr>
+    <tr><td class="n">Sound</td><td>As set</td><td>Half volume; no letter sounds.</td></tr>
+  </table>
+
+  <div class="sec"><b>Riding mode</b><i></i>Yōtei hides the HUD while you ride · the bar recedes to its rule while you work</div>
+  <div class="grid" style="gap:14px" id="ride"></div>
+
+  <div class="notes">
+    <div><b>Static grain<i>粒</i></b>Animated grain needs Hyprland's damage tracking off, which costs power. The grain is a fixed texture; the screen stays still unless something moves.</div>
+    <div><b>Screenshots stay true<i>写</i></b>To verify: whether Hyprland's screenshots capture before or after the screen shader. If after, the screenshot tool turns Sumi off for the capture unless you ask for it.</div>
+    <div><b>When the bar recedes<i>騎</i></b>After 20 s of typing in one window (setting), or for a fullscreen window. It comes back when the pointer touches the top edge, on Super, or when something red happens. Windows keep their place, so nothing reflows: the print shows where the bar was.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+const grainSvg = `<svg class="grain" width="1920" height="1080"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`
+function deskApps(sumi) {
+  return `<div class="screen${sumi ? ' sumi' : ''}"><div class="apps"><div class="wp" style="background-image:url(img/2-great-wave-dark.webp);opacity:.6"></div>
+    <div class="win" style="left:12px;top:52px;width:940px;height:1016px"><div class="img"></div></div>
+    <div class="win focus" style="left:958px;top:52px;width:950px;height:1016px"><div class="web"><div class="nav">Ramen Atlas <span>Tokyo</span><span>Kyoto</span><span>Sapporo</span></div>
+      <div class="hero">Ten bowls worth the train</div><div class="cards"><div>Menya Kaijin<br><span class="lnk">menu and hours</span><br><span class="btn">Book a seat</span></div><div>Fuunji<br><span class="lnk">menu and hours</span><br><span class="btn">Book a seat</span></div></div></div></div></div>
+    ${sumi ? grainSvg + '<div class="vig"></div>' : ''}${bar({ app: 'Chromium', title: 'Ramen Atlas', urgent: 4 })}</div>`
+}
+document.getElementById('ba').innerHTML = [[false, 'Normal', 'A colour photo and a colourful web page.'], [true, 'Sumi 墨', 'The same, in ink. The seal and the urgent dot on 伍 stay red; nothing else does.']].map(([s, t, d]) =>
+  `<div class="frame"><div class="fit">${deskApps(s)}</div><div class="cap"><div class="t">${t}</div><div class="d">${d}</div></div></div>`).join('')
+
+document.getElementById('ride').innerHTML = [['', 'Working · the bar as always'], ['half', 'After 20 s of typing · fading over 600 ms'], ['riding', 'Riding · only the rule and the now-notch'], ['', 'Pointer at the top edge · drawn back (nuki)']].map(([c, l]) =>
+  `<div class="frame"><div class="topstrip ${c}"><div class="wp"></div><div style="position:absolute;inset:0;width:1920px;transform:scale(${1776 / 1920});transform-origin:0 0">${bar({})}<div class="win focus" style="left:12px;top:52px;width:1896px;height:300px"><div class="term"><span class="p">鑑</span> <span class="d">~/code/</span>hanko <span class="f">dev</span>  <span class="m">›</span> nvim core/Iai.qml</div></div></div><span class="tag" style="right:18px;bottom:12px;background:var(--paper);padding:2px 8px">${l}</span></div></div>`).join('')
+ready()
+</script>
+</body></html>

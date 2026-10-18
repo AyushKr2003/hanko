@@ -1,0 +1,29 @@
+#!/bin/bash
+# hanko-greet · Kaze 風, Dōgu 道具: a new terminal's greeting in one line of
+# facts instead of a logo (docs/kaze, mockup 12): the seal, the time of day
+# in English and Japanese, the date, the microseason (from core/Leaf.js's 72
+# kō) and how many letters are waiting. Put it where fastfetch was, e.g. in
+# fish's config: `hanko-greet` (it lives in hanko.bar/scripts/).
+set -uo pipefail
+here="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+
+h=$(date +%-H)
+if (( h < 5 )); then en="Good night" jp="お休み"
+elif (( h < 11 )); then en="Good morning" jp="お早う"
+elif (( h < 17 )); then en="Good afternoon" jp="今日は"
+else en="Good evening" jp="今晩は"; fi
+
+# The microseason: the last of the 72 kō to have started (before the first
+# one of the year, in early January, the last one of the year before).
+read -r ko koen < <(perl -ne 'while (/\["([^"]+)", "([^"]+)", (\d+), (\d+)\]/g) { print "$3\t$4\t$1\t$2\n" }' "$here/core/Leaf.js" 2>/dev/null \
+  | sort -t$'\t' -k1,1n -k2,2n \
+  | awk -F'\t' -v m="$(date +%-m)" -v d="$(date +%-d)" '{ last = $3 " " $4 } ($1 < m || ($1 == m && $2 <= d)) { pick = $3 " " $4 } END { print (pick != "" ? pick : last) }')
+
+letters=$(ls "${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/notifications/" 2>/dev/null | grep -c '\.json$' || true)
+
+red=$'\e[31m' dim=$'\e[2m' bold=$'\e[1m' off=$'\e[0m'
+printf '\n %s鑑%s  %s%s%s  %s%s%s\n' "$red" "$off" "$bold" "$en" "$off" "$dim" "$jp" "$off"
+line="$(date '+%a %-d %b' | tr '[:lower:]' '[:upper:]')"
+[[ -n $ko ]] && line+=" · $ko ${koen^^}"
+(( letters > 0 )) && line+=" · $letters LETTER$( (( letters > 1 )) && echo S)"
+printf '    %s%s%s\n\n' "$dim" "$line" "$off"

@@ -134,7 +134,7 @@ PanelWindow {
 
   // Under Inkan a sheet prints once the seal has pressed (the stamp's
   // 140 ms), and lifts off when it closes: rising 6 px away from the seal
-  // as it fades (220 ms), instead of un-printing.
+  // as it fades (the sheath, 240 ms), instead of un-printing.
   property bool printed: false
   property real lift: 0
   Timer { id: printAfter; interval: Motion.ms(Motion.stamp); onTriggered: win.printed = win.open }
@@ -144,8 +144,9 @@ PanelWindow {
     property: "lift"
     from: 0
     to: 1
-    duration: Motion.ms(Motion.rollUp)
-    easing.type: Easing.OutCubic
+    duration: Motion.ms(Motion.noto)
+    easing.type: Easing.BezierSpline
+    easing.bezierCurve: Motion.notoCurve
   }
 
   onOpenChanged: {
@@ -185,10 +186,10 @@ PanelWindow {
     }
   }
 
-  // Long enough for the 180 ms un-print, or the 220 ms lift-off.
+  // Long enough for the sheath (Motion.noto, 240 ms), un-print or lift-off.
   Timer {
     id: closing
-    interval: 220
+    interval: Motion.noto
     onTriggered: win.printed = false
   }
 

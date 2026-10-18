@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "hanko.desk",
+  "name": "Hanko desk",
+  "version": "0.1.0",
+  "author": "AyushKr2003",
+  "license": "MIT",
+  "description": "Kaze, the whole desk in Hanko's paper and ink: light runs once round a window when it takes focus, and a window that needs you is framed in red. Works with any bar.",
+  "kinds": [
+    "service"
+  ],
+  "entryPoints": {
+    "service": "Desk.qml"
+  }
+}

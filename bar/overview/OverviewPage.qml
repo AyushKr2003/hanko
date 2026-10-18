@@ -25,11 +25,6 @@ Item {
   // harness, which draws the ink fallback).
   property Component snapshot: null
   property bool hot: false
-  // A Kata design's skin (docs/kata); empty for Classic. Its `overview` part
-  // prints the page: framed (Shōji: washi in a lattice frame, the kanji
-  // numeral over the figure).
-  property var skin: ({})
-  readonly property bool framed: skin.overview === "framed"
 
   readonly property bool live: page.active
   readonly property var windows: O.visibleWindows(page.windows)
@@ -41,7 +36,6 @@ Item {
   // so it reads on the dark desk: 55% under the live page, 25% under the
   // rest, the shadow's color and color_inactive.
   RectangularShadow {
-    visible: !root.framed
     anchors.fill: parent
     radius: sheet.radius
     offset.x: Type.px(3)
@@ -55,7 +49,7 @@ Item {
   Rectangle {
     id: sheet
     anchors.fill: parent
-    color: root.framed ? Ink.alpha(Ink.paper, root.skin.opacity || 0.86) : Ink.paper
+    color: Ink.paper
     border.width: root.hot || root.live ? 2 : 1
     border.color: root.hot ? Ink.seal : root.live ? Ink.ink : root.hovered ? Ink.lineStrong : Ink.line
     clip: true
@@ -68,7 +62,6 @@ Item {
 
       Rectangle {
         id: folio
-        visible: !root.framed
         x: Type.px(8)
         anchors.verticalCenter: parent.verticalCenter
         width: folioRow.width + Type.px(root.live ? 14 : 4)
@@ -99,32 +92,7 @@ Item {
           }
         }
       }
-      // Kata folios
-      Row {
-        visible: root.framed
-        x: Type.px(10)
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: Type.px(6)
-        Text {
-          anchors.verticalCenter: parent.verticalCenter
-          text: Spaces.numeral(root.page.id)
-          color: root.live ? Ink.ink : Ink.ink2
-          font.family: Type.jpSerif; font.pixelSize: Type.px(18)
-        }
-        Text {
-          readonly property int size: Type.px(12)
-          anchors.verticalCenter: parent.verticalCenter
-          text: String(root.page.id)
-          color: root.live ? Ink.ink : root.page.count > 0 ? Ink.ink2 : Ink.ink3
-          font.family: Type.display
-          font.pixelSize: size
-          font.weight: Font.Normal
-          font.variableAxes: Type.axes(size, 380)
-          font.features: { "tnum": 1, "lnum": 1 }
-        }
-      }
       Text {
-        visible: !root.framed
         anchors.left: folio.right
         anchors.leftMargin: Type.px(8)
         anchors.verticalCenter: parent.verticalCenter
@@ -146,26 +114,23 @@ Item {
         }
         Text {
           anchors.verticalCenter: parent.verticalCenter
-          text: !root.framed
-            ? (root.page.count > 0 ? root.page.count + (root.page.count === 1 ? " WINDOW" : " WINDOWS") : root.live ? "HERE" : "")
-            : (root.page.count > 0 ? root.page.count + (root.page.count === 1 ? " window" : " windows") : root.live ? "here" : "")
+          text: root.page.count > 0 ? root.page.count + (root.page.count === 1 ? " WINDOW" : " WINDOWS") : root.live ? "HERE" : ""
           color: Ink.inkMuted
-          font.family: root.framed ? Type.text : Type.mono
+          font.family: Type.mono
           font.pixelSize: Type.tag
           font.letterSpacing: Type.trackTag
         }
       }
-      Rectangle { visible: !root.framed; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Ink.line }
+      Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Ink.line }
     }
 
     // ---------------------------------------------- the screen
     Item {
       id: screen
-      readonly property int inset: root.framed ? Type.px(8) : 0
-      x: 1 + inset
+      x: 1
       y: root.headH
-      width: parent.width - 2 - 2 * inset
-      height: parent.height - root.headH - 1 - inset
+      width: parent.width - 2
+      height: parent.height - root.headH - 1
 
       // Bare page: its kanji, large and faint, like an unprinted leaf.
       Text {
@@ -187,11 +152,14 @@ Item {
         onClicked: if (root.view) root.view.pagePicked(root.page.id)
       }
 
+      // Counted, not the array: a new array (every workspace switch) would
+      // rebuild each tile, and its snapshot blinked while it captured again.
       Repeater {
-        model: root.windows
+        model: root.windows.length
         Rectangle {
           id: tile
-          required property var modelData
+          required property int index
+          readonly property var modelData: root.windows[tile.index] || ({ x: 0, y: 0, w: 0, h: 0, name: "", address: "", focused: false, floating: false })
           readonly property bool lifted: tileArea.containsMouse
           readonly property bool carried: !!root.view && root.view.dragging && root.view.dragAddress === tile.modelData.address
           x: Math.round(tile.modelData.x * screen.width) + 2
@@ -205,8 +173,11 @@ Item {
           opacity: tile.carried ? 0.25 : 1
           clip: true
 
-          // Ink fallback: the app's name large and faint until a snapshot lands.
+          // Ink fallback: the app's name large and faint, only where there
+          // are no snapshots (Settings, the harness). Live, it flashed on
+          // every workspace switch while the snapshots came back.
           Text {
+            visible: root.snapshot === null
             anchors.centerIn: parent
             width: parent.width - Type.px(8)
             horizontalAlignment: Text.AlignHCenter
@@ -221,11 +192,17 @@ Item {
           }
 
           Loader {
+            id: snap
             anchors.fill: parent
             anchors.margins: 1
             active: root.snapshot !== null
             sourceComponent: root.snapshot
-            onLoaded: item.address = tile.modelData.address
+          }
+          Binding {
+            when: snap.item !== null
+            target: snap.item
+            property: "address"
+            value: tile.modelData.address
           }
 
           // The name tab, paper on the snapshot.
@@ -282,13 +259,5 @@ Item {
         }
       }
     }
-
-    // framed: the lattice frame of a shōji, a hairline inside the edge with its joints
-    Rectangle {
-      visible: root.framed
-      x: Type.px(4); y: Type.px(4); width: parent.width - 2 * x; height: parent.height - 2 * y
-      color: "transparent"; border.width: 1; border.color: Ink.kLine
-    }
-    Rectangle { visible: root.framed; x: Type.px(4); y: root.headH; width: parent.width - Type.px(8); height: 1; color: Ink.kLine }
   }
 }

@@ -48,6 +48,11 @@ Rectangle {
   // How many changes Undo can walk back, and the last one in words.
   property int undoCount: 0
   property string lastChange: ""
+  // Kaze 風: kaze.json, and whether the desk and Sumi are on (services/Kaze.qml).
+  property var kaze: ({})
+  property bool kazeDesk: false
+  property bool kazeSumi: false
+  property string kazeBusy: ""
 
   signal settingPicked(string key, string value)
   signal presetPicked(string name)
@@ -62,6 +67,10 @@ Rectangle {
   signal themePicked(string slug)
   // Keys: a binding to put on the clipboard.
   signal copyText(string text)
+  signal kazePicked(string key, string value)
+  signal deskPicked(bool on)
+  signal sumiPicked(bool on)
+  signal windSpeedPicked(int speed)
   // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
   // core/Profile.js BLOCKS.
   signal profileTextEdited(string field, string value)
@@ -467,7 +476,7 @@ Rectangle {
           sourceComponent: ({
             typesetting: typesettingPage, presets: presetsPage, parts: partsPage,
             colour: colourPage, screens: screensPage, sheets: sheetsPage,
-            scroll: scrollPage, overview: overviewPage, motion: motionPage, keys: keysPage
+            scroll: scrollPage, overview: overviewPage, motion: motionPage, keys: keysPage, kaze: kazePage
           })[root.pageKey] || typesettingPage
         }
       }
@@ -533,6 +542,14 @@ Rectangle {
       onPartPicked: function(key) { root.partPicked(key) }
       onTried: function(key, value) { root.trial = { key: key, value: value } }
       onUntried: root.trial = null
+      // While trying, or scrolled past its top, the galley grows upward:
+      // what lies below stays put, so a specimen tried at the foot of the
+      // page doesn't slide out from under the pointer (and untry, and try
+      // again).
+      onGalleyResized: function(galley, by, held) {
+        if (held || galley.mapToItem(scroller.contentItem, 0, 0).y < scroller.contentY)
+          scroller.contentY = Math.max(0, scroller.contentY + by)
+      }
     }
   }
   Component {
@@ -618,6 +635,22 @@ Rectangle {
       barData: root.barData
       compact: root.compact
       onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+    }
+  }
+  Component {
+    id: kazePage
+    KazePage {
+      draft: root.draft
+      kaze: root.kaze
+      desk: root.kazeDesk
+      sumi: root.kazeSumi
+      busy: root.kazeBusy
+      compact: root.compact
+      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
+      onKazePicked: function(key, value) { root.kazePicked(key, value) }
+      onDeskPicked: function(on) { root.deskPicked(on) }
+      onSumiPicked: function(on) { root.sumiPicked(on) }
+      onWindSpeedPicked: function(speed) { root.windSpeedPicked(speed) }
     }
   }
   Component {

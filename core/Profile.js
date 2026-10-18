@@ -141,6 +141,7 @@ var PROJECTS = [
   { name: "Space Grotesk", group: "type", by: "Florian Karsten", role: "values and language", url: "https://github.com/floriankarsten/space-grotesk" },
   { name: "Yuji Boku", group: "type", by: "Kinuta Font Factory", role: "every kanji, brushed", url: "https://github.com/Kinutafontfactory/Yuji" },
   { name: "Noto CJK", group: "type", by: "Google · Adobe", role: "the kanji the brush doesn't have", url: "https://github.com/notofonts/noto-cjk" },
+  { name: "KanjiVG", group: "type", by: "Ulrich Apel", role: "the stroke order the ceremonies write in (CC BY-SA 3.0)", url: "https://kanjivg.tagaini.net" },
   { name: "Qt Quick", group: "system", by: "The Qt Company", role: "every pixel", url: "https://www.qt.io" },
   { name: "PipeWire · BlueZ · NetworkManager", group: "system", by: "", role: "sound, Bluetooth, network", url: "" }
 ]

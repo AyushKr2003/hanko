@@ -20,10 +20,13 @@
 --   * Corners are square, like the flush bar. With `float: inset` the bar
 --     floats 8 px off the screen with 7 px corners, and the windows take the
 --     same gap and radius so their edges line up with its frame.
---   * Windows lie on the desk like sheets of paper: a short, tight black
---     shadow falling down and right, darker under the focused sheet, which
---     sits a little higher. Pick another below (`shadow_style`).
---   * Motion follows core/Motion.qml: no springs, nothing over 320 ms, and
+--   * Windows are plain sheets (Kaze's Ha 刃, docs/kaze mockup 05): square
+--     corners, a 1 px edge, no shadow, no blur. Unfocused sheets dim a touch.
+--     When focus moves the new edge inks up from faint over 600 ms while
+--     plugins/hanko.desk runs light once round it. A paper shadow is still
+--     there if you want one (`shadow_style`).
+--   * Motion is Iai 居合 (core/Iai.js), the beats every Kaze surface moves
+--     on: windows draw in and sheathe out, nothing springs, and
 --     `motion: still` in style.json cuts window animations too.
 
 local home = os.getenv("HOME")
@@ -85,12 +88,12 @@ local inset = float == "inset"
 -- ── Frame ───────────────────────────────────────────────────────────────────
 
 -- How windows sit on the page:
+--   "none"   hairlines only, as the bar itself (default: Kaze has no shadows)
 --   "paper"  a short soft black shadow, down and right; the focused sheet
---            lifts higher and darker (default)
+--            lifts higher and darker
 --   "print"  a hard black offset, no blur, focused window only
 --   "seal"   the same hard offset in seal red ("you"), focused window only
---   "none"   hairlines only, as the bar itself
-local shadow_style = "paper"
+local shadow_style = "none"
 
 local black = "000000"
 local shadows = {
@@ -105,9 +108,10 @@ local shadow = shadows[shadow_style]
 
 hl.config({
   general = {
-    -- 8 px from the screen, as the inset bar floats; 8 px between windows.
-    gaps_out = 8,
-    gaps_in = 4,
+    -- Ma between sheets: 12 px from the screen (8 px with the inset bar,
+    -- which floats 8 px off it), 6 px either side of a gap.
+    gaps_out = inset and 8 or 12,
+    gaps_in = 6,
     border_size = 1,
 
     col = {
@@ -118,6 +122,13 @@ hl.config({
 
   decoration = {
     rounding = inset and 7 or 0,
+
+    -- Barely there: the focused sheet reads as the lit one.
+    dim_inactive = true,
+    dim_strength = 0.06,
+
+    -- Paper is opaque: no glass.
+    blur = { enabled = false },
 
     shadow = shadow and {
       enabled = true,
@@ -162,31 +173,86 @@ hl.config({
   },
 })
 
--- ── Motion (core/Motion.qml) ────────────────────────────────────────────────
--- Hyprland's speed is in deciseconds, so speed = ms / 100.
+-- ── Motion: Iai 居合 (core/Iai.js, docs/kaze §3) ─────────────────────────────
+-- What opens draws, what closes sheathes, nothing springs. Hyprland's speed
+-- is in tenths of a second (speed = ms / 100); tests/unit.mjs checks every
+-- curve and speed here against core/Iai.js.
 
-hl.curve("hankoUnroll", { type = "bezier", points = { { 0.2, 0.9 }, { 0.25, 1 } } })
-hl.curve("hankoInk", { type = "bezier", points = { { 0.4, 0 }, { 0.2, 1 } } })
-hl.curve("hankoPan", { type = "bezier", points = { { 0.16, 1 }, { 0.3, 1 } } })
+-- 構 kamae, ready: 90 ms
+hl.curve("kamae", { type = "bezier", points = { { 0.2, 0 }, { 0, 1 } } })
+-- 抜 nuki, draw: 160 ms, a fast travel and a dead stop, no overshoot
+hl.curve("nuki", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1 } } })
+-- 振 chiburi, shake off: 220 ms
+hl.curve("chiburi", { type = "bezier", points = { { 0.25, 0.1 }, { 0.25, 1 } } })
+-- 納 noto, sheath: 240 ms, slow away, then into the edge
+hl.curve("noto", { type = "bezier", points = { { 0.7, 0 }, { 0.84, 0 } } })
 
 hl.config({ animations = { enabled = not still } })
 
--- A window prints in like a sheet (180 ms) and rolls up quicker than it came.
-hl.animation({ leaf = "windows", enabled = true, speed = 2.6, bezier = "hankoUnroll" })
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 1.8, bezier = "hankoUnroll", style = "popin 96%" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.4, bezier = "hankoInk", style = "popin 96%" })
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 2.6, bezier = "hankoPan" })
-hl.animation({ leaf = "border", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fade", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fadeIn", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.4, bezier = "hankoInk" })
-hl.animation({ leaf = "fadeShadow", enabled = true, speed = 1.4, bezier = "hankoInk" })
--- Workspaces pan like the scroll does between sections (260 ms).
-hl.animation({ leaf = "workspaces", enabled = true, speed = 2.6, bezier = "hankoPan", style = "slide" })
+hl.animation({ leaf = "global", enabled = true, speed = 1.6, bezier = "nuki" })
+-- Windows draw in from the nearest edge and sheathe back into it. No pop-in.
+hl.animation({ leaf = "windows", enabled = true, speed = 1.6, bezier = "nuki" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 1.6, bezier = "nuki", style = "slide" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.4, bezier = "noto", style = "slide" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 1.6, bezier = "nuki" })
+-- The edge inks up from faint as focus arrives, over the focus sweep's
+-- 600 ms (core/Sweep.js), so the light passes and leaves full ink.
+hl.animation({ leaf = "border", enabled = true, speed = 6, bezier = "chiburi" })
+-- Fades settle like a shake-off and leave like a sheath.
+hl.animation({ leaf = "fade", enabled = true, speed = 0.9, bezier = "kamae" })
+hl.animation({ leaf = "fadeIn", enabled = true, speed = 2.2, bezier = "chiburi" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 2.4, bezier = "noto" })
+hl.animation({ leaf = "fadeDim", enabled = true, speed = 0.9, bezier = "kamae" })
+hl.animation({ leaf = "fadeShadow", enabled = true, speed = 0.9, bezier = "kamae" })
+hl.animation({ leaf = "fadeSwitch", enabled = false })
+-- Layer surfaces (launcher, menus, Hanko's sheets) only fade: their own QML
+-- draws and sheathes them, so Hyprland mustn't slide them as well.
+hl.animation({ leaf = "layers", enabled = true, speed = 1.6, bezier = "nuki" })
+hl.animation({ leaf = "layersIn", enabled = true, speed = 1.6, bezier = "nuki", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2.4, bezier = "noto", style = "fade" })
+hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 1.6, bezier = "nuki" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 2.4, bezier = "noto" })
+-- Workspaces roll a short way, like a scroll, not a full-screen swipe.
+hl.animation({ leaf = "workspaces", enabled = true, speed = 2.0, bezier = "nuki", style = "slidefade 8%" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 2.0, bezier = "nuki", style = "slidefadevert 8%" })
+
+-- ── Sumi 墨, ink only (docs/kaze, mockup 11) ────────────────────────────────
+-- While `hanko sumi on` has left its shader in the state folder, the whole
+-- screen is drawn in ink (it overrides any shader you picked; `hanko sumi
+-- off` hands the screen back to yours on the next reload).
+
+local sumi_shader = state_home .. "/hanko/sumi/sumi.glsl"
+if read(sumi_shader) then
+  hl.config({ decoration = { screen_shader = sumi_shader } })
+end
+
+-- ── The brush-tip cursor (hanko cursor on) ────────────────────────────────
+-- Re-applied after your own autostart's setcursor on every reload while the
+-- flag is there; `hanko cursor off` deletes it and your cursor comes back.
+
+local cursor_size = read(state_home .. "/hanko/cursor")
+if cursor_size then
+  cursor_size = tonumber(cursor_size:match("%d+")) or 22
+  hl.exec_cmd("sleep 0.6; hyprctl setcursor Hanko-Brush " .. cursor_size)
+end
 
 -- The overview is already animated by QML; keep Hyprland from sliding its
 -- full-screen layer in as well.
 hl.layer_rule({ match = { namespace = "^hanko-overview$" }, no_anim = true, animation = "none" })
+-- The desk's overlay (the focus sweep, red frames) maps and unmaps with
+-- every sweep: it must appear at once, not fade.
+hl.layer_rule({ match = { namespace = "^hanko-desk$" }, no_anim = true, animation = "none" })
+hl.layer_rule({ match = { namespace = "^hanko-grass$" }, no_anim = true, animation = "none" })
+-- The OSD draws and sheathes itself (Iai); Hyprland mustn't fade it too.
+hl.layer_rule({ match = { namespace = "^hanko-osd$" }, no_anim = true, animation = "none" })
+-- The menu draws open itself; Hyprland mustn't fade it in as well.
+hl.layer_rule({ match = { namespace = "^hanko-menu$" }, no_anim = true, animation = "none" })
+
+-- ── Fumi 文: Super+N opens the newest letter (hanko.notifications) ─────────
+-- Free in Omarchy's own bindings; a no-op when the desk's notifications are off.
+
+hl.unbind("SUPER + N")
+o.bind("SUPER + N", "Hanko: the newest letter", "omarchy-shell -q hankoletters toggle")
 
 -- ── Settings window ─────────────────────────────────────────────────────────
 -- Hanko's settings open as a floating sheet in the middle of the screen,

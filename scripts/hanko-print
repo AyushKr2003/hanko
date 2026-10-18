@@ -1,0 +1,64 @@
+#!/bin/bash
+# hanko-print · Sumizuri 墨摺: print a wallpaper again in the theme's inks.
+#
+#   hanko-print IN OUT PAPER INK [light]
+#   hanko-print --cache DIR IN PAPER INK [light]
+#
+# With --cache the print is kept in DIR under a name made from the picture's
+# real path, its age and the two colours, and its path is printed; a second
+# call with the same picture and theme only prints the path.
+#
+# Crushes IN to five tones between PAPER and INK (hex, #rrggbb) and writes
+# OUT (png). Whatever covers most of the picture becomes the paper: on a dark
+# theme a mostly light picture is negated (a rubbing); with `light` a mostly
+# dark one is. A fixed grain is laid over it. The decisions are core/Print.js
+# (steps, TONES, CLIP); keep the two in step. Exits 0 and writes nothing if
+# OUT already exists. Needs ImageMagick 7 (`magick`), part of Omarchy.
+set -euo pipefail
+
+TONES=5 CLIP=6
+
+if [[ ${1:-} == --cache ]]; then
+  dir="$2" in="$(readlink -f "$3")" paper="$4" ink="$5" light="${6:-}"
+  [[ -f $in ]] || { echo "hanko-print: no such picture: $3" >&2; exit 1; }
+  key="$(printf '%s|%s|%s|%s|%s|%s|%s' "$in" "$(stat -c %Y "$in")" "$paper" "$ink" "$light" "$TONES" "$CLIP" | sha1sum | cut -c1-16)"
+  out="$dir/$key.png"
+  if [[ ! -f $out ]]; then
+    nice -n 10 "$0" "$in" "$out" "$paper" "$ink" $light || exit 1
+  fi
+  printf '%s\n' "$out"
+  exit 0
+fi
+
+in="$1" out="$2" paper="$3" ink="$4" light="${5:-}"
+[[ -f $out ]] && exit 0
+command -v magick >/dev/null 2>&1 || { echo "hanko-print: magick is not installed" >&2; exit 1; }
+[[ -f $in ]] || { echo "hanko-print: no such picture: $in" >&2; exit 1; }
+
+tmp="$(mktemp -d "${TMPDIR:-/tmp}/hanko-print.XXXXXX")"
+trap 'rm -rf "$tmp"' EXIT
+
+# Grey, at most 4K, tones spread to the full range.
+magick "$in" -auto-orient -resize '3840x2160>' -colorspace gray -normalize "$tmp/g.png"
+mean="$(magick "$tmp/g.png" -format '%[fx:mean]' info:)"
+
+negate=""
+if [[ -n $light ]]; then
+  awk -v m="$mean" 'BEGIN { exit !(m < 0.5) }' && negate="-negate"
+  from="$ink" to="$paper"
+else
+  awk -v m="$mean" 'BEGIN { exit !(m > 0.5) }' && negate="-negate"
+  from="$paper" to="$ink"
+fi
+
+magick -size 1x256 "gradient:$from-$to" "$tmp/clut.png"
+w="$(magick identify -format '%w' "$tmp/g.png")" h="$(magick identify -format '%h' "$tmp/g.png")"
+# Paper grain: fixed, a touch softened, light enough to be felt not seen.
+magick -size "${w}x${h}" -seed 7 xc:gray50 +noise Gaussian -colorspace gray -blur 0x0.6 \
+  -evaluate subtract 50% -evaluate multiply 0.05 "$tmp/grain.png"
+
+magick "$tmp/g.png" $negate -level "${CLIP}%,$((100 - CLIP))%" -posterize "$TONES" -blur 0x0.7 \
+  "$tmp/clut.png" -clut "$tmp/grain.png" -compose linear-dodge -composite \
+  -define png:compression-level=6 "$tmp/out.png"
+mkdir -p "$(dirname "$out")"
+mv "$tmp/out.png" "$out"

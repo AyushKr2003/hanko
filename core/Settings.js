@@ -13,7 +13,8 @@ var RAIL = [
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
                                 { key: "scroll", label: "Scroll", jp: "巻" },
                                 { key: "overview", label: "Overview", jp: "一覧" }] },
-  { group: "03 FEEL",   pages: [{ key: "motion", label: "Motion", jp: "動" },
+  { group: "03 FEEL",   pages: [{ key: "kaze", label: "Kaze", jp: "風" },
+                                { key: "motion", label: "Motion", jp: "動" },
                                 { key: "keys", label: "Keys", jp: "鍵" }] },
   { group: "04 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" },
                                 { key: "about", label: "About", jp: "由来" },
@@ -33,6 +34,7 @@ var PAGE_LINES = {
   sheets: "A sheet drops from the cell you click. Pick a sheet, then the hand that draws it; hover a hand to see that sheet in it.",
   scroll: "The handscroll unrolls from the rod with every panel on it. Choose what sits between its sections and what follows Inbox.",
   overview: "The workspace overview: every space at once, its windows where they sit. Pick how it is laid out; each is drawn with your own spaces.",
+  kaze: "The desk beyond the bar: the printed wallpaper, the wind in its grass, sound, and Sumi. Every change is kept as you make it; Undo puts it back.",
   motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, only a new stamp overshoots. The timesheet below is every move Hanko makes; hover a row to play it.",
   keys: "Every key Hanko answers to, where it answers. Hover a key to read what it does; the commands at the foot are for your own Hyprland bindings."
 }
@@ -166,7 +168,7 @@ var CARDS = [
     { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
     { key: "sides", name: "Scroll sides", detail: "Bare paper, or paper curling under" },
     { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both or none" },
-    { key: "overview", name: "Overview", detail: "Printed pages in a grid, Ryoku's busy spaces and a +, or Shōji's washi in lattice frames" },
+    { key: "overview", name: "Overview", detail: "Printed pages in a grid, Ryoku's busy spaces and a +, or the live space's windows spread out with search" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
 
@@ -372,17 +374,22 @@ var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
-var OVERVIEW_OPTIONS = ["grid", "dynamic", "framed"]
+var OVERVIEW_OPTIONS = ["grid", "dynamic", "mission"]
 // Shōji's touches, beside the twenty-six (Style.js SEASONS, NUMERALS, GRAINS).
 var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
                      hours: ["auto", "24h", "12h"] }
 
 // [name, what moves, Motion.qml property for its time]
 var MOTION_ROWS = [
+  ["Ready 構", "Hover or focus inks a thing up one tier; nothing moves", "kamae"],
+  ["Draw 抜", "Anything opens: a held beat, a fast travel, a hard stop", "nuki"],
+  ["Cut 斬", "A commit inverts at once; a hairline flashes and fades", "kiri"],
+  ["Shake off 振", "Values and labels settle in after their plate", "chiburi"],
+  ["Sheath 納", "Anything closes: slow away, into its edge, then the click", "noto"],
   ["Unroll", "The rod drops and the scroll's paper follows it", "unroll"],
   ["Ink", "Section ink arrives after the paper has moved", "ink"],
   ["Pan", "A pan carries on and lands centred on a section", "pan"],
-  ["Print", "A sheet prints top-down from the cell you clicked", "sheetPrint"],
+  ["Print", "A sheet draws down from the cell you clicked", "sheetPrint"],
   ["Plates", "The live page's plate slides to the next one", "slide"],
   ["Values", "A changed reading fades through to the new one", "fade"],
   ["Stamp", "A new notification is pressed down, then settles: the only overshoot", "stamp"],
@@ -394,10 +401,16 @@ var MOTION_ROWS = [
 // cubic bézier (x1, y1, x2, y2), named as the code eases it. `dip` draws a
 // fade (down to a trace, then back) instead of a rise.
 var MOTION_SHEET = [
+  // Iai 居合 (core/Iai.js): the five beats every Kaze surface moves on.
+  { name: "Ready 構", line: "Hover or focus inks a thing up one tier; nothing moves", prop: "kamae", delay: 0, curve: [0.2, 0, 0, 1], ease: "bézier .2 0 0 1" },
+  { name: "Draw 抜", line: "Anything opens: a held beat, a fast travel, a hard stop", prop: "nuki", delayProp: "nukiHold", curve: [0.05, 0.9, 0.1, 1], ease: "bézier .05 .9 .1 1" },
+  { name: "Cut 斬", line: "A commit inverts at once; a hairline flashes and fades", prop: "kiri", delay: 0, curve: [0, 1, 0, 1], ease: "step, then fade" },
+  { name: "Shake off 振", line: "Values and labels settle in after their plate", prop: "chiburi", delayProp: "chiburiDelay", curve: [0.25, 0.1, 0.25, 1], ease: "bézier .25 .1 .25 1" },
+  { name: "Sheath 納", line: "Anything closes: slow away, into its edge, then the click", prop: "noto", delay: 0, curve: [0.7, 0, 0.84, 0], ease: "bézier .7 0 .84 0" },
   { name: "Unroll", line: "The rod drops and the scroll's paper follows it", prop: "unroll", delay: 0, curve: [0.2, 0.9, 0.25, 1], ease: "bézier .2 .9 .25 1" },
   { name: "Ink", line: "Section ink arrives after the paper has moved", prop: "ink", delayProp: "inkDelay", curve: [0.4, 0, 0.2, 1], ease: "bézier .4 0 .2 1" },
   { name: "Pan", line: "A pan carries on and lands centred on a section", prop: "pan", delay: 0, curve: [0.16, 1, 0.3, 1], ease: "bézier .16 1 .3 1" },
-  { name: "Print", line: "A sheet prints top-down from the cell you clicked", prop: "sheetPrint", delay: 0, curve: [0.33, 1, 0.68, 1], ease: "out cubic" },
+  { name: "Print", line: "A sheet draws down from the cell you clicked (the draw, held beat included)", prop: "sheetPrint", delay: 0, curve: [0.05, 0.9, 0.1, 1], ease: "the draw" },
   { name: "Plates", line: "A sliding plate moves to its new place", prop: "slide", delay: 0, curve: [0.33, 1, 0.68, 1], ease: "out cubic" },
   { name: "Values", line: "A changed reading fades to a trace and back", prop: "fade", delay: 0, curve: [0.11, 0, 0.5, 0], ease: "in quad, out quad", dip: true },
   { name: "Stamp", line: "A new letter is pressed down, then settles: the only overshoot", prop: "stamp", delay: 0, curve: [0.3, 1.4, 0.5, 1], ease: "bézier .3 1.4 .5 1" },
@@ -435,7 +448,8 @@ var KEYMAP = [
     { caps: ["0–9"], what: "Go to a space by number" },
     { caps: ["Enter"], what: "Go there" },
     { caps: ["Esc"], what: "Close" },
-    { caps: ["Alt", "Tab"], what: "Busy spaces: the next desktop" }] }
+    { caps: ["Alt", "Tab"], what: "Busy spaces: the next desktop" },
+    { caps: ["Tab"], what: "Mission: the strip or the windows; type to search" }] }
 ]
 
 // Hyprland bindings for what Hanko has no key of its own for (README).
@@ -763,4 +777,75 @@ function matches(row, query, OPTIONS) {
 function pageMatches(page, query) {
   var q = String(query || "").trim().toLowerCase()
   return !q || (page.label + " " + page.jp + " " + page.key).toLowerCase().indexOf(q) >= 0
+}
+
+// Kaze 風 (docs/kaze, settings page): the switches kept in
+// ~/.config/hanko/kaze.json, read by the desk's plugins. The first option of
+// each is its default.
+var KAZE_SWITCHES = [
+  { key: "wallpaper", name: "Print", jp: "摺", line: "Your wallpaper printed again in the theme's paper and ink",
+    options: ["print", "original"], labels: { print: "Print", original: "Original" } },
+  { key: "grass", name: "Grass", jp: "風", line: "Grass at the foot of the print, leaning with the real wind",
+    options: ["grass", "off"], labels: { grass: "Grass", off: "Off" } },
+  { key: "gusts", name: "Gusts", jp: "颯", line: "A gust runs through the grass toward what needs you",
+    options: ["on", "off"], labels: { on: "On", off: "Off" } },
+  { key: "wind", name: "Wind", jp: "嵐", line: "The real wind where you are, always calm, or your own",
+    options: ["weather", "calm", "virtual"], labels: { weather: "Weather", calm: "Calm", virtual: "Virtual" } },
+  { key: "sound", name: "Sound", jp: "音", line: "Six short sounds: clappers, paper, a bell, a sheath's click",
+    options: ["off", "quiet", "on"], labels: { off: "Off", quiet: "Quiet", on: "On" } },
+  { key: "osdCard", name: "OSD card", jp: "台", line: "A sheet of paper under volume and brightness, or bare",
+    options: ["on", "off"], labels: { on: "On", off: "Off" } }
+]
+
+// The option a switch shows for a kaze.json document. `gusts` is a boolean
+// in the file (absent = on); the rest are words.
+function kazeValue(doc, key) {
+  doc = doc || {}
+  var sw = null
+  for (var i = 0; i < KAZE_SWITCHES.length; i++) if (KAZE_SWITCHES[i].key === key) sw = KAZE_SWITCHES[i]
+  if (!sw) return ""
+  if (key === "gusts") return doc.gusts === false ? "off" : "on"
+  return sw.options.indexOf(doc[key]) >= 0 ? doc[key] : sw.options[0]
+}
+
+// A new kaze.json document with one switch set (other keys kept as they are).
+function kazeWith(doc, key, value) {
+  var out = {}
+  for (var k in (doc || {})) out[k] = doc[k]
+  if (key === "gusts") out.gusts = value !== "off"
+  else out[key] = value
+  return out
+}
+
+// The virtual wind's speed (km/h, 0..60, default 15) and side (west: it
+// leans right; east: left), as core/Wind.js settings() reads them.
+var KAZE_WIND_MAX = 60
+function kazeWind(doc) {
+  doc = doc || {}
+  var v = Number(doc.windSpeed)
+  var ok = doc.windSpeed !== undefined && doc.windSpeed !== null && doc.windSpeed !== "" && isFinite(v)
+  return { speed: ok ? Math.max(0, Math.min(KAZE_WIND_MAX, Math.round(v))) : 15, from: doc.windFrom === "east" ? "east" : "west" }
+}
+
+// The action bar's words for a kaze.json change ("Sound · off → quiet").
+function kazeChange(before, after) {
+  for (var i = 0; i < KAZE_SWITCHES.length; i++) {
+    var sw = KAZE_SWITCHES[i], a = kazeValue(before, sw.key), b = kazeValue(after, sw.key)
+    if (a !== b) return sw.name + " · " + a + " → " + b
+  }
+  var wa = kazeWind(before), wb = kazeWind(after)
+  if (wa.speed !== wb.speed) return "Virtual wind · " + wa.speed + " → " + wb.speed + " km/h"
+  if (wa.from !== wb.from) return "Virtual wind · from the " + wb.from
+  return ""
+}
+
+// How many of the desk's switches are on, for the page's eyebrow: the
+// desk itself, motion, Sumi, then each kaze.json switch not at off.
+function kazeOn(doc, desk, still, sumi) {
+  var n = (desk ? 1 : 0) + (still ? 0 : 1) + (sumi ? 1 : 0)
+  for (var i = 0; i < KAZE_SWITCHES.length; i++) {
+    var v = kazeValue(doc, KAZE_SWITCHES[i].key)
+    if (v !== "off" && v !== "original" && v !== "calm") n++
+  }
+  return { on: n, of: KAZE_SWITCHES.length + 3 }
 }

@@ -1,0 +1,54 @@
+#!/bin/bash
+# hanko-kaze-theme · Battō 抜刀: Omarchy's menu and launcher in Kaze's grammar,
+# for whatever theme is current. Writes a marked block into the user-level
+# ~/.config/omarchy/shell.toml (its keys win over every theme's): selection
+# by inversion (a solid ink plate, paper text), a hairline edge, a lighter
+# scrim. Corners are already square (they follow Hyprland's rounding, which
+# style.lua sets to 0). Run by `hanko desk on`, and by a theme-set hook it
+# installs, so it follows `omarchy theme set`.
+#
+#   hanko-kaze-theme          write the block for the current theme
+#   hanko-kaze-theme --remove take the block out again
+set -euo pipefail
+
+FILE="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/shell.toml"
+BEGIN="# >>> hanko kaze (hanko desk off removes this block)"
+END="# <<< hanko kaze"
+
+strip() {
+  [[ -f $FILE ]] || return 0
+  awk -v b="$BEGIN" -v e="$END" '$0 == b { skip = 1; next } $0 == e { skip = 0; next } !skip' "$FILE" > "$FILE.tmp"
+  # drop the blank line the block leaves at the end
+  sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$FILE.tmp"
+  mv "$FILE.tmp" "$FILE"
+}
+
+if [[ ${1:-} == --remove ]]; then strip; exit 0; fi
+
+colors="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/current/theme/colors.toml"
+[[ -f $colors ]] || colors="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/current/theme/colors.toml"
+[[ -f $colors ]] || { echo "hanko-kaze-theme: no colors.toml for the current theme" >&2; exit 1; }
+get() { grep -m1 -E "^\s*$1\s*=" "$colors" | sed -E 's/.*"(#[0-9a-fA-F]{6})".*/\1/'; }
+fg="$(get foreground)" bg="$(get background)"
+[[ $fg == \#* && $bg == \#* ]] || { echo "hanko-kaze-theme: colors.toml has no foreground/background" >&2; exit 1; }
+
+strip
+mkdir -p "$(dirname "$FILE")"
+# A section header must follow anything of the user's that came before.
+{
+  [[ -s $FILE ]] && printf '\n'
+  printf '%s\n' "$BEGIN"
+  printf '[menu]\n'
+  printf 'background                = "%s"\n' "$bg"
+  printf 'background-alpha          = 1.0\n'
+  printf 'text                      = "%s"\n' "$fg"
+  printf 'border                    = "%s"\n' "$fg"
+  printf 'border-alpha              = 0.4\n'
+  printf 'scrim                     = "%s"\n' "$bg"
+  printf 'scrim-alpha               = 0.55\n'
+  printf 'selected-background       = "%s"\n' "$fg"
+  printf 'selected-background-alpha = 1.0\n'
+  printf 'selected-text             = "%s"\n' "$bg"
+  printf 'selected-border-alpha     = 0.0\n'
+  printf '%s\n' "$END"
+} >> "$FILE"

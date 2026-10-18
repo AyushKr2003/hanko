@@ -109,6 +109,18 @@ Singleton {
       Hyprland.dispatch("hl.dsp.focus({ window = " + luaStr("address:" + address) + " })")
   }
 
+  // The window last focused on a workspace (floating ones too), or "".
+  function lastWindowOn(id) {
+    var tops = Hyprland.toplevels.values, best = "", at = 1e9
+    for (var i = 0; i < tops.length; i++) {
+      var d = tops[i].lastIpcObject
+      if (!d || !d.workspace || d.workspace.id !== id || !d.address) continue
+      var f = d.focusHistoryID === undefined ? 1e9 - 1 : d.focusHistoryID
+      if (f < at) { at = f; best = d.address }
+    }
+    return best
+  }
+
   // Read windows and workspaces again now (the overview opening).
   function refresh() { refreshTimer.restart() }
 
@@ -116,6 +128,15 @@ Singleton {
   function moveWindow(address, workspace) {
     if (/^0x[0-9a-fA-F]+$/.test(String(address)) && Number(workspace) > 0)
       Hyprland.dispatch("hl.dsp.window.move({ window = " + luaStr("address:" + address) + ", workspace = " + luaStr(String(workspace)) + ", follow = false })")
+  }
+  // Two windows trade places: in the layout on one workspace, else each
+  // moves to the other's workspace (the mission overview's hold-to-swap).
+  function swapWindows(a, b, spaceA, spaceB) {
+    var ok = /^0x[0-9a-fA-F]+$/
+    if (!ok.test(String(a)) || !ok.test(String(b)) || a === b) return
+    if (spaceA === spaceB)
+      Hyprland.dispatch("hl.dsp.window.swap({ window = " + luaStr("address:" + a) + ", target = " + luaStr("address:" + b) + " })")
+    else { moveWindow(a, spaceB); moveWindow(b, spaceA) }
   }
   function closeWindow(address) {
     if (/^0x[0-9a-fA-F]+$/.test(String(address)))

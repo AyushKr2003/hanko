@@ -24,7 +24,8 @@ Item {
   property int tearX: 0
   property int tearWidth: 0
   property var feed: ({})
-  // Printed (1) or not (0); prints over Motion.sheetPrint (180 ms) when `open` changes.
+  // Printed (1) or not (0): draws over Motion.sheetPrint (30 + 160 ms) when
+  // `open` turns on, sheathes over Motion.noto (240 ms) when it turns off.
   property bool open: true
   // Panel opacity (Style.js panelOpacity), 0..1.
   property real paperOpacity: 1
@@ -89,9 +90,18 @@ Item {
     tearX: root.tearX
     tearWidth: root.tearWidth
     reveal: root.open ? 1 : 0
+    // Opening draws (a held beat, then fast to a dead stop); closing
+    // sheathes (slow away, then into the bar's edge). Iai, core/Iai.js.
     Behavior on reveal {
       enabled: root.animate && !Motion.still
-      NumberAnimation { duration: Motion.sheetPrint; easing.type: Easing.OutCubic }
+      SequentialAnimation {
+        PauseAnimation { duration: root.open ? Motion.nukiHold : 0 }
+        NumberAnimation {
+          duration: root.open ? Motion.nuki : Motion.noto
+          easing.type: Easing.BezierSpline
+          easing.bezierCurve: root.open ? Motion.nukiCurve : Motion.notoCurve
+        }
+      }
     }
 
     Loader {

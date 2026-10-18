@@ -2,8 +2,7 @@
 
 // Skin: Shōji's parts (bar/parts) as the concrete tokens they draw with.
 // Shōji was a design of its own (Kata 型, docs/kata) and is part of Hanko
-// now: its values on the bar, its sheet hand and its framed overview all
-// wear this skin, with the style's season, numerals, grain and panel
+// now: its values on the bar and its sheet hand wear this skin, with the style's season, numerals, grain and panel
 // opacity (fromStyle). Components take it as a plain `skin` prop (props in,
 // signals out). Sizes are at Omarchy's 12px base; scale them with Type.px().
 
@@ -21,7 +20,7 @@ var OPACITY = { washi: 0.86 }
 
 // Shōji's variant of every part (they were Kata's PARTS, one variant each).
 var SHOJI = { surface: "washi", arrive: "slide", pointer: "brush", select: "wash", slider: "brush", ring: "enso",
-              seal: "carved", unread: "stamp", sign: "tategaki", notify: "rows", overview: "framed", hold: "stroke",
+              seal: "carved", unread: "stamp", sign: "tategaki", notify: "rows", hold: "stroke",
               corner: "cut", divider: "lattice", tempo: "johakyu" }
 
 // The skin for a resolved style (core/Style.js resolve): Shōji's parts with
@@ -44,7 +43,7 @@ function skin(k, panelOpacity) {
     design: k.design || "classic",
     surface: k.surface, arrive: k.arrive, pointer: k.pointer, select: k.select, slider: k.slider,
     ring: k.ring, seal: k.seal, unread: k.unread, sign: k.sign, corner: k.corner, divider: k.divider, tempo: k.tempo,
-    notify: k.notify, overview: k.overview, hold: k.hold,
+    notify: k.notify, hold: k.hold,
     radius: r[0], radiusRow: r[1], radiusChip: r[2],
     // The lattice marks its joints where it meets the frame.
     joints: k.divider === "lattice",

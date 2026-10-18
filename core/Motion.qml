@@ -1,11 +1,13 @@
 pragma Singleton
 import QtQuick
 import qs.Commons
+import "Iai.js" as Iai
 
 // Motion 動 (Scroll mockup 05, "Paper moves like paper"): every timing and
 // curve Hanko moves with, in one place. No springs, no glow; everything is
 // under 320 ms except the now-notch's creep, and the stamp is the only
-// overshoot. `still` (the style's motion: still, or Omarchy's reduced
+// overshoot. Kaze's five beats (Iai 居合, core/Iai.js) come first: what
+// opens draws, what closes sheathes, on the bar and on every surface. `still` (the style's motion: still, or Omarchy's reduced
 // motion) cuts every transition to its end frame: use ms() for durations.
 QtObject {
   id: root
@@ -24,6 +26,19 @@ QtObject {
 
   function ms(v) { return still ? 0 : v }
 
+  // Iai 居合: ready, draw, cut, shake off, sheath (docs/kaze, mockup 02).
+  readonly property int kamae: Iai.BEATS.kamae.ms
+  readonly property var kamaeCurve: Iai.qml("kamae")
+  readonly property int nuki: Iai.BEATS.nuki.ms
+  readonly property int nukiHold: Iai.BEATS.nuki.hold
+  readonly property var nukiCurve: Iai.qml("nuki")
+  readonly property int kiri: Iai.BEATS.kiri.ms
+  readonly property int chiburi: Iai.BEATS.chiburi.ms
+  readonly property int chiburiDelay: Iai.BEATS.chiburi.delay
+  readonly property var chiburiCurve: Iai.qml("chiburi")
+  readonly property int noto: Iai.BEATS.noto.ms
+  readonly property var notoCurve: Iai.qml("noto")
+
   // The scroll unrolls (and the rod drops) in 300 ms; rolling up is quicker.
   readonly property int unroll: 300
   readonly property int rollUp: 220
@@ -39,8 +54,8 @@ QtObject {
   // overshoot anywhere.
   readonly property int stamp: 140
   readonly property var stampCurve: [0.3, 1.4, 0.5, 1, 1, 1]
-  // A sheet prints top-down from the bar.
-  readonly property int sheetPrint: 180
+  // A sheet prints top-down from the bar: the draw, its held beat included.
+  readonly property int sheetPrint: nukiHold + nuki
   // An inversion plate slides to the next item, like Ryoku's rail.
   readonly property int slide: 160
   // A value fades through to the next one.

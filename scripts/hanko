@@ -1,8 +1,9 @@
 #!/bin/bash
 # hanko · install Hanko into Omarchy and change its style from a terminal.
 #
-#   hanko install            copy this checkout into the plugins folder and use it
-#   hanko dev                symlink this checkout instead (edits reload live)
+#   hanko install [--desk]   copy this checkout into the plugins folder and use it;
+#                            --desk also turns on Kaze, the whole desk (desk on)
+#   hanko dev [--desk]       symlink this checkout instead (edits reload live)
 #   hanko uninstall          go back to the bar you had before, remove Hanko
 #   hanko settings           open (or close) the settings window
 #   hanko style get          print the resolved style
@@ -23,6 +24,20 @@
 #   hanko press              press the seal: print No. 00 (every sheet on one),
 #                            or lift it off (bind it to a key: see the README)
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
+#   hanko cursor [on|off]    the brush-tip cursor (Hanko-Brush) in the theme's ink;
+#                            off puts your own cursor back
+#   hanko sumi [on|off]      Sumi 墨: the whole screen in ink, letters held, the
+#                            wind stronger; toggles with no argument
+#   hanko theme install|remove|status  the Hanko theme (theme/) linked into
+#                            ~/.config/omarchy/themes/hanko; then `omarchy
+#                            theme set hanko`
+#   hanko tools on|off|status Dōgu 道具: btop and Neovim in the theme's inks
+#                            (btop's color_theme and a LazyVim spec; off puts
+#                            Omarchy's back)
+#   hanko desk on|off|status Kaze 風: give the whole desk Hanko's look and motion
+#                            (loads style.lua from looknfeel.lua and installs the
+#                            desk plugin, hanko.desk; any bar). Run `desk on` again
+#                            after an update to refresh the plugin.
 #   hanko doctor             check the installation
 #
 # Style commands talk to the running shell over IPC (omarchy-shell hanko ...),
@@ -50,7 +65,10 @@ ipc() {
 }
 
 active_bar() {
-  omarchy-shell -q shell listShellConfig 2>/dev/null | jq -r '.bar.id // "omarchy.bar"' 2>/dev/null || echo "omarchy.bar"
+  # Not -q: that prints nothing, even what the call returns.
+  local id
+  id="$(omarchy-shell shell listShellConfig 2>/dev/null | jq -r '.bar.id // "omarchy.bar"' 2>/dev/null || true)"
+  printf '%s\n' "${id:-omarchy.bar}"
 }
 
 remember_previous() {
@@ -58,7 +76,7 @@ remember_previous() {
   local current
   current="$(active_bar)"
   # Never remember Hanko itself, or uninstall would put Hanko back.
-  if [[ $current != "$ID" && ! -f $PREVIOUS ]]; then
+  if [[ $current != "$ID" && -z $(cat "$PREVIOUS" 2>/dev/null) ]]; then
     printf '%s\n' "$current" > "$PREVIOUS"
   fi
 }
@@ -82,6 +100,7 @@ cmd_install() {
     "$SRC/" "$DEST/"
   activate
   say "Hanko is installed at $DEST and is now your bar."
+  if [[ ${1:-} == --desk ]]; then cmd_desk on; fi
 }
 
 cmd_dev() {
@@ -95,12 +114,14 @@ cmd_dev() {
   ln -sfn "$SRC" "$DEST"
   activate
   say "Hanko is linked from $SRC. Saving a file reloads the bar."
+  if [[ ${1:-} == --desk ]]; then cmd_desk on; fi
 }
 
 cmd_uninstall() {
   need omarchy
   local previous="omarchy.bar"
   [[ -f $PREVIOUS ]] && previous="$(cat "$PREVIOUS")"
+  [[ -n $previous ]] || previous="omarchy.bar"
   omarchy bar use "$previous" 2>/dev/null || omarchy bar use omarchy.bar
   if [[ -L $DEST ]]; then
     rm "$DEST"
@@ -108,6 +129,10 @@ cmd_uninstall() {
     rm -rf "$DEST"
   fi
   rm -f "$PREVIOUS"
+  if desk_on || desk_plugins_present; then cmd_desk off; fi
+  [[ -f $CURSOR_FLAG ]] && cmd_cursor off
+  if tools_on; then cmd_tools off; fi
+  if [[ -L $THEME_LINK ]]; then cmd_theme remove; fi
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
 }
@@ -176,6 +201,362 @@ cmd_menu() {
   esac
 }
 
+# Kaze 風, the whole desk (docs/kaze). `desk on` loads style.lua last from
+# ~/.config/hypr/looknfeel.lua with one marked line, so Hyprland's windows
+# move on Iai and wear the bar's paper whichever bar is in use; `desk off`
+# deletes exactly that line.
+LOOK_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/looknfeel.lua"
+LOOK_LINE='pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/hanko.bar/style.lua") -- hanko desk'
+
+# On when the marked line is there. A line of your own inside `if bar ==
+# "hanko"` (the README's) only loads it while Hanko is the bar, so it
+# doesn't count, and `desk off` leaves it alone.
+desk_on() { [[ -f $LOOK_FILE ]] && grep -q -- '-- hanko desk$' "$LOOK_FILE"; }
+
+hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true; }
+
+# Kaze's surfaces are plugins of their own under plugins/ (hanko.desk: the
+# focus sweep and urgent frames; hanko.background: the printed wallpaper, a
+# clone of omarchy.background; hanko.osd: posture, a clone of omarchy.osd;
+# hanko.notifications: letters; hanko.menu: the draw, a clone of omarchy.menu;
+# hanko.lock: the standoff, a clone of omarchy.lock with only its view new),
+# all sharing Hanko's core/ and its fonts. Omarchy allows no
+# symlinks inside a plugin, so each is assembled as a copy: its own files,
+# core/, assets/fonts and bin/hanko-print. `desk build ID DIR` does only that (the tests
+# validate and lint the result).
+SURFACES=(hanko.desk hanko.background hanko.osd hanko.notifications hanko.menu hanko.lock)
+
+# Prints the files it changed (rsync's itemized list), nothing when up to date.
+surface_build() {
+  local id="$1" dest="$2"
+  need rsync
+  [[ -d $SRC/plugins/$id ]] || fail "no such surface: $id"
+  mkdir -p "$dest/bin"
+  rsync -a --delete --itemize-changes --exclude core --exclude bin --exclude assets "$SRC/plugins/$id/" "$dest/"
+  rsync -a --delete --itemize-changes "$SRC/core/" "$dest/core/"
+  mkdir -p "$dest/assets"
+  rsync -a --delete --itemize-changes "$SRC/assets/fonts/" "$dest/assets/fonts/"
+  rsync -a --delete --itemize-changes "$SRC/assets/sounds/" "$dest/assets/sounds/"
+  rsync -a --delete --itemize-changes --include '*.qsb' --exclude '*' "$SRC/assets/shaders/" "$dest/assets/shaders/"
+  rsync -a --itemize-changes "$SRC/scripts/hanko-print" "$dest/bin/hanko-print"
+}
+
+# The rescan finishes after its call returns, so a surface just copied in
+# can still be unknown to the shell (the first one usually is): ask again
+# until it is known, for up to five seconds.
+surface_enable() {
+  local tries out
+  for (( tries = 0; tries < 20; tries++ )); do
+    out="$(omarchy plugin enable "$1" 2>&1)" && return 0
+    [[ $out == *"is not known"* ]] || break
+    sleep 0.25
+    omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  done
+  say "  ($1 could not be enabled: ${out##*: })"
+}
+
+# Omarchy reloads a plugin when its files change, but a service keeps the
+# QML it first compiled until the shell restarts; so when a surface is new
+# or gets new files, the shell is restarted once (a second without a bar).
+desk_plugins_on() {
+  local id dest changed="" new=0
+  for id in "${SURFACES[@]}"; do
+    dest="$PLUGINS/$id"
+    [[ -d $dest ]] || new=1
+    changed+="$(surface_build "$id" "$dest")"
+    omarchy plugin validate "$dest" >/dev/null || fail "$id did not validate"
+  done
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  for id in "${SURFACES[@]}"; do surface_enable "$id"; done
+  if { (( new )) || [[ -n $changed ]]; } && command -v omarchy-restart-shell >/dev/null 2>&1; then
+    say "Kaze's plugins changed: restarting the Omarchy shell to load them."
+    omarchy-restart-shell >/dev/null 2>&1 || true
+    desk_plugins_check || true
+  fi
+}
+
+# Each surface answers one IPC call once it is up. A surface that replaced
+# an Omarchy one (notifications, the OSD, the background) and didn't come up
+# would leave the desk without it, so it is handed back at once.
+surface_probe() {
+  case "$1" in
+    hanko.desk) omarchy-shell hankodesk state ;;
+    hanko.background) omarchy-shell hankowind state ;;
+    hanko.osd) omarchy-shell osd ping ;;
+    hanko.notifications) omarchy-shell notifications ping ;;
+    hanko.menu) omarchy-shell shell call omarchy.menu ping "" | grep -x ok ;;
+    hanko.lock) omarchy-shell lock status ;;
+  esac
+}
+desk_plugins_check() {
+  local id tries failed=()
+  for (( tries = 0; tries < 40; tries++ )); do shell_up && break; sleep 0.25; done
+  sleep 1.5
+  for id in "${SURFACES[@]}"; do
+    local ok=0
+    for (( tries = 0; tries < 12; tries++ )); do
+      [[ -n $(surface_probe "$id" 2>/dev/null | grep -v '^Target not found') ]] && { ok=1; break; }
+      sleep 0.5
+    done
+    (( ok )) || failed+=("$id")
+  done
+  (( ${#failed[@]} == 0 )) && return 0
+  say "These didn't start, so Omarchy's own are back in their place: ${failed[*]}"
+  say "  (the shell's log says why: qs log --id \$(qs list --all | grep -oP 'Instance \\K\\w+' | head -1) | grep 'load failed')"
+  for id in "${failed[@]}"; do
+    omarchy plugin remove "$id" --yes >/dev/null 2>&1 || { omarchy plugin disable "$id" >/dev/null 2>&1 || true; rm -rf "${PLUGINS:?}/$id"; }
+  done
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  omarchy-restart-shell >/dev/null 2>&1 || true
+  return 1
+}
+# Removing a clone hands its job back to the Omarchy plugin it came from.
+desk_plugins_off() {
+  local id
+  for id in "${SURFACES[@]}"; do
+    [[ -d $PLUGINS/$id ]] || continue
+    omarchy plugin remove "$id" --yes >/dev/null 2>&1 || { omarchy plugin disable "$id" >/dev/null 2>&1 || true; rm -rf "${PLUGINS:?}/$id"; }
+  done
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+}
+# Battō 抜刀: the menu in Kaze's grammar through the user-level shell.toml
+# (scripts/hanko-kaze-theme), refreshed by a theme-set hook on every theme.
+KAZE_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/theme-set.d/50-hanko-kaze"
+# Shiki 式: two more hooks call the OSD's ceremonies: 危 when the battery is
+# low (Omarchy's battery service runs the battery-low hooks), 新 after an update.
+KAZE_BATTERY_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/battery-low.d/50-hanko-kaze"
+KAZE_UPDATE_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/post-update.d/50-hanko-kaze"
+write_hook() {
+  mkdir -p "$(dirname "$1")"
+  printf '#!/bin/bash\n# Kaze 風 (hanko desk off removes this).\n%s\n' "$2" > "$1"
+  chmod +x "$1"
+}
+desk_theme_on() {
+  "$SRC/scripts/hanko-kaze-theme" || say "  (the menu keeps its theme's look: no colors.toml found)"
+  write_hook "$KAZE_HOOK" "\"$SRC/scripts/hanko-kaze-theme\"
+# the brush-tip cursor, when it is on, in the new theme's ink
+if [[ -f \"$CURSOR_FLAG\" ]]; then \"$SRC/scripts/hanko-cursor\" >/dev/null && hyprctl setcursor Hanko-Brush \"\$(cat \"$CURSOR_FLAG\")\" >/dev/null; fi"
+  write_hook "$KAZE_BATTERY_HOOK" 'omarchy-osd -i danger -m "Battery ${1:-}%" -d 1600 >/dev/null 2>&1 || true'
+  write_hook "$KAZE_UPDATE_HOOK" 'omarchy-osd -i new -m "Omarchy $(omarchy version 2>/dev/null | head -1)" -d 1400 >/dev/null 2>&1 || true'
+}
+desk_theme_off() {
+  "$SRC/scripts/hanko-kaze-theme" --remove || true
+  rm -f "$KAZE_HOOK" "$KAZE_BATTERY_HOOK" "$KAZE_UPDATE_HOOK"
+}
+
+desk_plugins_present() { local id; [[ -f $KAZE_HOOK ]] && return 0; for id in "${SURFACES[@]}"; do [[ -d $PLUGINS/$id ]] && return 0; done; return 1; }
+
+cmd_desk() {
+  case "${1:-status}" in
+    on)
+      need omarchy
+      desk_plugins_on
+      desk_theme_on
+      if desk_on; then hypr_reload; say "Kaze is on (its plugins are up to date; $LOOK_FILE already loads style.lua)."; return; fi
+      mkdir -p "$(dirname "$LOOK_FILE")"
+      [[ -f $LOOK_FILE ]] && cp "$LOOK_FILE" "$LOOK_FILE.bak"
+      printf '\n-- Kaze 風: Hanko'"'"'s look and motion for the whole desk (hanko desk off removes it).\n%s\n' "$LOOK_LINE" >> "$LOOK_FILE"
+      hypr_reload
+      say "Kaze is on: windows move on Iai and wear the bar's paper ($LOOK_FILE; the old file is at .bak)."
+      ;;
+    off)
+      desk_plugins_off
+      desk_theme_off
+      desk_on || { say "Kaze is off."; return; }
+      cp "$LOOK_FILE" "$LOOK_FILE.bak"
+      grep -v -e '-- hanko desk$' -e "^-- Kaze 風: Hanko's look and motion" "$LOOK_FILE.bak" > "$LOOK_FILE"
+      hypr_reload
+      say "Kaze is off: Hyprland is back to your own look'n'feel."
+      ;;
+    status) if desk_on; then say "on"; else say "off"; fi ;;
+    build) [[ -n ${2:-} && -n ${3:-} ]] || fail "usage: hanko desk build ID DIR"; surface_build "$2" "$3" >/dev/null ;;
+    *) fail "usage: hanko desk on|off|status" ;;
+  esac
+}
+
+# Sumi 墨, ink only (docs/kaze, mockup 11). The shader goes to the state
+# folder with the theme's red baked in (that red survives the ink); style.lua
+# applies it on every reload while it is there. Do-not-disturb holds the
+# letters, and is put back as it was; hanko.background's wind reads the same
+# folder and blows harder.
+SUMI_DIR="$STATE/sumi"
+sumi_on() { [[ -f $SUMI_DIR/sumi.glsl ]]; }
+cmd_sumi() {
+  local want="${1:-toggle}"
+  [[ $want == toggle ]] && { sumi_on && want=off || want=on; }
+  case "$want" in
+    on)
+      local colors red r g b
+      colors="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/current/theme/colors.toml"
+      red="$(grep -m1 -E '^\s*red\s*=' "$colors" 2>/dev/null | sed -E 's/.*"#([0-9a-fA-F]{6})".*/\1/')"
+      [[ $red =~ ^[0-9a-fA-F]{6}$ ]] || red="d8452f"
+      r=$(awk -v n=$((16#${red:0:2})) 'BEGIN { printf "%.3f", n / 255 }')
+      g=$(awk -v n=$((16#${red:2:2})) 'BEGIN { printf "%.3f", n / 255 }')
+      b=$(awk -v n=$((16#${red:4:2})) 'BEGIN { printf "%.3f", n / 255 }')
+      mkdir -p "$SUMI_DIR"
+      sed -E "s/^const vec3 SEAL = .*/const vec3 SEAL = vec3($r, $g, $b);   \/\/ the theme's red (#$red)/" "$SRC/assets/shaders/sumi.glsl" > "$SUMI_DIR/sumi.glsl"
+      if [[ ! -f $SUMI_DIR/dnd-before ]]; then
+        omarchy-shell notifications isDnd 2>/dev/null > "$SUMI_DIR/dnd-before" || echo off > "$SUMI_DIR/dnd-before"
+      fi
+      omarchy-shell -q notifications setDnd true >/dev/null
+      command -v hyprctl >/dev/null && hyprctl eval "hl.config({ decoration = { screen_shader = '$SUMI_DIR/sumi.glsl' } })" >/dev/null 2>&1 || true
+      omarchy-shell -q hankowind setSumi true >/dev/null
+      omarchy-shell -q hanko riding true >/dev/null
+      omarchy-osd -i 墨 -m "Sumi · ink only" -d 1400 >/dev/null 2>&1 || true
+      ;;
+    off)
+      sumi_on || { say "Sumi is off."; return; }
+      rm -f "$SUMI_DIR/sumi.glsl"
+      if [[ $(cat "$SUMI_DIR/dnd-before" 2>/dev/null) != on ]]; then omarchy-shell -q notifications setDnd false >/dev/null; fi
+      rm -f "$SUMI_DIR/dnd-before"
+      hypr_reload
+      omarchy-shell -q hankowind setSumi false >/dev/null
+      omarchy-shell -q hanko riding false >/dev/null
+      omarchy-osd -i 墨 -m "Sumi off" -d 1000 >/dev/null 2>&1 || true
+      ;;
+    status) if sumi_on; then say on; else say off; fi ;;
+    *) fail "usage: hanko sumi [on|off|status]" ;;
+  esac
+}
+
+# Dōgu 道具, the tools (docs/kaze, mockup 12): btop and Neovim on the bar's
+# paper and inks, from the current theme. Opt-in, like the prompt: `tools on`
+# writes btop's hanko.theme (a theme-set hook rewrites it), points btop.conf's
+# color_theme at it, and adds a LazyVim spec that loads colors/hanko.lua
+# (which reads the theme itself, so Neovim follows a theme switch on its
+# own). `tools off` puts btop's previous theme back and removes the spec.
+BTOP_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/btop/btop.conf"
+BTOP_THEME="${XDG_CONFIG_HOME:-$HOME/.config}/btop/themes/hanko.theme"
+NVIM_SPEC="${XDG_CONFIG_HOME:-$HOME/.config}/nvim/lua/plugins/zz-hanko-kaze.lua"
+TOOLS_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/theme-set.d/51-hanko-tools"
+tools_on() { [[ -f $NVIM_SPEC || -f $STATE/tools/btop-before ]]; }
+
+# A Lua to run the generators with: lua, luajit, or Neovim's own.
+lua_run() {
+  local path="$SRC/assets/kaze/nvim/lua/?.lua;;"
+  if command -v lua >/dev/null 2>&1; then LUA_PATH="$path" lua "$@"
+  elif command -v luajit >/dev/null 2>&1; then LUA_PATH="$path" luajit "$@"
+  elif command -v nvim >/dev/null 2>&1; then LUA_PATH="$path" nvim -l "$@"
+  else fail "no Lua found (lua, luajit or nvim)"; fi
+}
+btop_write() {
+  mkdir -p "$(dirname "$BTOP_THEME")"
+  lua_run "$SRC/assets/kaze/btop.lua" > "$BTOP_THEME.tmp" && mv "$BTOP_THEME.tmp" "$BTOP_THEME"
+}
+
+cmd_tools() {
+  case "${1:-status}" in
+    on)
+      btop_write
+      if [[ -f $BTOP_CONF ]]; then
+        mkdir -p "$STATE/tools"
+        if [[ ! -f $STATE/tools/btop-before ]]; then
+          sed -nE 's/^color_theme *= *"(.*)"/\1/p' "$BTOP_CONF" | head -1 > "$STATE/tools/btop-before"
+        fi
+        sed -i -E 's/^color_theme *=.*/color_theme = "hanko"/' "$BTOP_CONF"
+      else
+        mkdir -p "$STATE/tools" "$(dirname "$BTOP_CONF")"
+        echo "" > "$STATE/tools/btop-before"
+        printf 'color_theme = "hanko"\n' > "$BTOP_CONF"
+      fi
+      write_hook "$TOOLS_HOOK" "\"$SRC/scripts/hanko\" tools refresh >/dev/null 2>&1 || true"
+      if [[ -d $(dirname "$NVIM_SPEC") ]]; then
+        cat > "$NVIM_SPEC" <<LUA
+-- Hanko 判子 · Kaze 風: Neovim on the bar's paper (hanko tools off removes this).
+-- colors/hanko.lua reads the current Omarchy theme, so it follows a theme
+-- switch; Omarchy's hot reload applies its own scheme first, then this one.
+return {
+  {
+    name = "hanko-kaze",
+    dir = "$SRC/assets/kaze/nvim",
+    lazy = false,
+    priority = 1001,
+    config = function()
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "LazyReload",
+        callback = function() vim.defer_fn(function() pcall(vim.cmd.colorscheme, "hanko") end, 150) end,
+      })
+    end,
+  },
+  { "LazyVim/LazyVim", opts = { colorscheme = "hanko" } },
+}
+LUA
+      else
+        say "  (no ~/.config/nvim/lua/plugins: Neovim left alone; :colorscheme hanko works with $SRC/assets/kaze/nvim on the runtimepath)"
+      fi
+      say "Tools on: btop and Neovim in your theme's inks (restart btop and Neovim to see them)."
+      ;;
+    refresh) [[ -f $BTOP_THEME ]] && btop_write ;;
+    off)
+      tools_on || { say "Tools are off."; return; }
+      if [[ -f $STATE/tools/btop-before && -f $BTOP_CONF ]]; then
+        local before; before="$(cat "$STATE/tools/btop-before")"
+        sed -i -E "s/^color_theme *=.*/color_theme = \"${before:-current}\"/" "$BTOP_CONF"
+      fi
+      rm -f "$STATE/tools/btop-before" "$BTOP_THEME" "$NVIM_SPEC" "$TOOLS_HOOK"
+      say "Tools off: btop and Neovim are back on Omarchy's theme."
+      ;;
+    status) if tools_on; then say on; else say off; fi ;;
+    *) fail "usage: hanko tools on|off|status" ;;
+  esac
+}
+
+# The Hanko theme lives in the repo as theme/ (colours, Hyprland, the
+# menu, launcher and bar, btop, Neovim, the prints). `theme install` links it
+# into Omarchy's user themes; a link to your own copy is staged whole (a
+# theme cloned from git may not ship Lua), and Omarchy's templates fill in
+# the terminals. `omarchy theme set hanko` then brings the whole set.
+# Omarchy looks in $HOME/.config (not XDG_CONFIG_HOME) for user themes.
+THEME_LINK="$HOME/.config/omarchy/themes/hanko"
+cmd_theme() {
+  case "${1:-status}" in
+    install)
+      if [[ -e $THEME_LINK && ! -L $THEME_LINK ]]; then fail "$THEME_LINK exists and is not Hanko's link; move it away first"; fi
+      mkdir -p "$(dirname "$THEME_LINK")"
+      ln -sfn "$SRC/theme" "$THEME_LINK"
+      say "The Hanko theme is installed: omarchy theme set hanko"
+      ;;
+    remove)
+      [[ -L $THEME_LINK ]] || { say "The Hanko theme is not installed."; return; }
+      if [[ $(cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null) == hanko ]]; then
+        say "  (Hanko is the theme in use; it stays until you pick another)"
+      fi
+      rm "$THEME_LINK"
+      say "The Hanko theme is removed."
+      ;;
+    status) if [[ -L $THEME_LINK ]]; then say installed; else say "not installed"; fi ;;
+    *) fail "usage: hanko theme install|remove|status" ;;
+  esac
+}
+
+# Dōgu 道具: the brush-tip cursor. scripts/hanko-cursor builds Hanko-Brush for
+# the current theme into ~/.local/share/icons; the flag file holds its size,
+# style.lua re-applies it after your own autostart on every reload, and the
+# theme-set hook rebuilds it in the new theme's ink. `off` deletes the flag
+# and reloads Hyprland, so your autostart's cursor comes back.
+CURSOR_FLAG="$STATE/cursor"
+cmd_cursor() {
+  local want="${1:-toggle}" size
+  [[ $want == toggle ]] && { [[ -f $CURSOR_FLAG ]] && want=off || want=on; }
+  case "$want" in
+    on)
+      "$SRC/scripts/hanko-cursor" >/dev/null || fail "the cursor didn't build"
+      size="${HYPRCURSOR_SIZE:-${XCURSOR_SIZE:-22}}"
+      mkdir -p "$STATE"; printf '%s\n' "$size" > "$CURSOR_FLAG"
+      command -v hyprctl >/dev/null && hyprctl setcursor Hanko-Brush "$size" >/dev/null 2>&1 || true
+      say "The brush-tip cursor is on (hanko cursor off puts yours back)."
+      ;;
+    off)
+      [[ -f $CURSOR_FLAG ]] || { say "The brush-tip cursor is off."; return; }
+      rm -f "$CURSOR_FLAG"
+      hypr_reload
+      say "Your own cursor is back."
+      ;;
+    status) if [[ -f $CURSOR_FLAG ]]; then say on; else say off; fi ;;
+    *) fail "usage: hanko cursor [on|off|status]" ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -185,8 +566,19 @@ cmd_doctor() {
   check "manifest validates" "omarchy plugin validate '$SRC'"
   check "Hanko is in the plugins folder" "[[ -e '$DEST' ]]"
   check "Hanko is the active bar" "[[ \$(active_bar) == '$ID' ]]"
-  check "Noto CJK fonts for the kanji" "fc-list | grep -qi 'Noto Sans CJK'"
+  check "Noto CJK fonts for the kanji" "fc-list -q 'Noto Sans CJK JP'"
   check "jq is installed" "command -v jq"
+  if desk_on; then say "  ok    Kaze: style.lua loads from looknfeel.lua"; else say "  --    Kaze is off (hanko desk on)"; fi
+  # Each of the desk's surfaces: installed, and answering its IPC call.
+  local id
+  for id in "${SURFACES[@]}"; do
+    if [[ ! -d $PLUGINS/$id ]]; then desk_on && say "  FAIL  $id is not installed (hanko desk on)" && ok=0; continue; fi
+    if ! shell_up; then say "  --    $id is installed (the shell is not running)"; continue; fi
+    if [[ -n $(surface_probe "$id" 2>/dev/null | grep -v '^Target not found') ]]; then say "  ok    $id answers"
+    else say "  FAIL  $id is installed but does not answer (Omarchy's own may be missing; hanko desk on retries)"; ok=0; fi
+  done
+  if sumi_on; then say "  --    Sumi is on (hanko sumi off)"; fi
+  if tools_on; then check "Tools: btop's hanko theme is written" "[[ -s '$BTOP_THEME' ]]"; fi
   if shell_up; then
     local w
     w="$(omarchy-shell hanko warnings 2>/dev/null || true)"
@@ -196,8 +588,8 @@ cmd_doctor() {
 }
 
 case "${1:-}" in
-  install) cmd_install ;;
-  dev) cmd_dev ;;
+  install) shift; cmd_install "$@" ;;
+  dev) shift; cmd_dev "$@" ;;
   uninstall) cmd_uninstall ;;
   style) shift; cmd_style "$@" ;;
   settings) ipc settings >/dev/null ;;
@@ -216,6 +608,11 @@ case "${1:-}" in
     [[ $(ipc styleSet form "$form") == ok ]] || fail "could not set form $form"
     say "form: $form" ;;
   menu) shift; cmd_menu "$@" ;;
+  desk) shift; cmd_desk "$@" ;;
+  sumi) shift; cmd_sumi "$@" ;;
+  cursor) shift; cmd_cursor "$@" ;;
+  tools) shift; cmd_tools "$@" ;;
+  theme) shift; cmd_theme "$@" ;;
   doctor) cmd_doctor ;;
   -h|--help|"") awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;

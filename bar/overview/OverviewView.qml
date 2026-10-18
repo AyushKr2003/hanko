@@ -25,8 +25,6 @@ Item {
   property int bottomInset: 0
   // Builds a window's live snapshot (OverviewWindow); null draws ink.
   property Component snapshot: null
-  // A Kata design's skin, handed to each page; empty for Classic.
-  property var skin: ({})
   // 0..1: the sheet and the pages print in.
   property real reveal: 1
 
@@ -154,12 +152,14 @@ Item {
     width: root.layout.width
     height: root.layout.height
 
+    // Counted, not the array, so the pages (and their snapshots) stay put
+    // when the workspaces change; each reads its entry.
     Repeater {
-      model: root.pages
+      model: root.pages.length
       OverviewPage {
         id: pageItem
-        required property var modelData
         required property int index
+        readonly property var modelData: root.pages[pageItem.index] || ({ id: 0, col: 0, row: 0, active: false, urgent: false, count: 0, windows: [] })
         readonly property var box: root.boxOf(pageItem.modelData)
         x: pageItem.box.x
         y: pageItem.box.y
@@ -171,7 +171,6 @@ Item {
         headH: root.headH
         view: root
         snapshot: root.snapshot
-        skin: root.skin
         hot: root.dragging && root.dragOver === pageItem.modelData.id && root.dragOver !== root.dragFrom
       }
     }

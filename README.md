@@ -2,14 +2,14 @@
 
 A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's paper and ink.
 
-![Settings › Typesetting, set as a proof](docs/settings-kosei/images/01-status.webp)
+![Settings › Typesetting, set as a proof](docs/images/settings.webp)
 
-![The Shōji preset on the Hanko bar](docs/revision2/images/r2-shoji-preset.webp)
+![The Shōji preset on the Hanko bar](docs/images/shoji-preset.webp)
 
 ## What you get
 
 - **Every part is a setting:** 26 settings and 9 presets (Quiet, Islet, Shōji, Kamon 家紋 (the default; it was the Hanko preset), Inkan 印, and the right-side studies Ma, Shizuka, Suji, Inrō). Shōji's bar is part of them: its carved seal, brush desks, season clock, ink status with the ensō battery, washi paper and brush pointer are values you can mix into any bar, with season, numerals and paper grain as switches.
-- **Shōji, as part of Hanko:** the Shōji look (washi, brush and the seasons) is the Shōji preset, `hanko style preset shoji`: its bar values, its washi panels as a sheet hand sliding along their rail, and its framed overview, each also something you can mix into any other bar. Every change prints live and is kept at once, with Undo (there is no Save button). Settings › Sheets sets how see-through every panel is (30–100%).
+- **Shōji, as part of Hanko:** the Shōji look (washi, brush and the seasons) is the Shōji preset, `hanko style preset shoji`: its bar values, its washi panels as a sheet hand sliding along their rail, each also something you can mix into any other bar. Every change prints live and is kept at once, with Undo (there is no Save button). Settings › Sheets sets how see-through every panel is (30–100%).
 - **Hanko, finished by hand:** each sheet is numbered like a page, carries its kanji pressed faintly behind the title, and ends in a colophon strip; groups are underscored, sliders have a capped needle, and the paper casts a soft shadow with printer's crop marks.
 - **Left:** a seal, your workspaces and the window title.
 - **Centre:** the clock and what's playing.
@@ -18,7 +18,7 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 - **Seven hands for every sheet:** each cell's sheet can be a Ledger 帳 (the editorial page), Tanzaku 短冊 (each choice a poem slip hung from a rail, as long as its level), Shōgi 将棋 (each level a piece on a rank of nine squares, choices on the piece stand), Soroban 算盤 (the figures counted in abacus beads), Odoshi 縅 (each level a lame of armour scales laced as far as it goes), Kasumi 霞 (each level a band of gold-leaf mist) or Shōji 障子 (Shōji's washi panels, sliding along a rail under the bar, now on the Hanko bar too, with a Display panel of their own); pick per sheet on Settings › Sheets. The research behind them is in [docs/revision2/sheet-hands.md](docs/revision2/sheet-hands.md).
 - **Inkan 印, the seal only:** set `form: inkan` (or `scripts/hanko inkan`) and the bar goes away, leaving one seal in a corner you choose. Its carving is the status: the strokes wear away as the battery falls, a chipped corner is a letter waiting, an outline is do not disturb, a broken rule is offline; hover sets the time and what needs you beside it. Press it, or a key, and the whole shell prints as one sheet, No. 00: the time, your workspaces and window, what's playing and a row for every sheet, each opening that sheet in its own hand. It lifts off when you're done. Per monitor too: a laptop can be all seal beside a full bar. The design is in [docs/shell-concepts/inkan/](docs/shell-concepts/inkan/README.md).
 - **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
-- **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch, a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top; or Shōji's framed pages, washi in lattice frames.
+- **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch (Enter or Esc leaves you where they took you), a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top.
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
 - **Written, not typeset:** every kanji is drawn in a brush face (Yuji Boku, bundled), and your seal is 鑑 by default, or 漢, 観 or 寛 from Settings › Typesetting.
 - **Follows your theme,** light or dark, and switches with it live.
@@ -83,7 +83,8 @@ scripts/hanko uninstall
 | Hide or show a part | `scripts/hanko hide tray` / `scripts/hanko show tray` |
 | Unroll the scroll | `scripts/hanko scroll` |
 | Lay out every workspace (the overview) | `omarchy-shell hanko overview`, or right-click the workspaces |
-| Ryoku's overview instead (busy spaces and a +) | `scripts/hanko style set overview dynamic` (`grid`, `dynamic`) |
+| Ryoku's overview instead (busy spaces and a +) | `scripts/hanko style set overview dynamic` (`grid`, `dynamic`, `mission`) |
+| The live space's windows spread out, a strip of spaces, type to search | `scripts/hanko style set overview mission` |
 | Pick the scroll's dividers | `scripts/hanko style set interlude kotoba` |
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
 | Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |
@@ -132,11 +133,13 @@ hl.layer_rule({ match = { namespace = "hanko-overview" }, blur = true })
 hl.layer_rule({ match = { namespace = "hanko-bar" }, blur = true, ignore_alpha = 0.5 })
 ```
 
-**Windows that match the bar.** `style.lua` gives Hyprland windows the bar's look: 1 px hairline frames in your theme's ink, square corners (7 px with the `inset` surface, whose 8 px gap the windows share), a short black shadow down and right, darker under the focused window, flat mono group tabs and the bar's motion timings (`motion: still` stops window animations too). It reads `colors.toml` and `~/.config/hanko/style.json`, so it follows `omarchy theme set`. Load it last in `~/.config/hypr/looknfeel.lua`:
+**Windows that match the bar.** `style.lua` gives Hyprland windows the bar's look: 1 px hairline frames in your theme's ink, square corners (7 px with the `inset` surface, whose 8 px gap the windows share), no shadow (set `shadow_style` to `paper` for a short black one), flat mono group tabs and the bar's motion (Iai) (`motion: still` stops window animations too). It reads `colors.toml` and `~/.config/hanko/style.json`, so it follows `omarchy theme set`. Load it last in `~/.config/hypr/looknfeel.lua`:
 
 ```lua
 pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/hanko.bar/style.lua")
 ```
+
+Or let Hanko do it for the whole desk, whichever bar you use: `hanko desk on` (or `hanko install --desk` to install and turn it on at once) adds one marked line that loads it last, `hanko desk off` takes it out (Kaze 風, [docs/kaze](docs/kaze/README.md)). Windows then move on Iai 居合, the five beats the bar moves on: they draw in from the nearest edge with a dead stop and sheathe out more slowly, workspaces roll a short way, nothing pops or springs. `desk on` also installs a small desk plugin (`hanko.desk`): when focus moves, light runs once round the new window's edge, and a window that needs you is framed in red until you go to it. With `motion: still` the sweep doesn't run. `hanko cursor on` puts on a brush-tip cursor in your theme's ink (`hanko cursor off` puts yours back). Sounds are off until `"sound": "quiet"` (or `"on"`) in `~/.config/hanko/kaze.json`. The Hanko theme ships in the repo (`theme/`): `hanko theme install`, then `omarchy theme set hanko`, gives Omarchy the bar's paper, ink and red everywhere, with btop and Neovim in its inks and seven ukiyo-e prints. `hanko tools on` puts btop and Neovim (LazyVim) on the same paper and inks, red only for errors and readings near their limit; `hanko tools off` gives them back to Omarchy's theme. For the terminal there is a prompt, `set -gx STARSHIP_CONFIG ~/.config/omarchy/plugins/hanko.bar/assets/kaze/starship.toml`, and a greeting, `~/.config/omarchy/plugins/hanko.bar/scripts/hanko-greet`. `hanko sumi` toggles Sumi 墨, the screen in ink with only your theme's red kept, notifications held and the bar receding to its rule until you point at it. It also prints your wallpaper again in the theme's paper and ink (a clone of Omarchy's background; `{"wallpaper": "original"}` in `~/.config/hanko/kaze.json` turns that off). All of these are switches on the Kaze 風 page of `hanko settings` (Wind can also be Virtual: your own speed, 0–60 km/h, and side, for when the real air is still; in any felt wind the grass waves downwind and, when it's strong, gusts now and then; `"wind": "virtual", "windSpeed": 24, "windFrom": "west"` in kaze.json) (the desk, motion, the print, grass, gusts, wind, sound and Sumi, each with a small picture; Ctrl+Z undoes), and `hanko doctor` checks that each part of the desk is installed and answering.
 
 After a style change in Hanko, run `hyprctl reload` to bring the windows along. Set `shadow_style` near the top of the file to `print` (a hard black offset), `seal` (the same in seal red) or `none` (hairlines only).
 
@@ -150,8 +153,8 @@ After a style change in Hanko, run `hyprctl reload` to bring the windows along. 
 ## Docs
 
 - [Every component and combination](docs/COMPONENTS.md)
-- [Design overview](docs/DESIGN.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Kaze 風: the whole desk, research, mockups and plan](docs/kaze/README.md)
 - [Handoff: the full state of the build](docs/HANDOFF.md)
 - [Changelog](CHANGELOG.md)
 - Earlier design directions are on the `docs` branch.

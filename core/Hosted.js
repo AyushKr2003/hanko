@@ -25,14 +25,18 @@ function entrySettings(entry) {
   return entry && typeof entry === "object" ? entry : {}
 }
 
-// Every layout entry in reading order: left, centre, right.
+// The bar's sections in reading order, as Omarchy's BarModel.js has them:
+// centerBegin and centerEnd hang off the centre box's two edges. (Its
+// "tray" section is what the tray's drawer holds, not the bar.)
+var SECTIONS = ["left", "centerBegin", "center", "centerEnd", "right"]
+
+// Every layout entry in reading order.
 function entries(barConfig) {
   var layout = barConfig && barConfig.layout ? barConfig.layout : null
   var out = []
   if (!layout) return out
-  var sections = ["left", "center", "right"]
-  for (var s = 0; s < sections.length; s++) {
-    var list = Array.isArray(layout[sections[s]]) ? layout[sections[s]] : []
+  for (var s = 0; s < SECTIONS.length; s++) {
+    var list = Array.isArray(layout[SECTIONS[s]]) ? layout[SECTIONS[s]] : []
     for (var i = 0; i < list.length; i++) if (entryId(list[i])) out.push(list[i])
   }
   return out

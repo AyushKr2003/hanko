@@ -1,0 +1,99 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3400">
+<title>Kaze 02 · Iai</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .beat { display: grid; grid-template-columns: 300px 220px 1fr; gap: 36px; padding: 30px 0; border-top: 1px solid var(--line); align-items: center; }
+  .beat .nm .k { font-family: var(--brush); font-size: 64px; line-height: 1; color: var(--ink); }
+  .beat .nm .r { font-family: var(--display); font-style: italic; font-size: 30px; margin-top: 8px; }
+  .beat .nm .e { font-family: var(--mono); font-size: 12px; letter-spacing: 2.4px; color: var(--inkFaint); text-transform: uppercase; margin-top: 6px; }
+  .beat .nm .w { font-size: 15.5px; color: var(--inkMuted); margin-top: 10px; line-height: 1.45; }
+  .curve { width: 220px; height: 170px; border: 1px solid var(--line); position: relative; }
+  .curve svg { position: absolute; inset: 0; }
+  .curve .lb { position: absolute; left: 10px; bottom: 8px; font: 11px var(--mono); color: var(--inkFaint); letter-spacing: 1px; }
+  .curve .ms { position: absolute; right: 10px; top: 8px; font: 13px var(--mono); color: var(--ink); }
+  .strip { display: flex; flex-direction: column; gap: 12px; }
+  .ruler { position: relative; height: 26px; border-bottom: 1px solid var(--lineStrong); }
+  .ruler i { position: absolute; bottom: 0; width: 1px; height: 6px; background: var(--lineStrong); }
+  .ruler i.m { height: 11px; }
+  .ruler b { position: absolute; bottom: 12px; font: 400 11px var(--mono); color: var(--inkFaint); transform: translateX(-50%); }
+  .span { position: absolute; bottom: -2px; height: 3px; background: var(--ink); }
+  .span.hold { background: repeating-linear-gradient(90deg, var(--inkFaint) 0 3px, transparent 3px 6px); }
+  .frames { display: flex; gap: 10px; }
+  .fr { flex: 1; height: 120px; border: 1px solid var(--line); position: relative; background: var(--paper2); overflow: hidden; }
+  .fr .t { position: absolute; left: 8px; bottom: 6px; font: 10.5px var(--mono); color: var(--inkFaint); }
+  .fr .edge { position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--inkMuted); }
+  .pn { position: absolute; left: 0; top: 14px; bottom: 26px; background: var(--paper); border: 1px solid var(--inkDim); border-left: 0; }
+  .pn .ln { position: absolute; left: 12px; height: 4px; background: var(--inkMuted); }
+  .plate { position: absolute; left: 14px; right: 14px; top: 34px; height: 30px; display: flex; align-items: center; padding: 0 10px; font-size: 14px; gap: 8px; }
+  .flash { position: absolute; left: 0; right: 0; top: 49px; height: 1px; background: var(--bone); }
+  .bad { opacity: .9; }
+  .bad .nm .k { color: var(--inkFaint); text-decoration: line-through; text-decoration-color: var(--seal); text-decoration-thickness: 2px; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>02 / 14 · motion</div>
+  <div class="head"><span class="no">02</span><h1>Iai, the drawn sword</h1><span class="kj">居合</span></div>
+  <p class="lede">Every surface moves in the same five beats, taken from iaidō: ready, draw, cut, shake off, sheath. Opening is quick and stops dead. Closing is slower and ends in a click. Nothing springs, nothing bounces, and with motion off every beat is just its last frame.</p>
+  <div id="beats"></div>
+  <div class="notes">
+    <div><b>Jo-ha-kyū<i>序破急</i></b>Noh's tempo in one move: a held beat (jo), a fast travel (ha), an abrupt end (kyū). The 30 ms hold before a draw is what makes it feel intended instead of sudden.</div>
+    <div><b>Closing is slower<i>納</i></b>Other desktops close faster than they open. A blade goes back into the scabbard carefully. 240 ms against 160 ms, and the last pixel snaps.</div>
+    <div><b>One hand, everywhere<i>一</i></b>The same tokens drive the bar, the panels, the launcher, the toasts and the lock (core/Iai.qml), and the same curves drive Hyprland's windows (hanko.lua), so everything on screen moves like one person.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+// cubic-bezier, solved for x → y
+function bez(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by
+  const X = t => ((ax * t + bx) * t + cx) * t, Y = t => ((ay * t + by) * t + cy) * t
+  return x => { let lo = 0, hi = 1; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; X(m) < x ? lo = m : hi = m } return Y((lo + hi) / 2) }
+}
+function curveSvg(pts, color = 'var(--ink)', spring = false) {
+  const f = spring ? (x => 1 - Math.exp(-6 * x) * Math.cos(12 * x)) : bez(...pts)
+  let d = ''
+  for (let i = 0; i <= 60; i++) { const x = i / 60, y = f(x); d += (i ? 'L' : 'M') + (16 + x * 188).toFixed(1) + ',' + (150 - y * 120).toFixed(1) }
+  return `<svg width="220" height="170"><line x1="16" y1="30" x2="204" y2="30" stroke="var(--line)" stroke-dasharray="3 3"/><line x1="16" y1="150" x2="204" y2="150" stroke="var(--line)"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2"/></svg>`
+}
+function ruler(hold, dur, max = 400) {
+  let h = ''
+  for (let ms = 0; ms <= max; ms += 20) { const x = ms / max * 100; h += `<i class="${ms % 100 ? '' : 'm'}" style="left:${x}%"></i>` + (ms % 100 ? '' : `<b style="left:${x}%">${ms}</b>`) }
+  if (hold) h += `<div class="span hold" style="left:0;width:${hold / max * 100}%"></div>`
+  h += `<div class="span" style="left:${hold / max * 100}%;width:${dur / max * 100}%"></div>`
+  return `<div class="ruler">${h}</div>`
+}
+const W = 186 // a frame's inner width
+const beats = [
+  { k: '構', r: 'Kamae', e: 'ready · 90 ms', w: 'Hover, keyboard focus, a hotkey held. Nothing moves: the ink steps up one tier.', pts: [0.2, 0, 0, 1], hold: 0, dur: 90,
+    frame: (p) => { const tiers = ['--inkFaint', '--inkMuted', '--inkDim', '--ink']; const c = tiers[Math.min(3, Math.floor(p * 3.99))]; return `<div class="plate" style="color:var(${c})">Sound <span style="margin-left:auto;font-family:var(--mono);font-size:11px">62</span></div>` } },
+  { k: '抜', r: 'Nuki', e: 'draw · 30 + 160 ms', w: 'Anything opens. A held beat, a fast travel along one axis, a hard stop. No overshoot.', pts: [0.05, 0.9, 0.1, 1], hold: 30, dur: 160,
+    frame: (p) => `<div class="edge"></div><div class="pn" style="width:${(1 + p * (W - 20)).toFixed(0)}px">${p > .5 ? `<div class="ln" style="top:14px;width:${p * 110}px"></div><div class="ln" style="top:28px;width:${p * 70}px;opacity:.6"></div>` : ''}</div>` },
+  { k: '斬', r: 'Kiri', e: 'cut · 1 frame + 70 ms', w: 'A commit: a click, Enter, a chosen result. The plate inverts at once; a hairline flashes across it and fades.', pts: [0, 1, 0, 1], hold: 0, dur: 70,
+    frame: (p, i) => `<div class="plate" style="background:${i ? 'var(--bone)' : 'transparent'};color:${i ? 'var(--onBone)' : 'var(--inkDim)'}">${i ? '// ' : ''}Terminal</div>${i && i < 4 ? `<div class="flash" style="opacity:${1 - p}"></div>` : ''}` },
+  { k: '振', r: 'Chiburi', e: 'shake off · +60, 220 ms', w: 'After a draw or a cut: the secondary things settle. Values and labels ink in after their plate.', pts: [0.25, 0.1, 0.25, 1], hold: 60, dur: 220,
+    frame: (p) => `<div class="plate" style="background:var(--bone);color:var(--onBone)">// Terminal <span style="margin-left:auto;font:11px var(--mono);opacity:${p.toFixed(2)}">Super ⏎</span></div><div style="position:absolute;left:24px;top:76px;font:12px var(--mono);color:var(--inkFaint);opacity:${p.toFixed(2)}">alacritty · 3 open</div>` },
+  { k: '納', r: 'Nōtō', e: 'sheath · 240 ms, then the click', w: 'Anything closes. Slow away, accelerating into the edge it came from; the last pixel snaps shut.', pts: [0.7, 0, 0.84, 0], hold: 0, dur: 240,
+    frame: (p) => `<div class="edge"></div><div class="pn" style="width:${Math.max(1, (W - 20) * (1 - p)).toFixed(0)}px"></div>` },
+]
+let html = ''
+for (const b of beats) {
+  const f = bez(...b.pts); let fr = ''
+  for (let i = 0; i < 6; i++) {
+    const tl = b.hold + b.dur * i / 5, p = b.k === '斬' ? i / 5 : f(i / 5)
+    fr += `<div class="fr">${b.frame(p, i)}<span class="t">${Math.round(tl)} ms</span></div>`
+  }
+  html += `<div class="beat"><div class="nm"><div class="k">${b.k}</div><div class="r">${b.r}</div><div class="e">${b.e}</div><div class="w">${b.w}</div></div>
+    <div class="curve">${curveSvg(b.pts)}<span class="ms">${b.dur}</span><span class="lb">${b.pts.join(', ')}</span></div>
+    <div class="strip">${ruler(b.hold, b.dur)}<div class="frames">${fr}</div></div></div>`
+}
+// what we don't do
+let sp = ''
+for (let i = 0; i < 6; i++) { const x = i / 5, p = 1 - Math.exp(-6 * x) * Math.cos(12 * x); sp += `<div class="fr"><div class="edge"></div><div class="pn" style="width:${Math.max(1, (W - 20) * p * .9).toFixed(0)}px;border-color:var(--inkFaint)"></div><span class="t">${Math.round(x * 400)} ms</span></div>` }
+html += `<div class="beat bad"><div class="nm"><div class="k">跳</div><div class="r">Not this: the spring</div><div class="e">bounce · overshoot · jelly</div><div class="w">Overshoot reads as wobble. A swordsman doesn't wobble, so no Kaze surface ever does.</div></div>
+  <div class="curve">${curveSvg(null, 'var(--seal)', true)}<span class="ms" style="color:var(--seal)">✕</span></div>
+  <div class="strip">${ruler(0, 400)}<div class="frames">${sp}</div></div></div>`
+document.getElementById('beats').innerHTML = html
+ready()
+</script>
+</body></html>

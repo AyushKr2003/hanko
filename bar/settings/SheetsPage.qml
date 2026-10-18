@@ -292,7 +292,7 @@ Column {
   Item { width: 1; height: Type.px(26) }
 
   // Panel opacity 透け: how much of the desk shows through every panel
-  // (sheets in any hand, the scroll, the framed overview), with Shōji's
+  // (sheets in any hand, the scroll), with Shōji's
   // brush slider. It was on Settings › Design, which went with the design.
   Item {
     id: opacityRow
@@ -307,7 +307,7 @@ Column {
       Text { text: "Panel opacity"; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
       Text {
         width: parent.width; wrapMode: Text.Wrap
-        text: "How much of your desk shows through every panel: sheets in any hand, the scroll and the framed overview. Auto keeps each one's own paper (solid, or Shōji's washi at 86%)."
+        text: "How much of your desk shows through every panel: sheets in any hand and the scroll. Auto keeps each one's own paper (solid, or Shōji's washi at 86%)."
         color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note
       }
     }

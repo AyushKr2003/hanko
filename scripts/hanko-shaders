@@ -1,0 +1,12 @@
+#!/bin/bash
+# hanko-shaders · compile Hanko's Qt shaders (assets/shaders/*.frag → .qsb).
+# The .qsb files are committed, so only someone editing a shader needs Qt's
+# qsb tool (qt6-shadertools).
+set -euo pipefail
+here="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+qsb="$(command -v qsb || echo /usr/lib/qt6/bin/qsb)"
+[[ -x $qsb ]] || { echo "hanko-shaders: qsb not found (install qt6-shadertools)" >&2; exit 1; }
+for f in "$here"/assets/shaders/*.frag; do
+  "$qsb" --glsl "100es,120,150" --hlsl 50 --msl 12 -o "$f.qsb" "$f"
+  echo "built ${f##*/}.qsb"
+done

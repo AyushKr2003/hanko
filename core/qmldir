@@ -3,3 +3,5 @@ singleton Type 1.0 Type.qml
 singleton Typeset 1.0 Typeset.qml
 singleton Motion 1.0 Motion.qml
 singleton Dossier 1.0 Dossier.qml
+singleton Oto 1.0 Oto.qml
+Standoff 1.0 Standoff.qml

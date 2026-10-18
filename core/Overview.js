@@ -223,4 +223,4 @@ function cycle(selected, delta, n) {
 var DYNAMIC_HINT = "SCROLL / TAB  CYCLE      ALT+TAB  DESKTOP      DRAG  MOVE      ✕  CLOSE      CLICK / ENTER  GO      ESC  DISMISS"
 
 // The layouts `overview` takes (style.json, beside the counted settings).
-var LAYOUTS = ["grid", "dynamic"]
+var LAYOUTS = ["grid", "dynamic", "mission"]

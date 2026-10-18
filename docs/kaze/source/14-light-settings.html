@@ -1,0 +1,100 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3600">
+<title>Kaze 14 · Light, and the switches</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  .tz { position: absolute; top: 40px; width: 46px; background: var(--lift); border: 1px solid var(--lineStrong); border-top: 0; display: flex; flex-direction: column; align-items: center; padding: 12px 0 14px; gap: 12px; z-index: 6; }
+  .tz .mon { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font: 600 13px var(--jps); color: var(--ink); }
+  .tz .vj { writing-mode: vertical-rl; font: 15px var(--jps); color: var(--inkDim); letter-spacing: 3px; white-space: nowrap; }
+  .tz .v { writing-mode: vertical-rl; text-orientation: upright; font: 11px var(--mono); color: var(--inkMuted); white-space: nowrap; }
+  /* settings window */
+  .set { position: absolute; inset: 0; display: grid; grid-template-columns: 300px 1fr; background: var(--paper); }
+  .rail { border-right: 1px solid var(--line); padding: 26px 22px; }
+  .rail .id { border: 1px solid var(--line); padding: 14px; display: flex; gap: 14px; align-items: center; margin-bottom: 26px; }
+  .rail .id .seal { width: 38px; height: 38px; font-size: 20px; } .rail .id b { font: 500 13px var(--mono); letter-spacing: 3px; } .rail .id small { display: block; font: 11px var(--mono); letter-spacing: 2px; color: var(--inkFaint); margin-top: 3px; }
+  .rail .g { font: 11px var(--mono); letter-spacing: 2.4px; color: var(--inkFaint); margin: 20px 0 8px; }
+  .rail .it { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 16px; color: var(--inkDim); }
+  .rail .it i { font-style: normal; font-family: var(--jps); font-size: 13px; color: var(--inkFaint); }
+  .rail .it.on { background: var(--bone); color: var(--onBone); } .rail .it.on i { color: var(--onBone); }
+  .pg { padding: 30px 40px; position: relative; }
+  .pg .cr { font: 12px var(--mono); letter-spacing: 3px; color: var(--inkFaint); } .pg .cr b { color: var(--seal); font-weight: 400; }
+  .pg h2 { font: 400 58px var(--display); margin-top: 14px; } .pg h2 i { font-style: normal; font-family: var(--jps); font-size: 36px; color: var(--inkDim); margin-left: 14px; }
+  .pg .ld { font-size: 16px; color: var(--inkMuted); margin-top: 8px; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 26px; }
+  .tile { border: 1px solid var(--line); }
+  .tile .pic { height: 120px; background: var(--paper2); position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+  .tile .nm { padding: 12px 14px 4px; font-size: 16px; display: flex; gap: 8px; align-items: baseline; } .tile .nm i { font-style: normal; font-family: var(--jps); color: var(--inkDim); font-size: 14px; }
+  .tile .seg { display: flex; margin: 8px 14px 14px; border: 1px solid var(--lineStrong); }
+  .tile .seg span { flex: 1; text-align: center; font: 11px var(--mono); letter-spacing: 1.6px; padding: 6px 0; color: var(--inkFaint); }
+  .tile .seg span.on { background: var(--bone); color: var(--onBone); }
+  .tile.off .pic { opacity: .35; }
+  .act { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--line); padding: 16px 40px; display: flex; gap: 14px; font: 12px var(--mono); letter-spacing: 3px; color: var(--inkFaint); align-items: center; }
+  .act .bt { margin-left: auto; border: 1px solid var(--lineStrong); padding: 8px 16px; color: var(--inkDim); }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>14 / 14 · light, and the switches</div>
+  <div class="head"><span class="no">14</span><h1>Daylight, and every switch</h1><span class="kj">昼</span></div>
+  <p class="lede">The same desk on a light theme: the print turns into an ink print on paper, the grass into dark ink, the letters into paper strips. And the one page in Hanko's settings where every part of Kaze is switched, each with a live picture of itself. As everywhere in Hanko, there is no Save: a change applies and stays, and Ctrl+Z takes it back.</p>
+
+  <div class="sec"><b>A light theme</b><i></i>papier · the Great Wave as an ink print</div>
+  <div class="frame light" style="border-color:var(--line)"><div class="fit"><div class="screen light" id="light"></div></div></div>
+
+  <div class="sec"><b>Settings › Kaze 風</b><i></i>a page next to Typesetting · every surface on or off · the sound too</div>
+  <div class="frame"><div class="fit"><div class="screen" id="set"></div></div></div>
+
+  <div class="notes">
+    <div><b>Defaults<i>初</i></b>On at first: motion, windows, the print, the grass, the OSD, letters, the launcher and the lock. Off at first: Sumi's schedule, riding mode and sound. Ceremonies: 終 and 危 on, the rest off.</div>
+    <div><b>One page, one file<i>一</i></b>Every switch writes to the same ~/.config/hanko/style.json under "kaze", read by the bar and by each surface plugin, so they always agree (principle 7).</div>
+    <div><b>Install and undo<i>戻</i></b>hanko install --desk adds the surface plugins and hanko.lua; hanko uninstall --desk puts every Omarchy original back, the lock first. hanko doctor checks each clone against Omarchy's version.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+document.getElementById('light').innerHTML = `<div class="wp" style="background-image:url(img/2-great-wave-light.webp);opacity:.7"></div><div class="ground"></div>
+  ${grass({ height: 170, count: 320, wind: .22, gust: { x: 1830, width: 200, strength: .9 }, seed: 11, color: 'var(--inkMuted)', opacity: .9 })}${bar({ ws: 2 })}
+  <div class="win" style="left:170px;top:52px;width:784px;height:1016px"><div class="term"><span class="p">鑑</span> <span class="d">~/code/</span>hanko <span class="f">dev</span>
+<span class="m">›</span> tests/run --quick
+<span class="f">unit</span>     214 passed            <span class="f">0.8 s</span>
+<span class="f">lint</span>     qmllint, 0 warnings
+
+<span class="p">鑑</span> <span class="d">~/code/</span>hanko <span class="f">dev</span>
+<span class="m">›</span> <span style="background:var(--ink);color:var(--paper)"> </span></div></div>
+  <div class="win focus" style="left:960px;top:52px;width:790px;height:1016px"><div class="term"><span class="f">1</span>  import QtQuick
+<span class="f">2</span>  import qs.Commons
+<span class="f">3</span>
+<span class="f">4</span>  <span class="f">// Iai 居合: the five beats every surface moves on.</span>
+<span class="f">5</span>  QtObject {
+<span class="f">6</span>    readonly property int nuki: 160
+<span class="f">7</span>    readonly property int noto: 240
+<span class="f">8</span>  }</div></div>
+  <div class="tz" style="left:1826px"><div class="mon">話</div><div class="vj">便り</div><div class="v">14:20</div></div>`
+  .replace('21<em>:</em>44', '14<em>:</em>20')
+
+const tiles = [
+  ['Motion', '居合', ['iai', 'still'], 0, `<div style="position:absolute;left:14px;right:14px;top:58px;height:1px;background:var(--lineStrong)"></div><div style="position:absolute;left:14px;top:57px;width:60%;height:3px;background:var(--ink)"></div>`],
+  ['Windows', '刃', ['edge', 'off'], 0, `<div style="position:absolute;left:22px;top:18px;width:120px;height:84px;border:1px solid var(--ink)"></div><div style="position:absolute;left:150px;top:18px;width:120px;height:84px;border:1px solid var(--lineStrong)"></div>`],
+  ['Print', '摺', ['print', 'original'], 0, `<div style="position:absolute;inset:0;background:url(img/2-great-wave-dark.webp) center/cover;opacity:.7"></div>`],
+  ['Wind', '風', ['grass', 'edge', 'off'], 0, grass({ width: 420, height: 100, count: 80, wind: .4, seed: 2, color: 'var(--inkMuted)', opacity: .9 })],
+  ['Posture', '体幹', ['on', 'off'], 0, `<div style="position:absolute;left:20%;right:20%;top:70px;height:1px;background:var(--lineStrong)"></div><div style="position:absolute;left:34%;right:34%;top:69px;height:3px;background:var(--ink)"></div>`],
+  ['Letters', '文', ['strips', 'off'], 0, `<div style="position:absolute;right:30px;top:0;width:34px;height:96px;background:var(--lift);border:1px solid var(--lineStrong);border-top:0"></div><div style="position:absolute;right:74px;top:0;width:34px;height:76px;background:var(--lift);border:1px solid var(--lineStrong);border-top:0"></div>`],
+  ['Launcher', '抜刀', ['draw', 'off'], 0, `<div style="position:absolute;left:34%;top:0;bottom:0;width:36%;background:var(--paper);border-left:1px solid var(--ink)"></div><div style="position:absolute;left:38%;top:44px;width:28%;height:14px;background:var(--bone)"></div>`],
+  ['Lock', '対峙', ['standoff', 'omarchy'], 0, `<div style="position:absolute;left:24px;top:24px;font:300 48px var(--display)">21<span style="color:var(--seal)">:</span>44</div><div style="position:absolute;left:24px;top:88px;width:140px;height:1px;background:var(--ink)"></div>`],
+  ['Ceremonies', '式', ['終 危', 'all', 'off'], 0, `<div style="position:absolute;inset:0;display:grid;place-items:center;font:72px var(--brush)">終</div>`],
+  ['Sumi', '墨', ['by hand', 'schedule'], 0, `<div style="position:absolute;inset:0;background:url(img/orig-3-red-fuji.webp) center/cover;filter:grayscale(1) contrast(1.2)"></div>`],
+  ['Riding', '騎', ['on', 'off'], 1, `<div style="position:absolute;left:0;right:0;top:20px;height:1px;background:var(--lineStrong)"></div><div style="position:absolute;left:60%;top:15px;width:2px;height:8px;background:var(--seal)"></div>`],
+  ['Sound', '音', ['off', 'quiet', 'on'], 0, `<svg width="420" height="120" style="position:absolute;inset:0"><path d="M20 60 ${Array.from({ length: 60 }, (_, i) => `L${20 + i * 4},${60 - Math.exp(-i / 10) * 40 * (i % 2 ? 1 : -1)}`).join(' ')}" fill="none" stroke="var(--inkMuted)" stroke-width="1.4"/></svg>`],
+]
+document.getElementById('set').innerHTML = `<div class="set"><div class="rail"><div class="id"><div class="seal">鑑</div><div><b>HANKO</b><small>// SETTINGS_</small></div></div>
+  <div class="g">00 YOU</div><div class="it">Profile<i>印影</i></div>
+  <div class="g">01 BAR</div><div class="it">Typesetting<i>組版</i></div><div class="it">Presets<i>型</i></div><div class="it">Parts<i>部品</i></div><div class="it">Colour<i>色</i></div>
+  <div class="g">02 PANELS</div><div class="it">Sheets<i>紙</i></div><div class="it">Scroll<i>巻</i></div>
+  <div class="g">03 DESK</div><div class="it on">// Kaze<i>風</i></div><div class="it">Motion<i>動</i></div><div class="it">Keys<i>鍵</i></div>
+  <div class="g">04 HANKO</div><div class="it">About<i>由来</i></div><div class="it">Credits<i>謝辞</i></div></div>
+  <div class="pg"><div class="cr"><b>風</b> DESK · KAZE · 10 OF 12 ON</div><h2>Kaze<i>風</i></h2><div class="ld">Every part of the desk beyond the bar. Hover a picture to see it move; a click on a word keeps it.</div>
+  <div class="tiles">${tiles.map(([n, k, opts, sel, pic]) => `<div class="tile${opts[sel] === 'off' || opts[sel] === 'still' || opts[sel] === 'omarchy' ? ' off' : ''}"><div class="pic">${pic}</div><div class="nm">${n}<i>${k}</i></div><div class="seg">${opts.map((o, i) => `<span class="${i === sel ? 'on' : ''}">${o.toUpperCase()}</span>`).join('')}</div></div>`).join('')}</div>
+  <div class="act">■ SAVED · LAST CHANGE: RIDING → OFF<span class="bt">UNDO · CTRL Z</span></div></div></div>`
+ready()
+</script>
+</body></html>

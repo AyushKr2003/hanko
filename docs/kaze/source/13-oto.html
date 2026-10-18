@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3000">
+<title>Kaze 13 · Oto</title>
+<link rel="stylesheet" href="kaze.css">
+<style>
+  .snd { border: 1px solid var(--line); background: var(--paper); padding: 22px 24px 20px; }
+  .snd .top { display: flex; align-items: baseline; gap: 14px; }
+  .snd .k { font: 46px/1 var(--brush); color: var(--ink); }
+  .snd .n { font: italic 400 26px var(--display); } .snd .e { margin-left: auto; font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); text-transform: uppercase; }
+  .snd svg { display: block; margin: 18px 0 12px; }
+  .snd .d { font-size: 15.5px; color: var(--inkMuted); line-height: 1.45; }
+  .snd .m { display: flex; gap: 22px; margin-top: 12px; font: 12px var(--mono); color: var(--inkDim); letter-spacing: 1.4px; }
+  .sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+  .sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+  .hour { position: relative; height: 170px; border: 1px solid var(--line); background: var(--paper); }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">風</span>Kaze · the whole desk<span class="rl"></span>13 / 14 · sound</div>
+  <div class="head"><span class="no">13</span><h1>Oto, six sounds</h1><span class="kj">音</span></div>
+  <p class="lede">Sekiro and the Ghost games are half sound: steel, wood, wind, a bell. A desk must be far quieter. Kaze has six short sounds, all under a quarter of a second except the shutdown bell, all mastered quiet, all off until you turn sound on. Wood and paper for everyday things, metal only for the sheath, a bell only when it matters.</p>
+
+  <div class="sec"><b>The six</b><i></i>waveforms to scale · −28 LUFS · played with pw-play</div>
+  <div class="grid g3" id="six"></div>
+
+  <div class="sec"><b>An hour at the desk</b><i></i>every sound that would play · most of the hour is silence</div>
+  <div class="hour" id="hour"></div>
+
+  <div class="notes">
+    <div><b>Never<i>無</i></b>No music, no ambient loops, no shakuhachi, no sound on every click or key, nothing while a fullscreen app or a call is running, nothing in Sumi mode except the bell.</div>
+    <div><b>Sources<i>源</i></b>Recorded for Hanko or taken from CC0 libraries, each file's source and licence listed in Credits. A real tsuba-and-scabbard click, real hyoshigi clappers, real washi.</div>
+    <div><b>Switches<i>切</i></b>sound: off | quiet | on, and each sound on its own. The volume follows the output's volume, at most 30% of it.</div>
+  </div>
+</div>
+<script src="kaze.js"></script>
+<script>
+// a waveform drawn from an envelope: attack, decay, body, noise
+function wave({ ms, attack = 2, decay = 40, tone = 0, noise = 1, w = 540, h = 90, seed = 1, scale = 600 }) {
+  const r = rng(seed), px = Math.round(ms / scale * w)
+  let up = '', dn = ''
+  for (let x = 0; x <= px; x++) {
+    const t = x / px * ms
+    let env = t < attack ? t / attack : Math.exp(-(t - attack) / decay)
+    const v = env * (noise * (0.5 + r() * 0.5) + tone * Math.abs(Math.sin(t / 3))) * (h / 2 - 4)
+    up += `L${x},${(h / 2 - v).toFixed(1)}`; dn = `L${x},${(h / 2 + v).toFixed(1)}` + dn
+  }
+  return `<svg width="${w}" height="${h}"><line x1="0" x2="${w}" y1="${h / 2}" y2="${h / 2}" stroke="var(--line)"/><path d="M0,${h / 2}${up}${dn}Z" fill="var(--ink)" opacity=".85"/>
+   <text x="${w}" y="${h - 2}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--inkFaint)">${ms} ms · scale 600 ms</text></svg>`
+}
+const six = [
+  ['納', 'Sheath', 'a panel closes', 'A blade seating in its scabbard: a soft slide and one bright click.', 120, { attack: 1, decay: 18, tone: .6, noise: .5, seed: 2 }, 'metal · wood'],
+  ['拍', 'Hyoshigi', 'workspace change', 'Two hardwood clappers, one strike, very short. The sound of a stage changing.', 90, { attack: 1, decay: 12, tone: .2, noise: 1, seed: 3 }, 'wood'],
+  ['紙', 'Paper', 'a letter arrives', 'A strip of washi unrolling: a breath of texture, no tone.', 220, { attack: 30, decay: 80, noise: .7, seed: 4 }, 'paper'],
+  ['鈴', 'Suzu', 'a reminder · urgent', 'A small bell, struck once. The only sound that may come while you work.', 240, { attack: 2, decay: 110, tone: 1, noise: .15, seed: 5 }, 'brass'],
+  ['墨', 'Ink', 'a screenshot', 'A brush touching paper, wet. Replaces the camera shutter.', 160, { attack: 8, decay: 50, noise: .8, seed: 6 }, 'brush · paper'],
+  ['鐘', 'Bell', 'shut down only', 'A distant temple bell, faded in already. Only with the 終 ceremony.', 1200, { attack: 30, decay: 420, tone: 1, noise: .1, seed: 7, scale: 1200 }, 'bronze'],
+]
+document.getElementById('six').innerHTML = six.map(([k, n, e, d, ms, o, mat]) => `<div class="snd"><div class="top"><span class="k">${k}</span><span class="n">${n}</span><span class="e">${e}</span></div>${wave({ ms, ...o })}<div class="d">${d}</div><div class="m"><span>${ms} MS</span><span>−28 LUFS</span><span>${mat.toUpperCase()}</span></div></div>`).join('')
+
+// an hour: 0..60 min
+const W = 1776, H = 170, x = m => 40 + m / 60 * (W - 80)
+const ev = [[2.5, '拍'], [3.1, '拍'], [9, '紙'], [14.2, '納'], [21, '拍'], [30, '鈴'], [33, '紙'], [41.5, '墨'], [52, '拍'], [52.4, '納']]
+let s = `<svg width="${W}" height="${H}"><line x1="40" x2="${W - 40}" y1="100" y2="100" stroke="var(--lineStrong)"/>`
+for (let m = 0; m <= 60; m += 5) s += `<line x1="${x(m)}" x2="${x(m)}" y1="100" y2="${m % 15 ? 104 : 110}" stroke="var(--lineStrong)"/>` + (m % 15 ? '' : `<text x="${x(m)}" y="130" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--inkFaint)">${m === 60 ? '22:00' : '21:' + String(m).padStart(2, '0')}</text>`)
+for (const [m, k] of ev) s += `<line x1="${x(m)}" x2="${x(m)}" y1="${k === '鈴' ? 52 : 70}" y2="100" stroke="${k === '鈴' ? 'var(--ink)' : 'var(--inkMuted)'}" stroke-width="2"/><text x="${x(m)}" y="${k === '鈴' ? 42 : 60}" text-anchor="middle" font-family="Noto Serif CJK JP" font-size="18" fill="var(--inkDim)">${k}</text>`
+s += `<text x="40" y="160" font-family="var(--mono)" font-size="12" letter-spacing="1.5" fill="var(--inkFaint)">10 SOUNDS · 1.4 S OF SOUND IN 3600 S</text></svg>`
+document.getElementById('hour').innerHTML = s
+ready()
+</script>
+</body></html>

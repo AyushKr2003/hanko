@@ -60,7 +60,7 @@ PanelWindow {
 
   readonly property string screenName: screen ? screen.name : ""
   // Shōji's skin (core/Skin.js) for this screen's style: the Shōji sheet
-  // hand and the framed overview wear it, as the bar's Shōji values do.
+  // hand wears it, as the bar's Shōji values do.
   readonly property var skin: Skin.fromStyle(shown)
   readonly property Item surface: classicSurface
 
@@ -91,6 +91,7 @@ PanelWindow {
   BarSurface {
     id: classicSurface
     anchors.fill: parent
+    riding: win.bar.riding
     // Parked under Inkan: nothing of it is drawn.
     visible: !win.inkan
     style: win.shown

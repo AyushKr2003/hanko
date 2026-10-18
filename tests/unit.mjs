@@ -1,7 +1,7 @@
 // Unit tests for the pure logic in core/*.js. Run: node tests/unit.mjs
 // The files are QML JavaScript libraries (".pragma library"), so they are
 // loaded as text with that line removed and evaluated in a function scope.
-import { readFileSync } from "node:fs"
+import { readFileSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import assert from "node:assert/strict"
@@ -18,7 +18,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode"])
+  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn", "kazeWind", "KAZE_WIND_MAX"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -37,6 +37,17 @@ const Lf = load("core/Leaf.js", ["KINDS", "kindOf", "labels", "uptime", "uptimeS
   "themesView", "TOOLS", "tool", "toolsLine", "focusState", "focusStep", "focusView", "clock", "notes", "toggled", "notesView", "clipboard",
   "afterword", "SEKKI", "KO"])
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
+const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
+const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "perimeter", "pointAt", "lit", "onScreen"])
+const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "wallpaperMode"])
+const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX", "ripple", "puffAfter", "rippleUniforms"])
+const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
+const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot"])
+const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence", "CUT_MS", "CUT_FOLDS", "cutFlash", "cutFold"])
+const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
+const Pa = load("core/Paths.js", ["local"])
+const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
+const Bt = load("core/Batto.js", ["CRESTS", "crestFor", "rail", "topOf"])
 const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
@@ -424,6 +435,7 @@ test("Elsewhen zones: parsed from Omarchy's bar layout, seeded when unset", () =
   const cfg = { layout: { right: [{ id: "omarchy.clock" }, { id: "omarchy.elsewhen", zones: "Home|America/New_York" }] } }
   assert.deepEqual(Tm.zonesFromBarConfig(cfg), [{ label: "Home", id: "America/New_York" }])
   assert.equal(Tm.zonesFromBarConfig({}).length, 3)
+  assert.deepEqual(Tm.zonesFromBarConfig({ layout: { centerEnd: [{ id: "omarchy.elsewhen", zones: "Tokyo|Asia/Tokyo" }] } }), [{ label: "Tokyo", id: "Asia/Tokyo" }])
   assert.deepEqual(Tm.probeCommand(["Asia/Tokyo"]).slice(-1), ["Asia/Tokyo"])
 })
 
@@ -616,7 +628,7 @@ test("settings: six cards hold every one of the twenty-four settings once", () =
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS).sort(), [...S.PRESET_NAMES].sort())
   // Typesetting, Presets, Parts, Colour, Screens · Sheets, Scroll, Overview · Motion, Keys · Profile, About, Credits
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 13)
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 14)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -631,7 +643,7 @@ test("settings: options, the lit one, and the seal glyph's typed case", () => {
   assert.equal(S.resolve({ hours: "13h" }).hours, "auto")
   assert.equal(S.withSetting({}, "hours", "24h").hours, "24h")
   assert.equal(Se.selected("numerals", S.resolve({ numerals: "kanji" }), "鑑"), "kanji")
-  assert.equal(Se.MOTION_ROWS.length, 8)
+  assert.equal(Se.MOTION_ROWS.length, 13)  // the five Iai beats, then the eight moves
   assert.equal(Se.nameOf("clockAt"), "Clock position")
   assert.equal(Se.nameOf("bluetooth"), "Bluetooth")
   assert.ok(S.KEYS.every((k) => Se.nameOf(k) !== k))
@@ -693,6 +705,12 @@ test("hosting: Omarchy's default layout, minus what Hanko draws itself", () => {
   assert.deepEqual(H.own(cfg), { tray: true, indicators: true, keyboard: true, mic: false })
   assert.deepEqual(H.own({}), { tray: true, indicators: true, keyboard: true, mic: false })
   assert.deepEqual(H.own({ layout: { right: [{ id: "omarchy.microphone" }] } }), { tray: false, indicators: false, keyboard: false, mic: true })
+  // centerBegin and centerEnd count, in reading order; the tray drawer doesn't.
+  const centred = { layout: { centerBegin: [{ id: "omarchy.indicators" }], center: [{ id: "omarchy.clock" }],
+    centerEnd: [{ id: "omarchy.weather" }], right: [{ id: "omarchy.tray" }], tray: [{ id: "omarchy.microphone" }] } }
+  assert.deepEqual(H.own(centred), { tray: true, indicators: true, keyboard: false, mic: false })
+  assert.deepEqual(H.entries(centred).map(e => e.id), ["omarchy.indicators", "omarchy.clock", "omarchy.weather", "omarchy.tray"])
+  assert.deepEqual(H.hosted(centred, all, () => false).map(h => h.id), ["omarchy.weather"])
   assert.equal(H.idOfCell(H.cell("omarchy.weather")), "omarchy.weather")
   assert.equal(H.idOfCell("volume"), "")
 })
@@ -1289,7 +1307,7 @@ test("dynamic overview: desktops, dots, packing and the selection", () => {
   assert.equal(Ov.packRows(3, 1000, 0.5625, 500, 18), null)
   assert.equal(Ov.cycle(4, 1, 5), 0)
   assert.equal(Ov.cycle(0, -1, 5), 4)
-  assert.deepEqual(Ov.LAYOUTS, ["grid", "dynamic"])
+  assert.deepEqual(Ov.LAYOUTS, ["grid", "dynamic", "mission"])
 })
 
 test("overview layout is a setting beside the counted ones", () => {
@@ -1300,9 +1318,11 @@ test("overview layout is a setting beside the counted ones", () => {
   assert.equal(d.overview, "dynamic")
   assert.equal(S.withPreset(d, "Quiet").overview, "dynamic")
   assert.equal(S.withSetting({}, "overview", "tiles"), null)
-  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic", "framed"])
-  // Shōji's framed pages are a choice on any bar.
-  assert.equal(S.resolve(S.withSetting({}, "overview", "framed")).overview, "framed")
+  assert.deepEqual(Se.optionsFor("overview", S.OPTIONS), ["grid", "dynamic", "mission"])
+  assert.equal(S.resolve({ overview: "mission" }).overview, "mission")
+  // Shōji's framed pages are gone: a file that names them opens the grid.
+  assert.equal(S.withSetting({}, "overview", "framed"), null)
+  assert.equal(S.resolve({ overview: "framed" }).overview, "grid")
 })
 
 // ── Shōji, folded into Hanko: the preset, the migration, its skin ──────
@@ -1314,7 +1334,7 @@ test("shōji: a saved Shōji design loads as the Shōji preset; touches become s
   assert.equal(n.preset, "Shōji"); assert.deepEqual(n.edits, { height: 36 })      // only what Shōji's bar honoured
   assert.equal(n.design, undefined); assert.equal(n.borrow, undefined); assert.equal(n.touches, undefined)
   assert.deepEqual([n.season, n.numerals, n.grain], ["english", "arabic", "fine"])
-  assert.equal(n.overview, "framed")
+  assert.equal(n.overview, "grid")
   assert.equal(n.sheetStyles.inbox, "tanzaku"); assert.equal(n.sheetStyles.sound, "shoji")  // a hand you picked stays
   // A monitor in the other design gets that preset's values, under its own.
   assert.equal(n.monitors["DP-2"].seal, "stamp"); assert.equal(n.monitors["DP-2"].height, 32)
@@ -1329,13 +1349,13 @@ test("shōji: a saved Shōji design loads as the Shōji preset; touches become s
   assert.equal(S.withSetting(n, "clock", "mono").preset, "Shōji")
 })
 
-test("the Shōji preset: picked by any spelling, it puts every sheet in the Shōji hand and frames the overview", () => {
+test("the Shōji preset: picked by any spelling, it puts every sheet in the Shōji hand", () => {
   for (const name of ["Shōji", "shoji", "SHOJI", "shōji"]) assert.equal(S.withPreset({}, name).preset, "Shōji")
   const d = S.withPreset({ sheetStyles: { time: "kasumi" }, overview: "dynamic" }, "shoji")
   assert.ok(S.SHEET_KEYS.every(k => S.resolve(d).sheetStyles[k] === "shoji"))
-  assert.equal(d.overview, "framed")
+  assert.equal(d.overview, "dynamic")   // the overview is yours
   // Kept afterwards, like anything beside the settings.
-  const h = S.withPreset(d, "Hanko"); assert.equal(h.overview, "framed"); assert.equal(h.sheetStyles.time, "shoji")
+  const h = S.withPreset(d, "Hanko"); assert.equal(h.sheetStyles.time, "shoji")
   const st = S.resolve(d)
   assert.deepEqual([st.seal, st.spaces, st.status, st.notif, st.surface, st.pointer, st.panels], ["carved", "brush", "ink", "seal", "washi", "brush", "sheets"])
 })
@@ -1374,10 +1394,11 @@ test("kata K2: brush strokes and ensō are deterministic, closed SVG paths", () 
   assert.ok(Br.enso(0, 20).length > 0 && Br.enso(2, 20).length > 0)   // clamped, never empty
 })
 
-test("kata K6: the second wave: Shōji's rows, framed pages and brush-stroke hold", () => {
+test("kata K6: the second wave: Shōji's rows and brush-stroke hold", () => {
   const s = Sk.fromStyle(S.resolve({}))
-  assert.deepEqual([s.notify, s.overview, s.hold], ["rows", "framed", "stroke"])
-  assert.equal(Object.keys(Sk.SHOJI).length, 15)
+  assert.deepEqual([s.notify, s.hold], ["rows", "stroke"])
+  assert.equal(s.overview, undefined)
+  assert.equal(Object.keys(Sk.SHOJI).length, 14)
 })
 test("panel opacity: 30..100 or the design's own, kept beside the edits and through presets", () => {
   assert.equal(S.normalize({}).panelOpacity, undefined)
@@ -1829,6 +1850,508 @@ test("settings: the timesheet has every motion, the keymap lights its keys", () 
     assert.ok(code.includes('o.bind("' + b.keys + '", "' + b.name + '", "omarchy-shell hanko '))
   }
   assert.equal(Se.bindingsCode().split("hl.unbind").length - 1, Se.BINDINGS.length)
+})
+
+test("iai: five beats, none overshoots, the sheath slower than the draw, all under 320 ms", () => {
+  assert.deepEqual(Ia.ORDER, ["kamae", "nuki", "kiri", "chiburi", "noto"])
+  assert.deepEqual(Object.keys(Ia.BEATS).sort(), [...Ia.ORDER].sort())
+  for (const name of Ia.ORDER) {
+    const b = Ia.BEATS[name]
+    assert.equal(b.curve.length, 4, name)
+    assert.ok(Ia.total(name) <= 320, name + " " + Ia.total(name))
+    assert.deepEqual(Ia.qml(name), [...b.curve, 1, 1])
+    let last = 0
+    for (let i = 0; i <= 100; i++) {
+      const v = Ia.ease(b.curve, i / 100)
+      assert.ok(v >= -1e-9 && v <= 1 + 1e-9, `${name} leaves 0..1 at ${i}%: ${v}`)
+      assert.ok(v >= last - 1e-9, `${name} goes back at ${i}%`)
+      last = v
+    }
+  }
+  assert.ok(Ia.BEATS.noto.ms > Ia.BEATS.nuki.ms)
+  assert.ok(Ia.BEATS.nuki.hold > 0)
+})
+
+test("iai: the draw is mostly there by half its time; the sheath has barely left", () => {
+  assert.ok(Ia.ease(Ia.BEATS.nuki.curve, 0.5) > 0.9)
+  assert.ok(Ia.ease(Ia.BEATS.noto.curve, 0.5) < 0.2)
+  assert.equal(Ia.at("nuki", 0), 0)
+  assert.equal(Ia.at("nuki", Ia.BEATS.nuki.hold), 0)
+  assert.equal(Ia.at("nuki", Ia.total("nuki")), 1)
+  assert.equal(Ia.at("chiburi", Ia.BEATS.chiburi.delay - 1), 0)
+  assert.equal(Ia.hyprSpeed("nuki"), 1.6)
+  assert.equal(Ia.hyprSpeed("noto"), 2.4)
+})
+
+test("iai: style.lua and the Motion timesheet carry the same curves and speeds", () => {
+  const lua = readFileSync(join(root, "style.lua"), "utf8")
+  for (const name of ["kamae", "nuki", "chiburi", "noto"]) {
+    const m = lua.match(new RegExp(`hl\\.curve\\("${name}", \\{ type = "bezier", points = \\{ \\{ ([\\d.]+), ([\\d.]+) \\}, \\{ ([\\d.]+), ([\\d.]+) \\} \\} \\}\\)`))
+    assert.ok(m, "style.lua has no curve " + name)
+    assert.deepEqual(m.slice(1, 5).map(Number), Ia.BEATS[name].curve, name)
+  }
+  const anim = leaf => {
+    const m = lua.match(new RegExp(`leaf = "${leaf}", enabled = true, speed = ([\\d.]+), bezier = "(\\w+)"`))
+    assert.ok(m, "style.lua has no animation " + leaf)
+    return { speed: Number(m[1]), bezier: m[2] }
+  }
+  for (const [leaf, beat] of [["windowsIn", "nuki"], ["windowsOut", "noto"], ["layersIn", "nuki"], ["layersOut", "noto"], ["fadeIn", "chiburi"]])
+    assert.deepEqual(anim(leaf), { speed: Ia.hyprSpeed(beat), bezier: beat }, leaf)
+  // The edge inks up over the focus sweep (core/Sweep.js MS), settling in.
+  assert.deepEqual(anim("border"), { speed: Sw.MS / 100, bezier: "chiburi" })
+  assert.ok(/namespace = "\^hanko-desk\$" \}, no_anim = true/.test(lua), "the desk's overlay must not fade in")
+  assert.ok(/local shadow_style = "none"/.test(lua), "Kaze has no window shadows by default")
+  assert.ok(!/popin|bounce|elastic|overshot/i.test(lua.replace(/^\s*--.*$/gm, "")), "no pop-in or springs in style.lua")
+  for (const name of Ia.ORDER) {
+    const row = Se.MOTION_SHEET.find(r => r.prop === name)
+    assert.ok(row, "timesheet has no " + name)
+    assert.deepEqual(row.curve, Ia.BEATS[name].curve, name)
+  }
+})
+
+test("sweep: the frame sits a border outside the window; the edge is walked clockwise", () => {
+  const r = Sw.frame([100, 50], [400, 300], 1)
+  assert.deepEqual(r, { x: 99, y: 49, width: 402, height: 302 })
+  assert.equal(Sw.perimeter(r), 1408)
+  assert.deepEqual(Sw.pointAt(r, 0), { x: 99, y: 49 })
+  assert.deepEqual(Sw.pointAt(r, 402), { x: 501, y: 49 })
+  assert.deepEqual(Sw.pointAt(r, 402 + 302), { x: 501, y: 351 })
+  assert.deepEqual(Sw.pointAt(r, 402 + 302 + 402), { x: 99, y: 351 })
+  assert.deepEqual(Sw.pointAt(r, 1408), { x: 99, y: 49 })
+})
+
+test("sweep: nothing before or after, a lit stretch between, brightest at the head, on the edge", () => {
+  const r = Sw.frame([0, 0], [400, 300], 1)
+  assert.deepEqual(Sw.lit(r, 0), [])
+  assert.deepEqual(Sw.lit(r, 1), [])
+  const mid = Sw.lit(r, 0.5)
+  assert.ok(mid.length >= Sw.PIECES)
+  assert.ok(mid[mid.length - 1].alpha > mid[0].alpha)
+  for (const s of mid) for (const q of [s.a, s.b]) {
+    const onEdge = Math.abs(q.x - r.x) < 1e-3 || Math.abs(q.x - r.x - r.width) < 1e-3 || Math.abs(q.y - r.y) < 1e-3 || Math.abs(q.y - r.y - r.height) < 1e-3
+    assert.ok(onEdge, JSON.stringify(q))
+    // each piece runs along one side (horizontal or vertical)
+    assert.ok(Math.abs(s.a.x - s.b.x) < 1e-3 || Math.abs(s.a.y - s.b.y) < 1e-3)
+  }
+  // the light's total length stays within its share of the perimeter
+  const len = mid.reduce((n, s) => n + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y), 0)
+  assert.ok(len <= Sw.perimeter(r) * Sw.LENGTH + 1)
+  // at the very start only a sliver of the top edge is lit
+  const start = Sw.lit(r, 0.01)
+  assert.ok(start.every(s => Math.abs(s.a.y - r.y) < 1e-3))
+})
+
+test("sweep: a window is drawn on its own screen only, in that screen's coordinates", () => {
+  const screen = { x: 1920, y: 0, width: 2560, height: 1440 }
+  assert.equal(Sw.onScreen({ x: 10, y: 10, width: 100, height: 100 }, screen), null)
+  assert.deepEqual(Sw.onScreen({ x: 2000, y: 50, width: 100, height: 100 }, screen), { x: 80, y: 50, width: 100, height: 100 })
+})
+
+test("print: the majority tone becomes the paper, on dark and light themes", () => {
+  // Great Wave (0.65) and Sudden Shower (0.59) flip on a dark desk; the night pines (0.18) don't.
+  assert.deepEqual(Pt.steps(0.65, false, "#000", "#888"), { negate: true, from: "#000", to: "#888" })
+  assert.deepEqual(Pt.steps(0.18, false, "#000", "#888"), { negate: false, from: "#000", to: "#888" })
+  // On a light desk the light end is paper, and a mostly dark picture flips.
+  assert.deepEqual(Pt.steps(0.18, true, "#eee", "#333"), { negate: true, from: "#333", to: "#eee" })
+  assert.deepEqual(Pt.steps(0.65, true, "#eee", "#333"), { negate: false, from: "#333", to: "#eee" })
+  assert.equal(Pt.steps(NaN, false, "a", "b").negate, false)
+  const ramp = I.ramp("#ddd5c7", "#0a0a09")
+  assert.equal(Pt.inkFor(ramp, false), ramp.inkFaint)
+  assert.equal(Pt.inkFor(ramp, true), ramp.inkMuted)
+  assert.equal(Pt.wallpaperMode({}), "print")
+  assert.equal(Pt.wallpaperMode({ wallpaper: "original" }), "original")
+  assert.equal(Pt.wallpaperMode({ wallpaper: "nonsense" }), "print")
+})
+
+test("print: the sky lifts by day, settles at night, a few percent at most", () => {
+  assert.deepEqual(Pt.skyAt(12), { lift: 0.07, shade: 0 })
+  assert.deepEqual(Pt.skyAt(0), { lift: 0, shade: 0.22 })
+  assert.equal(Pt.skyAt(6).lift, 0)
+  assert.equal(Pt.skyAt(24).shade, Pt.skyAt(0).shade)
+  for (let h = 0; h < 24; h += 0.5) {
+    const s = Pt.skyAt(h)
+    assert.ok(s.lift <= 0.07 && s.shade <= 0.22 && (s.lift === 0 || s.shade === 0), String(h))
+  }
+})
+
+test("print: hanko-print and Print.js crush to the same tones", () => {
+  const sh = readFileSync(join(root, "scripts/hanko-print"), "utf8")
+  assert.ok(sh.includes(`TONES=${Pt.TONES} CLIP=${Pt.CLIP}`))
+})
+
+test("wind: a west wind leans the grass right, an east wind left, calm stands still", () => {
+  assert.equal(Wi.lean(0, 270), 0)
+  assert.ok(Wi.lean(14, 270) > 0)
+  assert.ok(Wi.lean(14, 90) < 0)
+  assert.equal(Wi.lean(14, 270), -Wi.lean(14, 90))
+  assert.equal(Wi.lean(400, 270), Wi.MAX_LEAN)
+  // from the north: still felt, by its least share
+  assert.ok(Math.abs(Wi.lean(40, 0)) >= Wi.MIN_FELT - 1e-9)
+  assert.ok(Math.abs(Wi.lean(9, 270)) < Math.abs(Wi.lean(31, 270)))
+  assert.equal(Wi.lean("x", 0), 0)
+})
+
+test("wind: the field is clumps across the width, the same every time", () => {
+  const a = Wi.field(1920, 170, 11), b = Wi.field(1920, 170, 11)
+  assert.deepEqual(a, b)
+  assert.ok(a.length > 150 && a.length < 600, String(a.length))
+  assert.ok(a.some(x => x.plume))
+  assert.ok(a.every(x => x.len > 0 && x.len <= 170 && x.x < 1960))
+  assert.ok(Math.max(...a.map(x => x.x)) > 1800)
+})
+
+test("wind: a blade leans with the wind and harder in a gust; the gust runs toward its target", () => {
+  const b = { x: 960, len: 100, rest: 0, w: 1, alpha: 1, plume: true, jitter: 1 }
+  const still = Wi.blade(b, 170, 1920, 0, 0, null)
+  assert.equal(still.tip[0], 960)
+  assert.equal(still.plume.length, 7)
+  const right = Wi.blade(b, 170, 1920, 0.4, 0, null)
+  assert.ok(right.tip[0] > 960 && right.tip[1] > still.tip[1])
+  const gust = Wi.blade(b, 170, 1920, 0.4, 0, { x: 0.5, width: 0.08, strength: 1.2 })
+  assert.ok(gust.tip[0] > right.tip[0])
+  assert.equal(Wi.gustAt(0, 0.9), null)
+  assert.equal(Wi.gustAt(1, 0.9), null)
+  const g1 = Wi.gustAt(0.3, 0.9), g2 = Wi.gustAt(0.7, 0.9)
+  assert.ok(g1.x < g2.x && g2.x < 0.9)
+  assert.ok(Wi.gustAt(0.5, 0.1).x > 0.1)
+})
+
+test("wind: it rests under fullscreen, with motion still and on low battery; settings default on", () => {
+  assert.equal(Wi.mayMove(false, false, false, 1), true)
+  assert.equal(Wi.mayMove(true, false, false, 1), false)
+  assert.equal(Wi.mayMove(false, true, false, 1), false)
+  assert.equal(Wi.mayMove(false, false, true, 0.2), false)
+  assert.equal(Wi.mayMove(false, false, true, 0.5), true)
+  assert.equal(Wi.swayAt(0.05, 3), 0)
+  // The ripple: none in calm, bigger in a strong wind, running downwind.
+  assert.equal(Wi.ripple(0.1, 2, 0.5), 0)
+  const peak = l => Math.max(...Array.from({ length: 200 }, (_, i) => Math.abs(Wi.ripple(l, i * 0.05, 0.3))))
+  assert.ok(peak(1.2) > peak(0.3) && peak(1.2) <= 0.16 + 1e-9)
+  // A crest at x moves to a larger x a moment later when the wind leans right.
+  const crest = (l, t) => { let best = 0, at = 0; for (let x = 0; x <= 0.38; x += 0.002) { const v = Wi.ripple(l, t, x) * Math.sign(l); if (v > best) { best = v; at = x } } return at }
+  assert.ok(crest(1, 0.1) > crest(1, 0))
+  assert.ok(crest(-1, 0.1) < crest(-1, 0) || crest(-1, 0) === 0)
+  const rb = Wi.blade({ x: 300, len: 100, rest: 0, w: 1, alpha: 1, plume: false, jitter: 1 }, 170, 1920, 1, { t: 0.4 }, null)
+  assert.ok(Array.isArray(rb.tip) && isFinite(rb.tip[0]))
+  // Puffs: none in a light wind, every 3–12 s in a strong one.
+  assert.equal(Wi.puffAfter(0.3, 0.5), 0)
+  assert.ok(Wi.puffAfter(1.2, 0) >= 3000 && Wi.puffAfter(1.2, 1) <= 12000 && Wi.puffAfter(1.4, 1) < Wi.puffAfter(0.6, 1))
+  assert.ok(Wi.gustAt(0.5, 1, 0.5).strength < Wi.gustAt(0.5, 1).strength)
+  // The shader's wave: none in calm, the tips' shift a few % of the width,
+  // and the shader reads exactly these uniforms (and is compiled).
+  assert.equal(Wi.rippleUniforms(0.1, 170, 1920).amp, 0)
+  const u = Wi.rippleUniforms(-1.2, 170, 1920)
+  assert.equal(u.dir, -1)
+  assert.ok(u.amp > 0.01 && u.amp < 0.03 && u.freq > 0.5)
+  const frag = readFileSync(join(root, "assets/shaders/grass.frag"), "utf8")
+  for (const name of ["time", "amp", "freq", "dir"]) assert.match(frag, new RegExp(`float ${name};`))
+  const qml = readFileSync(join(root, "plugins/hanko.background/Background.qml"), "utf8")
+  assert.match(qml, /grass\.frag\.qsb/)
+  assert.ok(statSync(join(root, "assets/shaders/grass.frag.qsb")).mtimeMs >= statSync(join(root, "assets/shaders/grass.frag")).mtimeMs - 1000, "grass.frag changed: run scripts/hanko-shaders")
+  assert.ok(Math.abs(Wi.swayAt(0.5, 1)) <= 0.04 + 1e-9)
+  assert.deepEqual(Wi.settings({}), { grass: "grass", gusts: true, wind: "weather", speed: 15, from: "west" })
+  assert.deepEqual(Wi.settings({ grass: "off", gusts: false, wind: "calm" }), { grass: "off", gusts: false, wind: "calm", speed: 15, from: "west" })
+  assert.equal(Wi.settings({ grass: "petals" }).grass, "grass")
+})
+
+test("taikan: levels fill from the centre, the top is the break, muted is red and empty", () => {
+  const v = Tk.view({ iconKey: "volume-high", maxValue: 100, hasProgress: true, value: 62, message: "62%", duration: 1200 })
+  assert.equal(v.kind, "level"); assert.equal(v.label, "VOL"); assert.equal(v.kanji, "音")
+  assert.equal(v.fill, 0.62); assert.equal(v.figure, 62); assert.equal(v.full, false); assert.equal(v.red, false)
+  assert.equal(Tk.view({ iconKey: "brightness", hasProgress: true, value: 100, maxValue: 100 }).full, true)
+  const m = Tk.view({ iconKey: "volume-muted", hasProgress: true, value: 40, maxValue: 100 })
+  assert.ok(m.muted && m.red && m.fill === 0 && m.word === "無音 Muted")
+  assert.equal(Tk.view({ iconKey: "keyboard", hasProgress: true, value: 3, maxValue: 6 }).fill, 0.5)
+  assert.deepEqual(Tk.halves(0.62), { left: 0.19, width: 0.62 })
+  assert.deepEqual(Tk.halves(2), { left: 0, width: 1 })
+})
+
+test("taikan: switches get a crest and their word; red only when you turned it off", () => {
+  const off = Tk.view({ iconKey: "microphone-muted", message: "Microphone muted", hasProgress: false })
+  assert.deepEqual([off.kind, off.crest, off.red, off.label, off.word], ["switch", "黙", true, "MICROPHONE", "Muted"])
+  const on = Tk.view({ iconKey: "microphone", message: "Microphone on" })
+  assert.deepEqual([on.crest, on.red, on.word], ["声", false, "On"])
+  assert.equal(Tk.view({ iconKey: "", message: "Hello" }).crest, "文")
+  assert.equal(Tk.view({ iconKey: "Hello", message: "x" }).crest, "文")
+  assert.equal(Tk.view({ iconKey: "鍵", message: "Unlocked" }).crest, "鍵")
+  const end = Tk.view({ iconKey: "reboot", message: "Rebooting", duration: 5000 })
+  assert.deepEqual([end.kind, end.kanji, end.sealed, end.sub, end.duration], ["ceremony", "終", true, "Restarting", 5000])
+  const out = Tk.view({ iconKey: "logout", message: "Logging out" })
+  assert.deepEqual([out.kanji, out.sealed, out.band], ["退", false, false])
+  const danger = Tk.view({ iconKey: "danger", message: "Battery 5%", duration: 800 })
+  assert.deepEqual([danger.kanji, danger.red, danger.band, danger.english, danger.duration], ["危", true, true, "Battery 5%", 1200])
+  assert.equal(Tk.view({ iconKey: "new", message: "Omarchy 4.1" }).sub, "Omarchy 4.1")
+  assert.equal(Tk.view({}).duration, 1200)
+})
+
+test("fumi: a crest per sender, a kind per letter, red only when critical", () => {
+  assert.equal(Fu.crestFor("Signal"), "話")
+  assert.equal(Fu.crestFor("Thunderbird"), "郵")
+  assert.equal(Fu.crestFor("org.gnome.Calendar"), "暦")
+  assert.equal(Fu.crestFor("Spotify"), "曲")
+  assert.equal(Fu.crestFor("zen"), "網")
+  assert.equal(Fu.crestFor(""), "器")
+  assert.equal(Fu.crestFor("Mystery App"), "文")
+  assert.equal(Fu.kindFor("Signal", "Aiko", "Are we on for Saturday?", 1), "便り")
+  assert.equal(Fu.kindFor("UPower", "Battery low", "5%", 2), "警告")
+  assert.equal(Fu.kindFor("gnome-calendar", "Standup", "in 5 minutes", 1), "予定")
+  assert.equal(Fu.kindFor("Hyprshot", "Screenshot saved", "", 1), "完了")
+  assert.equal(Fu.urgent(2), true); assert.equal(Fu.urgent(1), false)
+  assert.equal(Fu.isScreenshot("", "Screenshot saved to clipboard and file"), true)
+  assert.equal(Fu.isScreenshot("Hyprshot", "Saved"), true)
+  assert.equal(Fu.isScreenshot("Signal", "Aiko"), false)
+  assert.equal(Fu.crestFor("", "Screenshot saved to clipboard and file"), "写")
+})
+
+test("fumi: five strips at most, then a count; bodies as plain words; time and gust share", () => {
+  assert.deepEqual(Fu.shown(3), { strips: 3, more: 0 })
+  assert.deepEqual(Fu.shown(8), { strips: 5, more: 3 })
+  assert.deepEqual(Fu.shown(-1), { strips: 0, more: 0 })
+  assert.equal(Fu.plain("<b>Hi</b> &amp; <a href='x'>there</a><br/>ok"), "Hi & there\nok")
+  assert.equal(Fu.timeOf(new Date(2026, 9, 14, 9, 5).getTime()), "09:05")
+  assert.equal(Fu.gustShare(96, 1920), 0.95)
+  assert.equal(Fu.gustShare(5000, 1920), 0)
+})
+
+test("taiji: the blade grows a nick a key, never past its length, and draws no password", () => {
+  assert.equal(Tj.bladeWidth(0), 0)
+  assert.equal(Tj.bladeWidth(1), Tj.LEAD + Tj.NICK + 16)
+  assert.equal(Tj.bladeWidth(200, 640), 640)
+  assert.equal(Tj.nicks(0).length, 0)
+  assert.equal(Tj.nicks(9).length, 9)
+  const many = Tj.nicks(200, 640)
+  assert.ok(many.length > 0 && many.length < 200 && Math.max(...many) <= 632)
+})
+
+test("taiji: the hint says what the lock is doing; red only after a wrong password", () => {
+  assert.deepEqual(Tj.hint({}), { text: "Type to unlock", red: false })
+  assert.equal(Tj.hint({ fingerprint: true }).text, "Type to unlock · or touch the reader")
+  assert.equal(Tj.hint({ count: 9 }).text, "9 characters · Enter to cut")
+  assert.equal(Tj.hint({ count: 1 }).text, "1 character · Enter to cut")
+  // the unlock cut: the hairline at once, then faded; the folds overlap,
+  // move only forward, and are all turned by the end
+  assert.equal(Tj.cutFlash(0), 1)
+  assert.equal(Tj.cutFlash(Tj.CUT_MS), 0)
+  for (let k = 1; k <= 3; k++) {
+    assert.equal(Tj.cutFold(k, 0), 0)
+    assert.equal(Tj.cutFold(k, Tj.CUT_MS), 1)
+    let last = 0
+    for (let ms = 0; ms <= Tj.CUT_MS; ms += 10) { const f = Tj.cutFold(k, ms); assert.ok(f >= last - 1e-9); last = f }
+  }
+  for (let k = 1; k < 3; k++) assert.ok(Tj.CUT_FOLDS[k].at < Tj.CUT_FOLDS[k - 1].at + Tj.CUT_FOLDS[k - 1].ms)
+  assert.ok(Tj.CUT_FOLDS[2].at + Tj.CUT_FOLDS[2].ms <= Tj.CUT_MS)
+  assert.deepEqual(Tj.hint({ failure: "x", attempts: 2 }), { text: "Not that one · 2", red: true })
+  assert.equal(Tj.hint({ authenticating: true, failure: "x" }).text, "Checking…")
+  assert.equal(Tj.dayLine(new Date(2026, 9, 14)), "Wednesday · 14 October")
+  assert.equal(Tj.nameOf("shadow"), "Shadow")
+  assert.equal(Tj.sentence("chrysanthemums bloom"), "Chrysanthemums bloom")
+})
+
+test("taiji: the lock clone keeps Omarchy's service byte for byte and the view's whole interface", () => {
+  const ours = join(root, "plugins/hanko.lock")
+  const theirs = "/usr/share/omarchy/shell/plugins/lock"
+  let stock = null
+  try { stock = readFileSync(theirs + "/Service.qml", "utf8") } catch (e) {}
+  if (stock !== null) assert.equal(readFileSync(ours + "/Service.qml", "utf8"), stock, "Service.qml differs from Omarchy's")
+  const view = readFileSync(ours + "/LockView.qml", "utf8")
+  for (const p of ["backgroundPath", "backgroundVersion", "fingerprintConfigured", "authenticatingPassword", "failureMessage",
+    "failedAttempts", "inputEnabled", "loadBackground", "passwordText"]) assert.ok(new RegExp(`property \\w+ ${p}:`).test(view), "LockView lost " + p)
+  for (const sig of ["submitPassword(string password)", "passwordTextEdited(string password)", "clearFailureRequested()", "wakeRequested()"])
+    assert.ok(view.includes("signal " + sig), "LockView lost signal " + sig)
+  for (const keep of ["echoMode: TextInput.Password", "root.submitPassword(submitted)", "root.passwordTextEdited(text)", "forceActiveFocus()"])
+    assert.ok(view.includes(keep), "LockView lost " + keep)
+})
+
+test("oto: silent by default; quiet and on; one sound off on its own; only the bell in Sumi", () => {
+  assert.equal(Ot.play("letter", {}), null)
+  assert.deepEqual(Ot.play("letter", { sound: "quiet" }), { file: "kami", volume: 0.15 })
+  assert.deepEqual(Ot.play("workspace", { sound: "on" }), { file: "hyoshigi", volume: 0.3 })
+  assert.equal(Ot.play("workspace", { sound: "on", sounds: { workspace: false } }), null)
+  assert.equal(Ot.play("letter", { sound: "on" }, true), null)
+  assert.deepEqual(Ot.play("end", { sound: "on" }, true), { file: "kane", volume: 0.3 })
+  assert.equal(Ot.play("nonsense", { sound: "on" }), null)
+  assert.equal(Ot.mode({ sound: "loud" }), "off")
+  for (const f of Object.values(Ot.EVENTS)) assert.ok(readFileSync(join(root, "assets/sounds/" + f + ".ogg")).length > 500, f)
+})
+
+test("settings: the Kaze page's switches read and write kaze.json the way the plugins read it", () => {
+  assert.deepEqual(Se.KAZE_SWITCHES.map(s => s.key), ["wallpaper", "grass", "gusts", "wind", "sound", "osdCard"])
+  assert.equal(Se.kazeValue({}, "osdCard"), "on")
+  assert.equal(Se.kazeWith({}, "osdCard", "off").osdCard, "off")
+  assert.equal(Se.kazeValue({}, "wallpaper"), "print")
+  assert.equal(Se.kazeValue({}, "sound"), "off")
+  assert.equal(Se.kazeValue({}, "gusts"), "on")
+  assert.equal(Se.kazeValue({ gusts: false }, "gusts"), "off")
+  assert.equal(Se.kazeValue({ grass: "petals" }, "grass"), "grass")
+  const d = Se.kazeWith({ wallpaper: "print", extra: 1 }, "gusts", "off")
+  assert.deepEqual(d, { wallpaper: "print", extra: 1, gusts: false })
+  assert.equal(Se.kazeWith({}, "sound", "quiet").sound, "quiet")
+  // what the plugins make of them
+  assert.equal(Pt.wallpaperMode(Se.kazeWith({}, "wallpaper", "original")), "original")
+  assert.deepEqual(Wi.settings(Se.kazeWith(Se.kazeWith({}, "grass", "off"), "gusts", "off")), { grass: "off", gusts: false, wind: "weather", speed: 15, from: "west" })
+  assert.equal(Ot.mode(Se.kazeWith({}, "sound", "on")), "on")
+  assert.equal(Se.kazeChange({}, { sound: "quiet" }), "Sound · off → quiet")
+  assert.equal(Se.kazeChange({ gusts: true }, {}), "")
+  assert.deepEqual(Se.kazeOn({ wallpaper: "print" }, true, true, false), { on: 6, of: 9 })  // the OSD card is on by default
+  // The virtual wind: Settings and the grass read windSpeed/windFrom the same way.
+  for (const doc of [{}, { wind: "virtual" }, { wind: "virtual", windSpeed: 32, windFrom: "east" }, { windSpeed: 99 }, { windSpeed: -4 }, { windSpeed: "x" }, { windSpeed: 0 }]) {
+    const a = Se.kazeWind(doc), b = Wi.settings(doc)
+    assert.deepEqual([a.speed, a.from], [b.speed, b.from], JSON.stringify(doc))
+  }
+  assert.equal(Wi.settings({ wind: "virtual" }).wind, "virtual")
+  assert.equal(Se.kazeValue({ wind: "virtual" }, "wind"), "virtual")
+  assert.equal(Se.kazeWind({ windSpeed: 0 }).speed, 0)
+  assert.ok(Wi.virtualLean(Wi.settings({ wind: "virtual", windSpeed: 30 })) > 0)
+  assert.ok(Wi.virtualLean(Wi.settings({ wind: "virtual", windSpeed: 30, windFrom: "east" })) < 0)
+  assert.equal(Wi.virtualLean(Wi.settings({ wind: "virtual", windSpeed: 0 })), 0)
+  assert.equal(Se.kazeChange({ wind: "virtual" }, { wind: "virtual", windSpeed: 30 }), "Virtual wind · 15 → 30 km/h")
+  assert.equal(Se.kazeWith({}, "windSpeed", 22).windSpeed, 22)
+  assert.ok(Se.PAGE_LINES.kaze)
+})
+
+
+test("theme: the Hanko theme ships what Omarchy reads, its paper the bar's", () => {
+  const dir = join(root, "theme")
+  for (const f of ["colors.toml", "hyprland.lua", "icons.theme", "shell.bar.toml", "shell.menu.toml", "shell.launcher.toml", "btop.theme", "neovim.lua", "preview.jpg"])
+    assert.ok(readFileSync(join(dir, f)).length > 0, f)
+  const colors = readFileSync(join(dir, "colors.toml"), "utf8")
+  assert.match(colors, /^background = "#0a0a09"$/m)
+  assert.match(colors, /^foreground = "#ddd5c7"$/m)
+  assert.match(colors, /^red = "#d8452f"$/m)
+  assert.match(readFileSync(join(dir, "neovim.lua"), "utf8"), /colorscheme = "hanko"/)
+})
+
+// Dōgu 道具: the Lua ramp the tools use (assets/kaze/nvim/lua/hanko/ink.lua)
+// must give the bar's inks, and btop's theme must name every key btop reads.
+// Skipped where no Lua is installed.
+{
+  const { execFileSync } = await import("node:child_process")
+  const lua = ["lua", "luajit"].find(cmd => { try { execFileSync(cmd, ["-v"], { stdio: "ignore" }); return true } catch { return false } })
+  test("tools: the Lua ink ramp agrees with InkMath.js, and btop gets every key", () => {
+    if (!lua) return
+    const env = { ...process.env, LUA_PATH: join(root, "assets/kaze/nvim/lua/?.lua") + ";;" }
+    const themes = [["#f8ebeb", "#010000"], ["#2b2924", "#dfdacb"], ["#a9b1d6", "#1a1b26"], ["#575279", "#faf4ed"], ["#d4be98", "#282828"], ["#ddd5c7", "#0a0a09"]]
+    const code = `local I = require("hanko.ink") for _, t in ipairs({${themes.map(([f, b]) => `{"${f}","${b}"}`).join(",")}}) do local r = I.ramp(t[1], t[2]) print(r.ink, r.inkDim, r.inkMuted, r.inkFaint) end`
+    const out = execFileSync(lua, ["-e", code], { env, encoding: "utf8" }).trim().split("\n")
+    themes.forEach(([fg, bg], i) => {
+      const r = I.ramp(fg, bg)
+      assert.equal(out[i], [r.ink, r.inkDim, r.inkMuted, r.inkFaint].join("\t"), `${fg} on ${bg}`)
+    })
+    const theme = execFileSync(lua, [join(root, "assets/kaze/btop.lua"), join(root, "tests/harness/fixtures/colors.toml")], { env, encoding: "utf8" })
+    const keys = [...theme.matchAll(/^theme\[(\w+)\]="#[0-9a-f]{6}"$/gm)].map(m => m[1])
+    assert.equal(keys.length, 42)
+    assert.ok(theme.includes('theme[used_end]="#d8452f"'))
+    assert.ok(theme.includes('theme[selected_bg]="#ddd5c7"') && theme.includes('theme[selected_fg]="#0a0a09"'))
+  })
+  test("theme: the Hanko theme's btop.theme is what btop.lua writes for its colours", () => {
+    if (!lua) return
+    const env = { ...process.env, LUA_PATH: join(root, "assets/kaze/nvim/lua/?.lua") + ";;" }
+    const made = execFileSync(lua, [join(root, "assets/kaze/btop.lua"), join(root, "theme/colors.toml")], { env, encoding: "utf8" })
+    assert.equal(readFileSync(join(root, "theme/btop.theme"), "utf8"), made)
+  })
+}
+
+test("kaisei: a quickshell core dump in the last two minutes means the shell rose again", () => {
+  const now = 1790000000000
+  const dump = (ms, exe) => JSON.stringify([{ exe: exe || "/usr/bin/quickshell", time: (now - ms) * 1000 }])
+  assert.equal(Ks.crashedRecently(dump(30000), now), true)
+  assert.equal(Ks.crashedRecently(dump(300000), now), false)
+  assert.equal(Ks.crashedRecently(dump(30000, "/usr/bin/python3"), now), false)
+  assert.equal(Ks.crashedRecently(dump(-5000), now), false)
+  assert.equal(Ks.crashedRecently("", now), false)
+  assert.equal(Ks.crashedRecently("No coredumps found.", now), false)
+})
+
+test("batto: a crest per top-level menu, in the menu's order; actions and submenus have none", () => {
+  const items = {
+    root: { parent: "", kind: "menu" }, apps: { parent: "root", label: "Apps", provider: "apps" },
+    style: { parent: "root", label: "Style" }, "style.theme": { parent: "style", label: "Theme" },
+    about: { parent: "root", label: "About", action: "omarchy-launch-about" },
+    hanko: { parent: "root", label: "判子 Hanko", kind: "menu" }, odd: { parent: "root", label: "Odd", kind: "menu" }
+  }
+  const order = ["root", "apps", "style", "style.theme", "about", "hanko", "odd"]
+  const count = id => order.filter(k => (items[k].parent || "") === id).length
+  assert.deepEqual(Bt.rail(items, order, count).map(r => [r.id, r.crest]), [["apps", "器"], ["style", "彩"], ["hanko", "判"], ["odd", "文"]])
+  assert.equal(Bt.topOf("style.theme.font"), "style")
+  assert.equal(Bt.topOf("root"), "root")
+  assert.equal(Bt.crestFor("system", "System"), "政")
+})
+
+test("Paths: a plugin file as a path, from file:// or qs://", () => {
+  assert.equal(Pa.local("file:///home/a/hanko.bar/scripts/hanko"), "/home/a/hanko.bar/scripts/hanko")
+  assert.equal(Pa.local("qs:///home/a/.config/omarchy/plugins/hanko.bar/scripts/hanko"), "/home/a/.config/omarchy/plugins/hanko.bar/scripts/hanko")
+  assert.equal(Pa.local("qs:///home/a/my%20dots/hanko"), "/home/a/my dots/hanko")
+  assert.equal(Pa.local("/already/a/path"), "/already/a/path")
+  assert.equal(Pa.local(undefined), "")
+})
+
+
+// ── The mission overview (core/Mission.js) ──────────────────────────────
+const Mi = load("core/Mission.js", ["layout", "order", "neighbour", "windowsOf", "stripKeys", "idOfKey", "freeId", "stripCell", "stepId",
+  "score", "find", "menuEntries", "evaluate", "format", "CATEGORIES", "KEYS"])
+
+test("mission: the spread fits the room, keeps sizes and reads in the desk's order", () => {
+  const area = { x: 0, y: 0, w: 1000, h: 500 }
+  const r = Mi.layout([{ key: "a", w: 800, h: 900, cx: 400, cy: 450 }, { key: "b", w: 800, h: 900, cx: 1200, cy: 450 }], area, { gap: 20 })
+  assert.equal(r.rows, 1)
+  assert.ok(r.slots.a.x < r.slots.b.x)
+  assert.equal(r.slots.a.w, r.slots.b.w)
+  for (const k of ["a", "b"]) assert.ok(r.slots[k].x >= 0 && r.slots[k].x + r.slots[k].w <= 1000 && r.slots[k].y + r.slots[k].h <= 500)
+  // Four quarters in a 10:7 room go to two rows.
+  const q = Mi.layout([0, 1, 2, 3].map(i => ({ key: "w" + i, w: 400, h: 300, cx: (i % 2) * 400, cy: Math.floor(i / 2) * 300 })), { x: 0, y: 0, w: 1000, h: 700 }, { gap: 10 })
+  assert.equal(q.rows, 2)
+  assert.deepEqual(Mi.order(q.slots), ["w0", "w1", "w2", "w3"])
+  assert.deepEqual(Mi.layout([], area, {}).slots, {})
+})
+
+test("mission: arrows pick the neighbour in line", () => {
+  const rects = [{ x: 0, y: 0, w: 10, h: 10 }, { x: 20, y: 0, w: 10, h: 10 }, { x: 0, y: 20, w: 10, h: 10 }]
+  assert.equal(Mi.neighbour(rects, 0, "right"), 1)
+  assert.equal(Mi.neighbour(rects, 0, "down"), 2)
+  assert.equal(Mi.neighbour(rects, 0, "left"), -1)
+  assert.equal(Mi.neighbour(rects, 9, "left"), 0)
+})
+
+test("mission: the live space's windows, tiled under floating", () => {
+  const spaces = [{ id: 3, all: [{ address: "f", floating: true, focus: 0 }, { address: "a", focus: 2 }, { address: "b", focus: 1 }] }]
+  assert.deepEqual(Mi.windowsOf(spaces, 3).map(w => w.address), ["a", "b", "f"])
+  assert.deepEqual(Mi.windowsOf(spaces, 4), [])
+})
+
+test("mission: the strip, the new space and stepping", () => {
+  const keys = Mi.stripKeys([{ id: 3 }, { id: 1 }, { id: -98 }], 5)
+  assert.deepEqual(keys, ["ws:1", "ws:3", "ws:5", "new"])
+  assert.equal(Mi.idOfKey("ws:3"), 3)
+  assert.equal(Mi.idOfKey("new"), -1)
+  assert.equal(Mi.freeId([1, 2, 4]), 3)
+  assert.equal(Mi.stepId(keys, 3, 1), 5)
+  assert.equal(Mi.stepId(keys, 5, 1), -1)
+  assert.equal(Mi.stepId(keys, 1, -1), -1)
+  const c = Mi.stripCell(4, 100, 2000, 0.5, 10)
+  assert.equal(c.w, 200)
+  assert.equal(c.h, 100)
+  assert.ok(Mi.stripCell(40, 100, 1000, 0.5, 10).w < 25)
+})
+
+test("mission: search finds sums, windows, apps and menu leaves", () => {
+  assert.equal(Mi.evaluate("2 + 3 * 4"), 14)
+  assert.equal(Mi.evaluate("(1+1)^3"), 8)
+  assert.equal(Mi.evaluate("sqrt(16)"), 4)
+  assert.equal(Mi.evaluate("12"), null)
+  assert.equal(Mi.evaluate("firefox"), null)
+  assert.equal(Mi.evaluate("2 +"), null)
+  assert.equal(Mi.format(0.1 + 0.2), "0.3")
+  assert.equal(Mi.score("Firefox web", "Firefox", ["fire"]), 3)
+  assert.equal(Mi.score("Firefox web", "Firefox", ["chrome"]), -1)
+  const menu = Mi.menuEntries('{ "items": { "style": { "label": "Style" }, "style.bg": { "label": "Background", "action": "omarchy-theme-bg-next", }, \n // a note\n "x": { "label": "Hidden", "action": "y", "when": "z" } } }', "")
+  assert.deepEqual(menu.map(e => e.label), ["Background"])
+  assert.equal(menu[0].path, "Style")
+  const r = Mi.find("back", { spaces: [{ id: 2, all: [{ address: "0x1", name: "Firefox", title: "Backend docs" }] }],
+    apps: [{ id: "a.desktop", name: "Backup" }, { id: "h.desktop", name: "Back hidden", noDisplay: true }], menu })
+  assert.deepEqual(r.map(x => x.kind), ["window", "app", "menu"])
+  assert.equal(Mi.find("1+1", {})[0].value, "2")
+  assert.deepEqual(Mi.find("  ", {}), [])
+  for (const k of ["calc", "window", "app", "menu"]) assert.ok(Mi.CATEGORIES[k].jp)
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)
