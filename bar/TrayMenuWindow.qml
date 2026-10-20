@@ -12,7 +12,9 @@ import "../core/Extras.js" as X
 // where you are. It reads the menu through QsMenuOpener because
 // item.display() asks Qt for a platform menu, which Quickshell refuses
 // outside QApplication mode (omarchy-shell's), so right-click did nothing.
-// A click anywhere else, or Esc, closes it.
+// A click anywhere else, or Esc, closes it. Keys as on Omarchy's panels:
+// Up/Down (or j/k) walk the rows, Enter, Space or Right open one, Left
+// goes back out of a submenu.
 PopupWindow {
   id: win
 
@@ -28,6 +30,8 @@ PopupWindow {
   // on the same icon is that click, and should leave it closed.
   property real clearedAt: 0
   property var clearedItem: null
+  // The row the keyboard is on (-1: none yet; it shows on the first key).
+  property int cursor: -1
 
   readonly property bool atBottom: barWindow.atBottom
   readonly property var rows: stack.length > 0 ? stack[stack.length - 1].opener.children : rootOpener.children
@@ -59,6 +63,22 @@ PopupWindow {
     stack = stack.slice(0, -1)
     top.opener.destroy()
   }
+  // The next row a key can land on, from `from` in direction d.
+  function stepCursor(d) {
+    var n = rowRepeater.count
+    for (var i = win.cursor < 0 ? (d > 0 ? 0 : n - 1) : win.cursor + d; i >= 0 && i < n; i += d) {
+      var r = rowRepeater.itemAt(i)
+      var e = win.rows[i]
+      if (r && r.visible && e && !e.isSeparator && e.enabled) { win.cursor = i; return }
+    }
+  }
+  function pickCursor(sub) {
+    var e = win.cursor >= 0 ? win.rows[win.cursor] : null
+    if (!e) { stepCursor(1); return }
+    if (sub && !e.hasChildren) return
+    pick(e)
+  }
+  onRowsChanged: cursor = -1
   function pick(entry) {
     if (entry.hasChildren) { enter(entry); return }
     entry.triggered()
@@ -124,8 +144,17 @@ PopupWindow {
     Behavior on opacity { NumberAnimation { duration: Motion.ms(120); easing.type: Easing.OutCubic } }
 
     focus: true
-    Keys.onEscapePressed: win.back()
-    Keys.onLeftPressed: if (win.stack.length > 0) win.back()
+    Keys.onPressed: function(event) {
+      var t = event.text
+      if (event.key === Qt.Key_Escape) win.back()
+      else if (event.key === Qt.Key_Down || t === "j") win.stepCursor(1)
+      else if (event.key === Qt.Key_Up || t === "k") win.stepCursor(-1)
+      else if (event.key === Qt.Key_Left || t === "h") { if (win.stack.length > 0) win.back() }
+      else if (event.key === Qt.Key_Right || t === "l") win.pickCursor(true)
+      else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) win.pickCursor(false)
+      else return
+      event.accepted = true
+    }
 
     Column {
       id: list
@@ -200,7 +229,7 @@ PopupWindow {
           // name, as some apps send, says nothing under the eyebrow.
           readonly property bool redundant: win.stack.length === 0 && index <= 1
             && (separator || (index === 0 && entry.hasChildren && X.menuText(entry.text).toLowerCase() === win.appName.toLowerCase()))
-          readonly property bool hot: rowMouse.containsMouse && entry.enabled && !separator
+          readonly property bool hot: (rowMouse.containsMouse || win.cursor === index) && entry.enabled && !separator
           readonly property bool checkable: entry.buttonType !== QsMenuButtonType.None
           readonly property string mark: !checkable ? ""
             : entry.buttonType === QsMenuButtonType.RadioButton ? (entry.checkState === Qt.Checked ? "●" : "○")
