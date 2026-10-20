@@ -115,3 +115,37 @@ function seamPath(w, h, step) {
   }
   return d
 }
+
+// fold: collapsed (docs/densho sheet 01). Only the open section is laid out
+// whole; up to three neighbours each side fold into spines, the nearest
+// widest, and the rest are wound on the two rollers. Returns, in px:
+//   rollers  width of each roller at the ends
+//   spines   [{ index, depth 1..3, side "left"|"right", x, width }]
+//   open     { x, width } of the open section
+//   left, right   how many sections lie on each side (one roller line each)
+var SPINE_W = [0, 98, 70, 50]
+var ROLLER_W = 34
+var FOLD_GAP = 46
+function fold(count, current, viewW, scale) {
+  var s = scale || 1, n = Math.max(1, count)
+  var c = Math.max(0, Math.min(n - 1, current))
+  var roller = Math.round(ROLLER_W * s), edge = roller + Math.round(10 * s)
+  var spines = [], xl = edge, xr = viewW - edge
+  for (var d = 3; d >= 1; d--) {
+    var w = Math.round(SPINE_W[d] * s)
+    if (c - d >= 0) { spines.push({ index: c - d, depth: d, side: "left", x: xl, width: w }); xl += w }
+  }
+  var right = []
+  for (var e = 3; e >= 1; e--) {
+    var wr = Math.round(SPINE_W[e] * s)
+    if (c + e < n) { xr -= wr; right.push({ index: c + e, depth: e, side: "right", x: xr, width: wr }) }
+  }
+  var gap = Math.round(FOLD_GAP * s)
+  return {
+    rollers: roller,
+    spines: spines.concat(right),
+    open: { x: xl + gap, width: Math.max(0, xr - xl - 2 * gap) },
+    left: c,
+    right: n - 1 - c
+  }
+}

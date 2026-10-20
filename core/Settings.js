@@ -167,7 +167,8 @@ var CARDS = [
     { key: "interlude", name: "Scroll dividers", detail: "What sits between the scroll's sections" },
     { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
     { key: "sides", name: "Scroll sides", detail: "Bare paper, or paper curling under" },
-    { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both or none" },
+    { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both, none, or the map: the whole scroll as a strip of cells" },
+    { key: "fold", name: "Scroll sections", detail: "All expanded side by side, or collapsed: the open one whole, its neighbours folded into spines, the rest on two rollers" },
     { key: "arrival", name: "Scroll arrival", detail: "The ink fades in, or a brush writes each section on as it reaches the middle" },
     { key: "letters", name: "Scroll letters", detail: "Open, or sealed in secret ink until the pointer warms a line" },
     { key: "faults", name: "Scroll faults", detail: "A red seam across a section that is broken, gone when it mends" },
@@ -224,7 +225,7 @@ var PROOF = [
 // and Densho's four touches (its dividers and end leaf have galleries of
 // their own there).
 var PANELS_CARD = { title: "Panels · how they open", rows: CARDS[5].rows.filter(function(r) {
-  return ["panels", "sides", "guides", "arrival", "letters", "faults", "order", "overview"].indexOf(r.key) >= 0
+  return ["panels", "sides", "guides", "fold", "arrival", "letters", "faults", "order", "overview"].indexOf(r.key) >= 0
 }) }
 
 // Two indicators lit, for a proof made while none is on (the glyphs and

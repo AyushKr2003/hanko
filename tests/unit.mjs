@@ -65,9 +65,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("thirty settings, 500,964,985,405,440 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 30)
-  assert.equal(S.combinations(), 500964985405440)
+test("thirty-one settings, 1,252,412,463,513,600 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 31)
+  assert.equal(S.combinations(), 1252412463513600)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -850,7 +850,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Quiet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 500964985405440)
+  assert.equal(S.combinations(), 1252412463513600)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -1170,14 +1170,14 @@ test("scroll sides: bare or curl, in place of the rollers", () => {
 })
 
 test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
-  assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none"])
+  assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none", "map"])
   assert.equal(S.resolve({}).guides, "none")
   const yours = ["Kamon", "Inkan", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, Inkan and the four studies built on it
   assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (yours.indexOf(p) >= 0 ? "none" : "both")))
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
 })
-const Dn = load("core/Densho.js", ["writeAt", "faultOf", "isJump", "STANCE_MS", "house", "colophon", "seamPath", "WRITE_FULL", "WRITE_NONE"])
+const Dn = load("core/Densho.js", ["fold", "SPINE_W", "ROLLER_W", "writeAt", "faultOf", "isJump", "STANCE_MS", "house", "colophon", "seamPath", "WRITE_FULL", "WRITE_NONE"])
 
 test("densho: four scroll touches, off in every preset", () => {
   assert.deepEqual(S.OPTIONS.arrival, ["fade", "brush"])
@@ -1191,6 +1191,28 @@ test("densho: four scroll touches, off in every preset", () => {
   assert.equal(S.resolve({ edits: { order: "mokuroku" } }).order, "mokuroku")
   assert.equal(S.resolve({ edits: { letters: "secret" } }).letters, "open")
   assert.deepEqual(S.withSetting({}, "arrival", "brush").edits, { arrival: "brush" })
+})
+
+test("densho: fold collapsed, the open section whole between its spines", () => {
+  assert.deepEqual(S.OPTIONS.fold, ["expanded", "collapsed"])
+  for (const p of S.PRESET_NAMES) assert.equal(S.resolve({ preset: p }).fold, "expanded", p)
+  const f = Dn.fold(8, 2, 1600, 1)
+  assert.deepEqual(f.spines.map(x => [x.index, x.depth, x.side]),
+    [[0, 2, "left"], [1, 1, "left"], [5, 3, "right"], [4, 2, "right"], [3, 1, "right"]])
+  assert.equal(f.left, 2)
+  assert.equal(f.right, 5)
+  const lastLeft = f.spines.filter(x => x.side === "left").pop()
+  const firstRight = f.spines.filter(x => x.side === "right").pop()
+  assert.equal(f.open.x, lastLeft.x + lastLeft.width + 46)
+  assert.equal(f.open.x + f.open.width + 46, firstRight.x)
+  assert.equal(f.spines[0].x, Dn.ROLLER_W + 10)
+  // At the ends there is nothing on one side; out of range is clamped.
+  assert.equal(Dn.fold(8, 0, 1600, 1).spines.filter(x => x.side === "left").length, 0)
+  assert.equal(Dn.fold(8, 7, 1600, 1).right, 0)
+  assert.deepEqual(Dn.fold(8, 99, 1600, 1), Dn.fold(8, 7, 1600, 1))
+  // Scaled, every width grows with the type.
+  assert.equal(Dn.fold(8, 3, 1600, 2).spines[2].width, 2 * Dn.SPINE_W[1])
+  assert.equal(S.resolve({ edits: { fold: "collapsed", guides: "map" } }).guides, "map")
 })
 
 test("densho: the brush writes a section whole in the middle, nothing near the edge", () => {

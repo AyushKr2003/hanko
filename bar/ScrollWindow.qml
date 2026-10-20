@@ -212,6 +212,7 @@ PanelWindow {
       letters: win.barWindow.style.letters || "open"
       faults: win.barWindow.style.faults || "plain"
       order: win.barWindow.style.order || "emaki"
+      fold: win.barWindow.style.fold || "expanded"
       reveal: 0
       ink: 0
       feed: ({
@@ -278,10 +279,18 @@ PanelWindow {
       onRequest: function(section, what, arg) { win.bar.sheetRequest(section, what, arg) }
       onPicked: function(index) { win.bar.scrollTo(index) }
       onDragged: function(dx) {
+        // Collapsed, the paper doesn't pan: a drag far enough turns a page.
+        if (view.folded) { win.dragFrom = dx; return }
         if (!win.dragging) { win.dragging = true; win.dragFrom = win.trackX }
         win.trackX = Scroll.clampTrack(win.dragFrom + dx, view.viewWidth, Type.scale)
       }
       onReleased: function(velocity) {
+        if (view.folded) {
+          if (Math.abs(win.dragFrom) > Type.px(40) || Math.abs(velocity) > 600)
+            win.bar.stepScroll((Math.abs(velocity) > 600 ? velocity : win.dragFrom) < 0 ? 1 : -1)
+          win.dragFrom = 0
+          return
+        }
         if (!win.dragging) return
         var land = Scroll.landing(win.trackX, velocity, view.viewWidth, Type.scale)
         win.dragging = false

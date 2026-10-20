@@ -128,6 +128,7 @@ Rectangle {
             letters: desk.style.letters
             faults: desk.style.faults
             order: desk.style.order
+            fold: desk.style.fold
             // Densho's moments, fixed: how far the brush has written, a
             // stance, the cut, the colophon sealed, the first letter warmed.
             writeIn: deskColumn.modelData.write !== undefined ? deskColumn.modelData.write : 1

@@ -213,7 +213,8 @@ Column {
   Repeater {
     model: [
       { key: "sides", name: "Sides", line: "Bare paper, or paper curling under at each end" },
-      { key: "guides", name: "Guides", line: "The tabs on top, the position bar along the foot, both, or none" },
+      { key: "guides", name: "Guides", line: "The tabs on top, the position bar along the foot, both, none, or the map of the whole scroll" },
+      { key: "fold", name: "Sections 背", line: "All expanded side by side, or collapsed: the open one whole, the neighbours folded into spines, the rest on rollers" },
       { key: "arrival", name: "Arrival 筆入", line: "The ink fades in with the paper, or a dry brush writes each title on as it nears the middle" },
       { key: "letters", name: "Letters 炙出", line: "Open, or in secret ink: who and when show, the words only where the pointer warms them" },
       { key: "faults", name: "Faults 朱継", line: "Plain, or one seal-red seam across a section that is broken (offline, a low battery)" },

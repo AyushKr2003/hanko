@@ -89,6 +89,8 @@ scripts/hanko uninstall
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
 | Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |
 | The scroll's tabs on top, position bar at the foot, both or neither | `scripts/hanko style set guides tabs` (`both`, `tabs`, `foot`, `none`) |
+| The scroll's sections collapsed: the open one whole, its neighbours as spines, the rest on rollers | `scripts/hanko style set fold collapsed` (`expanded`, `collapsed`) |
+| The whole scroll as a strip of cells on top, the open one inverted | `scripts/hanko style set guides map` |
 | A brush writes each scroll section on as it reaches the middle | `scripts/hanko style set arrival brush` (`fade`, `brush`) |
 | Letters on the scroll in secret ink, read where the pointer warms them | `scripts/hanko style set letters sealed` (`open`, `sealed`) |
 | A red seam across a scroll section that is broken (offline, low battery) | `scripts/hanko style set faults seam` (`plain`, `seam`) |

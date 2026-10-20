@@ -64,12 +64,46 @@ Item {
   // The first letter's warmth under letters: sealed, for the harness (-1:
   // the pointer decides).
   property real warmed: -1
+  // How the sections lie (Style.js `fold`): expanded side by side, or
+  // collapsed: the open one whole, its neighbours folded into spines, the
+  // rest wound on the rollers (docs/densho sheet 01).
+  property string fold: "expanded"
+
+  readonly property bool folded: fold === "collapsed"
+  readonly property var foldInfo: Densho.fold(sections.length, current, view.width, Type.scale)
+  // guides: map, the whole scroll as a strip of cells (docs/densho sheet 06).
+  readonly property bool mapped: guides === "map"
+  readonly property int mapHeight: mapped ? Type.px(mokuroku ? 112 : 98) : 0
+  // Collapsed, the open section comes in each time it changes: its ink
+  // (and its brush, under arrival: brush).
+  property real foldInk: 1
+  function sx(i) { return folded ? foldInfo.open.x : layout.xs[i] }
+  function sw(i) { return folded ? foldInfo.open.width : layout.widths[i] }
+  function shows(i) { return !folded || i === current }
+  function spineOf(i) {
+    var all = foldInfo.spines
+    for (var k = 0; k < all.length; k++) if (all[k].index === i) return all[k]
+    return null
+  }
+  // A section that needs you: an unread letter, or a fault.
+  function flagged(i) {
+    var key = sections[i].key
+    if (key === "inbox") return (feed.letters || []).length > 0 && !feed.dnd
+    return Densho.faultOf(key, feed)
+  }
+  onCurrentChanged: if (folded && Motion.live) arriving.restart()
+  ParallelAnimation {
+    id: arriving
+    NumberAnimation { target: root; property: "foldInk"; from: 0; to: 1; duration: Motion.ink; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.inkCurve }
+    NumberAnimation { target: root; property: "writeIn"; from: root.brush ? 0 : 1; to: 1; duration: root.brush ? 520 : 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.inkCurve }
+  }
 
   readonly property bool brush: arrival === "brush"
   readonly property bool mokuroku: order === "mokuroku"
   // How far the brush has written what sits at track x `x`, `w` wide.
   function writeAtX(x, w) {
     if (!brush) return 1
+    if (folded) return writeIn
     return Math.min(writeIn, Densho.writeAt(trackX + x + w / 2 - view.width / 2, view.width / 2))
   }
   function writeOf(i) { return writeAtX(layout.xs[i], layout.widths[i]) }
@@ -98,7 +132,7 @@ Item {
   readonly property int endWidth: !root.mokuroku && root.feed.endShown === false ? 0
     : Wx.leafWidth(view.width, layout.widths[layout.widths.length - 1], interlude, Type.scale)
 
-  implicitHeight: Type.px(460)
+  implicitHeight: Type.px(460) + mapHeight
 
   // The cut (order: mokuroku): where the paper will stop, before it moves.
   Rectangle {
@@ -139,8 +173,9 @@ Item {
       Item {
         id: view
         x: Type.px(26)
+        y: root.atBottom ? 0 : root.mapHeight
         width: parent.width - 2 * x
-        height: parent.height
+        height: parent.height - root.mapHeight
         clip: true
         opacity: root.ink * (1 - root.stance)
 
@@ -171,14 +206,14 @@ Item {
 
         Item {
           id: track
-          x: Math.round(root.trackX)
+          x: root.folded ? 0 : Math.round(root.trackX)
           width: root.layout.width
           height: view.height
 
           // Before Time, on paper that is otherwise bare: the weather leaf
           // and an interlude between it and the day.
           WeatherLeaf {
-            visible: root.leafWidth > 0 && !root.mokuroku
+            visible: root.leafWidth > 0 && !root.mokuroku && !root.folded
             x: root.layout.xs[0] - root.interlude - width
             width: root.leafWidth
             height: track.height
@@ -187,7 +222,7 @@ Item {
             write: root.writeAtX(x, width)
           }
           DenshoLeaf {
-            visible: root.leafWidth > 0 && root.mokuroku
+            visible: root.leafWidth > 0 && root.mokuroku && !root.folded
             kind: "house"
             x: root.layout.xs[0] - root.interlude - width
             width: root.leafWidth
@@ -201,7 +236,7 @@ Item {
             write: root.writeAtX(x, width)
           }
           Interlude {
-            visible: root.leafWidth > 0
+            visible: root.leafWidth > 0 && !root.folded
             seed: 11
             style: root.divider
             x: root.layout.xs[0] - width
@@ -211,7 +246,8 @@ Item {
           }
 
           TimeSection {
-            x: root.layout.xs[0]; width: root.layout.widths[0]; height: track.height
+            x: root.sx(0); width: root.sw(0); height: track.height
+            visible: root.shows(0); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(0); poem: root.poemOf(0)
             info: root.sections[0]
             now: root.feed.now || new Date()
@@ -220,14 +256,16 @@ Item {
             onRequest: function(what, arg) { root.request("time", what, arg) }
           }
           SoundSection {
-            x: root.layout.xs[1]; width: root.layout.widths[1]; height: track.height
+            x: root.sx(1); width: root.sw(1); height: track.height
+            visible: root.shows(1); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(1); poem: root.poemOf(1)
             info: root.sections[1]
             sound: root.feed.sound || null
             onRequest: function(what, arg) { root.request("sound", what, arg) }
           }
           NetworkSection {
-            x: root.layout.xs[2]; width: root.layout.widths[2]; height: track.height
+            x: root.sx(2); width: root.sw(2); height: track.height
+            visible: root.shows(2); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(2); poem: root.poemOf(2)
             fault: root.faultOf("network")
             info: root.sections[2]
@@ -235,14 +273,16 @@ Item {
             onRequest: function(what, arg) { root.request("network", what, arg) }
           }
           BluetoothSection {
-            x: root.layout.xs[3]; width: root.layout.widths[3]; height: track.height
+            x: root.sx(3); width: root.sw(3); height: track.height
+            visible: root.shows(3); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(3); poem: root.poemOf(3)
             info: root.sections[3]
             blue: root.feed.bluetooth || null
             onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
           }
           PowerSection {
-            x: root.layout.xs[4]; width: root.layout.widths[4]; height: track.height
+            x: root.sx(4); width: root.sw(4); height: track.height
+            visible: root.shows(4); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(4); poem: root.poemOf(4)
             fault: root.faultOf("power")
             info: root.sections[4]
@@ -250,21 +290,24 @@ Item {
             onRequest: function(what, arg) { root.request("power", what, arg) }
           }
           DisplaySection {
-            x: root.layout.xs[5]; width: root.layout.widths[5]; height: track.height
+            x: root.sx(5); width: root.sw(5); height: track.height
+            visible: root.shows(5); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(5); poem: root.poemOf(5)
             info: root.sections[5]
             display: root.feed.display || null
             onRequest: function(what, arg) { root.request("display", what, arg) }
           }
           SpacesSection {
-            x: root.layout.xs[6]; width: root.layout.widths[6]; height: track.height
+            x: root.sx(6); width: root.sw(6); height: track.height
+            visible: root.shows(6); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(6); poem: root.poemOf(6)
             info: root.sections[6]
             spaces: root.feed.spaces || []
             onRequest: function(what, arg) { root.request("spaces", what, arg) }
           }
           InboxSection {
-            x: root.layout.xs[7]; width: root.layout.widths[7]; height: track.height
+            x: root.sx(7); width: root.sw(7); height: track.height
+            visible: root.shows(7); opacity: root.folded ? root.foldInk : 1
             brush: root.brush; write: root.writeOf(7); poem: root.poemOf(7)
             sealed: root.letters === "sealed"
             warmed: root.warmed
@@ -278,7 +321,7 @@ Item {
           // After Inbox, on paper that is otherwise bare: an interlude and
           // the end leaf.
           Interlude {
-            visible: root.endWidth > 0
+            visible: root.endWidth > 0 && !root.folded
             seed: root.sections.length - 1
             after: root.mokuroku ? ({ no: "09", jp: "奥", label: "COLOPHON" })
               : ({ no: "09", jp: LeafJs.kindOf(root.endleaf).jp, label: LeafJs.kindOf(root.endleaf).label })
@@ -289,7 +332,7 @@ Item {
             height: track.height - Type.px(98)
           }
           DenshoLeaf {
-            visible: root.endWidth > 0 && root.mokuroku
+            visible: root.endWidth > 0 && root.mokuroku && !root.folded
             kind: "colophon"
             x: root.layout.xs[root.sections.length - 1] + root.layout.widths[root.sections.length - 1] + root.interlude
             width: root.endWidth
@@ -303,7 +346,7 @@ Item {
             write: root.writeAtX(x, width)
           }
           EndLeaf {
-            visible: root.endWidth > 0 && !root.mokuroku
+            visible: root.endWidth > 0 && !root.mokuroku && !root.folded
             x: root.layout.xs[root.sections.length - 1] + root.layout.widths[root.sections.length - 1] + root.interlude
             width: root.endWidth
             height: track.height
@@ -325,6 +368,7 @@ Item {
             Interlude {
               id: sliver
               required property int index
+              visible: !root.folded
               seed: sliver.index
               style: root.divider
               x: root.layout.xs[sliver.index] + root.layout.widths[sliver.index]
@@ -335,8 +379,45 @@ Item {
           }
         }
 
+        // Collapsed: the spines, the rollers and two mist bands at the seams.
+        Item {
+          id: folds
+          visible: root.folded
+          anchors.fill: parent
+
+          Repeater {
+            model: root.sections.length
+            Spine {
+              required property int index
+              at: root.spineOf(index)
+              no: index
+            }
+          }
+
+          Roller { onLeft: true; count: root.foldInfo.left }
+          Roller { onLeft: false; count: root.foldInfo.right }
+
+          // Kasumi 霞: long pale bands across the seams, as emaki part scenes.
+          Repeater {
+            model: [
+              { x: root.foldInfo.open.x + root.foldInfo.open.width - Type.px(360), y: folds.height - Type.px(92), w: Type.px(520), h: Type.px(18), a: 0.045 },
+              { x: root.foldInfo.open.x + root.foldInfo.open.width - Type.px(180), y: folds.height - Type.px(66), w: Type.px(300), h: Type.px(11), a: 0.03 },
+              { x: root.foldInfo.open.x + root.foldInfo.open.width - Type.px(240), y: Type.px(26), w: Type.px(460), h: Type.px(16), a: 0.04 },
+              { x: Type.px(18), y: folds.height - Type.px(58), w: root.foldInfo.open.x, h: Type.px(13), a: 0.035 }
+            ]
+            Rectangle {
+              required property var modelData
+              x: modelData.x; y: modelData.y
+              width: modelData.w; height: modelData.h
+              radius: height / 2
+              color: Ink.alpha(Ink.ink, modelData.a)
+            }
+          }
+        }
+
         // Sections fade out at the side edges: the paper fades into itself.
         Rectangle {
+          visible: !root.folded
           width: Type.px(120)
           height: parent.height
           gradient: Gradient {
@@ -346,6 +427,7 @@ Item {
           }
         }
         Rectangle {
+          visible: !root.folded
           x: parent.width - width
           width: Type.px(120)
           height: parent.height
@@ -546,6 +628,135 @@ Item {
           }
         }
       }
+
+      // ------------------------------------------------------ the map
+      // guides: map (docs/densho sheet 06): every part of the scroll in one
+      // ruled strip, left to right, the open section inverted, the leaves
+      // (the weather or the house, the end leaf or the colophon) at the
+      // ends on lifted paper. A click opens a section.
+      Item {
+        id: map
+        visible: root.mapped
+        opacity: root.ink
+        x: Type.px(26)
+        y: root.atBottom ? paper.height - height - Type.px(10) : Type.px(12)
+        width: paper.width - 2 * x
+        height: root.mapHeight - Type.px(32)
+
+        readonly property var cells: {
+          var out = []
+          if (root.leafWidth > 0)
+            out.push(root.mokuroku ? { jp: "序", no: "00", name: "Opening", poem: "The house", leaf: true, to: 0 }
+                                   : { jp: "天", no: "00", name: "Weather", poem: "", leaf: true, to: 0 })
+          for (var i = 0; i < root.sections.length; i++) {
+            var sc = root.sections[i]
+            out.push({ jp: sc.jp, no: sc.no, name: sc.label.charAt(0) + sc.label.slice(1).toLowerCase(), poem: sc.poem, index: i, to: i })
+          }
+          if (root.endWidth > 0) {
+            var k = LeafJs.kindOf(root.endleaf)
+            out.push(root.mokuroku ? { jp: "奥", no: "09", name: "Colophon", poem: "Signed and sealed", leaf: true, seal: true, to: root.sections.length - 1 }
+                                   : { jp: k.jp, no: "09", name: k.name, poem: "", leaf: true, to: root.sections.length - 1 })
+          }
+          return out
+        }
+        readonly property real cellWidth: Math.min(Type.px(170), width / Math.max(1, cells.length))
+
+        Row {
+          id: cellRow
+          anchors.horizontalCenter: parent.horizontalCenter
+          height: parent.height
+          Repeater {
+            model: map.cells
+            Rectangle {
+              id: cell
+              required property var modelData
+              required property int index
+              readonly property bool on: cell.modelData.index === root.current
+              width: map.cellWidth
+              height: cellRow.height
+              clip: true
+              color: on ? Ink.bone : cell.modelData.leaf ? Ink.lift : "transparent"
+              Behavior on color { enabled: Motion.live; ColorAnimation { duration: Motion.slide } }
+              Rectangle { width: 1; height: parent.height; color: Ink.line }
+              Rectangle { visible: cell.index === map.cells.length - 1; x: parent.width - 1; width: 1; height: parent.height; color: Ink.line }
+              Column {
+                x: Type.px(12)
+                y: Type.px(7)
+                width: parent.width - 2 * x
+                spacing: 0
+                Text {
+                  text: cell.modelData.jp
+                  color: cell.on ? Ink.boneInk : cell.modelData.leaf ? Ink.ink : Ink.inkDim
+                  font.family: Type.brush
+                  font.pixelSize: Type.px(20)
+                }
+                Text {
+                  text: cell.modelData.no
+                  color: cell.on ? Ink.boneInk : Ink.inkFaint
+                  font.family: Type.mono
+                  font.pixelSize: Type.tag
+                  font.letterSpacing: Type.trackLabel
+                }
+                Text {
+                  width: parent.width
+                  elide: Text.ElideRight
+                  text: cell.modelData.name
+                  color: cell.on ? Ink.boneInk : Ink.ink
+                  font.family: Type.text
+                  font.pixelSize: Type.note
+                }
+                Text {
+                  visible: root.mokuroku && cell.modelData.poem !== ""
+                  width: parent.width
+                  elide: Text.ElideRight
+                  text: cell.modelData.poem
+                  color: cell.on ? Ink.boneInk : Ink.inkFaint
+                  font.family: Type.display
+                  font.italic: true
+                  font.pixelSize: Type.px(11)
+                }
+              }
+              // The colophon's seal, in its corner.
+              Rectangle {
+                visible: !!cell.modelData.seal
+                anchors.right: parent.right
+                anchors.rightMargin: Type.px(10)
+                y: Type.px(10)
+                width: Type.px(16)
+                height: width
+                radius: 2
+                rotation: -4
+                color: Ink.seal
+                Text { anchors.centerIn: parent; text: root.feed.sealGlyph || "鑑"; color: Ink.paper; font.family: Type.jpSerif; font.pixelSize: Type.px(10) }
+              }
+              MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.picked(cell.modelData.to)
+              }
+            }
+          }
+        }
+        // Where the scroll opens and closes, under its two ends.
+        Text {
+          x: cellRow.x
+          y: parent.height + Type.px(4)
+          text: "OPENS HERE"
+          color: Ink.inkFaint
+          font.family: Type.mono
+          font.pixelSize: Type.tag
+          font.letterSpacing: Type.trackLabel
+        }
+        Text {
+          x: cellRow.x + cellRow.width - width
+          y: parent.height + Type.px(4)
+          text: "CLOSES HERE · ESC"
+          color: Ink.seal
+          font.family: Type.mono
+          font.pixelSize: Type.tag
+          font.letterSpacing: Type.trackLabel
+        }
+      }
     }
   }
 
@@ -599,6 +810,111 @@ Item {
       font.pixelSize: vert.size
       font.letterSpacing: vert.tracking
       font.italic: vert.italic
+    }
+  }
+
+  // A section folded into a spine (fold: collapsed): its sign, its number
+  // and name set vertically, its poetic name under order: mokuroku, a red
+  // dot when it needs you. Nearer spines are wider and darker. It slides as
+  // the open section changes, and opens when clicked.
+  component Spine: Item {
+    id: spine
+    property var at: null
+    property int no: 0
+    readonly property int depth: at ? at.depth : 3
+    readonly property bool shown: !!at
+    readonly property var info: root.sections[no]
+    x: at ? at.x : no < root.current ? root.foldInfo.rollers : view.width - root.foldInfo.rollers
+    width: at ? at.width : 0
+    height: parent ? parent.height : 0
+    opacity: shown ? 1 : 0
+    clip: true
+    Behavior on x { enabled: Motion.live; NumberAnimation { duration: Motion.pan; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.panCurve } }
+    Behavior on width { enabled: Motion.live; NumberAnimation { duration: Motion.pan; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.panCurve } }
+    Behavior on opacity { enabled: Motion.live; NumberAnimation { duration: Motion.fade } }
+
+    Rectangle {
+      x: spine.at && spine.at.side === "left" ? spine.width - 1 : 0
+      y: Type.px(40)
+      width: 1
+      height: Math.max(0, spine.height - Type.px(80))
+      color: Ink.line
+    }
+    Rectangle {
+      visible: root.flagged(spine.no)
+      anchors.horizontalCenter: parent.horizontalCenter
+      y: Type.px(30)
+      width: Type.px(6)
+      height: width
+      radius: width / 2
+      color: Ink.seal
+    }
+    Column {
+      anchors.horizontalCenter: parent.horizontalCenter
+      y: Type.px(56)
+      spacing: Type.px(16)
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: spine.info.jp
+        color: hover.containsMouse ? Ink.ink : spine.depth === 1 ? Ink.inkDim : spine.depth === 2 ? Ink.inkMuted : Ink.inkFaint
+        font.family: Type.brush
+        font.pixelSize: Type.px(spine.depth === 1 ? 46 : spine.depth === 2 ? 30 : 22)
+        lineHeight: 1
+        lineHeightMode: Text.ProportionalHeight
+      }
+      Vertical {
+        visible: spine.depth < 3
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: spine.info.no + "  " + spine.info.label
+        color: spine.depth === 1 ? Ink.inkMuted : Ink.inkFaint
+        size: Type.px(11)
+        tracking: Type.px(3)
+      }
+      Vertical {
+        visible: spine.depth === 1 && root.mokuroku
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: spine.info.poem
+        color: Ink.inkFaint
+        family: Type.display
+        italic: true
+        size: Type.px(15)
+      }
+    }
+    MouseArea {
+      id: hover
+      anchors.fill: parent
+      enabled: spine.shown
+      hoverEnabled: true
+      cursorShape: Qt.PointingHandCursor
+      onClicked: root.picked(spine.no)
+    }
+  }
+
+  // A roller (fold: collapsed): one hairline for each section on its side,
+  // the outermost first; the lines of the spines in view are darker, and a
+  // wound section that needs you is red.
+  component Roller: Item {
+    id: roller
+    property bool onLeft: true
+    property int count: 0
+    x: onLeft ? 0 : view.width - width
+    y: Type.px(26)
+    width: root.foldInfo.rollers
+    height: view.height - Type.px(52)
+    Repeater {
+      model: roller.count
+      Rectangle {
+        id: line
+        required property int index
+        // The section this line stands for.
+        readonly property int section: roller.onLeft ? line.index : root.sections.length - 1 - line.index
+        readonly property bool near: line.index >= roller.count - Math.min(3, roller.count)
+        readonly property bool red: !line.near && root.flagged(line.section)
+        x: roller.onLeft ? Type.px(4) + line.index * Type.px(3) : roller.width - Type.px(5) - line.index * Type.px(3)
+        width: line.red ? 2 : 1
+        height: roller.height
+        color: line.red ? Ink.seal : line.near ? Ink.inkMuted : Ink.lineStrong
+      }
     }
   }
 }
