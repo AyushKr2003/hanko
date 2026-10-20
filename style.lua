@@ -1,10 +1,14 @@
 -- ╭─────────────────────────────────────────────────────────────────────────╮
 -- │  Hanko look'n'feel: Hyprland windows printed on the bar's paper         │
--- │  Load it from ~/.config/hypr/looknfeel.lua, after your own tweaks:      │
+-- │  Every Hyprland look and animation Hanko has lives in this one file.    │
+-- │  Nothing loads it for you (`hanko desk on` never edits your config):    │
+-- │  add this line to ~/.config/hypr/looknfeel.lua, after your own tweaks,  │
+-- │  if you want it:                                                        │
 -- │                                                                         │
 -- │    pcall(dofile, os.getenv("HOME")                                      │
 -- │      .. "/.config/omarchy/plugins/hanko.bar/style.lua")                 │
 -- │                                                                         │
+-- │  Take the line out and Hyprland is yours again on the next reload.      │
 -- │  pcall keeps Hyprland starting if Hanko is uninstalled; dofile (not     │
 -- │  require) re-reads it on every `hyprctl reload`, which `omarchy theme   │
 -- │  set` runs, so the windows follow the theme like the bar does.          │
