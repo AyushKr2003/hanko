@@ -96,6 +96,12 @@ HandSheet {
           required property int index
           readonly property var r: modelData
           readonly property int at: root.fileOf(r.level)
+          // Te 手 (core/Cursor.js): Left/Right move the piece a file.
+          readonly property bool keyStop: !!(r.set || r.click)
+          readonly property bool keyStep: !!r.set
+          readonly property bool keyChosen: !!r.selected
+          function keyAdjust(d) { root.nudge(rank.r, d, 1 / 8) }
+          function keyPress() { root.act(rank.r.click) }
           readonly property bool red: (r.lead && !r.muted) || r.urgent
           y: index * board.ch
           width: grid.width
@@ -241,6 +247,9 @@ HandSheet {
         id: held
         required property var modelData
         required property int index
+        readonly property bool keyStop: !!modelData.click
+        readonly property bool keyChosen: !!modelData.selected
+        function keyPress() { root.act(held.modelData.click) }
         x: board.nameW / 4 + index * stand.slot
         width: stand.slot
         height: stand.height

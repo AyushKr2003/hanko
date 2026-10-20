@@ -148,7 +148,7 @@ Item {
       // No level under the cursor: the sheet's first one.
       var items = root.stopItems()
       it = null
-      for (var i = 0; !it && i < items.length; i++) if (items[i].keyStep) it = items[i]
+      for (var i = 0; !it && i < items.length; i++) if (items[i]["keyStep"]) it = items[i]
       if (it) root.setCursor(it)
     }
     if (it && typeof it.keyAdjust === "function") it.keyAdjust(d)

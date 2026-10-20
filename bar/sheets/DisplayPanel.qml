@@ -73,6 +73,8 @@ Column {
     Text {
       anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Type.px(6)
       text: "Arrange ›"
+      readonly property bool keyStop: true
+      function keyPress() { root.request("display", "edit", null) }
       color: arrange.containsMouse ? Ink.ink : Ink.ink3
       font.family: Type.text; font.pixelSize: Type.px(12)
       MouseArea { id: arrange; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.request("display", "edit", null) }

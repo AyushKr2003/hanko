@@ -17,6 +17,19 @@ Item {
   property real progress: 0
   signal fired()
 
+  // Te 手 (core/Cursor.js): from the keyboard, Enter starts the hold and
+  // the red comes in as under a finger; Enter again before it is full lets
+  // go. Nothing fires on a single tap, as nothing does for the pointer.
+  readonly property bool keyStop: true
+  property bool keyHeld: false
+  function keyPress() {
+    if (!root.hold) { root.fired(); return }
+    if (root.keyHeld) { root.keyHeld = false; fill.stop(); drain.start(); return }
+    root.keyHeld = true
+    drain.stop()
+    fill.start()
+  }
+
   property real soak: progress
   readonly property color tone: hold ? Ink.seal : Ink.ink2
 
@@ -25,7 +38,7 @@ Item {
 
   NumberAnimation on soak { id: fill; running: false; to: 1; duration: Motion.ms(600) }
   NumberAnimation on soak { id: drain; running: false; to: 0; duration: Motion.ms(200) }
-  onSoakChanged: if (soak >= 1 && area.pressed) { fill.stop(); soak = 0; root.fired() }
+  onSoakChanged: if (soak >= 1 && (area.pressed || keyHeld)) { fill.stop(); keyHeld = false; soak = 0; root.fired() }
 
   Rectangle {
     anchors.fill: parent

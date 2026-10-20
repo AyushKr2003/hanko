@@ -132,6 +132,14 @@ HandSheet {
         readonly property int ones: d % 5
         readonly property color tint: r.red ? Ink.seal : r.muted ? Ink.inkFaint : Ink.ink
         readonly property bool live: !r.spare && !!root.groups[r.group].row && !!root.groups[r.group].row.set
+        // Te 手 (core/Cursor.js): Up counts a bead more on this rod, Down
+        // one less; Left/Right go along the frame.
+        readonly property bool keyStop: live
+        readonly property bool keyStep: true
+        readonly property string keyAxis: "y"
+        function keyAdjust(d) {
+          root.pick(root.groups[rod.r.group].row, Math.max(0, Math.min(100, rod.r.n - d * rod.r.place)) / 100)
+        }
         visible: !r.spare
         x: frame.pad + index * frame.pitch + (frame.pitch - frame.bw) / 2
         width: frame.bw
@@ -224,6 +232,11 @@ HandSheet {
       id: wire
       required property var modelData
       readonly property var r: modelData
+      readonly property bool keyStop: !!(r.set || r.click)
+      readonly property bool keyStep: !!r.set
+      readonly property bool keyChosen: !!r.selected
+      function keyAdjust(d) { root.nudge(wire.r, d, 0.1) }
+      function keyPress() { root.act(wire.r.click) }
       readonly property int home: Math.round(Math.max(0, Math.min(1, r.level)) * 10)
       readonly property real beadW: Type.px(9)
       readonly property real wireW: Type.px(150)
@@ -311,6 +324,9 @@ HandSheet {
         id: day
         required property var modelData
         required property int index
+        readonly property bool keyStop: !!modelData.click
+        readonly property bool keyChosen: !!modelData.selected
+        function keyPress() { root.act(day.modelData.click) }
         readonly property bool home: index < week.home
         x: home ? Type.px(6) + index * week.slot : root.inner - (root.model.choices.length - index) * week.slot
         width: week.slot
@@ -357,6 +373,9 @@ HandSheet {
       id: choice
       required property var modelData
       readonly property var c: modelData
+      readonly property bool keyStop: !!c.click
+      readonly property bool keyChosen: !!c.selected
+      function keyPress() { root.act(choice.c.click) }
       width: root.inner
       height: Type.px(c.detail !== "" ? 34 : 26)
       Rectangle { anchors.verticalCenter: parent.verticalCenter; width: Type.px(56); height: 1; color: Ink.line }

@@ -15,6 +15,10 @@ Item {
   property bool first: false
   signal opened()
 
+  // Te 手 (core/Cursor.js): Enter opens it.
+  readonly property bool keyStop: true
+  function keyPress() { root.opened() }
+
   implicitHeight: body.implicitHeight + Type.px(22)
   width: parent ? parent.width : implicitWidth
   height: implicitHeight

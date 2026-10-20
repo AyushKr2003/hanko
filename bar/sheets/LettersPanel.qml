@@ -53,12 +53,16 @@ Column {
     Text {
       anchors.verticalCenter: parent.verticalCenter
       text: "Show recent again"
+      readonly property bool keyStop: true
+      function keyPress() { root.request("inbox", "replay", null) }
       color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12.5)
       MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.request("inbox", "replay", null) }
     }
     Text {
       anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
       text: "Clear all"
+      readonly property bool keyStop: true
+      function keyPress() { root.request("inbox", "clear", null) }
       color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12.5)
       MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.request("inbox", "clear", null) }
     }

@@ -10,6 +10,10 @@ Item {
   property bool on: false
   signal toggled(bool on)
 
+  // Te 手 (core/Cursor.js): Enter or Space flips it.
+  readonly property bool keyStop: true
+  function keyPress() { root.toggled(!root.on) }
+
   implicitWidth: Type.px(34)
   implicitHeight: Type.px(20)
 

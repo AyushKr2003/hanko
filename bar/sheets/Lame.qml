@@ -26,6 +26,12 @@ Item {
   readonly property int laced: Math.round(Math.max(0, Math.min(1, level)) * n)
   readonly property bool labelled: marks.length > 0 && marks[0].label !== undefined
   signal picked(real level)
+
+  // Te 手 (core/Cursor.js): off unless the owner makes this lame a stop
+  // (the hero's); Left/Right lace it a scale more or less.
+  property bool keyStop: false
+  readonly property bool keyStep: settable
+  function keyAdjust(d) { root.picked(Math.max(0, Math.min(root.n, root.laced + d)) / root.n) }
   signal scaleClicked(int index)
 
   implicitHeight: scaleH + (stitched ? Type.px(8) : 0) + (labelled ? Type.px(16) : 0)

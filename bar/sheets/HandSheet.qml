@@ -5,8 +5,9 @@ import "../../core/Hands.js" as Hands
 
 // The frame every craft hand (Shōgi, Soroban, Odoshi, Kasumi) sits in:
 // the eyebrow, the hand's own body, the quiet lines (zones, details), the
-// hint, and the foot's buttons, all from one Hands.js model. Keys: Up/Down
-// step the sheet's level, Left/Right and letters as the model says.
+// hint, and the foot's buttons, all from one Hands.js model. Keys: the
+// cursor (SheetView, core/Cursor.js) walks the hand's ranks, rods, lames
+// and bands; letters as the model says.
 Item {
   id: root
 
@@ -24,6 +25,12 @@ Item {
 
   // A row asked for something: its own request, or its level picked.
   function act(o) { if (o) root.request(o.what, o.arg) }
+  // Te 手 (core/Cursor.js): a row's level stepped from the keyboard, and a
+  // week (a hand's inline choices) moved as the model's Left/Right say.
+  function nudge(r, d, step) {
+    if (r && r.set) root.pick(r, Math.max(0, Math.min(1, Math.max(0, r.level) + d * step)))
+  }
+  function weekStep(d) { root.act(d < 0 ? root.model.keys.left : root.model.keys.right) }
   function pick(r, v) {
     if (!r || !r.set) return
     if (r.key === "hero") v = Math.max(hero.min, v)

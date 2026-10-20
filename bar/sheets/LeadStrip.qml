@@ -27,6 +27,13 @@ Item {
 
   signal moved(real value)
 
+  // Te 手 (core/Cursor.js): Up/Down pull the slip (down hangs it longer),
+  // Left/Right go along the rail.
+  readonly property bool keyStop: settable
+  readonly property bool keyStep: true
+  readonly property string keyAxis: "y"
+  function keyAdjust(d) { root.moved(Math.max(0, Math.min(1, root.v + d * root.step))) }
+
   // How long the slip needs to be for a stacked reading and its caption
   // to fit whole, the caption following straight on from the reading.
   readonly property real natural: stack.y + stack.height + Type.px(10) + cap.implicitWidth + Type.px(12)
