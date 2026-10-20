@@ -1,0 +1,79 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3400">
+<title>Densho 02 · Nagare</title>
+<link rel="stylesheet" href="../../kaze/source/kaze.css">
+<link rel="stylesheet" href="densho.css">
+<style>
+  .lab { display: flex; gap: 14px; align-items: baseline; margin: 26px 0 10px; }
+  .lab .n { font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); }
+  .lab .t { font-size: 20px; color: var(--ink); }
+  .lab .k { font-family: var(--jps); color: var(--inkDim); font-size: 18px; }
+  .lab .d { font-size: 16px; color: var(--inkMuted); margin-left: 8px; }
+  .plot { border: 1px solid var(--line); background: var(--paper); padding: 20px 22px 18px; }
+  .plot .h { font-size: 19px; color: var(--ink); } .plot .h i { font-style: normal; font-family: var(--jps); color: var(--inkDim); margin-left: 8px; }
+  .plot .d { font-size: 15px; color: var(--inkMuted); margin-top: 6px; line-height: 1.45; min-height: 66px; }
+  .plot svg { display: block; margin-top: 14px; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">伝</span>Densho · the handscroll, redrawn<span class="rl"></span>02 / 06 · how it moves</div>
+  <div class="head"><span class="no">02</span><h1>Nagare, ink that moves with you</h1><span class="kj">流</span></div>
+  <p class="lede">The paper moves as fast as your hand and no faster. While it travels, the ink thins as if it hasn't dried: titles lose weight, rows pale. When it settles the ink soaks back in and the section's seal gives one small press. That is the only overshoot, as everywhere on the desk (Iai: nothing springs, nothing bounces).</p>
+
+  <div class="lab"><span class="n">A</span><span class="t">At rest</span><span class="k">静</span><span class="d">Open at 03 Network. Full ink.</span></div>
+  <div class="fig" id="a"></div>
+  <div class="lab"><span class="n">B</span><span class="t">Thrown, mid-flight</span><span class="k">流</span><span class="d">A flick toward Bluetooth at 2,800 px/s. The title is at weight 190, the rows at half ink, the mist bands run ahead of the paper.</span></div>
+  <div class="fig" id="b"></div>
+  <div class="lab"><span class="n">C</span><span class="t">Landed</span><span class="k">捺</span><span class="d">04 Bluetooth settles where the flick was aimed. The ink comes back over 180 ms; the seal presses once (140 ms, the desk's one overshoot).</span></div>
+  <div class="fig" id="c"></div>
+
+  <div class="sec"><b>The numbers</b><i></i>what drives it</div>
+  <div class="grid g3" id="plots"></div>
+
+  <div class="notes">
+    <div><b>Your speed, carried<i>勢</i></b>A drag moves the paper 1:1. Let go and it keeps your speed, and lands on the section the throw was aimed at. Grab it mid-flight and it stops under your hand. No fixed 260 ms glide any more.</div>
+    <div><b>The touchpad pans<i>滑</i></b>Today each wheel gesture moves exactly one section, every 260 ms. Here two fingers pan the paper continuously and it settles on the nearest section once you lift them. A mouse wheel notch is still one section.</div>
+    <div><b>Still means still<i>止</i></b>With motion off (Omarchy's animations or <code>motion: still</code>) the ink never thins, the paper jumps, and nothing presses. Every frame on this sheet is just its last one.</div>
+  </div>
+</div>
+<script src="../../kaze/source/kaze.js"></script>
+<script src="densho.js"></script>
+<script>
+  const W = 1660, H = 460
+  document.getElementById('a').innerHTML = pane(scroll({ at: 3 }), W, H)
+  document.getElementById('b').innerHTML = pane(scroll({ at: 3, dry: .85, mist: -150, shift: -150 }), W, H)
+  document.getElementById('c').innerHTML = pane(scroll({ at: 4, press: true }), W, H)
+
+  const ax = (w, h, xl, yl) => `<line x1="40" y1="${h - 30}" x2="${w}" y2="${h - 30}" stroke="var(--lineStrong)"/><line x1="40" y1="0" x2="40" y2="${h - 30}" stroke="var(--lineStrong)"/>
+    <text x="${w}" y="${h - 10}" text-anchor="end" style="font:11px var(--mono);fill:var(--inkFaint);letter-spacing:1.5px">${xl}</text>
+    <text x="0" y="12" style="font:11px var(--mono);fill:var(--inkFaint);letter-spacing:1.5px">${yl}</text>`
+  const path = (f, w, h, n = 80) => { let d = ''; for (let i = 0; i <= n; i++) { const t = i / n, [x, y] = f(t); d += (i ? 'L' : 'M') + (40 + x * (w - 40)).toFixed(1) + ',' + ((h - 30) - y * (h - 50)).toFixed(1) } return d }
+  const w = 500, h = 230
+  // 1: weight against speed
+  const p1 = `<svg width="${w}" height="${h}">${ax(w, h, 'SPEED px/s → 4000', 'WEIGHT')}
+    <path d="${path(t => [t, 1 - 0.75 * (1 - Math.exp(-t * 2.2)) / (1 - Math.exp(-2.2))], w, h)}" stroke="var(--ink)" stroke-width="2" fill="none"/>
+    <text x="48" y="34" style="font:12px var(--mono);fill:var(--inkMuted)">400</text><text x="${w - 30}" y="${h - 76}" style="font:12px var(--mono);fill:var(--inkMuted)">160</text></svg>`
+  // 2: landing, old curve against a carried, critically damped spring
+  const bez = t => { const u = Math.min(1, t / 0.55); return 1 - Math.pow(1 - u, 4) }
+  const spr = t => { const k = 9, v0 = 2.4, s = t * 1.2; return 1 - Math.exp(-k * s) * (1 + (k - v0) * s) }
+  const p2 = `<svg width="${w}" height="${h}">${ax(w, h, 'TIME → 480 ms', 'POSITION')}
+    <path d="${path(t => [t, bez(t)], w, h)}" stroke="var(--inkFaint)" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>
+    <path d="${path(t => [t, Math.min(1, spr(t))], w, h)}" stroke="var(--ink)" stroke-width="2" fill="none"/>
+    <line x1="40" y1="${h - 30}" x2="120" y2="${h - 30 - 90}" stroke="var(--seal)" stroke-width="1.5"/>
+    <text x="128" y="${h - 118}" style="font:11px var(--mono);fill:var(--seal);letter-spacing:1px">YOUR SPEED AT LET-GO</text>
+    <text x="${w - 4}" y="40" text-anchor="end" style="font:11px var(--mono);fill:var(--inkFaint);letter-spacing:1px">- - TODAY · 260 MS, FROM ZERO</text></svg>`
+  // 3: wheel, a stair today against a continuous pan that settles
+  let stair = 'M40,' + (h - 30); for (let i = 0; i < 4; i++) { const x0 = 40 + (i * 0.22 + 0.04) * (w - 40), x1 = x0 + 0.08 * (w - 40), y = (h - 30) - (i + 1) * 0.22 * (h - 50); stair += ` L${x0},${(h - 30) - i * 0.22 * (h - 50)} L${x1},${y}` } stair += ` L${w},${(h - 30) - 4 * 0.22 * (h - 50)}`
+  const cont = path(t => [t, t < 0.7 ? t * 1.22 : 0.854 + (0.88 - 0.854) * (1 - Math.exp(-(t - 0.7) * 20))], w, h)
+  const p3 = `<svg width="${w}" height="${h}">${ax(w, h, 'TIME → 1.2 s', 'PAPER')}
+    <path d="${stair}" stroke="var(--inkFaint)" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>
+    <path d="${cont}" stroke="var(--ink)" stroke-width="2" fill="none"/>
+    <circle cx="${40 + 0.7 * (w - 40)}" cy="${(h - 30) - 0.854 * (h - 50)}" r="3.5" fill="var(--seal)"/>
+    <text x="${40 + 0.7 * (w - 40) - 170}" y="${(h - 30) - 0.854 * (h - 50) + 22}" style="font:11px var(--mono);fill:var(--seal);letter-spacing:1px">FINGERS LIFT · SETTLE</text></svg>`
+  document.getElementById('plots').innerHTML = [
+    ['Ink against speed', '乾', 'Fraunces is a variable face, so the title thins smoothly from 400 to 160 as the paper speeds up. Only the eight titles change weight; everything else just pales.', p1],
+    ['A landing that keeps your speed', '着', 'Solid: a spring with no overshoot that starts at your hand\'s speed. Dashed: today\'s fixed 260 ms curve, which starts from zero whatever you did.', p2],
+    ['Two fingers, not steps', '滑', 'Dashed: today a touchpad swipe becomes one jump per 260 ms. Solid: the paper follows the fingers and settles on the nearest section once they lift.', p3],
+  ].map(([t, k, d, s]) => `<div class="plot"><div class="h">${t}<i>${k}</i></div><div class="d">${d}</div>${s}</div>`).join('')
+  densho()
+</script>
+</body></html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3600">
+<title>Densho 03 · Fude-iri</title>
+<link rel="stylesheet" href="../../kaze/source/kaze.css">
+<link rel="stylesheet" href="densho.css">
+<style>
+  .lab { display: flex; gap: 14px; align-items: baseline; margin: 26px 0 10px; }
+  .lab .n { font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); }
+  .lab .t { font-size: 20px; color: var(--ink); }
+  .lab .k { font-family: var(--jps); color: var(--inkDim); font-size: 18px; }
+  .lab .d { font-size: 16px; color: var(--inkMuted); margin-left: 8px; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">伝</span>Densho · the handscroll, redrawn<span class="rl"></span>03 / 06 · how a section arrives</div>
+  <div class="head"><span class="no">03</span><h1>Fude-iri, written as it arrives</h1><span class="kj">筆入</span></div>
+  <p class="lede">Nothing fades up. As a section comes toward the middle a dry brush writes its title on, left to right, with a broken kasure edge leading the stroke. The seal and eyebrow come first, the caption follows the brush, and the rows come in one after another in reading order. It follows the paper, not a clock: pan slowly and you watch it being written, pan back and the ink lifts off.</p>
+
+  <div class="sec"><b>Close up</b><i></i>the stroke at 55%</div>
+  <div class="fig" id="close"></div>
+
+  <div class="lab"><span class="n">20%</span><span class="t">The brush touches down</span><span class="k">起</span><span class="d">The seal and the eyebrow are in. The first letters of the title.</span></div>
+  <div class="fig" id="w1"></div>
+  <div class="lab"><span class="n">55%</span><span class="t">Mid-stroke</span><span class="k">送</span><span class="d">The title half written, the caption arriving behind it.</span></div>
+  <div class="fig" id="w2"></div>
+  <div class="lab"><span class="n">80%</span><span class="t">The rows</span><span class="k">連</span><span class="d">The title is whole; the rows come in one by one, the joined network first.</span></div>
+  <div class="fig" id="w3"></div>
+  <div class="lab"><span class="n">100%</span><span class="t">Written</span><span class="k">収</span><span class="d">The section in the middle, everything in, the seal pressed.</span></div>
+  <div class="fig" id="w4"></div>
+
+  <div class="notes">
+    <div><b>Tied to position<i>位</i></b>The stroke is a function of where the section is (0 at the spine, 1 in the middle), not a timer. Two scrolls are never the same because two hands are never the same, and reversing simply un-writes.</div>
+    <div><b>The brush is the theme's<i>墨</i></b>The edge comes from the same sumi shader as the desk's print (assets/shaders/sumi.glsl): the theme's ink, a little noise, a few dry streaks. No new colour, no glow.</div>
+    <div><b>Once per visit<i>一</i></b>Settled sections don't rewrite. Live readings (a level, a new network) change with Hanko's existing value fade, so the brush means "you arrived here", nothing else.</div>
+  </div>
+</div>
+<script src="../../kaze/source/kaze.js"></script>
+<script src="densho.js"></script>
+<script>
+  const W = 1660, H = 460
+  document.getElementById('close').innerHTML = pane(`<div style="padding:70px 90px;background:var(--paper)">${title("Casting <i>the net</i>", { write: .38, size: 170, width: 1700, tw: 1340 }).replace('height="80"', 'height="200"').replace(/y="62"/, 'y="160"')}</div>`, 1780, 340)
+  ;[['w1', .2], ['w2', .55], ['w3', .8], ['w4', 1]].forEach(([id, w]) => {
+    document.getElementById(id).innerHTML = pane(scroll({ at: 3, write: w, press: w === 1, mist: w === 1 }), W, H)
+  })
+  densho()
+</script>
+</body></html>

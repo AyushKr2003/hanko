@@ -1,0 +1,97 @@
+/* Densho 伝書 mockup kit: the handscroll as a transmission scroll.
+   Built on the Kaze kit (tokens, fonts, the bar): ../../kaze/source/kaze.css. */
+
+/* a pane: something drawn at its own size and scaled to its box's width */
+.pane { position: relative; overflow: hidden; }
+.pane > .at { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+
+/* ===== the scroll ===== */
+.scr { position: relative; background: var(--paper); overflow: hidden; }
+.scr::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line); }
+
+/* the rollers: one hairline for each section still wound on that side */
+.roll { position: absolute; top: 26px; bottom: 26px; width: 34px; }
+.roll i { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--lineStrong); }
+.roll i.k { background: var(--inkMuted); }
+.roll .ct { position: absolute; bottom: -18px; font: 10px var(--mono); letter-spacing: 1.6px; color: var(--inkFaint); white-space: nowrap; }
+.roll.l .ct { left: 2px; } .roll.r .ct { right: 2px; }
+
+/* folded neighbours: a spine in vertical type */
+.spine { position: absolute; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; padding-top: 58px; gap: 18px; }
+.spine::before { content: ''; position: absolute; top: 40px; bottom: 40px; width: 1px; background: var(--line); }
+.spine.lft::before { right: 0; } .spine.rgt::before { left: 0; }
+.spine .sj { font-family: var(--brush); color: var(--inkDim); line-height: 1; }
+.spine .sl { writing-mode: vertical-rl; font: 11px var(--mono); letter-spacing: 3px; text-transform: uppercase; color: var(--inkMuted); white-space: nowrap; }
+.spine .sl b { font-weight: 400; color: var(--inkFaint); margin-bottom: 10px; display: inline-block; }
+.spine .sp { writing-mode: vertical-rl; font: italic 15px var(--display); color: var(--inkFaint); white-space: nowrap; }
+.spine.d1 .sj { font-size: 46px; }
+.spine.d2 .sj { font-size: 30px; color: var(--inkMuted); } .spine.d2 .sl { color: var(--inkFaint); }
+.spine.d3 .sj { font-size: 22px; color: var(--inkFaint); } .spine.d3 .sl { display: none; }
+.spine .flag { position: absolute; top: 30px; width: 6px; height: 6px; border-radius: 50%; background: var(--seal); }
+
+/* the open section */
+.focus { position: absolute; top: 0; bottom: 0; }
+.fh { display: flex; align-items: center; gap: 14px; height: 30px; }
+.fj { width: 30px; height: 30px; display: grid; place-items: center; font: 600 17px var(--jps); color: var(--paper); background: var(--seal); border-radius: 3px; position: relative; }
+.fj::after { content: ''; position: absolute; inset: 2px; border: 1px solid color-mix(in srgb, var(--paper) 45%, transparent); border-radius: 2px; }
+.fj.press { transform: scale(1.18) rotate(-4deg); }
+.fj.press::before { content: ''; position: absolute; inset: -9px; border: 1px solid color-mix(in srgb, var(--seal) 45%, transparent); border-radius: 6px; }
+.fe { font: 12px var(--mono); letter-spacing: 3px; color: var(--inkMuted); text-transform: uppercase; }
+.fp { font: italic 17px var(--display); color: var(--inkFaint); }
+.fp::before { content: '— '; }
+.ft { margin-top: 18px; height: 78px; }
+.ft svg { overflow: visible; }
+.fc { font: 12px var(--mono); letter-spacing: 2.4px; color: var(--inkMuted); text-transform: uppercase; margin-top: 8px; }
+.wm { position: absolute; right: 10px; bottom: -40px; font-family: var(--brush); font-size: 250px; line-height: 1; color: var(--ink); opacity: .045; pointer-events: none; }
+
+/* rows (networks, outputs, letters) */
+.rows { display: flex; flex-direction: column; gap: 2px; }
+.row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; height: 40px; padding: 0 12px; border-radius: 3px; font-size: 16px; color: var(--ink); }
+.row .ix { font: 11px var(--mono); color: var(--inkFaint); letter-spacing: 1px; }
+.row .nt { font: 10.5px var(--mono); letter-spacing: 2px; color: var(--inkMuted); text-transform: uppercase; }
+.row small { font-size: 13px; color: var(--inkFaint); margin-left: 10px; }
+.row.on { background: var(--bone); color: var(--onBone); }
+.row.on .ix, .row.on .nt, .row.on small { color: var(--onBone); opacity: .75; }
+.row.on .ix::before { content: '//'; margin-right: 2px; }
+.colh { font: 11px var(--mono); letter-spacing: 2.6px; color: var(--inkFaint); text-transform: uppercase; margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+.colh::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+/* faders */
+.faders { display: flex; gap: 46px; align-items: flex-end; }
+.fd { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 54px; }
+.fd .v { font: 400 28px var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+.fd .tr { position: relative; width: 18px; height: 150px; }
+.fd .tr::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 1px; background: var(--lineStrong); }
+.fd .tr b { position: absolute; left: 7px; bottom: 0; width: 3px; background: var(--ink); }
+.fd .tr u { position: absolute; left: 0; width: 18px; height: 7px; background: var(--paper); border: 1px solid var(--ink); border-radius: 2px; }
+.fd .n { font-size: 14px; color: var(--inkMuted); }
+.fd.mute .v, .fd.mute .n { color: var(--seal); } .fd.mute .tr b { background: var(--seal); }
+
+/* signal bars */
+.sig { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; margin-left: 10px; vertical-align: middle; }
+.sig i { width: 3px; background: currentColor; opacity: .25; } .sig i.f { opacity: 1; }
+
+/* letters */
+.lt { display: grid; grid-template-columns: 34px 150px 1fr 70px; align-items: center; min-height: 54px; padding: 0 12px; border-top: 1px solid var(--lineSoft); position: relative; }
+.lt .st { width: 22px; height: 22px; border: 1.5px solid var(--seal); color: var(--seal); border-radius: 3px; display: grid; place-items: center; font: 500 12px var(--jps); }
+.lt .ap { font-size: 16px; color: var(--ink); }
+.lt .bd { font-size: 16px; color: var(--ink); white-space: nowrap; overflow: hidden; }
+.lt .tm { font: 11px var(--mono); color: var(--inkFaint); letter-spacing: 1px; text-align: right; }
+.lt .bd.hid { opacity: .075; }
+
+/* labels on the pictures */
+.call { position: absolute; font: 12px var(--mono); letter-spacing: 2px; color: var(--inkMuted); text-transform: uppercase; white-space: nowrap; display: flex; align-items: center; gap: 8px; z-index: 20; }
+.call::before { content: ''; width: 18px; height: 1px; background: var(--inkFaint); }
+.call.red { color: var(--seal); } .call.red::before { background: var(--seal); }
+.call.up::before { display: none; }
+.lead { position: absolute; width: 1px; background: var(--inkFaint); z-index: 20; }
+
+/* the frame and caption a picture sits in */
+.fig { border: 1px solid var(--line); background: var(--paper2); }
+.fig .pane { background: var(--paper2); }
+.t0 { font: 12px var(--mono); letter-spacing: 2.4px; color: var(--inkFaint); text-transform: uppercase; }
+.sec { font: 13px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; color: var(--inkFaint); margin: 44px 0 14px; display: flex; gap: 14px; align-items: center; }
+.sec b { color: var(--ink); font-weight: 400; } .sec i { flex: 1; height: 1px; background: var(--line); }
+.avoid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 36px; margin-top: 34px; padding-top: 20px; border-top: 1px solid var(--line); }
+.avoid div { font-size: 15.5px; line-height: 1.45; color: var(--inkMuted); }
+.avoid b { display: block; font-weight: 400; color: var(--seal); font: 12px var(--mono); letter-spacing: 2.4px; text-transform: uppercase; margin-bottom: 6px; }

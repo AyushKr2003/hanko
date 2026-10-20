@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x3000">
+<title>Densho 04 · Kaze-michi</title>
+<link rel="stylesheet" href="../../kaze/source/kaze.css">
+<link rel="stylesheet" href="densho.css">
+<style>
+  .lab { display: flex; gap: 14px; align-items: baseline; margin: 26px 0 10px; }
+  .lab .n { font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); }
+  .lab .t { font-size: 20px; color: var(--ink); }
+  .lab .k { font-family: var(--jps); color: var(--inkDim); font-size: 18px; }
+  .lab .d { font-size: 16px; color: var(--inkMuted); margin-left: 8px; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">伝</span>Densho · the handscroll, redrawn<span class="rl"></span>04 / 06 · the wind shows the way</div>
+  <div class="head"><span class="no">04</span><h1>Kaze-michi, the wind's road</h1><span class="kj">風道</span></div>
+  <p class="lede">There is no index plate to read. When something on the scroll needs you, a gust of fine ink fibres crosses the paper toward it, the same wind that bends the grass on the desk, and then the paper is still again. A quiet scroll has no wind at all. Press the gust (or Tab) and the scroll travels where it was blowing.</p>
+
+  <div class="lab"><span class="n">A</span><span class="t">Calm</span><span class="k">凪</span><span class="d">Nothing needs you. The paper is still.</span></div>
+  <div class="fig" id="a"></div>
+  <div class="lab"><span class="n">B</span><span class="t">A letter, far away</span><span class="k">便</span><span class="d">A new message from Signal. Inbox is wound on the right roller; its line turns red and the gust runs into the roller.</span></div>
+  <div class="fig" id="b"></div>
+  <div class="lab"><span class="n">C</span><span class="t">Low battery, behind you</span><span class="k">電</span><span class="d">Open at Display; power falls to 9%. The wind turns and blows back toward the Power spine, which takes a red dot.</span></div>
+  <div class="fig" id="c"></div>
+
+  <div class="notes">
+    <div><b>Borrowed from the island, made ours<i>借</i></b>Tsushima replaced its waypoints with wind. Here the wind is Hanko's own (core/Wind.js): the speed and direction the desk already uses, so a gust on the scroll and the grass on the wallpaper are one weather.</div>
+    <div><b>Once, then quiet<i>一陣</i></b>A gust runs for 900 ms when the thing happens and once more each time the scroll opens while it's unread. It never loops. The red line or dot stays until you look.</div>
+    <div><b>With motion off<i>止</i></b>No fibres. The red marks on the spine and the roller are the whole signal, which is already enough to read.</div>
+  </div>
+</div>
+<script src="../../kaze/source/kaze.js"></script>
+<script src="densho.js"></script>
+<script>
+  const W = 1660, H = 460
+  document.getElementById('a').innerHTML = pane(scroll({ at: 3 }), W, H)
+  document.getElementById('b').innerHTML = pane(scroll({ at: 3, flags: [8], gust: { to: 8, from: 420, y: 250 } }), W, H)
+  document.getElementById('c').innerHTML = pane(scroll({ at: 6, flags: [5], gust: { to: 5, from: 1350, y: 230, seed: 9 } }), W, H)
+  densho()
+</script>
+</body></html>

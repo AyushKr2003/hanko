@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x2700">
+<title>Densho 01 · The scroll</title>
+<link rel="stylesheet" href="../../kaze/source/kaze.css">
+<link rel="stylesheet" href="densho.css">
+</head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">伝</span>Densho · the handscroll, redrawn<span class="rl"></span>01 / 06 · the whole scroll</div>
+  <div class="head"><span class="no">01</span><h1>Densho, a scroll written for you</h1><span class="kj">伝書</span></div>
+  <p class="lede">The handscroll stops being eight panels in a row. It reads like a school's licence scroll: the house first, then the techniques one by one, then the seal. Only the section you are reading is open. Its neighbours fold into spines in vertical type, nothing is cut off mid-word, and what lies further away is wound on the two rollers, one hairline per section.</p>
+
+  <div class="fig" id="hero"></div>
+
+  <div class="sec"><b>Anatomy</b><i></i>the scroll alone, open at Sound</div>
+  <div class="fig" id="anat"></div>
+
+  <div class="notes">
+    <div><b>Spines, not slices<i>背</i></b>Today the neighbours are sliced at the paper's edge ("WH-1000X…"). Here each one folds to its sign, number and name, set vertically like a book spine. The nearer the spine, the larger its sign. Click one and it unfolds into the middle.</div>
+    <div><b>The rollers count<i>軸</i></b>The index plate, the foot bar and the key hints are gone. Each roller holds one hairline per section wound on it: 2 on the left and 7 on the right means you are third of ten. The lines nearest the paper are darker, since those are the spines you can see.</div>
+    <div><b>Kasumi between scenes<i>霞</i></b>Emaki painters separated scenes and jumps in time with long bands of mist. Two pale bands cross the seam between the open section and its neighbours. They sit in front of the paper and drift a little faster than it, so a pan has depth without any shadow.</div>
+  </div>
+</div>
+<script src="../../kaze/source/kaze.js"></script>
+<script src="densho.js"></script>
+<script>
+  document.getElementById('hero').innerHTML = pane(screen({ at: 2, flags: [8] , bar: { ws: 2 } }), 1920, 1080)
+  const calls = `
+    <div class="call" style="left:40px;top:560px">Roller · 2 wound</div>
+    <div class="call" style="left:150px;top:28px">Spines · nearest largest</div>
+    <div class="call" style="left:420px;top:28px">Open section · 02 Sound</div>
+    <div class="call" style="left:1060px;top:560px">Kasumi bands</div>
+    <div class="call red" style="left:1420px;top:560px">Unread inbox · its line turns red</div>
+    <div class="call" style="left:1500px;top:28px">Roller · 7 wound</div>`
+  document.getElementById('anat').innerHTML = pane(`<div style="position:absolute;left:60px;top:60px">${scroll({ at: 2, flags: [8] })}</div>${calls}`, 1780, 600)
+  densho()
+</script>
+</body></html>

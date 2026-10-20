@@ -1,0 +1,102 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="size" content="1920x4400">
+<title>Densho 06 · Mokuroku</title>
+<link rel="stylesheet" href="../../kaze/source/kaze.css">
+<link rel="stylesheet" href="densho.css">
+<style>
+  .lab { display: flex; gap: 14px; align-items: baseline; margin: 26px 0 10px; }
+  .lab .n { font: 12px var(--mono); letter-spacing: 2px; color: var(--inkFaint); }
+  .lab .t { font-size: 20px; color: var(--ink); }
+  .lab .k { font-family: var(--jps); color: var(--inkDim); font-size: 18px; }
+  .lab .d { font-size: 16px; color: var(--inkMuted); margin-left: 8px; }
+  .trip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .trip .cp { font-size: 15.5px; color: var(--inkMuted); margin-top: 10px; line-height: 1.45; }
+  .trip .cp b { color: var(--ink); font-weight: 400; display: block; font-size: 17px; margin-bottom: 2px; }
+  .trip .cp b i { font-style: normal; font-family: var(--jps); color: var(--inkDim); margin-left: 6px; }
+</style></head>
+<body class="dark"><div class="sheet">
+  <div class="crumb"><span class="s">伝</span>Densho · the handscroll, redrawn<span class="rl"></span>06 / 06 · opening, closing, jumping</div>
+  <div class="head"><span class="no">06</span><h1>Mokuroku, in the order of a licence</h1><span class="kj">目録</span></div>
+  <p class="lede">A school's licence scroll always reads the same way: the name of the house, its line of masters, the techniques under poetic names, then the master's signature and seal, and last the student's name. The scroll keeps that order. It opens on the house, closes on the seal, and the way it opens and closes is the desk's Iai: a held beat, one fast cut, a hard stop.</p>
+
+  <div class="sec"><b>The whole scroll</b><i></i>ten parts, left to right</div>
+  <div class="fig" id="map"></div>
+
+  <div class="lab"><span class="n">序</span><span class="t">The opening</span><span class="k">序</span><span class="d">Your seal glyph as the house's mark, and the house's line: installed, updated, booted, now. It takes the place of the weather leaf left of Time.</span></div>
+  <div class="fig" id="open"></div>
+  <div class="lab"><span class="n">奥</span><span class="t">The colophon</span><span class="k">奥書</span><span class="d">Signed to you, under your preset. The second seal is yours: it is pressed when you roll the scroll up.</span></div>
+  <div class="fig" id="colo"></div>
+
+  <div class="sec"><b>Iai 居合</b><i></i>opening is one cut</div>
+  <div class="trip" id="iai"></div>
+
+  <div class="sec"><b>Kamae 構</b><i></i>a jump is a stance, not a slide</div>
+  <div class="lab"><span class="n">8</span><span class="t">Pressing 8 from Network</span><span class="k">構</span><span class="d">The paper does not slide past five sections. It cuts: the sign of Inbox, large and alone, for 300 ms, then the section writes itself in (sheet 03).</span></div>
+  <div class="fig" id="stance"></div>
+
+  <div class="sec"><b>Fūin 封印</b><i></i>rolling up seals it</div>
+  <div class="trip" id="seal"></div>
+
+  <div class="avoid">
+    <div><b>Not taken</b>The games' layouts, icons, fonts, masks, arrows or names. The ideas only: wind instead of HUD, the brush, a mend that shows.</div>
+    <div><b>Not added</b>Gold, glow, glass, shadows, coverflow, 3D tilt, skew or blur at speed. Hairlines, four inks and one red, as everywhere.</div>
+    <div><b>Not looping</b>Nothing moves while you only read. Gusts run once; the brush writes once per visit; mist moves only with the paper.</div>
+    <div><b>Every touch a switch</b>Poetic names, aburidashi, the wind and the seam each get a setting, like the scroll's dividers and end leaves today.</div>
+  </div>
+</div>
+<script src="../../kaze/source/kaze.js"></script>
+<script src="densho.js"></script>
+<script>
+  const W = 1660, H = 460
+
+  // the map: every part of the scroll at once
+  const segs = SECTIONS.map((s, i) => {
+    const w = i === 0 || i === 9 ? 230 : 150
+    return { ...s, w, grp: i === 0 ? '序 · the house' : i === 9 ? '奥書 · the seal' : '' }
+  })
+  let x = 30, cells = ''
+  segs.forEach((s, i) => {
+    const edge = i === 0 || i === 9
+    cells += `<div style="position:absolute;left:${x}px;top:40px;width:${s.w}px;height:150px;border-left:1px solid var(--line);${i === 9 ? 'border-right:1px solid var(--line);' : ''}padding:16px 14px;${edge ? 'background:var(--lift)' : ''}">
+      <div style="font-family:var(--brush);font-size:34px;color:${edge ? 'var(--ink)' : 'var(--inkDim)'}">${s.jp}</div>
+      <div style="font:11px var(--mono);letter-spacing:2px;color:var(--inkFaint);margin-top:12px">${s.no}</div>
+      <div style="font-size:15px;color:var(--ink);margin-top:2px">${s.label}</div>
+      <div style="font:italic 14px var(--display);color:var(--inkFaint);margin-top:2px;white-space:nowrap">${s.poem}</div>
+      ${i === 9 ? `<div style="position:absolute;right:14px;top:16px">${seal('鑑', 40, { rot: -4 })}</div>` : ''}</div>`
+    x += s.w
+  })
+  const tx = 30 + 230, tw = 150 * 8
+  cells += `<div style="position:absolute;left:${tx}px;top:206px;width:${tw}px;height:1px;background:var(--lineStrong)"></div>
+    <div class="t0" style="position:absolute;left:${tx}px;top:216px;width:${tw}px;text-align:center">目録 · the techniques, eight sections, each under a poetic name with its plain one</div>
+    <div class="t0" style="position:absolute;left:30px;top:16px">Opens here · Super+Ctrl+U</div>
+    <div class="t0" style="position:absolute;left:${30 + 230 + tw}px;top:16px;color:var(--seal)">Closes here · Esc</div>`
+  document.getElementById('map').innerHTML = pane(cells, 1720, 250)
+
+  document.getElementById('open').innerHTML = pane(scroll({ at: 0 }), W, H)
+  document.getElementById('colo').innerHTML = pane(scroll({ at: 9 }), W, H)
+
+  // a crop of the top of the screen: the bar and as much paper as is out
+  const crop = (frac, o = {}) => `<div class="screen" style="height:620px">
+    <div class="wp" style="background-image:url(../../kaze/source/img/7-haboku-dark.webp);opacity:.4"></div>${bar({ ws: 2 })}
+    <div style="position:absolute;left:132px;top:46px;width:${W}px;height:${Math.round(H * frac)}px;overflow:hidden">${scroll({ at: 0, ...o })}</div>
+    ${frac > 0 && frac < 1 ? `<div style="position:absolute;left:132px;top:${46 + Math.round(H * frac) - 2}px;width:${W}px;height:3px;background:var(--inkMuted)"></div>` : ''}
+    ${o.cut ? `<div style="position:absolute;left:60px;right:60px;top:${46 + H}px;height:1px;background:linear-gradient(90deg, transparent, var(--bone) 15%, var(--bone) 85%, transparent)"></div>` : ''}
+    ${o.ring ? `<div style="position:absolute;left:2px;top:3px;width:34px;height:34px;border:1px solid color-mix(in srgb, var(--seal) 55%, transparent);border-radius:6px"></div>` : ''}
+    ${o.tag ? `<div class="call" style="left:${o.tag[0]}px;top:${o.tag[1]}px">${o.tag[2]}</div>` : ''}</div>`
+  const trip = (frames) => frames.map(([html, t, k, d]) => `<div><div class="fig">${pane(html, 1120, 620)}</div><div class="cp"><b>${t}<i>${k}</i></b>${d}</div></div>`).join('')
+  document.getElementById('iai').innerHTML = trip([
+    [crop(0, { cut: true, tag: [330, 520, 'The cut · where the paper will stop'] }), 'Hold', '構', '30 ms. Nothing moves except a hairline at the depth the paper will reach: the eye knows where it is going.'],
+    [crop(0.55, { write: 0.1, mist: false }), 'Draw', '抜', '160 ms on the desk\'s Iai curve. The paper drops from the rod; the rod line under it is the roller it unwinds from.'],
+    [crop(1), 'Stop', '止', 'A hard stop, no bounce. The opening writes itself in, and the scroll is ready.'],
+  ])
+
+  document.getElementById('stance').innerHTML = pane(scroll({ at: 8, stance: true, mist: false }), W, H)
+
+  document.getElementById('seal').innerHTML = trip([
+    [crop(0.6, { at: 9, dry: .6 }), 'Winding', '巻', 'Esc. The ink thins as the paper winds back onto the rod, 240 ms: closing is slower than opening.'],
+    [crop(0.12, { at: 9, dry: .9 }), 'Last turn', '納', 'The last band of paper. Under it, the bar.'],
+    [crop(0, { ring: true, tag: [60, 70, 'Your seal presses once · 140 ms'] }), 'Sealed', '封', 'The bar\'s own seal presses, the one overshoot on the desk. The scroll is closed and signed.'],
+  ])
+  densho()
+</script>
+</body></html>
