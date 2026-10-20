@@ -25,7 +25,7 @@ var PAGE_ALIASES = { widgets: "parts", advanced: "screens" }
 
 // What each page is for, under its title.
 var PAGE_LINES = {
-  typesetting: "Click a part of your bar, then pick how it is set. Hover a way to try it; a click keeps it, live on your desktop. Ctrl+Z puts it back.",
+  typesetting: "Click a part of your bar, then pick how it is set. Hover a way to try it; a click keeps it, live on your desktop. Ctrl+Z puts it back. The arrows or H J K L walk everything here, Enter presses.",
   presets: "Patterns for the whole bar. Pick one to see it set as your bar and what it would change; Use puts it on. Your seal, type size, sheets and set-aside parts stay yours.",
   parts: "Everything that can sit on your bar, in the order it sits. Click a part to set it aside; click it again to put it back.",
   colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks stepped from it, one red. Pick a theme here and the whole desk follows.",
@@ -408,10 +408,15 @@ var MOTION_SHEET = [
 // key handlers in bar/), and the bindings the README suggests.
 var KEYMAP = [
   { key: "settings", jp: "設", name: "Here, in settings", keys: [
+    { caps: ["↑", "↓", "←", "→"], what: "Move the cursor over the rail and the page (the pointer moves it too)" },
+    { caps: ["H", "J", "K", "L"], what: "The same, as on Omarchy's panels" },
+    { caps: ["Enter", "Space"], what: "Press what the cursor is on" },
+    { caps: ["+", "-"], what: "Set a level (the wind's speed)" },
+    { caps: ["Tab"], what: "The next page (Shift for the one before)" },
     { caps: ["/"], what: "Search the settings" },
     { caps: ["Ctrl", "Z"], what: "Undo the last change" },
     { caps: ["Esc"], what: "Clear the search, then close" },
-    { caps: ["←", "→"], what: "Typesetting: the previous or next part" },
+    { caps: ["[", "]"], what: "Typesetting: the previous or next part" },
     { caps: ["1–0"], what: "Typesetting: open part 01 to 10" }] },
   { key: "sheet", jp: "紙", name: "On a sheet", keys: [
     { caps: ["↑", "↓", "←", "→"], what: "Move the cursor (it shows on the first key)" },

@@ -537,6 +537,9 @@ Item {
   // 1–9 go to a workspace, Esc lets go. The parts say what they are
   // (`keyStop`, bar/parts/KeyCursor.qml); it starts on your workspace.
   property bool keyMode: false
+  // Its parts are stops only for its own cursor: a preview of it in the
+  // settings window is a picture.
+  readonly property bool keyStops: keyMode
   readonly property alias keyCursor: barKeys
   signal keyLeave()
 

@@ -18,6 +18,10 @@ Rectangle {
   readonly property bool hovered: hover.containsMouse
 
   signal clicked()
+  // Te 手 (bar/parts/KeyCursor.qml): Enter picks it.
+  readonly property bool keyStop: true
+  readonly property bool keyChosen: on
+  function keyPress() { tile.clicked() }
 
   implicitHeight: stage.height + caption.height + 2
   radius: 3

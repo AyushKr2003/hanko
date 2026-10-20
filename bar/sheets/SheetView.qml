@@ -77,6 +77,9 @@ Item {
   // core/Cursor.js): the arrows or h j k l move, Enter or Space act, Esc
   // closes, Tab goes to the next sheet, + and - set a level.
   readonly property alias cursor: keys
+  // false: a picture of a sheet (Settings › Sheets), fenced off from the
+  // settings window's cursor and without one of its own.
+  property bool keyStops: true
   function keyMove(dx, dy) { keys.move(dx, dy) }
   function keyActivate() { keys.activate() }
   function stepLevel(d) { keys.step(d) }
@@ -322,6 +325,6 @@ Item {
   KeyCursor {
     id: keys
     scope: root.rail ? panel : body.item as Item
-    active: root.open
+    active: root.open && root.keyStops
   }
 }

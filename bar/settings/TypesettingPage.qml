@@ -120,6 +120,9 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          readonly property bool keyChosen: tab.open
+          function keyPress() { root.partPicked(tab.modelData.key) }
           onClicked: root.partPicked(tab.modelData.key)
         }
       }

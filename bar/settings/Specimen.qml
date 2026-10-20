@@ -304,6 +304,9 @@ Rectangle {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     onContainsMouseChanged: containsMouse ? root.tried(root.key, root.value) : root.untried()
+    readonly property bool keyStop: enabled
+    readonly property bool keyChosen: root.on
+    function keyPress() { root.picked(root.key, root.value) }
     onClicked: root.picked(root.key, root.value)
   }
 }

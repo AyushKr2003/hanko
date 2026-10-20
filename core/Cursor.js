@@ -11,7 +11,8 @@
 // listing its stops by hand.
 //
 // stop: { x, y, w, h, step (it has a level: Left/Right set it), chosen
-//         (the one in use) }
+//         (the one in use), pane (which column of a window it is in, the
+//         settings rail or its page; Up/Down stay in it when they can) }
 
 // Two stops share a line when their heights overlap by this much of the
 // shorter one.
@@ -55,8 +56,11 @@ function reading(stops) {
 // The stop a move goes to from `from`, or `from` when there is none that
 // way (the cursor stops at the paper's edge, as Omarchy's does).
 // dy: down (+1) or up (-1) to the nearest line that way, then the stop on
-// it closest across. dx: the nearest stop on the same line that way.
-function move(stops, from, dx, dy) {
+// it closest across. dx: the nearest stop on the same line that way; with
+// `loose` (a window of columns: the settings rail beside its page), when
+// there is none on the line, the nearest stop that way at all, rows
+// overlapping first.
+function move(stops, from, dx, dy, loose) {
   if (!stops || !stops.length) return -1
   if (from < 0 || from >= stops.length) return start(stops)
   var cur = stops[from]
@@ -65,9 +69,16 @@ function move(stops, from, dx, dy) {
   if (dy !== 0) {
     // The stops that way, each with its gap (edge to edge) from the cursor.
     var gaps = []
+    // Up and Down stay in the cursor's pane while it has a stop that way.
+    var inPane = false
+    for (i = 0; i < stops.length; i++) {
+      s = stops[i]
+      if (i !== from && (s.pane || 0) === (cur.pane || 0) && !sameLine(cur, s) && (dy > 0 ? cy(s) > cy(cur) : cy(s) < cy(cur))) inPane = true
+    }
     for (i = 0; i < stops.length; i++) {
       s = stops[i]
       var ahead = i !== from && !sameLine(cur, s) && (dy > 0 ? cy(s) > cy(cur) : cy(s) < cy(cur))
+        && (!inPane || (s.pane || 0) === (cur.pane || 0))
       gaps.push(ahead ? Math.max(0, dy > 0 ? s.y - (cur.y + cur.h) : cur.y - (s.y + s.h)) : Infinity)
     }
     // Straight on first: the nearest stop the cursor's column runs through
@@ -96,9 +107,31 @@ function move(stops, from, dx, dy) {
       if (d <= 0) continue
       if (d < bestGap) { bestGap = d; best = i }
     }
+    if (best >= 0 || !loose) return best < 0 ? from : best
+    var bestScore = Infinity
+    for (i = 0; i < stops.length; i++) {
+      if (i === from) continue
+      s = stops[i]
+      var gapX = dx > 0 ? s.x - (cur.x + cur.w) : cur.x - (s.x + s.w)
+      if (gapX < 0) continue
+      var off = Math.abs(cy(s) - cy(cur))
+      var score = gapX + 2 * off
+      if (score < bestScore) { bestScore = score; best = i }
+    }
     return best < 0 ? from : best
   }
   return from
+}
+
+// The stop under a point (the pointer): the smallest that holds it, or -1.
+function at(stops, point) {
+  var best = -1, bestArea = Infinity
+  for (var i = 0; stops && point && i < stops.length; i++) {
+    var s = stops[i]
+    if (point.x < s.x || point.x >= s.x + s.w || point.y < s.y || point.y >= s.y + s.h) continue
+    if (s.w * s.h < bestArea) { bestArea = s.w * s.h; best = i }
+  }
+  return best
 }
 
 // After the sheet's data changes its parts are made anew: the stop now

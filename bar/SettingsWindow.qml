@@ -57,21 +57,35 @@ FloatingWindow {
     anchors.fill: parent
     focus: true
 
+    // Omarchy's panel keys (bar/parts/KeyCursor.qml): the arrows or h j k l
+    // move one cursor over the rail and the page, Enter or Space press,
+    // + and - set a level, Tab goes to the next page. Typesetting keeps
+    // [ and ] for its parts and 1-0 to open one. A text field in use keeps
+    // its letters; Up and Down leave it.
     Keys.onPressed: function(event) {
-      if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) { win.undo(); event.accepted = true }
-      // Typesetting: Left/Right walk the proof's parts, 1-9 and 0 open one.
-      else if (win.page === "typesetting" && (event.key === Qt.Key_Left || event.key === Qt.Key_Right) && !(event.modifiers & Qt.ControlModifier)) {
-        settings.stepPart(event.key === Qt.Key_Right ? 1 : -1); event.accepted = true
+      var t = event.text
+      var K = event.key
+      var cursor = settings.keyCursor
+      if (K === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) win.undo()
+      else if (win.page === "typesetting" && (t === "[" || t === "]")) settings.stepPart(t === "]" ? 1 : -1)
+      else if (win.page === "typesetting" && K >= Qt.Key_0 && K <= Qt.Key_9 && !event.modifiers) {
+        settings.pickPartAt(K === Qt.Key_0 ? 9 : K - Qt.Key_1)
       }
-      else if (win.page === "typesetting" && event.key >= Qt.Key_0 && event.key <= Qt.Key_9 && !event.modifiers) {
-        settings.pickPartAt(event.key === Qt.Key_0 ? 9 : event.key - Qt.Key_1); event.accepted = true
-      }
-      else if (event.key === Qt.Key_Slash) { win.page = "typesetting"; settings.focusSearch(); event.accepted = true }
-      else if (event.key === Qt.Key_Escape) {
+      else if (K === Qt.Key_Slash) { win.page = "typesetting"; settings.focusSearch() }
+      else if (K === Qt.Key_Escape) {
         if (win.query !== "") win.query = ""
         else win.bar.closeSettings()
-        event.accepted = true
       }
+      else if (K === Qt.Key_Tab || K === Qt.Key_Backtab) settings.stepPage(K === Qt.Key_Backtab || (event.modifiers & Qt.ShiftModifier) ? -1 : 1)
+      else if (K === Qt.Key_Down || t === "j") { keys.forceActiveFocus(); cursor.move(0, 1) }
+      else if (K === Qt.Key_Up || t === "k") { keys.forceActiveFocus(); cursor.move(0, -1) }
+      else if (K === Qt.Key_Right || t === "l") cursor.move(1, 0)
+      else if (K === Qt.Key_Left || t === "h") cursor.move(-1, 0)
+      else if (K === Qt.Key_Return || K === Qt.Key_Enter || K === Qt.Key_Space) cursor.activate()
+      else if (t === "+" || t === "=") cursor.step(1)
+      else if (t === "-" || t === "_") cursor.step(-1)
+      else return
+      event.accepted = true
     }
 
     SettingsPage {

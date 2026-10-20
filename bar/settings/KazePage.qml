@@ -201,6 +201,10 @@ Column {
                   anchors.fill: parent
                   cursorShape: Qt.PointingHandCursor
                   preventStealing: true
+                  // Te 手 (bar/parts/KeyCursor.qml): Left/Right set the wind.
+                  readonly property bool keyStop: true
+                  readonly property bool keyStep: true
+                  function keyAdjust(d) { root.windSpeedPicked(Math.max(0, Math.min(Settings.KAZE_WIND_MAX, root.wind.speed + d))) }
                   onPressed: function(m) { speedRule.pickAt(m.x) }
                   onPositionChanged: function(m) { if (pressed) speedRule.pickAt(m.x) }
                   onWheel: function(w) {

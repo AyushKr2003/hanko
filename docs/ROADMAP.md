@@ -170,6 +170,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **T2 · Every other hand**: tanzaku slips and the lead strip, Shōji's lists, sliders, switches, choices, letters and the hold button, Shōgi ranks, Soroban rods, Odoshi lames, Kasumi bands.
   - ✅ **T3 · Tray menus and one cursor**: the tray menu walks with the keys; the cursor became `bar/parts/KeyCursor.qml`.
   - ✅ **T4 · Bar focus**: `hanko barFocus` (Super+Ctrl+0), every bar part a stop, the keyboard handed back after a sheet; Settings › Keys and the README.
+  - ✅ **T5 · Settings, and one cursor for keys and pointer** (asked for: "in the settings also make it keyboard driven and also the mouse, like we have in Omarchy"): the settings window walks with the same keys over its rail and page (panes, `keyPane`; Left/Right cross, Up/Down stay), Tab for the next page, the page scrolling to the cursor, previews fenced off (`keyStops: false`); the pointer moves the cursor everywhere (sheets, settings, bar focus, tray menus) as Omarchy's single cursor model does, behind its pointer-move gate. Typesetting's parts moved to `[` `]`.
 
 ## Dev loop
 

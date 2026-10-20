@@ -8,7 +8,7 @@ import "../../../bar/settings"
 // The settings window's page at its design size. render.py passes `params`:
 //   { theme, now, ...bar data as in Strips.qml...,
 //     settings: { saved, draft, kaze, desk, sumi, busy, page, part, trial, query, monitors, screens, monitor, lastChange, themes, theme, scrollEnd,
-//                 width, height } }
+//                 width, height, keys } }
 // settings.width/height size the window (logical px) instead of its design size.
 // saved and draft are style.json documents.
 Rectangle {
@@ -30,6 +30,21 @@ Rectangle {
     interval: 100
     running: !!sheet.s.scrollEnd
     onTriggered: page.scrollToEnd()
+  }
+
+  // settings.keys: pressed in turn once laid out, to draw the cursor:
+  // "down", "up", "left", "right".
+  Timer {
+    interval: 250
+    running: (sheet.s.keys || []).length > 0
+    onTriggered: {
+      var moves = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }
+      for (var i = 0; i < sheet.s.keys.length; i++) {
+        var m = moves[sheet.s.keys[i]]
+        if (m) page.keyCursor.move(m[0], m[1])
+      }
+      page.keyCursor.place()
+    }
   }
 
   SettingsPage {

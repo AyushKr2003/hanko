@@ -64,6 +64,9 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          readonly property bool keyChosen: tab.open
+          function keyPress() { root.context = tab.modelData.key }
           onClicked: root.context = tab.modelData.key
         }
       }

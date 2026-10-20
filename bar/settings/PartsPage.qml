@@ -232,6 +232,8 @@ Column {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
+              readonly property bool keyStop: enabled
+              function keyPress() { root.settingPicked("show:" + sortTile.modelData.part, sortTile.shown ? "hidden" : "shown") }
               onClicked: root.settingPicked("show:" + sortTile.modelData.part, sortTile.shown ? "hidden" : "shown")
             }
           }

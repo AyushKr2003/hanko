@@ -57,6 +57,10 @@ Rectangle {
         required property var modelData
         required property int index
         readonly property bool on: String(modelData) === root.selected
+        // Te 手 (bar/parts/KeyCursor.qml): each segment is a stop.
+        readonly property bool keyStop: true
+        readonly property bool keyChosen: seg.on
+        function keyPress() { root.picked(String(seg.modelData)) }
         onOnChanged: root.note(seg, seg.on)
         Component.onCompleted: root.note(seg, seg.on)
         Component.onDestruction: if (root.chosen === seg) root.chosen = null

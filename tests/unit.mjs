@@ -2196,7 +2196,7 @@ test("desk: the CLI never wires style.lua into looknfeel.lua, and takes out the 
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-const Cu = load("core/Cursor.js", ["start", "reading", "move", "nearest", "action", "KEYS", "sameLine"])
+const Cu = load("core/Cursor.js", ["start", "reading", "move", "nearest", "action", "KEYS", "sameLine", "at"])
 
 test("cursor: a ledger's rows, a ruler and the foot's buttons", () => {
   // Master ruler with Mute beside it, two outputs, then three buttons.
@@ -2233,6 +2233,24 @@ test("cursor: slips on a rail, then the foot", () => {
   assert.equal(Cu.move(stops, 3, 0, 1), 4)
   assert.equal(Cu.move(stops, 4, 0, -1), 3, "back up to the slip above")
   assert.equal(Cu.start(stops.map((s, i) => Object.assign({}, s, { chosen: i === 2 }))), 2)
+})
+
+test("cursor: a rail beside a page (loose), and the stop under the pointer", () => {
+  const stops = [
+    { x: 0, y: 0, w: 200, h: 40 }, { x: 0, y: 40, w: 200, h: 40 }, { x: 0, y: 80, w: 200, h: 40 },  // the rail
+    { x: 300, y: 100, w: 400, h: 30 }, { x: 300, y: 400, w: 400, h: 30 }                            // the page
+  ]
+  assert.equal(Cu.move(stops, 1, 1, 0), 1, "strict: nothing on the line")
+  assert.equal(Cu.move(stops, 1, 1, 0, true), 3, "loose: across to the page")
+  assert.equal(Cu.move(stops, 4, -1, 0, true), 2, "and back to the rail item nearest its row")
+  const panes = stops.map((st, i) => Object.assign({ pane: i < 3 ? 0 : 1 }, st))
+  panes.push({ x: 300, y: 150, w: 100, h: 30, pane: 1 })
+  assert.equal(Cu.move(panes, 3, 0, 1), 5, "down stays on the page")
+  assert.equal(Cu.move(panes, 4, 0, 1), 4, "and stops at its foot, not in the rail")
+  assert.equal(Cu.at(stops, { x: 310, y: 110 }), 3)
+  assert.equal(Cu.at(stops, { x: 250, y: 10 }), -1)
+  const nested = [{ x: 0, y: 0, w: 100, h: 100 }, { x: 10, y: 10, w: 20, h: 20 }]
+  assert.equal(Cu.at(nested, { x: 15, y: 15 }), 1, "the innermost part")
 })
 
 test("cursor: the nearest stop after the parts are made anew, and the keys", () => {

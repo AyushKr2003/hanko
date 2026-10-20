@@ -107,6 +107,9 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          readonly property bool keyChosen: tab.open
+          function keyPress() { root.focusSheet = tab.modelData.key }
           onClicked: root.focusSheet = tab.modelData.key
         }
       }
@@ -144,6 +147,7 @@ Column {
         height: printed.height * printed.scale
         SheetView {
           id: printed
+          keyStops: false
           sheet: root.focusSheet
           styles: root.withHand(root.shownHand)
           skin: root.skin
@@ -198,6 +202,7 @@ Column {
               clip: true
               SheetView {
                 id: mini
+                keyStops: false
                 x: Math.max(0, (thumb.width - width * scale) / 2)
                 y: Type.px(4)
                 sheet: root.focusSheet
@@ -261,6 +266,9 @@ Column {
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               onContainsMouseChanged: root.trialHand = containsMouse ? hand.modelData.key : ""
+              readonly property bool keyStop: enabled
+              readonly property bool keyChosen: hand.on
+              function keyPress() { root.trialHand = ""; root.stylePicked(root.focusSheet, hand.modelData.key) }
               onClicked: { root.trialHand = ""; root.stylePicked(root.focusSheet, hand.modelData.key) }
             }
           }
@@ -355,6 +363,8 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          function keyPress() { if (!autoButton.faint) root.opacityPicked("auto") }
           onClicked: if (!autoButton.faint) root.opacityPicked("auto")
         }
       }

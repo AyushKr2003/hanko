@@ -229,7 +229,7 @@ PopupWindow {
           // name, as some apps send, says nothing under the eyebrow.
           readonly property bool redundant: win.stack.length === 0 && index <= 1
             && (separator || (index === 0 && entry.hasChildren && X.menuText(entry.text).toLowerCase() === win.appName.toLowerCase()))
-          readonly property bool hot: (rowMouse.containsMouse || win.cursor === index) && entry.enabled && !separator
+          readonly property bool hot: win.cursor === index && entry.enabled && !separator
           readonly property bool checkable: entry.buttonType !== QsMenuButtonType.None
           readonly property string mark: !checkable ? ""
             : entry.buttonType === QsMenuButtonType.RadioButton ? (entry.checkState === Qt.Checked ? "●" : "○")
@@ -334,6 +334,9 @@ PopupWindow {
             enabled: !row.separator && row.entry.enabled
             hoverEnabled: true
             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+            // One cursor for the keys and the pointer, as Omarchy's menus
+            // keep it: hovering a row moves it there.
+            onPositionChanged: win.cursor = row.index
             onClicked: win.pick(row.entry)
           }
         }

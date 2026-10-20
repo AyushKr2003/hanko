@@ -16,6 +16,9 @@ Item {
   readonly property bool linked: url !== ""
   readonly property bool inverted: linked && hover.hovered
   readonly property bool spec: kind === "spec"
+  // Te 手 (bar/parts/KeyCursor.qml): a linked row opens its link.
+  readonly property bool keyStop: linked
+  function keyPress() { Qt.openUrlExternally(root.url) }
 
   implicitHeight: spec ? Type.px(26) : Type.px(40)
 

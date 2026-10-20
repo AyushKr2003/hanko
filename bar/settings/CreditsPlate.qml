@@ -183,6 +183,8 @@ Item {
                   font.underline: personHover.hovered
                   HoverHandler { id: personHover; cursorShape: Qt.PointingHandCursor }
                   TapHandler { onTapped: Qt.openUrlExternally(person.modelData.url) }
+                  readonly property bool keyStop: true
+                  function keyPress() { Qt.openUrlExternally(person.modelData.url) }
                 }
                 Text {
                   visible: person.index < P.PROOFREADERS.length - 1

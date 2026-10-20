@@ -4,6 +4,7 @@ import "../../core"
 import "../../core/Style.js" as S
 import "../../core/Settings.js" as Settings
 import ".."
+import "../parts" as Parts
 
 // Hanko's settings (docs/COMPONENTS.md §6; docs/settings-kosei): a numbered
 // rail on the left, the open page on the right, an action bar at the foot.
@@ -134,6 +135,8 @@ Rectangle {
   // ================================================================ rail
   Item {
     id: rail
+    // Te 手: the rail and the page are panes for the cursor.
+    readonly property int keyPane: 1
     width: root.compact ? Type.px(60) : root.width < Type.px(1100) ? Type.px(224) : Type.px(268)
     height: parent.height
 
@@ -269,6 +272,9 @@ Rectangle {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
+                  readonly property bool keyStop: enabled
+                  readonly property bool keyChosen: item.on
+                  function keyPress() { root.pagePicked(item.modelData.key) }
                   onClicked: root.pagePicked(item.modelData.key)
                 }
               }
@@ -295,7 +301,7 @@ Rectangle {
         columnSpacing: Type.px(10)
         rowSpacing: Type.px(6)
         Repeater {
-          model: [["/", "search"], ["CTRL Z", "undo"], ["ESC", "close"], ["← →", "parts, on the proof"]]
+          model: [["/", "search"], ["CTRL Z", "undo"], ["HJKL", "move"], ["⏎", "press"], ["TAB", "next page"], ["ESC", "close"]]
           Row {
             id: hint
             required property var modelData
@@ -319,6 +325,7 @@ Rectangle {
   // ================================================================ page
   Item {
     id: main
+    readonly property int keyPane: 2
     x: rail.width
     width: parent.width - rail.width
     height: parent.height
@@ -453,6 +460,8 @@ Rectangle {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
+              readonly property bool keyStop: enabled
+              function keyPress() { root.pagePicked("presets") }
               onClicked: root.pagePicked("presets")
             }
           }
@@ -672,6 +681,30 @@ Rectangle {
   Component { id: creditsPlate; CreditsPlate {} }
 
   // The search field, in the rail or (folded) at the top of the page.
+  // ------------------------------------------------ Te 手, the cursor
+  // One cursor over the rail and the page, for the keys and the pointer
+  // (bar/parts/KeyCursor.qml, SettingsWindow's keys). Left/Right may cross
+  // between the rail and the page.
+  readonly property alias keyCursor: keys
+  // Tab: the next page in the rail (Shift: the one before).
+  function stepPage(delta) {
+    var all = []
+    for (var g = 0; g < Settings.RAIL.length; g++) for (var i = 0; i < Settings.RAIL[g].pages.length; i++) all.push(Settings.RAIL[g].pages[i].key)
+    var at = all.indexOf(root.pageKey)
+    root.pagePicked(all[((at < 0 ? 0 : at) + delta + all.length) % all.length])
+  }
+  onPageKeyChanged: keys.reset()
+  Parts.KeyCursor {
+    id: keys
+    scope: root
+    loose: true
+    // It shows first on the page, not the rail.
+    prefer: function(part) {
+      for (var p = part; p; p = p.parent) if (p === main) return true
+      return false
+    }
+  }
+
   component SearchField: Rectangle {
     id: field
     property alias input: search

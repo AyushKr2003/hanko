@@ -276,6 +276,9 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: card.used ? Qt.ArrowCursor : Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          readonly property bool keyChosen: card.used
+          function keyPress() { if (!card.used) root.themePicked(card.modelData.slug) }
           onClicked: if (!card.used) root.themePicked(card.modelData.slug)
         }
       }
