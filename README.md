@@ -42,9 +42,9 @@ cd hanko
 scripts/hanko install
 ```
 
-- This copies only what the bar needs to `~/.config/omarchy/plugins/hanko.bar` and makes it your bar.
+- This copies only what the bar needs to `~/.config/omarchy/plugins/hanko.bar`, makes it your bar and restarts the Omarchy shell so it loads.
 - It remembers the bar you had, so uninstalling puts that one back.
-- **For development:** `scripts/hanko dev` symlinks the checkout instead, and saving a file reloads the bar.
+- **For development:** `scripts/hanko dev` symlinks the checkout instead; run `omarchy-restart-shell` after an edit to load it.
 - **Check the install:** `scripts/hanko doctor`.
 
 ## Update
@@ -53,7 +53,7 @@ scripts/hanko install
 cd hanko && git pull && scripts/hanko install
 ```
 
-If you installed from the marketplace: `omarchy plugin update hanko.bar`.
+If you installed from the marketplace: `omarchy plugin update hanko.bar`, then `omarchy-restart-shell`. The shell's own plugin reload keeps running the Hanko it already loaded, so an update shows only after a restart.
 
 ## Uninstall
 

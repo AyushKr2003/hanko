@@ -50,7 +50,7 @@ const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const Pa = load("core/Paths.js", ["local"])
 const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
 const Bt = load("core/Batto.js", ["CRESTS", "crestFor", "rail", "topOf"])
-const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray", "menuText"])
+const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray", "menuText", "menuOnlyIds", "pathId"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
@@ -760,6 +760,15 @@ test("tray menu labels: access-key underscores dropped, doubled ones kept", () =
   assert.equal(X.menuText("_Quit"), "Quit")
   assert.equal(X.menuText("Show __main__ win_dow"), "Show _main_ window")
   assert.equal(X.menuText(undefined), "")
+})
+
+test("tray: Ayatana items (Steam) are found from the watcher's list, since they can't be activated", () => {
+  const out = 'as 3 ":1.127/org/ayatana/NotificationItem/steam" ":1.191/org/chromium/StatusNotifierItem/1" ":1.9/org/ayatana/NotificationItem/nm_applet"'
+  assert.deepEqual(X.menuOnlyIds(out), ["steam", "nm_applet"])
+  assert.deepEqual(X.menuOnlyIds("as 0"), [])
+  assert.deepEqual(X.menuOnlyIds(undefined), [])
+  assert.equal(X.pathId("nm-applet"), "nm_applet")
+  assert.equal(X.pathId("steam"), "steam")
 })
 
 test("display: monitors from hyprctl, the focused one first", () => {
