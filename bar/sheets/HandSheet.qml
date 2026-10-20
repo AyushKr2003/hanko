@@ -100,11 +100,6 @@ Item {
       }
     }
   }
-
-  Keys.onUpPressed: { var s = root.model.keys.step; if (s) root.request(s.what, Math.min(1, s.level + 0.05)) }
-  Keys.onDownPressed: { var s = root.model.keys.step; if (s) root.request(s.what, Math.max(s.min, s.level - 0.05)) }
-  Keys.onLeftPressed: root.act(root.model.keys.left)
-  Keys.onRightPressed: root.act(root.model.keys.right)
   Keys.onPressed: function(event) {
     var letters = root.model.keys.letters
     var k = event.text.toUpperCase()

@@ -14,6 +14,10 @@ Rectangle {
 
   signal clicked()
 
+  // Te 手 (core/Cursor.js): Enter or Space presses it.
+  readonly property bool keyStop: true
+  function keyPress() { root.clicked() }
+
   readonly property bool inverted: plate || on
 
   implicitWidth: label.implicitWidth + Type.px(24)

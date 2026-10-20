@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Commons
+import qs.Commons as Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../bar/settings"
@@ -19,9 +20,9 @@ Rectangle {
   color: Ink.paper
 
   Component.onCompleted: {
-    Color.foreground = p.theme.foreground
-    Color.background = p.theme.background
-    Color.urgent = p.theme.red
+    Commons.Color.foreground = p.theme.foreground
+    Commons.Color.background = p.theme.background
+    Commons.Color.urgent = p.theme.red
   }
 
   // settings.scrollEnd: show the foot of the page (Advanced), once laid out.

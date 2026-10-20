@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import "Taiji.js" as Taiji
 import "Almanac.js" as Almanac
 import "Wind.js" as Wind
@@ -30,7 +31,7 @@ Rectangle {
   readonly property real bladeX: blade.x
   readonly property real bladeY: blade.y
 
-  color: Color.background
+  color: Commons.Color.background
 
   // Cache-busts the lock background by appending `?v=` (as the stock view).
   function fileUrl(path) {
@@ -86,7 +87,7 @@ Rectangle {
     height: Math.round(300 * root.k)
     gradient: Gradient {
       GradientStop { position: 0; color: "transparent" }
-      GradientStop { position: 0.7; color: Color.background }
+      GradientStop { position: 0.7; color: Commons.Color.background }
     }
   }
   Canvas {

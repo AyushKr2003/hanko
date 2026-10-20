@@ -2193,4 +2193,58 @@ test("desk: the CLI never wires style.lua into looknfeel.lua, and takes out the 
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
+const Cu = load("core/Cursor.js", ["start", "reading", "move", "nearest", "action", "KEYS", "sameLine"])
+
+test("cursor: a ledger's rows, a ruler and the foot's buttons", () => {
+  // Master ruler with Mute beside it, two outputs, then three buttons.
+  const stops = [
+    { x: 100, y: 0, w: 200, h: 26, step: true },   // 0 ruler
+    { x: 320, y: 2, w: 60, h: 22 },                // 1 Mute
+    { x: 0, y: 60, w: 380, h: 46, chosen: true },  // 2 output (in use)
+    { x: 0, y: 106, w: 380, h: 46 },               // 3 output
+    { x: 120, y: 180, w: 80, h: 28 },              // 4 Mute mic
+    { x: 210, y: 180, w: 80, h: 28 },              // 5 Next output
+    { x: 300, y: 182, w: 80, h: 24 }               // 6 a shorter one on the same line
+  ]
+  assert.equal(Cu.start(stops), 0)
+  assert.deepEqual(Cu.reading(stops), [0, 1, 2, 3, 4, 5, 6])
+  assert.equal(Cu.move(stops, 0, 1, 0), 1)
+  assert.equal(Cu.move(stops, 1, 1, 0), 1, "the edge stops the cursor")
+  assert.equal(Cu.move(stops, 1, -1, 0), 0)
+  assert.equal(Cu.move(stops, 0, 0, 1), 2)
+  assert.equal(Cu.move(stops, 2, 0, 1), 3)
+  assert.equal(Cu.move(stops, 3, 0, 1), 4, "the button under the row's start")
+  assert.equal(Cu.move(stops, 5, 1, 0), 6, "a ragged line is still one line")
+  assert.equal(Cu.move(stops, 6, 0, 1), 6)
+  assert.equal(Cu.move(stops, 6, 0, -1), 3)
+  assert.equal(Cu.move(stops, 2, 0, -1), 0)
+  assert.equal(Cu.move(stops, -1, 0, 1), 0, "no cursor yet: it shows where it starts")
+  assert.equal(Cu.move([], 0, 0, 1), -1)
+})
+
+test("cursor: slips on a rail, then the foot", () => {
+  const slips = [0, 1, 2, 3].map(i => ({ x: i * 48, y: 0, w: 40, h: 200 - i * 20 }))
+  const stops = slips.concat([{ x: 150, y: 240, w: 80, h: 28 }])
+  assert.equal(Cu.start(stops), 0)
+  assert.equal(Cu.move(stops, 0, 1, 0), 1)
+  assert.equal(Cu.move(stops, 3, 0, 1), 4)
+  assert.equal(Cu.move(stops, 4, 0, -1), 3, "back up to the slip above")
+  assert.equal(Cu.start(stops.map((s, i) => Object.assign({}, s, { chosen: i === 2 }))), 2)
+})
+
+test("cursor: the nearest stop after the parts are made anew, and the keys", () => {
+  const stops = [{ x: 0, y: 0, w: 10, h: 10 }, { x: 0, y: 50, w: 10, h: 10 }]
+  assert.equal(Cu.nearest(stops, { x: 5, y: 48 }), 1)
+  assert.equal(Cu.nearest([], { x: 0, y: 0 }), -1)
+  const K = Cu.KEYS
+  assert.deepEqual(Cu.action(K.Down, "", false), { kind: "move", dx: 0, dy: 1 })
+  assert.deepEqual(Cu.action(0, "k", false), { kind: "move", dx: 0, dy: -1 })
+  assert.deepEqual(Cu.action(0, "h", false), { kind: "move", dx: -1, dy: 0 })
+  assert.deepEqual(Cu.action(K.Tab, "", true), { kind: "tab", dir: -1 })
+  assert.deepEqual(Cu.action(K.Backtab, "", false), { kind: "tab", dir: -1 })
+  assert.deepEqual(Cu.action(K.Space, " ", false), { kind: "activate" })
+  assert.deepEqual(Cu.action(K.Escape, "", false), { kind: "close" })
+  assert.equal(Cu.action(0, "m", false), null, "a sheet's own letters pass through")
+})
+
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

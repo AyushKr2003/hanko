@@ -6,7 +6,8 @@ import "../../core"
 // a large number on a ruler (backlight on a laptop panel, DDC on an
 // external one), every monitor with its mode and scale (the chosen one
 // inverted; a click chooses another), and night light at the foot.
-// Up/Down step the brightness, N toggles night light.
+// + and - (or Left/Right on the ruler) step the brightness, N toggles
+// night light.
 Item {
   id: root
 
@@ -134,9 +135,6 @@ Item {
       onClicked: root.request("edit", null)
     }
   }
-
-  Keys.onUpPressed: if (root.light) root.request("brightness", Math.min(1, root.light.level + 0.05))
-  Keys.onDownPressed: if (root.light) root.request("brightness", Math.max(0.01, root.light.level - 0.05))
   Keys.onPressed: function(event) {
     if (event.key === Qt.Key_N) { root.request("night", !root.night); event.accepted = true }
   }

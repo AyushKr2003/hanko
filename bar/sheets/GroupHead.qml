@@ -67,6 +67,9 @@ Item {
         id: act
         required property var modelData
         text: String(act.modelData.text).toUpperCase()
+        // Te 手 (core/Cursor.js): each part of the summary is a stop.
+        readonly property bool keyStop: true
+        function keyPress() { root.picked(act.modelData.name) }
         color: hover.containsMouse ? Ink.ink : Ink.inkMuted
         font.family: Type.mono
         font.pixelSize: Type.label

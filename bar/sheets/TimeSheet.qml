@@ -5,7 +5,7 @@ import "../../core/Time.js" as T
 
 // Time 時: where today sits in the year, a two-week ribbon of days (today
 // a bone plate, Mondays ruled off), and Elsewhen's other cities with their
-// time and distance from yours. Arrows or ‹ › move the ribbon by a week.
+// time and distance from yours. Left/Right on the ribbon (or ‹ ›) move it by a week.
 Item {
   id: root
 
@@ -52,6 +52,12 @@ Item {
     Row {
       id: ribbon
       width: parent.width
+      // Te 手 (core/Cursor.js): Left/Right move the ribbon a week, Enter
+      // brings it back to today.
+      readonly property bool keyStop: true
+      readonly property bool keyStep: true
+      function keyAdjust(d) { root.request("shift", root.shift + d) }
+      function keyPress() { root.request("shift", 0) }
       Repeater {
         model: root.days.days
         Rectangle {
@@ -144,9 +150,6 @@ Item {
       }
     }
   }
-
-  Keys.onLeftPressed: root.request("shift", root.shift - 1)
-  Keys.onRightPressed: root.request("shift", root.shift + 1)
   Keys.onPressed: function(event) {
     if (event.key === Qt.Key_T || event.key === Qt.Key_Home) { root.request("shift", 0); event.accepted = true }
   }

@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Commons
+import qs.Commons as Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../core/Sheets.js" as Sheets
@@ -10,9 +11,11 @@ import "../../../bar/sheets"
 // Desks: a bar with one sheet open under the cell it drops from, as
 // bar/SheetWindow.qml places it. render.py passes `params`:
 //   { theme, width, now, title, ...bar data as in Strips.qml...,
-//     desks: [ { label, doc, sheet, cell, feed, height } ] }
+//     desks: [ { label, doc, sheet, cell, feed, height, keys } ] }
 // `feed` is the sheet's plain data (SheetView.feed); `cell` overrides the
-// bar cell the sheet hangs from.
+// bar cell the sheet hangs from; `keys` are pressed in turn once it is laid
+// out, to draw the cursor (core/Cursor.js): "down", "up", "left", "right",
+// "enter", "+" or "-".
 Rectangle {
   id: sheet
 
@@ -27,9 +30,9 @@ Rectangle {
   }
 
   Component.onCompleted: {
-    Color.foreground = p.theme.foreground
-    Color.background = p.theme.background
-    Color.urgent = p.theme.red
+    Commons.Color.foreground = p.theme.foreground
+    Commons.Color.background = p.theme.background
+    Commons.Color.urgent = p.theme.red
   }
 
   Column {
@@ -125,6 +128,21 @@ Rectangle {
               var f = Object.assign({}, deskColumn.modelData.feed || {})
               f.now = desk.now
               return f
+            }
+          }
+          Timer {
+            interval: 120
+            running: (deskColumn.modelData.keys || []).length > 0
+            onTriggered: {
+              var moves = { down: [0, 1], up: [0, -1], left: [-1, 0], right: [1, 0] }
+              var keys = deskColumn.modelData.keys
+              for (var i = 0; i < keys.length; i++) {
+                var k = keys[i]
+                if (moves[k]) view.keyMove(moves[k][0], moves[k][1])
+                else if (k === "enter") view.keyActivate()
+                else if (k === "+" || k === "-") view.stepLevel(k === "+" ? 1 : -1)
+              }
+              view.placeCursor()
             }
           }
         }

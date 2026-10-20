@@ -7,7 +7,7 @@ import "../parts"
 // scroll, the slider part under it (never below 1%), night light on the
 // switch part, then the monitors, the chosen one under the selection part
 // (a click chooses which monitor the slider drives; one switched off can't
-// be chosen). Up/Down step the brightness, N toggles night light.
+// be chosen). + and - step the brightness, N toggles night light.
 // Requests as DisplaySheet's: brightness (0.01..1) | monitor | night | edit.
 Column {
   id: root
@@ -86,8 +86,5 @@ Column {
     })
     onPicked: function(i) { var m = root.monitors[i]; if (m.enabled && !m.current) root.request("display", "monitor", m.name) }
   }
-
-  Keys.onUpPressed: if (root.light) root.setLight(root.light.level + 0.05)
-  Keys.onDownPressed: if (root.light) root.setLight(root.light.level - 0.05)
   Keys.onPressed: function(e) { if (e.key === Qt.Key_N) { root.request("display", "night", !root.night); e.accepted = true } }
 }

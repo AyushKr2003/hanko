@@ -27,6 +27,11 @@ Item {
 
   signal clicked()
 
+  // Te 手 (core/Cursor.js): the keyboard lands on a row you can pick.
+  readonly property bool keyStop: interactive
+  readonly property bool keyChosen: selected
+  function keyPress() { root.clicked() }
+
   width: parent ? parent.width : 0
   implicitHeight: Math.max(minHeight, texts.implicitHeight + Type.px(14))
 

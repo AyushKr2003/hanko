@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import qs.Commons
+import qs.Commons as Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../core/Inkan.js" as Inkan
@@ -29,9 +30,9 @@ Rectangle {
   color: Ink.paper
 
   Component.onCompleted: {
-    Color.foreground = p.theme.foreground
-    Color.background = p.theme.background
-    Color.urgent = p.theme.red
+    Commons.Color.foreground = p.theme.foreground
+    Commons.Color.background = p.theme.background
+    Commons.Color.urgent = p.theme.red
     Motion.forceStill = true
   }
 
