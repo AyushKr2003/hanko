@@ -20,8 +20,8 @@ Item {
   property Item scope: null
   // While false the cursor hides and forgets where it was.
   property bool active: true
-  // Corner marks drawn inside the part (the bar: a cell fills its height,
-  // so marks outside it would be cut off by the window).
+  // Corner marks kept within this item's height (the bar: a cell may fill
+  // it, and marks past it would be cut off by the window).
   property bool inside: false
 
   property bool shown: false
@@ -146,13 +146,16 @@ Item {
 
   Item {
     id: bracket
-    readonly property int out: root.inside ? -Type.px(2) : Type.px(3)
+    readonly property int out: Type.px(3)
     readonly property int arm: Type.px(7)
+    readonly property real high: root.inside ? Math.max(1, root.rect.y - out) : root.rect.y - out
+    readonly property real low: root.inside ? Math.min(root.height - 1, root.rect.y + root.rect.height + out)
+      : root.rect.y + root.rect.height + out
     visible: root.shown && root.active && root.rect.width > 0
     x: root.rect.x - out
-    y: root.rect.y - out
+    y: high
     width: root.rect.width + 2 * out
-    height: root.rect.height + 2 * out
+    height: low - high
     Behavior on x { enabled: Motion.live && bracket.visible; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
     Behavior on y { enabled: Motion.live && bracket.visible; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
     Behavior on width { enabled: Motion.live && bracket.visible; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }

@@ -414,17 +414,31 @@ var KEYMAP = [
     { caps: ["←", "→"], what: "Typesetting: the previous or next part" },
     { caps: ["1–0"], what: "Typesetting: open part 01 to 10" }] },
   { key: "sheet", jp: "紙", name: "On a sheet", keys: [
+    { caps: ["↑", "↓", "←", "→"], what: "Move the cursor (it shows on the first key)" },
+    { caps: ["H", "J", "K", "L"], what: "The same, as on Omarchy's panels" },
+    { caps: ["Enter", "Space"], what: "Press what the cursor is on" },
+    { caps: ["+", "-"], what: "The sheet's level up or down (← → on a ruler)" },
     { caps: ["Esc"], what: "Close the sheet" },
     { caps: ["Tab"], what: "The next sheet (Shift for the one before)" },
-    { caps: ["↑", "↓"], what: "Sound and Display: up or down 5%" },
-    { caps: ["←", "→"], what: "Time: a day back or on" },
     { caps: ["T"], what: "Time: back to today" },
     { caps: ["M"], what: "Sound: mute" },
     { caps: ["R"], what: "Network: look again" },
-    { caps: ["P"], what: "Bluetooth: power" },
+    { caps: ["P"], what: "Bluetooth: power · No. 00: play or pause" },
     { caps: ["N"], what: "Display: night light" },
-    { caps: ["Space"], what: "No. 00: play or pause" },
-    { caps: ["Enter"], what: "No. 00: open the row" }] },
+    { caps: ["1–9"], what: "No. 00: go to a workspace" }] },
+  { key: "bar", jp: "帯", name: "On the bar (bar focus)", keys: [
+    { caps: ["Super", "Ctrl", "0"], what: "The bar takes the keyboard (again: lets go)" },
+    { caps: ["←", "→"], what: "Move along the bar (or H and L, Tab)" },
+    { caps: ["Enter", "Space"], what: "Click what the cursor is on" },
+    { caps: ["Menu"], what: "Right-click it (or Shift F10): a tray app's menu" },
+    { caps: ["↑", "↓"], what: "Volume or brightness, on its reading" },
+    { caps: ["1–9"], what: "Go to a workspace" },
+    { caps: ["Esc"], what: "Let go of the keyboard" }] },
+  { key: "tray", jp: "盆", name: "In a tray menu", keys: [
+    { caps: ["↑", "↓"], what: "Walk the rows (or J and K)" },
+    { caps: ["Enter", "→"], what: "Open the row, or its submenu" },
+    { caps: ["←"], what: "Back out of a submenu" },
+    { caps: ["Esc"], what: "Close" }] },
   { key: "overview", jp: "一覧", name: "On the overview", keys: [
     { caps: ["H", "J", "K", "L"], what: "Move between spaces (or the arrows)" },
     { caps: ["0–9"], what: "Go to a space by number" },
@@ -439,7 +453,9 @@ var KEYMAP = [
 // of yours, never fires beside it; unbinding keys nothing holds is harmless.
 var BINDINGS = [
   { what: "Press Inkan's seal", caps: ["Super", "Alt", "I"], keys: "SUPER + ALT + I", name: "Hanko seal", command: "omarchy-shell hanko press" },
-  { what: "The overview, in place of Omarchy's", caps: ["Super", "Tab"], keys: "SUPER + TAB", name: "Hanko overview", command: "omarchy-shell hanko overview" }
+  { what: "The overview, in place of Omarchy's", caps: ["Super", "Tab"], keys: "SUPER + TAB", name: "Hanko overview", command: "omarchy-shell hanko overview" },
+  // code:19 is the 0 key, which Omarchy's Super+Ctrl+1..9 panel keys leave free.
+  { what: "The bar takes the keyboard", caps: ["Super", "Ctrl", "0"], keys: "SUPER + CTRL + code:19", name: "Hanko bar focus", command: "omarchy-shell hanko barFocus" }
 ]
 
 // The Lua lines for one binding, or for all of them.

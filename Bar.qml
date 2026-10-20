@@ -111,7 +111,31 @@ Item {
     sheet = key
     return true
   }
-  function closeSheet() { sheet = ""; sheetFrom = "" }
+  function closeSheet() {
+    sheet = ""
+    sheetFrom = ""
+    // A sheet opened from bar focus gives the keyboard back to the bar.
+    if (barFocusBack !== "") { barFocus = barFocusBack; barFocusBack = "" }
+  }
+
+  // Te 手, bar focus: the screen whose bar has the keyboard ("" for none),
+  // and the one to give it back to when a sheet it opened closes.
+  property string barFocus: ""
+  property string barFocusBack: ""
+  function toggleBarFocus(screenName) {
+    var name = screenName || focusedScreen()
+    if (barFocus === name) { leaveBarFocus(); return }
+    if (barHidden || inkanOn(name)) return
+    closeSheet()
+    closeOverview()
+    barFocusBack = ""
+    barFocus = name
+  }
+  function leaveBarFocus() { barFocus = ""; barFocusBack = "" }
+  // Something the bar focus pressed opened a sheet or the overview: they
+  // take the keyboard; a sheet hands it back when it closes.
+  onSheetChanged: if (sheet !== "" && barFocus !== "") { barFocusBack = barFocus; barFocus = "" }
+  onOverviewOpenChanged: if (overviewOpen) leaveBarFocus()
   // Backspace or the crumb on a sheet opened from No. 00.
   function backSheet() { if (sheet && sheetFrom === "all") openSheet("all", sheetScreen) }
   function toggleSheet(key, screenName) {
@@ -217,6 +241,8 @@ Item {
   // One popout at a time across Hanko's sheets and hosted widgets' panels.
   property var hostedPopout: null
   function requestHostedPopout(owner) {
+    // A hosted widget's own panel takes the keyboard from bar focus.
+    leaveBarFocus()
     if (hostedPopout && hostedPopout !== owner) closeHostedPopout()
     closeSheet()
     hostedPopout = owner
@@ -494,6 +520,8 @@ Item {
     // A press on the seal (Inkan), for a keybinding: prints No. 00, or
     // lifts it off.
     function press(): string { return root.pressSeal(root.focusedScreen()) }
+    // Te 手: the bar takes the keyboard on the focused screen (again: lets go).
+    function barFocus(): string { root.toggleBarFocus(root.focusedScreen()); return root.barFocus !== "" ? "on" : "off" }
     // Kaze's riding mode (`hanko sumi on|off`): the bar recedes to its rule.
     function riding(on: string): string { root.riding = on === "true" || on === "on"; return "ok" }
     // The desk switch on the Kaze page, the same detached `hanko desk`

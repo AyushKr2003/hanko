@@ -7,7 +7,8 @@ import "../../../bar"
 
 // A sheet of labelled bars, one per strip. render.py passes `params`:
 //   { theme: { foreground, background, red }, width, now, title,
-//     strips: [ { label, doc } ] }   doc is a style.json document.
+//     strips: [ { label, doc, keys } ] }   doc is a style.json document;
+//     keys draw the bar focus cursor (BarSurface keyMode).
 Rectangle {
   id: sheet
 
@@ -125,6 +126,19 @@ Rectangle {
             mic: sheet.pick(modelData, "mic")
             tray: sheet.pick(modelData, "tray") || []
             pointAt: modelData.pointAt || ""
+            // Bar focus (Te 手): `keys` presses these once laid out:
+            // "left", "right", "up", "down".
+            keyMode: (modelData.keys || null) !== null
+          }
+          Timer {
+            interval: 150
+            running: (modelData.keys || null) !== null
+            onTriggered: {
+              var moves = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }
+              var keys = modelData.keys
+              for (var i = 0; i < keys.length; i++) if (moves[keys[i]]) bar.keyCursor.move(moves[keys[i]][0], moves[keys[i]][1])
+              bar.keyCursor.place()
+            }
           }
         }
       }

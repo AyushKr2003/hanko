@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import "../core"
 import "../core/Sheets.js" as Sheets
 import "../core/Skin.js" as Skin
@@ -41,7 +42,33 @@ PanelWindow {
 
   WlrLayershell.namespace: "hanko-bar"
   WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+  // Bar focus (Te 手): the bar takes the keyboard on this screen, primed
+  // Exclusive for a moment then OnDemand, as a sheet does.
+  readonly property bool keyed: bar.barFocus !== "" && bar.barFocus === screenName && !parked
+  property bool keyPrimed: false
+  WlrLayershell.keyboardFocus: !keyed ? WlrKeyboardFocus.None
+    : keyPrimed ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
+  onKeyedChanged: {
+    keyPrimed = false
+    if (keyed) { keyPrime.restart(); keyGrabLater.restart(); Qt.callLater(function() { classicSurface.forceActiveFocus() }) }
+    else keyGrab.active = false
+  }
+  function reprime() {
+    if (!keyed) return
+    keyPrimed = false
+    keyPrime.restart()
+    keyGrabLater.restart()
+    classicSurface.forceActiveFocus()
+  }
+  Timer { id: keyPrime; interval: 75; onTriggered: win.keyPrimed = win.keyed }
+  // A click anywhere else lets the bar go.
+  HyprlandFocusGrab {
+    id: keyGrab
+    windows: [win]
+    active: false
+    onCleared: if (win.keyed && !win.bar.sheet) win.bar.leaveBarFocus()
+  }
+  Timer { id: keyGrabLater; interval: 120; onTriggered: keyGrab.active = win.keyed }
 
   anchors {
     top: !win.atBottom
@@ -117,7 +144,7 @@ PanelWindow {
       if (button === Qt.RightButton) Hypr.openTerminal()
       else Hypr.openMenu()
     }
-    onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
+    onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id); if (win.keyed) reprimeLater.restart() }
     onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
     onOverviewRequested: win.bar.toggleOverview()
     onMediaAction: function(name) { Media.act(name) }
@@ -126,7 +153,11 @@ PanelWindow {
     onClockClicked: win.cellClicked("clock", "click", function() {})
     // The rod drops the sheet under the pull.
     onEdgePulled: function(x) { win.rodPulled(x) }
+    keyMode: win.keyed
+    onKeyLeave: win.bar.leaveBarFocus()
   }
+
+  Timer { id: reprimeLater; interval: 90; onTriggered: win.reprime() }
 
   SealWindow {
     id: sealWindow
@@ -149,5 +180,7 @@ PanelWindow {
   TrayMenuWindow {
     id: trayMenu
     barWindow: win
+    // Its own focus grab takes the keyboard from bar focus.
+    onOpenChanged: if (open && win.keyed) win.bar.leaveBarFocus()
   }
 }

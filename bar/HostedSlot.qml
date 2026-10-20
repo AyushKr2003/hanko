@@ -19,6 +19,17 @@ Item {
 
   property Item item: null
 
+  // Te 手 (bar focus): Enter opens the widget's own panel, when it has one.
+  function opener(it) {
+    var f = it ? (it["toggle"] || it["open"]) : null
+    return typeof f === "function" ? f : null
+  }
+  readonly property bool keyStop: !!opener(item)
+  function keyPress() {
+    var f = opener(root.item)
+    if (f) f.call(root.item)
+  }
+
   // Never hidden by its own child's visibility (that latches hidden): a
   // widget with nothing to show collapses the slot to nothing instead.
   implicitWidth: item && item.visible ? Math.ceil(item.implicitWidth || item.width) : 0

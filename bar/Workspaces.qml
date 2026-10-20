@@ -83,6 +83,11 @@ Item {
         Component.onCompleted: root.note(cell, cell.on)
         Component.onDestruction: if (root.liveCell === cell) root.liveCell = null
         readonly property bool occupied: modelData.count > 0
+        // Te 手 (bar focus): Enter goes there, Menu opens the overview.
+        readonly property bool keyStop: root.mode !== "none"
+        readonly property bool keyChosen: cell.on
+        function keyPress() { root.activated(cell.modelData.id) }
+        function keyMenu() { root.overviewRequested() }
 
         implicitWidth: loader.implicitWidth
         implicitHeight: loader.implicitHeight

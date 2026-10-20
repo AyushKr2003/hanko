@@ -165,6 +165,12 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 
 - ✅ **The scroll taken out** (asked for: "i don't like the scroll at all so remove all, totally, and only sheet remain and it is default"): the handscroll and everything that was only for it are gone: `bar/scroll/`, `bar/ScrollWindow.qml`, Settings › Scroll 巻, `core/Scroll.js`, `core/Densho.js`, the weather and end leaves (`services/Weather.qml`, most of `core/Leaf.js` and `core/Weather.js`), `hanko scroll` and its key. Ten settings went with it (`panels`, `interlude`, `endleaf`, `sides`, `guides`, `fold`, `arrival`, `letters`, `faults`, `order`), leaving twenty-one; a style.json that still sets them loads without them and without a warning. Every panel is a sheet. The almanac moved to `core/Almanac.js` (the lock's standoff and `hanko-greet`), the theme list to `core/Themes.js` and `services/Themes.qml` (Settings › Colour), the dither to `core/Dither.js`.
 
+- ✅ **Te 手, keyboard first** (asked for: "I want this whole shell to be keyboard driven … like we have in Omarchy default and Omacale", then "all panels keyboard driven"): Omarchy's panel keys (its `Ui/PanelKeyCatcher.qml`: arrows or h j k l, Enter/Space, Esc, Tab) on every sheet in all seven hands, the tray menus, and Omacale's bar focus mode. Parts say they can be pressed (`keyStop`, `keyPress`, `keyStep`/`keyAdjust`/`keyAxis`, `keyMenu`), and one cursor (`bar/parts/KeyCursor.qml`, pure spatial moves in `core/Cursor.js`) finds them where they lie and draws four red corner marks. Steps, each its own commit:
+  - ✅ **T1 · The ledger and No. 00**: `core/Cursor.js` with tests, the cursor in SheetView, rows, buttons, rulers and head links as stops; the theme read as `Commons.Color` (Qt 6.12's `Color` hid it in the harness).
+  - ✅ **T2 · Every other hand**: tanzaku slips and the lead strip, Shōji's lists, sliders, switches, choices, letters and the hold button, Shōgi ranks, Soroban rods, Odoshi lames, Kasumi bands.
+  - ✅ **T3 · Tray menus and one cursor**: the tray menu walks with the keys; the cursor became `bar/parts/KeyCursor.qml`.
+  - ✅ **T4 · Bar focus**: `hanko barFocus` (Super+Ctrl+0), every bar part a stop, the keyboard handed back after a sheet; Settings › Keys and the README.
+
 ## Dev loop
 
 ```sh

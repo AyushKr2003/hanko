@@ -206,6 +206,14 @@ Item {
   component Reading: Item {
     id: reading
     property var r: ({})
+    // Te 手 (bar focus, bar/parts/KeyCursor.qml): Enter is a click, Menu a
+    // right-click; Up and Down are the wheel on a level you can turn.
+    readonly property bool keyStop: true
+    readonly property bool keyStep: r.key === "volume" || r.key === "brightness"
+    readonly property string keyAxis: "y"
+    function keyPress() { root.action(reading.r.key, "click") }
+    function keyMenu() { root.action(reading.r.key, "right") }
+    function keyAdjust(d) { root.action(reading.r.key, d < 0 ? "up" : "down") }
     readonly property color valueInk: r.needsYou ? Ink.seal : Ink.ink
     readonly property bool quantity: r.level >= 0
     // Lit: under the pointer, or just changed. A changed reading's label
