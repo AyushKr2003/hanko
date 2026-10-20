@@ -31,19 +31,6 @@ Item {
   implicitWidth: !visible ? 0 : carved ? carvedRow.implicitWidth + Type.px(8) : size
   implicitHeight: size
 
-  // Pressed once, as a stamp is (Motion.stamp, the one overshoot): the
-  // scroll seals itself with it as it rolls up (order: mokuroku).
-  function press() { if (!Motion.still && visible) pressing.restart() }
-  SequentialAnimation {
-    id: pressing
-    PropertyAction { target: root; property: "scale"; value: 1.3 }
-    PropertyAction { target: root; property: "rotation"; value: -6 }
-    ParallelAnimation {
-      NumberAnimation { target: root; property: "scale"; to: 1; duration: Motion.stamp; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.stampCurve }
-      NumberAnimation { target: root; property: "rotation"; to: 0; duration: Motion.stamp; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.stampCurve }
-    }
-  }
-
   Row {
     id: carvedRow
     visible: root.carved

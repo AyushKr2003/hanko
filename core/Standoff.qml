@@ -3,7 +3,7 @@ import QtQuick.Effects
 import Quickshell
 import qs.Commons
 import "Taiji.js" as Taiji
-import "Leaf.js" as Leaf
+import "Almanac.js" as Almanac
 import "Wind.js" as Wind
 
 // Taiji 対峙, the standoff (docs/kaze, mockup 09): the lock screen's picture,
@@ -55,7 +55,7 @@ Rectangle {
   // The clock and the almanac, once a second.
   property var now: new Date()
   Timer { interval: 1000; running: true; repeat: true; onTriggered: root.now = new Date() }
-  readonly property var ko: Leaf.almanac(root.now).ko
+  readonly property var ko: Almanac.almanac(root.now).ko
 
   // The wallpaper in ink: no colour, a little darker, never blurred.
   Image {

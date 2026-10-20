@@ -138,8 +138,6 @@ Column {
     wrapMode: Text.Wrap
     textFormat: Text.StyledText
     text: "Nothing on the bar answers to <b>" + String(root.query).trim().replace(/&/g, "&amp;").replace(/</g, "&lt;") + "</b>."
-      + (Settings.PANELS_CARD.rows.some(function(r) { return Settings.matches(r, root.query, S.OPTIONS) }) || /interlude|divider|leaf|scroll/i.test(root.query)
-        ? " How panels open, the scroll's dividers and its end leaf are on Scroll 巻." : "")
     color: Ink.inkMuted
     font.family: Type.text
     font.pixelSize: Type.row

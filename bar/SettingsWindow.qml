@@ -44,7 +44,7 @@ FloatingWindow {
   function undo() { if (kazeLast) Kaze.undo(); else Typeset.undo() }
 
   // Colour 色 lists Omarchy's themes: read them when the page opens.
-  onPageChanged: if (page === "colour") Leaf.loadThemes()
+  onPageChanged: if (page === "colour") Themes.loadThemes()
 
   // Closed by the window manager (Super+W, the close button).
   onVisibleChanged: {
@@ -82,9 +82,9 @@ FloatingWindow {
       undoCount: Typeset.history.length + (win.page === "kaze" ? Kaze.history.length : 0)
       page: win.page
       query: win.query
-      themes: Leaf.themes
-      theme: Leaf.theme
-      onThemePicked: function(slug) { Leaf.setTheme(slug) }
+      themes: Themes.themes
+      theme: Themes.theme
+      onThemePicked: function(slug) { Themes.setTheme(slug) }
       onCopyText: function(text) { Quickshell.execDetached(["wl-copy", text]) }
       kaze: Kaze.doc
       kazeDesk: Kaze.desk

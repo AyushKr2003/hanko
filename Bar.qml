@@ -5,7 +5,6 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import "core"
 import "core/Sheets.js" as Sheets
-import "core/Scroll.js" as Scroll
 import "core/Hosted.js" as Hosted
 import "bar"
 import "services"
@@ -84,8 +83,7 @@ Item {
 
   // ------------------------------------------------------------- sheets
   //
-  // One sheet open at a time, across every screen. panels: scroll falls
-  // back to sheets until the handscroll lands (Phase 7).
+  // One sheet open at a time, across every screen.
   property string sheet: ""
   property string sheetScreen: ""
   // Weeks the Time sheet's ribbon is moved from today.
@@ -105,7 +103,6 @@ Item {
 
   function openSheet(key, screenName, from) {
     if (!sheetReady(key) || barHidden) return false
-    closeScroll()
     closeOverview()
     closeHostedPopout()
     if (key !== sheet) timeShift = 0
@@ -164,11 +161,10 @@ Item {
       if (what === "brightness") Display.setBrightness(Number(arg))
       else if (what === "monitor") Display.pick(String(arg))
       else if (what === "night") Display.setNight(!!arg)
-      else if (what === "edit") { closeSheet(); closeScroll(); Display.editMonitors() }
+      else if (what === "edit") { closeSheet(); Display.editMonitors() }
     } else if (key === "spaces") {
       if (what === "window") Hypr.focusWindow(String(arg))
       else if (what === "workspace") Hypr.focusWorkspace(Number(arg))
-      closeScroll()
     } else if (key === "inbox") {
       if (what === "dnd") Status.act("notif", "right")
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
@@ -176,28 +172,6 @@ Item {
       else if (what === "clear") {
         Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
       }
-    } else if (key === "leaf") leafRequest(what, arg)
-  }
-
-  // The end leaf after Inbox on the scroll (bar/scroll/EndLeaf.qml).
-  function leafRequest(what, arg) {
-    if (what === "session") { closeScroll(); Leaf.sessionAct(String(arg)) }
-    else if (what === "theme") Leaf.setTheme(String(arg))
-    else if (what === "themes") { closeScroll(); Leaf.openThemes() }
-    else if (what === "focus") Leaf.focusAct(String(arg))
-    else if (what === "note") Leaf.toggleNote(Number(arg))
-    else if (what === "notes") { closeScroll(); Leaf.editNotes() }
-    else if (what === "clip") Leaf.copyClip(Number(arg))
-    else if (what === "tool") {
-      var key = String(arg)
-      if (key === "awake") {
-        // Omarchy's idle service: stay awake is idle switched off.
-        var idle = Extras.idleProxy
-        if (idle && typeof idle.setIdleEnabled === "function") idle.setIdleEnabled(!!idle.stayAwake)
-        else Quickshell.execDetached(["omarchy-toggle-idle"])
-      } else if (key === "night") Display.setNight(!(Extras.nightProxy && Extras.nightProxy.enabled))
-      else if (key === "silence") Status.act("notif", "right")
-      else { closeScroll(); Leaf.runTool(key) }
     }
   }
 
@@ -240,13 +214,11 @@ Item {
     value: root.shell && typeof root.shell.firstPartyServiceFor === "function" ? root.shell.firstPartyServiceFor("omarchy.nightlight") : null
   }
 
-  // One popout at a time across Hanko's sheets, its scroll and hosted
-  // widgets' panels.
+  // One popout at a time across Hanko's sheets and hosted widgets' panels.
   property var hostedPopout: null
   function requestHostedPopout(owner) {
     if (hostedPopout && hostedPopout !== owner) closeHostedPopout()
     closeSheet()
-    closeScroll()
     hostedPopout = owner
   }
   function releaseHostedPopout(owner) { if (hostedPopout === owner) hostedPopout = null }
@@ -309,7 +281,6 @@ Item {
   property bool overviewOpen: false
   function openOverview() {
     closeSheet()
-    closeScroll()
     closeHostedPopout()
     Hypr.refresh()
     overviewOpen = true
@@ -317,67 +288,31 @@ Item {
   function closeOverview() { overviewOpen = false }
   function toggleOverview() { if (overviewOpen) closeOverview(); else openOverview() }
 
-  // ------------------------------------------------------------- scroll
+  // ------------------------------------------------------------- panels
   //
-  // The handscroll (panels: scroll): open on one screen at a time, panned
-  // to one section. It stays where you left it between unrolls.
-  property bool scrollOpen: false
-  property string scrollScreen: ""
-  property int scrollSection: 0
-
-  function panelsFor(screenName) {
-    return Typeset.styleFor(screenName || focusedScreen()).panels
-  }
-  // Unroll at a section key ("" keeps the last one).
-  function openScroll(key, screenName) {
-    if (barHidden) return false
-    closeSheet()
-    closeHostedPopout()
-    closeOverview()
-    var i = Scroll.indexOf(key)
-    if (i >= 0) scrollSection = i
-    scrollScreen = screenName || focusedScreen()
-    scrollOpen = true
-    return true
-  }
-  function closeScroll() { scrollOpen = false }
-  // Open at a section, pan to it if open elsewhere, roll up if it's showing.
-  function toggleScroll(key, screenName) {
-    var i = Scroll.indexOf(key)
-    if (scrollOpen && scrollScreen === screenName && (i < 0 || i === scrollSection)) closeScroll()
-    else openScroll(key, screenName)
-  }
-  function scrollTo(index) {
-    scrollSection = Math.max(0, Math.min(Scroll.SECTIONS.length - 1, index))
-  }
-  function stepScroll(delta) { scrollTo(scrollSection + delta) }
-  readonly property string scrollKey: Scroll.SECTIONS[scrollSection].key
-
-  // A panel for one of Omarchy's ids, as this screen's style wants it.
+  // A panel for one of Omarchy's ids: its sheet.
   function openPanel(key, screenName) {
     if (!key) return false
-    if (panelsFor(screenName) === "scroll") return openScroll(key, screenName)
     return openSheet(key, screenName)
   }
   function panelOpen(key) {
-    return key !== "" && (sheet === key || (scrollOpen && scrollKey === key))
+    return key !== "" && sheet === key
   }
   function closePanel(key) {
     if (sheet === key) closeSheet()
-    if (scrollOpen && scrollKey === key) closeScroll()
   }
 
-  onBarHiddenChanged: if (barHidden) { closeSheet(); closeScroll() }
+  onBarHiddenChanged: if (barHidden) closeSheet()
 
   // ------------------------------------------------------------- inkan
   //
   // Inkan 印 (form: inkan, bar/SealWindow.qml): a press on the seal, or
   // `omarchy-shell hanko press`, prints No. 00 from it (every sheet on
-  // one), or unrolls the scroll under panels: scroll; again, it lifts off.
+  // one); again, it lifts off.
   function inkanOn(screenName) { return Typeset.styleFor(screenName || focusedScreen()).form === "inkan" }
   // Whether something printed from the seal is out on this screen.
   function inkanPrinted(screenName) {
-    return (sheet !== "" && sheetScreen === screenName) || (scrollOpen && scrollScreen === screenName)
+    return sheet !== "" && sheetScreen === screenName
   }
   // A seal dragged to another corner: kept for that monitor, or for the
   // whole style when there is only the one screen.
@@ -387,32 +322,18 @@ Item {
   }
   function pressSeal(screenName) {
     var name = screenName || focusedScreen()
-    if (inkanPrinted(name)) { closeSheet(); closeScroll(); return "closed" }
-    if (panelsFor(name) === "scroll") return openScroll("", name) ? "open" : "hidden"
+    if (inkanPrinted(name)) { closeSheet(); return "closed" }
     return openSheet("all", name) ? "open" : "hidden"
   }
 
   Binding { target: Zones; property: "barConfig"; value: root.barConfig }
-  // Data for a sheet is gathered while it is open; the scroll shows every
-  // section at once, so all of it while the scroll is out.
-  Binding { target: Zones; property: "wanted"; value: root.sheet === "time" || root.scrollOpen }
-  Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" || root.scrollOpen }
-  Binding { target: Net; property: "wanted"; value: root.sheet === "network" || root.scrollOpen }
-  Binding { target: Power; property: "wanted"; value: root.sheet === "power" || root.scrollOpen }
-  Binding { target: Display; property: "wanted"; value: root.sheet === "display" || root.scrollOpen }
-  Binding { target: Weather; property: "wanted"; value: root.scrollOpen }
-  Binding { target: Leaf; property: "wanted"; value: root.scrollOpen }
-  // Under order: mokuroku there is no end leaf; the house and the colophon
-  // read the machine as okugaki does.
-  Binding {
-    target: Leaf; property: "kind"
-    value: {
-      var st = Typeset.styleFor(root.scrollScreen || root.focusedScreen())
-      return st.order === "mokuroku" ? "okugaki" : st.endleaf || "koyomi"
-    }
-  }
-  Binding { target: Weather; property: "barConfig"; value: root.barConfig }
-  Binding { target: Blue; property: "wanted"; value: root.sheet === "bluetooth" || root.scrollOpen }
+  // Data for a sheet is gathered while it is open.
+  Binding { target: Zones; property: "wanted"; value: root.sheet === "time" }
+  Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" }
+  Binding { target: Net; property: "wanted"; value: root.sheet === "network" }
+  Binding { target: Power; property: "wanted"; value: root.sheet === "power" }
+  Binding { target: Display; property: "wanted"; value: root.sheet === "display" }
+  Binding { target: Blue; property: "wanted"; value: root.sheet === "bluetooth" }
 
   // BarWindows by screen name, for the host's per-screen questions.
   property var windows: ({})
@@ -433,7 +354,7 @@ Item {
   // Omarchy's audio, clock, network and power panels are kind bar-widget,
   // so with Hanko as the bar `omarchy-shell shell toggle omarchy.audio`
   // (and SUPER+CTRL+A, W, P, ALT+D, ALT+E) land here. Hanko answers with
-  // its own sheets, or the scroll at that section under panels: scroll.
+  // its own sheets.
   // The host asks isBarWidgetOpen first: summon opens, never toggles.
   // A hosted widget answers for its own id through its open()/close().
   function summonBarWidget(id) {
@@ -553,8 +474,6 @@ Item {
       return root.openSheet(name, root.focusedScreen()) ? "open" : "unknown"
     }
     function sheetClose(): string { root.closeSheet(); return "ok" }
-    // Unroll or roll up the handscroll on the focused screen, whatever
-    // `panels` says (bind it to a key: see the README).
     function settings(): string {
       if (root.settingsOpen) { root.closeSettings(); return "closed" }
       root.openSettings()
@@ -572,10 +491,6 @@ Item {
       root.toggleOverview()
       return root.overviewOpen ? "open" : "closed"
     }
-    function scroll(): string {
-      if (root.scrollOpen) { root.closeScroll(); return "closed" }
-      return root.openScroll("", root.focusedScreen()) ? "open" : "hidden"
-    }
     // A press on the seal (Inkan), for a keybinding: prints No. 00, or
     // lifts it off.
     function press(): string { return root.pressSeal(root.focusedScreen()) }
@@ -587,9 +502,6 @@ Item {
       if (on !== "on" && on !== "off") return "invalid"
       Kaze.setDesk(on === "on")
       return "ok"
-    }
-    function scrollTo(name: string): string {
-      return Scroll.indexOf(name) >= 0 && root.openScroll(name, root.focusedScreen()) ? "open" : "unknown"
     }
   }
 }

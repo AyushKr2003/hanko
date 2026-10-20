@@ -34,9 +34,9 @@ fi
 step "qmllint"
 # Errors fail the run. Warnings are printed: the stubs in tests/harness/stubs
 # do not model layer-shell attached properties, so BarWindow.qml shows a few.
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml core/*.qml services/*.qml 2>&1 \
-  | grep -E '^(Error|Warning)' | grep -v -E 'bar/(BarWindow|SheetWindow|ScrollWindow|OverviewWindow|SealWindow|TrayMenuWindow).qml' || true
-LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/scroll/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml core/*.qml services/*.qml 2>&1 \
+  | grep -E '^(Error|Warning)' | grep -v -E 'bar/(BarWindow|SheetWindow|OverviewWindow|SealWindow|TrayMenuWindow).qml' || true
+LC_ALL=C.UTF-8 "$PYSIDE/qmllint" -I tests/harness/stubs Bar.qml bar/*.qml bar/sheets/*.qml bar/settings/*.qml bar/overview/*.qml bar/parts/*.qml core/*.qml services/*.qml >/dev/null 2>&1 || { echo "qmllint found errors"; status=1; }
 
 step "kaze plugins"
 # Kaze's surfaces (plugins/*) are assembled as copies (Omarchy allows no
@@ -73,11 +73,11 @@ for params in tests/harness/params/*.json; do
 done
 
 # The renders above are at 2x, like the mockups; most laptop panels are 1x,
-# where small type has half the pixels. Check the bar, a sheet, the scroll
+# where small type has half the pixels. Check the bar, a sheet
 # and the settings page at 1x too (tests/out/1x/).
 step "renders at 1x"
 mkdir -p tests/out/1x
-for name in phase4 phase6 phase7 phase8; do
+for name in phase4 phase6 phase8; do
   params="tests/harness/params/$name.json"
   scene="$(jq -r '.scene // "Strips"' "$params")"
   if QT_SCALE_FACTOR=1 timeout 60 python3 tests/harness/render.py "tests/harness/scenes/$scene.qml" "$params" "tests/out/1x/$name.png"; then

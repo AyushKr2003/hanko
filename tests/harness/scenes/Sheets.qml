@@ -3,20 +3,16 @@ import qs.Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../core/Sheets.js" as Sheets
-import "../../../core/Scroll.js" as Scroll
 import "../../../core/Skin.js" as Sk
 import "../../../bar"
 import "../../../bar/sheets"
-import "../../../bar/scroll"
 
 // Desks: a bar with one sheet open under the cell it drops from, as
-// bar/SheetWindow.qml places it, or with the handscroll unrolled under it.
-// render.py passes `params`:
+// bar/SheetWindow.qml places it. render.py passes `params`:
 //   { theme, width, now, title, ...bar data as in Strips.qml...,
-//     desks: [ { label, doc, sheet, cell, feed, height, scroll, current } ] }
+//     desks: [ { label, doc, sheet, cell, feed, height } ] }
 // `feed` is the sheet's plain data (SheetView.feed); `cell` overrides the
-// bar cell the sheet hangs from. With `scroll: true` the desk shows the
-// scroll at section `current` instead of a sheet.
+// bar cell the sheet hangs from.
 Rectangle {
   id: sheet
 
@@ -75,8 +71,7 @@ Rectangle {
           readonly property bool atBottom: style.position === "bottom"
           readonly property date now: new Date(deskColumn.modelData.now || sheet.p.now || "2026-10-06T21:44:00")
           readonly property string key: deskColumn.modelData.sheet || ""
-          readonly property bool scroll: !!deskColumn.modelData.scroll
-          readonly property string cell: deskColumn.modelData.cell || (scroll ? "" : Sheets.byKey(key).anchors[0])
+          readonly property string cell: deskColumn.modelData.cell || Sheets.byKey(key).anchors[0]
           property var placed: ({ x: 0, tearX: 0, tearWidth: 0 })
 
           width: parent.width
@@ -89,7 +84,7 @@ Rectangle {
             var a = bar.anchorFor(cell) || { x: bar.width - 200, width: 100 }
             placed = Sheets.place(key, a.x, a.width, view.width, bar.width)
           }
-          Component.onCompleted: if (!scroll) Qt.callLater(place)
+          Component.onCompleted: Qt.callLater(place)
 
           BarSurface {
             id: bar
@@ -113,54 +108,15 @@ Rectangle {
             dnd: !!sheet.pick(deskColumn.modelData, "dnd")
           }
 
-          ScrollView {
-            visible: desk.scroll
-            x: bar.x + Math.round(bar.width * 0.069)
-            width: bar.width - 2 * Math.round(bar.width * 0.069)
-            height: implicitHeight
-            y: desk.atBottom ? bar.y - height : bar.y + bar.height
-            atBottom: desk.atBottom
-            divider: desk.style.interlude
-            endleaf: desk.style.endleaf
-            sides: desk.style.sides
-            guides: desk.style.guides
-            arrival: desk.style.arrival
-            letters: desk.style.letters
-            faults: desk.style.faults
-            order: desk.style.order
-            fold: desk.style.fold
-            // Densho's moments, fixed: how far the brush has written, a
-            // stance, the cut, the colophon sealed, the first letter warmed.
-            writeIn: deskColumn.modelData.write !== undefined ? deskColumn.modelData.write : 1
-            stance: deskColumn.modelData.stance !== undefined ? 1 : 0
-            stanceAt: deskColumn.modelData.stance || 0
-            cut: deskColumn.modelData.cut ? 1 : 0
-            sealed: !!deskColumn.modelData.sealed
-            warmed: deskColumn.modelData.warmed !== undefined ? deskColumn.modelData.warmed : -1
-            trackX: deskColumn.modelData.trackShift !== undefined
-              ? Scroll.centred(current, width - 2 * Type.px(26), Type.scale) + deskColumn.modelData.trackShift * Type.scale
-              : Scroll.centred(current, width - 2 * Type.px(26), Type.scale)
-            current: deskColumn.modelData.current || 0
-            ink: deskColumn.modelData.ink !== undefined ? deskColumn.modelData.ink : 1
-            reveal: deskColumn.modelData.reveal !== undefined ? deskColumn.modelData.reveal : 1
-            feed: {
-              var f = Object.assign({}, deskColumn.modelData.feed || {})
-              f.now = desk.now
-              if (!f.spaces) f.spaces = deskColumn.modelData.spaces || sheet.p.spaces || []
-              return f
-            }
-          }
-
           SheetView {
             id: view
-            visible: !desk.scroll
             paperOpacity: desk.style.panelOpacity > 0 ? desk.style.panelOpacity / 100 : 1
             styles: desk.style.sheetStyles || ({})
             // As SheetWindow: Shōji's skin, and a Shōji sheet hangs on its rail.
             skin: Sk.fromStyle(desk.style)
             x: bar.x + desk.placed.x
             y: desk.atBottom ? bar.y - height - (rail ? skin.gap : 0) : bar.y + bar.height + (rail ? skin.gap : 0)
-            sheet: desk.scroll ? "" : desk.key
+            sheet: desk.key
             atBottom: desk.atBottom
             tearX: desk.placed.tearX
             tearWidth: desk.placed.tearWidth

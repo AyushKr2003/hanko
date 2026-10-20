@@ -476,7 +476,7 @@ Rectangle {
           sourceComponent: ({
             typesetting: typesettingPage, presets: presetsPage, parts: partsPage,
             colour: colourPage, screens: screensPage, sheets: sheetsPage,
-            scroll: scrollPage, overview: overviewPage, motion: motionPage, keys: keysPage, kaze: kazePage
+            overview: overviewPage, motion: motionPage, keys: keysPage, kaze: kazePage
           })[root.pageKey] || typesettingPage
         }
       }
@@ -597,16 +597,6 @@ Rectangle {
       compact: root.compact
       onStylePicked: function(sheet, style) { root.settingPicked("sheetStyle:" + sheet, style) }
       onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
-    }
-  }
-  Component {
-    id: scrollPage
-    ScrollPage {
-      style: root.style
-      draft: root.draft
-      query: root.query
-      compact: root.compact
-      onSettingPicked: function(key, value) { root.settingPicked(key, value) }
     }
   }
   Component {

@@ -10,7 +10,7 @@ import "../../core/Blue.js" as BlueJs
 // One open sheet: the paper (SheetCard) with the right contents in it.
 // Pure QtQuick like BarSurface: bar/SheetWindow.qml feeds it live data,
 // the harness feeds it fixtures. Each sheet's contents are their own
-// component so the handscroll (Phase 7) can lay them out again.
+// component.
 //
 // feed: { now, zones, timeShift, sound, network, bluetooth, power, display,
 // letters, dnd, all }, where all is No. 00's { rows, spaces, window, home,

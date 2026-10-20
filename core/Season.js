@@ -3,7 +3,7 @@
 // The 24 solar terms (sekki) and 72 micro-seasons (kō) for any date, from
 // the sun's ecliptic longitude: each kō is 5° of it, starting at 315°
 // (立春). Exact in any year with no table of dates, unlike the day-of-year
-// approximations in Leaf.js. Used by Kata's season touch (design 3, Shōji).
+// approximations in Almanac.js. Used by Kata's season touch (design 3, Shōji).
 
 var SEKKI = [
   ["立春", "Risshun", "Spring begins"], ["雨水", "Usui", "Rain water"], ["啓蟄", "Keichitsu", "Insects awaken"],

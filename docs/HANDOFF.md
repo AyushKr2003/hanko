@@ -2,7 +2,7 @@
 
 This file is the single source a new Claude session (or a person) reads to pick up Hanko exactly where it was left. It covers the brief, every branch, the design, the Omarchy plugin contract, the code, the dev environment, the conventions, what each finished phase built, and detailed instructions for every remaining phase.
 
-Last updated: 2026-10-20, after Densho's fold and map (`fold: collapsed`, `guides: map`; §9 "Densho 伝書"); before that, after Densho 伝書, four touches for the scroll (§9 "Densho 伝書": `arrival`, `letters`, `faults`, `order`; `core/Densho.js`, `bar/scroll/DenshoLeaf.qml`; designs on the `design-densho` branch); before that, after the tray fix for Steam and updates (§9 "Tray clicks for Steam, and updates that load": a left-click on an Ayatana item opens its menu; `hanko install`/`dev` restart the shell); before that, after the unlock cut became a page curl (§12 item 42, docs/kaze/README.md: `assets/shaders/curl.vert`); before that, after the tray menu (§9 "Tray menus drawn by Hanko": right-click on a tray app opens its menu in `bar/TrayMenuWindow.qml`); before that, after the standalone desk (§9 "The desk, standalone and robust": `hanko desk` no longer edits looknfeel.lua, a flag in the state folder, `desk ensure` from a post-boot hook); before that 2026-10-17, after the Spread overview (`overview: mission`, §9 "Spread 見開, the third overview"); before that the overview lost `framed` and Enter/Esc stopped taking you back (§9 "The overview, two ways"); before that 2026-10-14, after the virtual wind (Kaze page, `Wind.settings` speed/from, `Wind.virtualLean`); before that the Hanko theme moved into the repo (`theme/`, `hanko theme install`); before that Dōgu's btop and Neovim (`hanko tools`, `assets/kaze/btop.lua`, `assets/kaze/nvim/`); before that Kaze 風 KZ13, the Kaze settings page (`bar/settings/KazePage.qml`, `services/Kaze.qml`) and `hanko doctor` for every surface; before that KZ12, sound and tools (`core/Oto.*`, `assets/sounds`, the prompt and greeting); before that KZ11, Sumi and riding (`assets/shaders/sumi.glsl`, `hanko sumi`, `Bar.riding`); before that KZ10, Shiki (ceremonies in `hanko.osd`, `core/Strokes.js`); before that KZ9, Taiji (`hanko.lock`, `core/Taiji.js`); before that KZ8, Battō (`hanko.menu`, `scripts/hanko-kaze-theme`); before that KZ7, Fumi (`hanko.notifications`, `core/Fumi.js`, `desk_plugins_check`); before that KZ6, Taikan (`hanko.osd`, `core/Taikan.js`); before that KZ5, the wind (`core/Wind.js`, grass in `hanko.background`); before that KZ4, Sumizuri (`hanko.background`, `scripts/hanko-print`, `core/Print.js`); before that KZ3, Ha (the `hanko.desk` service plugin: focus sweep, urgent frames; `style.lua` without shadows); before that KZ2, Iai (the shared motion, `core/Iai.js`, `style.lua`, `hanko desk`); before that KZ0–KZ1, the whole desk designed (§9 "Kaze 風"; research, plan and mockups in `docs/kaze/`); before that 2026-10-13, after Kōsei 校正, Typesetting as a proof (§9 "Kōsei 校正"; design in `docs/settings-kosei/`); before that, after Inkan 印, the seal only (`form: inkan`, §9 "Inkan 印"; design in `docs/shell-concepts/inkan/`); before that 2026-10-11, after the Hanko preset was renamed Kamon 家紋 (§9, "Kamon 家紋"), Settings › Presets 型 (every preset as a live specimen, its own page; §9 "Presets 型, a page of their own") and the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
+Last updated: 2026-10-20, after the scroll was taken out (§9 "The scroll taken out": every panel is a sheet, twenty-one settings, `core/Almanac.js`, `core/Themes.js`); before that, after Densho's fold and map (`fold: collapsed`, `guides: map`; §9 "Densho 伝書"); before that, after Densho 伝書, four touches for the scroll (§9 "Densho 伝書": `arrival`, `letters`, `faults`, `order`; `core/Densho.js`, `bar/scroll/DenshoLeaf.qml`; designs on the `design-densho` branch); before that, after the tray fix for Steam and updates (§9 "Tray clicks for Steam, and updates that load": a left-click on an Ayatana item opens its menu; `hanko install`/`dev` restart the shell); before that, after the unlock cut became a page curl (§12 item 42, docs/kaze/README.md: `assets/shaders/curl.vert`); before that, after the tray menu (§9 "Tray menus drawn by Hanko": right-click on a tray app opens its menu in `bar/TrayMenuWindow.qml`); before that, after the standalone desk (§9 "The desk, standalone and robust": `hanko desk` no longer edits looknfeel.lua, a flag in the state folder, `desk ensure` from a post-boot hook); before that 2026-10-17, after the Spread overview (`overview: mission`, §9 "Spread 見開, the third overview"); before that the overview lost `framed` and Enter/Esc stopped taking you back (§9 "The overview, two ways"); before that 2026-10-14, after the virtual wind (Kaze page, `Wind.settings` speed/from, `Wind.virtualLean`); before that the Hanko theme moved into the repo (`theme/`, `hanko theme install`); before that Dōgu's btop and Neovim (`hanko tools`, `assets/kaze/btop.lua`, `assets/kaze/nvim/`); before that Kaze 風 KZ13, the Kaze settings page (`bar/settings/KazePage.qml`, `services/Kaze.qml`) and `hanko doctor` for every surface; before that KZ12, sound and tools (`core/Oto.*`, `assets/sounds`, the prompt and greeting); before that KZ11, Sumi and riding (`assets/shaders/sumi.glsl`, `hanko sumi`, `Bar.riding`); before that KZ10, Shiki (ceremonies in `hanko.osd`, `core/Strokes.js`); before that KZ9, Taiji (`hanko.lock`, `core/Taiji.js`); before that KZ8, Battō (`hanko.menu`, `scripts/hanko-kaze-theme`); before that KZ7, Fumi (`hanko.notifications`, `core/Fumi.js`, `desk_plugins_check`); before that KZ6, Taikan (`hanko.osd`, `core/Taikan.js`); before that KZ5, the wind (`core/Wind.js`, grass in `hanko.background`); before that KZ4, Sumizuri (`hanko.background`, `scripts/hanko-print`, `core/Print.js`); before that KZ3, Ha (the `hanko.desk` service plugin: focus sweep, urgent frames; `style.lua` without shadows); before that KZ2, Iai (the shared motion, `core/Iai.js`, `style.lua`, `hanko desk`); before that KZ0–KZ1, the whole desk designed (§9 "Kaze 風"; research, plan and mockups in `docs/kaze/`); before that 2026-10-13, after Kōsei 校正, Typesetting as a proof (§9 "Kōsei 校正"; design in `docs/settings-kosei/`); before that, after Inkan 印, the seal only (`form: inkan`, §9 "Inkan 印"; design in `docs/shell-concepts/inkan/`); before that 2026-10-11, after the Hanko preset was renamed Kamon 家紋 (§9, "Kamon 家紋"), Settings › Presets 型 (every preset as a live specimen, its own page; §9 "Presets 型, a page of their own") and the right-side studies (Ma, Shizuka, Suji, Inrō: four `status` values and four presets, §9 "The right side, four ways"); before that, 2026-10-09, the Hanko preset became the user's own bar (§9, "The Hanko preset is the user's bar"), and before that Shōji was folded into Hanko (S1–S5): one design, Hanko. Shōji's panels are a seventh sheet hand (S1), its framed overview is `overview: framed` (S2), its bar parts are Hanko values with season, numerals and grain as settings (S3), Shōji is a preset that a saved Shōji design loads as (S4), and the design switch is gone (S5). The plan is in §10, "Shōji into Hanko".
 
 **Read order for a fresh session:** this file, then [ROADMAP.md](ROADMAP.md), then [COMPONENTS.md](COMPONENTS.md) (the full spec of every option), then the code. Keep this file current: update §9 (status) and §12 (known issues) at the end of every phase, in the same commit.
 
@@ -105,7 +105,7 @@ Full spec: [COMPONENTS.md](COMPONENTS.md). This is the summary a builder needs i
 5. **Hairlines, not shadows.** Dividers, frames and edges are 1 px ink lines.
 6. **One baseline.** Every zone sits on the same text baseline at every height.
 
-### The thirty-one settings (`core/Style.js` `OPTIONS`; **bold** = Kamon default)
+### The twenty-one settings (`core/Style.js` `OPTIONS`; **bold** = Kamon default)
 
 Values marked † are the right-side studies (`docs/right-side/`, §9 "The right side, four ways"). Values marked ‡ came from Shōji (S3 of "Shōji into Hanko", §10), drawn with its parts in its skin.
 
@@ -131,16 +131,6 @@ Values marked † are the right-side studies (`docs/right-side/`, §9 "The right
 | Frame | `position` | **`top`**, `bottom` |
 | Frame | `form` | **`bar`**, `inkan` (Inkan 印, the seal only: `docs/shell-concepts/inkan/`) |
 | Frame | `inkanAt` | `top-left`, `top-right`, `bottom-left`, **`bottom-right`** (where Inkan's seal sits) |
-| Panels | `panels` | **`sheets`**, `scroll` |
-| Panels | `interlude` | `ma`, `hairline`, `folio`, `kotoba`, `tsugime`, **`seal`**, `jiku`, `fuda`, `su` (added after Typeset; what sits between scroll sections) |
-| Panels | `endleaf` | `okugaki`, **`koyomi`**, `kiki`, `shimai`, `iro`, `dougu`, `shuchu`, `hikae`, `batsu` (added after Typeset; the leaf right of Inbox on the scroll) |
-| Panels | `sides` | `bare`, **`curl`** (added after Typeset; the scroll's left and right edges, in place of the rollers) |
-| Panels | `guides` | `both`, `tabs`, `foot`, **`none`**, `map` (added after Typeset; the scroll's index plate and position bar; `map` is Densho sheet 06's strip of the whole scroll) |
-| Panels | `fold` | **`expanded`**, `collapsed` (Densho sheet 01: the open section whole, spines, rollers) |
-| Panels | `arrival` | **`fade`**, `brush` (Densho 伝書: a brush writes each section on as it nears the middle) |
-| Panels | `letters` | **`open`**, `sealed` (Densho: secret ink, read where the pointer warms it) |
-| Panels | `faults` | **`plain`**, `seam` (Densho: a red mend under a broken section) |
-| Panels | `order` | **`emaki`**, `mokuroku` (Densho: the house, poetic names, a sealed colophon, Iai to open, jumps cut to a stance) |
 
 ### Presets
 
@@ -164,14 +154,8 @@ Values marked † are the right-side studies (`docs/right-side/`, §9 "The right
 | height | 32 | 36 | 40 | 40 |
 | surface | glass | inset | washi | solid |
 | position | top | top | top | top |
-| panels | sheets | scroll | sheets | sheets |
-| interlude | ma | fuda | ma | seal |
-| endleaf | batsu | dougu | koyomi | koyomi |
-| sides | bare | curl | bare | curl |
-| guides | both | both | both | none |
-| arrival / letters / faults / order | fade / open / plain / emaki | the same | the same | the same |
 
-The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Kamon column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off`, `height: 36` and `interlude: fuda` (the user's own bar). Sheet, Scroll and Instrument were taken out (aliases: Sheet and Instrument load Kamon, Scroll loads Islet). **Inkan** 印 is Kamon with `form: inkan` (its own group on the Presets page). COMPONENTS.md §4 has the table.
+The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **Inrō**): the Kamon column with `status` set to `ma`, `shizuka`, `suji`, `inro`, `meters: off`, `indicatorStyle: kanji`; Ma also has `rules: off` and `height: 36` (the user's own bar). Sheet, Scroll and Instrument were taken out (aliases: Sheet and Instrument load Kamon, Scroll loads Islet). **Inkan** 印 is Kamon with `form: inkan` (its own group on the Presets page). COMPONENTS.md §4 has the table.
 
 ### Where options interact (COMPONENTS.md §3)
 
@@ -179,12 +163,12 @@ The four right-side studies are presets too (**Ma**, **Shizuka**, **Suji**, **In
 - `status: numerals` + `ticks`: a five-tick ruler after each quantity. `glyphs` + `ticks`: a four-tick ruler; network keeps its name, no bars. *(Done.)*
 - `clockAt: right`: clock goes after notifications with a divider; the centre is left empty on purpose. *(Done.)*
 - `edge: dayrule|rodrule` + `clockAt: right`: the now-notch stays at the real hour, no longer under the clock. *(Done: the notch always sits at the hour.)*
-- `position: bottom`: `dayrule`, `rod`, `rodrule` draw along the bar's **top** side; the scroll unrolls **upward** and its index plate moves to the bottom; sheets rise instead of drop. *(Phases 5–7.)*
+- `position: bottom`: `dayrule`, `rod`, `rodrule` draw along the bar's **top** side; sheets rise instead of drop. *(Phases 5–7.)*
 - `surface: inset`: the edge runs inside the frame, 10 px from each end (rod 14 px, as the kit draws it); a `hairline` edge is dropped since the frame is one. `glass`: stamps, seal and inverted plates stay opaque; only the paper is translucent. *(Done.)*
 - `seal: workspace` + `spaces: kanji`: the active kanji shows twice, intentionally.
 - `seal: none`: left zone starts at 14 px padding, first divider dropped.
 - `title: none` + `media: none`: identity, clock and status only (Quiet).
-- `panels: sheets` + `edge: rod`: dragging the rod opens the sheet for the cell under the pointer; `Super+Space` opens Time. `panels: scroll` without a rod edge: `Super+Space` or a click on any status, clock or stamp unrolls the scroll; hovering the bottom edge shows a thin pull tab. *(Phases 6–7.)*
+- `edge: rod|rodrule`: dragging the rod opens the sheet for the cell under the pointer. *(Phase 6.)*
 
 ### Config file
 
@@ -258,7 +242,6 @@ Properties `barHidden`, `barSize`, `position`, `fontFamily`; functions if presen
 | Omarchy menu | — | `omarchy-shell shell toggle omarchy.menu '{"menu":"root"}'` |
 | Terminal | — | `xdg-terminal-exec` |
 | 12/24 h | `barConfig.layout.*[]` entry with `id: "omarchy.clock"` and its `format` | — |
-| Weather (scroll leaf) | Same as Omarchy's weather panel: place from `~/.local/state/omarchy/settings/weather.json` `{name, latitude, longitude}` (FileView), else `curl https://wttr.in/?format=j1` `nearest_area`; forecast `curl` Open-Meteo (`Weather.url`); units from the `omarchy.weather` entry's `unit`, else country, else `Qt.locale().name`. Every `refreshMinutes` (default 15), only while the scroll is open; the last answer is kept on failure | — |
 | Theme | `qs.Commons` `Color.foreground`, `Color.background`, `Color.urgent` (= theme red); live on theme switch. `Style.font.family` (mono), `Style.font.body` (base size; Hanko scales by `body/12`) | — |
 
 Other Omarchy panels that exist (`shell/plugins/panels/`): audio, bluetooth, clock, disk-speedtest, dropbox, elsewhen, monitor, network, power, speedtest, tailscale, weather, wifiqr.
@@ -301,7 +284,6 @@ bar/
   InkanSeal.qml          Inkan's seal, pure: plate, chips, inner rule, glyph, wear specks,
                          the recording ring, press and bloom
   InkanReading.qml       the hover line beside the seal, pure
-  ScrollWindow.qml       the layer the handscroll unrolls on (see Phase 7 in §9)
   OverviewWindow.qml     the layer the workspace overview 一覧 is laid on, one per screen
   TrayMenuWindow.qml     a tray app's menu, drawn by Hanko under its icon (QsMenuOpener),
                          submenus in place, a focus grab closes it
@@ -323,8 +305,6 @@ bar/
   HostedSlot.qml         one hosted widget from the registry (see Phase 9 in §9)
   HostBar.qml            the `bar` facade hosted widgets see
   Marks.qml              Hanko's own indicators, keyboard, mic and tray marks
-  scroll/                ScrollView, ScrollSection, ListRow, Fader, SignalBars, Interlude;
-                         Time/Sound/Network/Power/Display/Spaces/InboxSection (all pure)
   sheets/                SheetView, SheetCard, SheetHead, GroupHead, SheetRow, Ruler,
                          SheetButton, ActionBar; TimeSheet, SoundSheet, NetworkSheet,
                          PowerSheet, DisplaySheet, InboxSheet (all pure); the Tanzaku
@@ -351,7 +331,7 @@ core/
                          joints, open/openCurve/leave/leaveCurve, settle, opacity, grain,
                          season, kanjiNumerals, gap, travels; TEMPOS, RADII, OPACITY
   Season.js              SEKKI (24), KO (72), sunLongitude, koIndex, at(date), label(date,
-                         off|kanji|english): exact, from the sun (Leaf.js's are date tables)
+                         off|kanji|english): exact, from the sun (Almanac.js's are date tables)
   Brush.js               stroke(w, h, seed), kasure(w, h, seed), enso(v, size, width, seed):
                          SVG paths for PathSvg
   Typeset.qml (singleton) style.json FileView + watch; doc, warnings, current,
@@ -375,9 +355,11 @@ core/
   Extras.js              indicators, keyboard (hyprctl devices), tray rows
   Settings.js            RAIL, CARDS, MOTION_CARD/ROWS, PRESET_BLURBS, GLYPHS, nameOf,
                          changes, status, search; the proof: PROOF, WAYS, ALSO,
-                         PANELS_CARD, proofEdits/Matches/Step/PartOf, SAMPLE_INDICATORS
-  Scroll.js              SECTIONS, layout, centred, nearest, clampTrack, landing,
-                         position, forCell; BAYER/fbm noise for the settings plate
+                         proofEdits/Matches/Step/PartOf, SAMPLE_INDICATORS
+  Dither.js              BAYER/fbm noise for the settings plates
+  Almanac.js             koyomi: SEKKI, KO, moon, almanac (the lock's standoff, hanko-greet)
+  Themes.js              Omarchy's theme list for Settings › Colour
+  Weather.js             the place and wind URL for hanko.background's grass
   Time.js                heading, ribbon, isoWeek, Elsewhen zones + date probe rows
   Sound.js / Net.js / Power.js / Display.js   plain rows for those sheets
   Edge.js                dayFraction, hourTicks, at (pixel snap), span (rod/inset
@@ -963,6 +945,14 @@ Everything is in `docs/kaze/README.md`: what the games do (the world as the inte
   - **Then fold and map** (asked for: "the option to all the tabs expanded or collapsed, like we see in the images, and 6 like tabs also, the exact same design"; read as sheet 01's spines and sheet 06's strip). `fold: expanded | collapsed` (thirty-one settings, 1,252,412,463,513,600 combinations) and a fifth `guides` value, `map`. `Densho.fold(count, current, viewW, scale)` lays out up to three spines a side (98/70/50 px, `SPINE_W`), the 34 px rollers (`ROLLER_W`) and the open section between them (46 px gaps). `ScrollView`: `sx/sw/shows` place the sections (only the open one, with `foldInk`; the track at x 0, leaves and dividers hidden), the inline `Spine` (one per section, x/width/opacity on the pan curve, a red dot from `flagged(i)`: unread letters or `Densho.faultOf`, click → `picked`) and `Roller` (`onLeft`: `left` is a final Item property) components, four mist bands; on a change of section, `arriving` inks the new one in (and writes it under brush). `ScrollWindow`: collapsed, a drag doesn't pan; 40 px or 600 px/s steps one section. `map`: a strip `mapHeight` tall (98, 112 px under mokuroku) above the sections (below for a bar at the bottom; `view` moves down by it and `implicitHeight` grows), cells for the leaf, the eight sections and the end leaf, the open one bone, the leaves on `Ink.lift`, the colophon with its seal, "Opens here" and "Closes here · Esc". Harness `densho-fold`. Unit tests: 169.
   - Settings › Scroll's "Also" list has the four rows (lines elide on narrow windows); `Settings.CARDS` Panels and `PANELS_CARD` list them. Harness `densho-brush`, `densho-secrets`, `densho-mokuroku`, `densho-light` (the Sheets scene takes `write`, `warmed`, `stance`, `cut`, `sealed`, `trackShift`). Unit tests: 168.
 
+### The scroll taken out ✅ (2026-10-20; asked for: "i don't like the scroll at all so remove all, totally, and only sheet remain and it is default")
+- Every panel is a sheet; there is no other way for panels to open. Deleted: `bar/scroll/` (every section, the weather and end leaves, Densho's leaf, the interludes), `bar/ScrollWindow.qml`, `bar/settings/ScrollPage.qml` (the rail's Scroll 巻 page), `core/Scroll.js`, `core/Densho.js`, `services/Weather.qml`, `services/Leaf.qml`, `core/Leaf.js`; the IPC `scroll`/`scrollTo`, `hanko scroll`, the `SUPER + D` bind in `keybinds.lua` and the README's `SUPER + CTRL + U`; Settings' Keys "On the scroll" and its binding; `Seal.press()` (only mokuroku pressed it); the harness params that drew the scroll and the Sheets scene's `scroll: true` desk.
+- `Style.js`: ten settings gone (`panels interlude endleaf sides guides fold arrival letters faults order`), twenty-one left (24,159,191,040 combinations). `RETIRED` lists them: `cleanEdits` drops them silently, so the user's style.json (which sets `endleaf`, `faults`, `order`, `fold`) loads clean. The parts `weather` and `endleaf` left `PARTS`; a `hidden` list naming them drops them silently too. Islet's `panels: scroll` simply went (Islet is now 8 changes from Kamon, not 12).
+- Kept, moved: the almanac to `core/Almanac.js` (Standoff's microseason; `scripts/hanko-greet` reads its KO table), the theme list to `core/Themes.js` + `services/Themes.qml` (singleton `Themes`, Settings › Colour), the Bayer/fbm noise to `core/Dither.js` (`Plate`, `HangingScroll`), `core/Weather.js` cut to `location`, `area`, `url` (the URL asks only the current wind) for `hanko.background`. Motion's `unroll`/`ink`/`pan` stay (the overview uses them); their lines now say so.
+- `Bar.qml`: `openPanel/panelOpen/closePanel` are sheets only; the data services' `wanted` follow the open sheet alone. `BarWindow`: a cell click toggles its sheet, a rod pull drops the sheet under it (or Time).
+- Unit tests: scroll, densho, end-leaf and weather-leaf tests removed; almanac and themes tests kept on the new files; one new test that an old style.json with scroll settings loads without them or a warning (150 tests).
+- Earlier §9 entries (Phase 7, the leaves, dividers, sides, guides, Densho) are history: what they describe is gone.
+
 ## 10. Instructions for the remaining phase (10)
 
 ### Shōji into Hanko: the plan (asked for; S1 done, S2–S5 to do)
@@ -1111,6 +1101,7 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 51. **The harness on Qt 6.12 (this machine's `qt6-declarative 6.12.0`, PySide6 6.12):** QtQuick 6.12 has a type named `Color`, which shadows the stub `qs.Commons` `Color` in `core/Ink.qml` and the scenes, so renders lose the theme (green ink, no red, blank bone plates) and `tests/motion.py` fails on the Ink warnings, with or without Densho. Densho's renders were checked from a scratch copy with `import qs.Commons as Commons` / `Commons.Color`. Check whether the real omarchy-shell is affected the same way; if so, qualify the import in `core/Ink.qml`.
 
 52. ~~`omarchy-shell hanko scroll` sometimes unrolled on the wrong section (Sound, say), and the first left or right jumped to the right one.~~ **Fixed:** `ScrollWindow` centred the track in `onOpenChanged`, before the layer was mapped and sized, so the width was 0 and the paper sat off the plate's section until the next step re-centred it. It now centres with `place()` (no pan) on opening and again whenever the view's width changes. To verify on the desk.
+53. **The scroll was taken out (2026-10-20).** `hanko.background` is a copy (`hanko desk build`), so its installed `core/Weather.js` is the old one until `hanko install`/`desk` rebuilds it; harmless, it still works. The user's `~/.config/hypr/bindings.lua` had `SUPER + D` → `hanko scroll` in its Hanko block; it was removed on their machine. Settings › Keys no longer offers a scroll binding.
 
 ## 13. QML pitfalls already hit
 

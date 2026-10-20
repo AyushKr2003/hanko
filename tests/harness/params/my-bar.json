@@ -180,10 +180,8 @@
       "doc": {
         "preset": "Hanko",
         "edits": {
-          "panels": "sheets",
           "indicators": "active",
-          "indicatorStyle": "kanjiname",
-          "interlude": "fuda"
+          "indicatorStyle": "kanjiname"
         },
         "sealGlyph": "鑑",
         "motion": "paper",
@@ -218,10 +216,8 @@
       "doc": {
         "preset": "Hanko",
         "edits": {
-          "panels": "sheets",
           "indicators": "active",
-          "indicatorStyle": "kanjiname",
-          "interlude": "fuda"
+          "indicatorStyle": "kanjiname"
         },
         "sealGlyph": "鑑",
         "motion": "paper",

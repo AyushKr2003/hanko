@@ -18,9 +18,9 @@ function load(file, names) {
 const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", "OPTIONS", "MOTIONS", "TYPE_SIZES", "TYPE_SCALE", "KEYS", "PRESETS", "PRESET_NAMES", "DEFAULT_PRESET",
   "coerce", "normalize", "resolve", "withSetting", "withPreset", "shuffled", "combinations", "withMonitorSetting",
   "shows", "withShown", "SHOW_OPTIONS"])
-const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "ENDLEAVES", "endleafOf", "endleafLabels", "interludeLabels", "interludeOf", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
+const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "PANELS_CARD", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn", "kazeWind", "KAZE_WIND_MAX"])
+  "PROOF", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn", "kazeWind", "KAZE_WIND_MAX"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -32,12 +32,8 @@ const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDa
 const So = load("core/Sound.js", ["friendly", "label", "bus", "detail", "outputs", "streams", "master", "inputNote", "sheet"])
 const N = load("core/Net.js", ["splitTerse", "parseWifi", "parseSaved", "band", "securityName", "connectHow", "sheet", "remember", "KEEP_MS"])
 const Pw = load("core/Power.js", ["keyValues", "profiles", "stateLabel", "blurb", "details", "sheet"])
-const Sc = load("core/Scroll.js", ["SECTIONS", "INTERLUDE", "indexOf", "forCell", "layout", "centred", "nearest",
-  "clampTrack", "landing", "position"])
-const Lf = load("core/Leaf.js", ["KINDS", "kindOf", "labels", "uptime", "uptimeShort", "themeName", "colophon", "almanac", "moon",
-  "cpuTimes", "cpuBusy", "memory", "temperature", "disk", "top", "bytes", "machine", "SESSION", "sessionAction", "themes", "themeWindow",
-  "themesView", "TOOLS", "tool", "toolsLine", "focusState", "focusStep", "focusView", "clock", "notes", "toggled", "notesView", "clipboard",
-  "afterword", "SEKKI", "KO"])
+const Al = load("core/Almanac.js", ["almanac", "moon", "SEKKI", "KO"])
+const Th = load("core/Themes.js", ["themes", "themeName"])
 const H = load("core/Hosted.js", ["DRAWN", "OWN", "entries", "hosted", "own", "cell", "idOfCell"])
 const Ia = load("core/Iai.js", ["BEATS", "ORDER", "SNAP_PX", "qml", "total", "ease", "at", "hyprSpeed"])
 const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "perimeter", "pointAt", "lit", "onScreen"])
@@ -65,9 +61,19 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("thirty-one settings, 1,252,412,463,513,600 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 31)
-  assert.equal(S.combinations(), 1252412463513600)
+test("twenty-one settings, 24,159,191,040 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 21)
+  assert.equal(S.combinations(), 24159191040)
+})
+
+test("the handscroll's settings are gone: an old style.json loads without them, and without a warning", () => {
+  const warnings = []
+  const d = S.normalize({ preset: "Ma", edits: { panels: "scroll", interlude: "fuda", order: "mokuroku", clock: "inline" },
+    hidden: ["weather", "endleaf", "mic"] }, warnings)
+  assert.deepEqual(d.edits, { clock: "inline" })
+  assert.deepEqual(d.hidden, ["mic"])
+  assert.deepEqual(warnings, [])
+  assert.equal(S.resolve(d).panels, undefined)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -151,14 +157,13 @@ test("seal glyph keeps one character, surrogate pairs included", () => {
   assert.equal(S.resolve({ sealGlyph: "  " }).sealGlyph, "鑑")
 })
 
-test("shuffle never moves the bar or changes how panels open", () => {
+test("shuffle never moves the bar", () => {
   let seed = 7
   const rng = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 }
   for (let i = 0; i < 50; i++) {
     const d = S.shuffled({ preset: "Hanko", edits: { position: "bottom" } }, rng)
     const s = S.resolve(d)
     assert.equal(s.position, "bottom")
-    assert.equal(s.panels, "sheets")
     for (const k of S.KEYS) assert.ok(S.OPTIONS[k].includes(s[k]))
   }
 })
@@ -561,45 +566,6 @@ test("inbox: bodies, one copy per notification, and how long ago", () => {
   assert.equal(St.age(0, 50 * 3600000), "2d")
 })
 
-test("scroll: eight sections on one paper, interludes between", () => {
-  const l = Sc.layout(1)
-  assert.deepEqual(l.xs, [0, 670, 1400, 2010, 2580, 3070, 3660, 4430])
-  assert.equal(l.width, 4430 + 560)
-  assert.equal(Sc.layout(1.5).widths[0], 900)
-  assert.equal(Sc.indexOf("spaces"), 6)
-  assert.equal(Sc.forCell("bluetooth"), "bluetooth")
-  assert.equal(Sc.forCell("brightness"), "display")
-  assert.equal(Sc.forCell("media"), "")
-})
-
-test("scroll: centring a section, and landing a pan on the nearest", () => {
-  const view = 1300
-  assert.equal(Sc.centred(1, view), 650 - (670 + 330))
-  for (let i = 0; i < 8; i++) assert.equal(Sc.nearest(Sc.centred(i, view), view), i)
-  // A little push from Sound lands back on Sound; a fling carries on.
-  const at = Sc.centred(1, view)
-  assert.equal(Sc.landing(at - 100, 0, view), 1)
-  assert.equal(Sc.landing(at - 100, -3000, view), 2)
-  assert.equal(Sc.clampTrack(99999, view), Sc.centred(0, view))
-  assert.equal(Sc.clampTrack(-99999, view), Sc.centred(7, view))
-  assert.deepEqual(Sc.position(0), { x: 0, width: 1 / 8 })
-})
-
-test("scroll: nine interludes, each with a kanji, presets pick one", () => {
-  assert.deepEqual(S.OPTIONS.interlude, ["ma", "hairline", "folio", "kotoba", "tsugime", "seal", "jiku", "fuda", "su"])
-  assert.equal(S.resolve({}).interlude, "seal")
-  assert.equal(S.resolve({ preset: "Ma" }).interlude, "fuda")
-  assert.equal(S.resolve({ preset: "Islet" }).interlude, "fuda")
-  assert.equal(S.resolve({ preset: "Quiet" }).interlude, "ma")
-  assert.equal(S.resolve({ preset: "Hanko", edits: { interlude: "dither" } }).interlude, "seal")
-  const labels = Se.interludeLabels()
-  assert.deepEqual(Object.keys(labels), S.OPTIONS.interlude)
-  assert.equal(labels.seal, "鑑")
-  assert.equal(new Set(Object.values(labels)).size, 9)
-  assert.equal(Se.interludeOf("tsugime").name, "Tsugime")
-  assert.equal(Se.interludeOf("nope").key, "ma")
-})
-
 test("spaces carry each window's app and address for the scroll's map", () => {
   const area = { x: 0, y: 0, width: 100, height: 100 }
   const l = W.layoutOf([{ at: [0, 0], size: [50, 100], name: "Firefox", address: "0xabc" }], area)
@@ -623,14 +589,14 @@ test("words for the scroll: ordinals, counts, and the day across midnight", () =
   assert.deepEqual([r.before, r.current, r.after], ["September", "October", "November"])
 })
 
-test("settings: six cards hold every one of the twenty-four settings once", () => {
+test("settings: six cards hold every one of the twenty-one settings once", () => {
   const beside = ["sealGlyph", "typeSize", "overview", "season", "numerals", "grain", "hours"]
   const keys = Se.CARDS.flatMap(c => c.rows.map(r => r.key)).filter(k => beside.indexOf(k) < 0)
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS).sort(), [...S.PRESET_NAMES].sort())
-  // Typesetting, Presets, Parts, Colour, Screens · Sheets, Scroll, Overview · Motion, Keys · Profile, About, Credits
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 14)
+  // Typesetting, Presets, Parts, Colour, Screens · Sheets, Overview · Kaze, Motion, Keys · Profile, About, Credits
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 13)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -662,7 +628,7 @@ test("settings: counting what the draft changes", () => {
   const two = S.withSetting(S.withSetting(saved, "clock", "inline"), "status", "glyphs")
   assert.equal(Se.changes(saved, two, S.resolve), 2)
   // A preset switch counts every setting it moves.
-  assert.equal(Se.changes(saved, S.withPreset(saved, "Islet"), S.resolve), 12)
+  assert.equal(Se.changes(saved, S.withPreset(saved, "Islet"), S.resolve), 8)
   const glyph = S.normalize({ sealGlyph: "侍" })
   assert.equal(Se.changes(saved, glyph, S.resolve), 1)
   assert.equal(Se.changes(saved, S.withMonitorSetting(saved, "DP-2", "height", 32), S.resolve), 1)
@@ -850,7 +816,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Quiet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 1252412463513600)
+  assert.equal(S.combinations(), 24159191040)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -933,18 +899,7 @@ test("the Widgets page lists every part, and the marks, tray apps and widgets yo
   assert.equal(Se.changes(S.normalize({}), S.withSetting({}, "show:mic", "hidden"), S.resolve), 1)
 })
 
-const Wx = load("core/Weather.js", ["location", "area", "url", "imperial", "condition", "compass", "leaf", "curve", "range", "leafWidth"])
-
-const METEO = {
-  current: { temperature_2m: 17.6, apparent_temperature: 15.9, relative_humidity_2m: 72, wind_speed_10m: 12.4,
-             wind_direction_10m: 40, weather_code: 61, is_day: 1 },
-  hourly: { time: Array.from({ length: 48 }, (_, i) => `2026-10-0${6 + Math.floor(i / 24)}T${String(i % 24).padStart(2, "0")}:00`),
-            temperature_2m: Array.from({ length: 48 }, (_, i) => 14 + 6 * Math.sin((i % 24 - 9) / 24 * Math.PI * 2)),
-            precipitation_probability: Array.from({ length: 48 }, (_, i) => (i % 24 > 15 ? 60 : 0)) },
-  daily: { time: ["2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09"], weather_code: [61, 0, 3, 71],
-           temperature_2m_max: [20, 22, 18, 9], temperature_2m_min: [8, 12, 11, 2],
-           sunrise: ["2026-10-06T05:47"], sunset: ["2026-10-06T17:21"] }
-}
+const Wx = load("core/Weather.js", ["location", "area", "url"])
 
 test("weather: the place file, the detected area and the request", () => {
   assert.deepEqual(Wx.location('{"name":" Tokyo ","latitude":"35.68","longitude":139.69}'), { name: "Tokyo", latitude: 35.68, longitude: 139.69 })
@@ -953,75 +908,14 @@ test("weather: the place file, the detected area and the request", () => {
   const a = Wx.area(JSON.stringify({ nearest_area: [{ areaName: [{ value: "Pune" }], country: [{ value: "India" }], latitude: "18.5", longitude: "73.8" }] }))
   assert.deepEqual(a, { name: "Pune", country: "India", latitude: 18.5, longitude: 73.8 })
   assert.equal(Wx.area("{}"), null)
-  assert.ok(Wx.url(35.68, 139.69).includes("latitude=35.68") && Wx.url(1, 2).includes("hourly=temperature_2m,precipitation_probability"))
-})
-
-test("weather: units the way Omarchy picks them", () => {
-  assert.equal(Wx.imperial("metric", "en_US", "United States"), false)
-  assert.equal(Wx.imperial("imperial", "de_DE", ""), true)
-  assert.equal(Wx.imperial("", "de_DE", "United States"), true)
-  assert.equal(Wx.imperial("", "en_US", "India"), false)
-  assert.equal(Wx.imperial("", "en_US.UTF-8", ""), true)
-})
-
-test("weather: codes to words and kanji, wind to a compass point", () => {
-  assert.deepEqual(Wx.condition(0, 1), { word: "clear", jp: "晴" })
-  assert.equal(Wx.condition(0, 0).jp, "月")
-  assert.equal(Wx.condition(63, 1).jp, "雨")
-  assert.equal(Wx.condition(73, 1).jp, "雪")
-  assert.equal(Wx.condition(95, 1).jp, "雷")
-  assert.equal(Wx.condition(48, 1).word, "fog")
-  assert.equal(Wx.compass(40), "NE")
-  assert.equal(Wx.compass(355), "N")
-})
-
-test("weather: Open-Meteo into the leaf", () => {
-  const l = Wx.leaf(METEO, "Tokyo", false, new Date(2026, 9, 6, 14, 30))
-  assert.deepEqual([l.temp, l.unit, l.feels, l.word, l.jp, l.wind, l.dir, l.humidity], [18, "°C", 16, "rain", "雨", "12 km/h", "NE", 72])
-  assert.equal(l.caption, "Tokyo · feels 16° · NE 12 km/h")
-  assert.equal(l.hours.length, 24)
-  assert.deepEqual([l.hours[13].past, l.hours[14].past], [true, false])
-  assert.deepEqual([l.lo, l.hi], [8, 20])
-  assert.equal(l.sunLine, "Sun 05:47 → 17:21 · 72% humid")
-  assert.deepEqual(l.days.map(d => [d.name, d.jp, d.lo, d.hi]), [["WED", "晴", 12, 22], ["THU", "曇", 11, 18], ["FRI", "雪", 2, 9]])
-  assert.deepEqual([l.weekLo, l.weekHi], [2, 22])
-  const f = Wx.leaf(METEO, "", true, new Date(2026, 9, 6, 9))
-  assert.deepEqual([f.temp, f.unit, f.wind], [64, "°F", "8 mph"])
-  assert.equal(Wx.leaf({}, "", false), null)
-  assert.equal(Wx.leaf("garbage", "", false), null)
-})
-
-test("weather: the day's curve, range bars and how wide the leaf can be", () => {
-  const l = Wx.leaf(METEO, "", false, new Date(2026, 9, 6, 12))
-  const c = Wx.curve(l.hours, l.lo, l.hi)
-  assert.equal(c.length, 24)
-  for (const p of c) assert.ok(p.x >= 0 && p.x <= 1 && p.y > 0 && p.y < 1)
-  assert.deepEqual(Wx.range(12, 22, 2, 22), { from: 0.5, to: 1 })
-  assert.equal(Wx.leafWidth(1700, 600, 70, 1), 400)
-  assert.equal(Wx.leafWidth(1604, 600, 70, 1), 392)
-  assert.equal(Wx.leafWidth(1250, 600, 70, 1), 0)
-  assert.equal(Wx.leafWidth(1500, 600, 70, 1), 340)
+  assert.ok(Wx.url(35.68, 139.69).includes("latitude=35.68") && Wx.url(1, 2).includes("current=wind_speed_10m,wind_direction_10m"))
 })
 
 
-test("end leaf: nine kinds, a setting with a kanji each, presets pick one", () => {
-  assert.deepEqual(S.OPTIONS.endleaf, ["okugaki", "koyomi", "kiki", "shimai", "iro", "dougu", "shuchu", "hikae", "batsu"])
-  assert.deepEqual(Lf.KINDS.map(k => k.key), S.OPTIONS.endleaf)
-  assert.deepEqual(Se.ENDLEAVES.map(k => k.key), S.OPTIONS.endleaf)
-  assert.deepEqual(Se.ENDLEAVES.map(k => k.jp), Lf.KINDS.map(k => k.jp))
-  assert.equal(new Set(Object.values(Se.endleafLabels())).size, 9)
-  assert.equal(S.resolve({}).endleaf, "koyomi")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).endleaf), ["batsu", "dougu", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi", "koyomi"])
-  assert.equal(S.resolve({ edits: { endleaf: "nope" } }).endleaf, "koyomi")
-  assert.equal(Se.endleafOf("iro").name, "Iro")
-  assert.equal(Lf.kindOf("nope").key, "koyomi")
-  assert.equal(S.shows(S.resolve({ hidden: ["endleaf"] }), "endleaf"), false)
-})
-
-test("end leaf: the almanac for Tuesday 6 October 2026", () => {
-  assert.equal(Lf.SEKKI.length, 24)
-  assert.equal(Lf.KO.length, 72)
-  const a = Lf.almanac(new Date(2026, 9, 6, 14, 30))
+test("almanac: Tuesday 6 October 2026", () => {
+  assert.equal(Al.SEKKI.length, 24)
+  assert.equal(Al.KO.length, 72)
+  const a = Al.almanac(new Date(2026, 9, 6, 14, 30))
   assert.equal(a.month, "October")
   assert.equal(a.cells.length, 35)
   assert.equal(a.cells[3].label, "01")          // 1 October 2026 is a Thursday
@@ -1036,234 +930,31 @@ test("end leaf: the almanac for Tuesday 6 October 2026", () => {
   assert.equal(a.day, 279)
   assert.equal(a.days, 365)
   // Early January belongs to last December's term and microseason.
-  const j = Lf.almanac(new Date(2027, 0, 2))
+  const j = Al.almanac(new Date(2027, 0, 2))
   assert.equal(j.sekki.name, "Tōji")
   assert.equal(j.ko.no, 66)
   assert.equal(j.sekki.season, "winter")
-  assert.equal(Lf.almanac(new Date(2026, 1, 4)).ko.no, 1)
+  assert.equal(Al.almanac(new Date(2026, 1, 4)).ko.no, 1)
   // The moon: a waning crescent, new in a few days.
-  const m = Lf.moon(new Date(2026, 9, 6, 14, 30))
+  const m = Al.moon(new Date(2026, 9, 6, 14, 30))
   assert.equal(m.waxing, false)
   assert.ok(m.percent > 10 && m.percent < 35)
   assert.match(m.next, /^New · 1[01]th$/)
-  assert.ok(Lf.moon(new Date(Date.UTC(2000, 0, 6, 18, 14))).percent === 0)
+  assert.ok(Al.moon(new Date(Date.UTC(2000, 0, 6, 18, 14))).percent === 0)
 })
 
-test("end leaf: the colophon from the machine's facts", () => {
-  const raw = "host\tkumo\nmodel\tThinkPad X1 Carbon Gen 11\nkernel\t6.17.2-arch1-1\npackages\t1214\nupgraded\tMon 05 Oct\nomarchy\t3.1.4\nhyprland\t0.51.0\nuptime\t279000.5\nuser\tayush\nname\tAyush Kumar\ntheme\ttokyo-night\n"
-  const c = Lf.colophon(raw, { font: "JetBrains Mono", version: "0.1.0", preset: "Hanko" })
-  assert.equal(c.title, "Set on <i>kumo</i>")
-  assert.equal(c.caption, "Omarchy 3.1.4 · up 3 days")
-  assert.deepEqual(c.rows.map(r => r.k), ["Host", "Kernel", "Hyprland", "Packages", "Theme", "Font", "Bar"])
-  assert.equal(c.rows[3].v, "1,214 · upgraded Mon 05 Oct")
-  assert.equal(c.rows[4].v, "Tokyo Night")
-  assert.deepEqual(c.seals.map(s => s.glyph), ["A", "T", "判"])
-  const bare = Lf.colophon("host\tbox\nmodel\tTo Be Filled By O.E.M.\n", {})
-  assert.equal(bare.rows[0].v, "box")
-  assert.equal(Lf.colophon("", {}).ready, false)
-  assert.equal(Lf.uptime(279000), "3 days 5 hours")
-  assert.equal(Lf.uptime(3700), "1 hour 1 min")
-  assert.equal(Lf.themeName("rose-pine-dawn"), "Rose Pine Dawn")
-})
-
-test("end leaf: the machine from /proc, df, sensors and top", () => {
-  const a = Lf.cpuTimes("cpu  100 0 100 700 100 0 0 0 0 0\ncpu0 1 2 3")
-  const b = Lf.cpuTimes("cpu  150 0 150 800 100 0 0 0 0 0")
-  assert.deepEqual(a, { idle: 800, total: 1000 })
-  assert.equal(Lf.cpuBusy(a, b), 0.5)
-  assert.equal(Lf.cpuBusy(null, b), null)
-  const mem = Lf.memory("MemTotal:       32000000 kB\nMemFree:  1000 kB\nMemAvailable:   24000000 kB\n")
-  assert.deepEqual(mem, { used: 8000000 * 1024, total: 32000000 * 1024 })
-  assert.equal(Lf.temperature("acpitz 38000\nnvme 45000\ncoretemp 41000\n"), 41)
-  assert.equal(Lf.temperature("nvme 45000\niwlwifi 0\n"), 45)
-  assert.equal(Lf.temperature(""), null)
-  assert.deepEqual(Lf.disk("     1B/size    1B/used\n465000000000 268000000000\n"), { used: 268e9, total: 465e9 })
-  assert.deepEqual(Lf.top("firefox\t6.1\nHyprland\t2.3\nquickshell\t1.4\nextra\t1\n").map(p => p.name), ["firefox", "Hyprland", "quickshell"])
-  assert.equal(Lf.bytes(7.4e9), "7.4 GB")
-  assert.equal(Lf.machine({ cpu: 0.5, mem: { used: 7.4e9, total: 32e9 } }).rows[1].v, "7.4 / 32 GB")
-  const m = Lf.machine({ cpu: 0.12, cores: 8, load: 0.42, mem: { used: 7.4e9, total: 32e9 }, disk: { used: 268e9, total: 465e9 },
-    temp: 41, history: [0.1, 0.61, 0.2], top: [{ name: "firefox", cpu: 6.1 }, { name: "Hyprland", cpu: 2.3 }] })
-  assert.equal(m.title, "12%, <i>quiet</i>")
-  assert.equal(m.caption, "8 cores · 41°C · load 0.42")
-  assert.deepEqual(m.rows.map(r => r.k), ["CPU", "Memory", "Disk", "Heat"])
-  assert.equal(m.peakLabel, "61% peak")
-  assert.equal(m.peakAt, 1)
-  assert.equal(m.top, "firefox 6% · Hyprland 2%")
-  assert.equal(Lf.machine(null).ready, false)
-})
-
-test("end leaf: themes around the current one, tools, session", () => {
+test("themes: Omarchy's list, the user's copies first", () => {
   const raw = ["kanagawa\t#1f1f28\t#dcd7ba\t#c34043\tdark", "nord\t#2e3440\t#d8dee9\t#bf616a\t", "rose-pine\t#faf4ed\t#575279\t#b4637a\tlight",
     "kanagawa\t#000000\t#ffffff\t#ff0000\t", "broken\tnope\t#fff\t\t", "tokyo-night\t#1a1b26\t#a9b1d6\t\t"].join("\n")
-  const list = Lf.themes(raw)
+  const list = Th.themes(raw)
   assert.deepEqual(list.map(t => t.slug), ["kanagawa", "nord", "rose-pine", "tokyo-night"])
   assert.equal(list[0].bg, "#1f1f28")          // the user's copy, listed first, wins
   assert.equal(list[2].light, true)
+  assert.equal(list[2].name, "Rose Pine")
   assert.equal(list[3].red, "#a9b1d6")
-  assert.deepEqual(Lf.themeWindow(list, "nord", 3).map(t => t.slug), ["kanagawa", "nord", "rose-pine"])
-  assert.deepEqual(Lf.themeWindow(list, "kanagawa", 3).map(t => t.slug), ["tokyo-night", "kanagawa", "nord"])
-  const v = Lf.themesView(list, "rose-pine", 6)
-  assert.equal(v.title, "Rose Pine, <i>light</i>")
-  assert.equal(v.shown.length, 4)
-  assert.equal(v.more, 0)
-  assert.equal(Lf.TOOLS.length, 9)
-  assert.equal(Lf.tool("picker").closes, true)
-  assert.equal(Lf.toolsLine({ awake: true, dnd: true }), "Staying awake · silenced")
-  assert.equal(Lf.toolsLine({}), "Nothing is on")
-  assert.deepEqual(Lf.SESSION.map(a => a.key), ["lock", "suspend", "logout", "reboot", "shutdown"])
-  assert.deepEqual(Lf.sessionAction("suspend").command, ["systemctl", "suspend"])
-  assert.equal(Lf.sessionAction("nope"), null)
+  assert.equal(Th.themeName("tokyo-night"), "Tokyo Night")
 })
 
-test("end leaf: the focus timer runs, pauses, ends and counts the day", () => {
-  const t0 = new Date(2026, 9, 6, 14, 30).getTime()
-  let s = Lf.focusState("")
-  assert.equal(s.kind, "idle")
-  assert.equal(Lf.focusView(s, t0).title, "25:00, <i>ready</i>")
-  s = Lf.focusStep(s, "start", t0).state
-  assert.equal(s.kind, "focus")
-  let v = Lf.focusView(s, t0 + 6 * 60000 + 18000)
-  assert.equal(v.title, "18:42, <i>focus</i>")
-  assert.equal(v.caption, "Session 1 of 4 · break at 14:55")
-  s = Lf.focusStep(s, "pause", t0 + 60000).state
-  assert.equal(Lf.focusView(s, t0 + 10 * 60000).title, "24:00, <i>paused</i>")
-  s = Lf.focusStep(s, "resume", t0 + 10 * 60000).state
-  s = Lf.focusStep(s, "more", t0 + 10 * 60000).state
-  assert.equal(Lf.clock(s.endsAt - (t0 + 10 * 60000)), "29:00")
-  let r = Lf.focusStep(s, "tick", s.endsAt)
-  assert.equal(r.state.kind, "break")
-  assert.equal(r.state.done, 1)
-  assert.equal(r.said, "Focus done · take five")
-  r = Lf.focusStep(r.state, "skip", r.state.endsAt - 1000)
-  assert.equal(r.state.kind, "idle")
-  assert.equal(r.said, "Break over")
-  // A new day starts the count again; stopping a focus counts nothing.
-  const next = Lf.focusStep(r.state, "start", t0 + 86400000).state
-  assert.equal(next.done, 0)
-  assert.equal(Lf.focusStep(next, "skip", t0 + 86400000 + 1000).state.done, 0)
-  assert.equal(Lf.focusState("{bad").kind, "idle")
-  assert.equal(Lf.focusState(JSON.stringify(s)).length, 30)
-})
-
-test("end leaf: notes you can tick, and the clipboard", () => {
-  const text = "# Today\n\n- [x] Test Hanko on the laptop\n- [ ] Reply to Kenji\n* [ ] Pick a name\nA plain line\n"
-  const items = Lf.notes(text)
-  assert.deepEqual(items.map(i => [i.text, i.done, i.box, i.line]),
-    [["Test Hanko on the laptop", true, true, 2], ["Reply to Kenji", false, true, 3], ["Pick a name", false, true, 4], ["A plain line", false, false, 5]])
-  assert.equal(Lf.toggled(text, 3).split("\n")[3], "- [x] Reply to Kenji")
-  assert.equal(Lf.toggled(text, 2).split("\n")[2], "- [ ] Test Hanko on the laptop")
-  assert.equal(Lf.toggled(text, 5), text)
-  assert.equal(Lf.notesView(items, true).title, "Two <i>to do</i>")
-  assert.equal(Lf.notesView([], false).title, "A blank <i>page</i>")
-  const clips = Lf.clipboard(JSON.stringify([{ type: "text", text: "git  push\n-u origin dev" }, { type: "image", path: "/tmp/a.png" }, "#c34043", { type: "text", text: "four" }]))
-  assert.deepEqual(clips.map(c => c.text), ["git push -u origin dev", "Image", "#c34043"])
-  assert.equal(clips[2].index, 2)
-  assert.deepEqual(Lf.clipboard("nope"), [])
-  assert.equal(Lf.afterword(new Date(2026, 9, 6), 8).line, "Eight sections · Tuesday 06 · X · 2026")
-})
-
-test("scroll sides: bare or curl, in place of the rollers", () => {
-  assert.deepEqual(S.OPTIONS.sides, ["bare", "curl"])
-  assert.equal(S.resolve({}).sides, "curl")
-  assert.deepEqual(S.PRESET_NAMES.map(p => S.resolve({ preset: p }).sides), ["bare", "curl", "bare", "curl", "curl", "curl", "curl", "curl", "curl"])
-  assert.equal(S.resolve({ edits: { sides: "roller" } }).sides, "curl")
-})
-
-test("scroll guides: the tabs on top, the position bar at the foot, both or none", () => {
-  assert.deepEqual(S.OPTIONS.guides, ["both", "tabs", "foot", "none", "map"])
-  assert.equal(S.resolve({}).guides, "none")
-  const yours = ["Kamon", "Inkan", "Ma", "Shizuka", "Suji", "Inrō"]   // your bar, Inkan and the four studies built on it
-  assert.ok(S.PRESET_NAMES.every(p => S.resolve({ preset: p }).guides === (yours.indexOf(p) >= 0 ? "none" : "both")))
-  assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
-  assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
-})
-const Dn = load("core/Densho.js", ["fold", "SPINE_W", "ROLLER_W", "writeAt", "faultOf", "isJump", "STANCE_MS", "house", "colophon", "seamPath", "WRITE_FULL", "WRITE_NONE"])
-
-test("densho: four scroll touches, off in every preset", () => {
-  assert.deepEqual(S.OPTIONS.arrival, ["fade", "brush"])
-  assert.deepEqual(S.OPTIONS.letters, ["open", "sealed"])
-  assert.deepEqual(S.OPTIONS.faults, ["plain", "seam"])
-  assert.deepEqual(S.OPTIONS.order, ["emaki", "mokuroku"])
-  for (const p of S.PRESET_NAMES) {
-    const st = S.resolve({ preset: p })
-    assert.deepEqual([st.arrival, st.letters, st.faults, st.order], ["fade", "open", "plain", "emaki"], p)
-  }
-  assert.equal(S.resolve({ edits: { order: "mokuroku" } }).order, "mokuroku")
-  assert.equal(S.resolve({ edits: { letters: "secret" } }).letters, "open")
-  assert.deepEqual(S.withSetting({}, "arrival", "brush").edits, { arrival: "brush" })
-})
-
-test("densho: fold collapsed, the open section whole between its spines", () => {
-  assert.deepEqual(S.OPTIONS.fold, ["expanded", "collapsed"])
-  for (const p of S.PRESET_NAMES) assert.equal(S.resolve({ preset: p }).fold, "expanded", p)
-  const f = Dn.fold(8, 2, 1600, 1)
-  assert.deepEqual(f.spines.map(x => [x.index, x.depth, x.side]),
-    [[0, 2, "left"], [1, 1, "left"], [5, 3, "right"], [4, 2, "right"], [3, 1, "right"]])
-  assert.equal(f.left, 2)
-  assert.equal(f.right, 5)
-  const lastLeft = f.spines.filter(x => x.side === "left").pop()
-  const firstRight = f.spines.filter(x => x.side === "right").pop()
-  assert.equal(f.open.x, lastLeft.x + lastLeft.width + 46)
-  assert.equal(f.open.x + f.open.width + 46, firstRight.x)
-  assert.equal(f.spines[0].x, Dn.ROLLER_W + 10)
-  // At the ends there is nothing on one side; out of range is clamped.
-  assert.equal(Dn.fold(8, 0, 1600, 1).spines.filter(x => x.side === "left").length, 0)
-  assert.equal(Dn.fold(8, 7, 1600, 1).right, 0)
-  assert.deepEqual(Dn.fold(8, 99, 1600, 1), Dn.fold(8, 7, 1600, 1))
-  // Scaled, every width grows with the type.
-  assert.equal(Dn.fold(8, 3, 1600, 2).spines[2].width, 2 * Dn.SPINE_W[1])
-  assert.equal(S.resolve({ edits: { fold: "collapsed", guides: "map" } }).guides, "map")
-})
-
-test("densho: the brush writes a section whole in the middle, nothing near the edge", () => {
-  assert.equal(Dn.writeAt(0, 800), 1)
-  assert.equal(Dn.writeAt(800 * Dn.WRITE_FULL, 800), 1)
-  assert.equal(Dn.writeAt(-800 * Dn.WRITE_NONE, 800), 0)
-  assert.equal(Dn.writeAt(590, 800), 0)        // a neighbour at rest: its head only
-  const mid = Dn.writeAt(800 * (Dn.WRITE_FULL + Dn.WRITE_NONE) / 2, 800)
-  assert.ok(mid > 0.4 && mid < 0.6)
-  assert.equal(Dn.writeAt(100, 0), 1)
-})
-
-test("densho: faults, jumps and the seam", () => {
-  assert.equal(Dn.faultOf("network", { network: { offline: true } }), true)
-  assert.equal(Dn.faultOf("network", { network: { offline: false } }), false)
-  assert.equal(Dn.faultOf("power", { power: { low: true } }), true)
-  assert.equal(Dn.faultOf("sound", { network: { offline: true } }), false)
-  assert.equal(Dn.faultOf("network", null), false)
-  assert.equal(Dn.isJump(2, 3), false)
-  assert.equal(Dn.isJump(3, 2), false)
-  assert.equal(Dn.isJump(2, 7), true)
-  assert.ok(Dn.STANCE_MS > 0 && Dn.STANCE_MS <= 400)
-  const d = Dn.seamPath(300, 26, 26)
-  assert.ok(d.startsWith("M 0 13.0"))
-  assert.ok(/L 300\.0 /.test(d), d)
-  assert.equal(Dn.seamPath(300, 26, 26), d)
-})
-
-test("densho: the house and the colophon of a mokuroku scroll", () => {
-  const raw = "host\tkumo\nupgraded\tMon 05 Oct\nuptime\t3600\nuser\tayush\nname\tAyush\n"
-  const now = new Date(2026, 9, 20, 21, 44)
-  const h = Dn.house(raw, { version: "0.9.0", preset: "Kamon" }, now)
-  assert.equal(h.title, "<i>Ayush</i>")
-  assert.equal(h.caption, "Hanko 0.9.0 · Kamon · kumo")
-  assert.deepEqual(h.points.map(p => p.label), ["Upgraded", "Booted", "Now"])
-  assert.equal(h.points[1].value, "20:44")
-  assert.equal(h.points[2].value, "21:44")
-  assert.ok(h.points[2].now && h.ready)
-  const bare = Dn.house("", {}, now)
-  assert.equal(bare.title, "This house")
-  assert.deepEqual(bare.points.map(p => p.label), ["Now"])
-  assert.equal(bare.ready, false)
-  const c = Dn.colophon(raw, { preset: "Kamon + edits" }, now)
-  assert.deepEqual(c.lines, ["Transmitted to Ayush,", "on the twentieth of October,", "under the house of Kamon."])
-  assert.equal(c.who, "Ayush")
-  assert.equal(Dn.colophon("", {}, now).who, "you")
-})
-
-test("densho: every section has a poetic name", () => {
-  for (const s of Sc.SECTIONS) assert.ok(s.poem && s.poem.length > 3, s.key)
-})
 
 const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE", "CREDIT_GROUPS", "creditsIn"])
 
@@ -1462,7 +1153,7 @@ test("the Shōji preset: picked by any spelling, it puts every sheet in the Shō
   // Kept afterwards, like anything beside the settings.
   const h = S.withPreset(d, "Hanko"); assert.equal(h.sheetStyles.time, "shoji")
   const st = S.resolve(d)
-  assert.deepEqual([st.seal, st.spaces, st.status, st.notif, st.surface, st.pointer, st.panels], ["carved", "brush", "ink", "seal", "washi", "brush", "sheets"])
+  assert.deepEqual([st.seal, st.spaces, st.status, st.notif, st.surface, st.pointer], ["carved", "brush", "ink", "seal", "washi", "brush"])
 })
 
 test("kata K2: the inks are solved by contrast in every theme", () => {
@@ -1706,9 +1397,9 @@ test("right side: four studies as status values and presets on your Hanko bar", 
     assert.equal(p.status, status[name])
     assert.equal(p.indicatorStyle, "kanji")
     assert.deepEqual(Object.keys(p).sort(), [...S.KEYS].sort())
-    // Only the right zone (and Ma's dividers, height and scroll joins) differs from your bar.
+    // Only the right zone (and Ma's dividers and height) differs from your bar.
     const diff = S.KEYS.filter(k => p[k] !== hanko[k])
-    const allowed = ["status", "meters", "indicatorStyle", "rules", "interlude"].concat(name === "Ma" ? ["height"] : [])
+    const allowed = ["status", "meters", "indicatorStyle", "rules"].concat(name === "Ma" ? ["height"] : [])
     assert.ok(diff.every(k => allowed.indexOf(k) >= 0), name + " changes " + diff)
   }
   // Typed any case, with or without the macron.
@@ -1745,7 +1436,7 @@ test("settings: a Presets 型 page, every preset with a kanji and its facts", ()
   assert.equal(Se.pageInfo("presets").page.jp, "型")
   assert.equal(Se.pageInfo("nope").page.key, "typesetting")
   assert.deepEqual(Object.keys(Se.PRESET_KANJI).sort(), [...S.PRESET_NAMES].sort())
-  assert.equal(Se.presetFacts(S.resolve({ preset: "Suji" })), "status suji · clock stacked · 40 px · surface solid · panels sheets")
+  assert.equal(Se.presetFacts(S.resolve({ preset: "Suji" })), "status suji · clock stacked · 40 px · surface solid")
   assert.ok(Se.presetMatches("Inrō", "inro", S.PRESETS))
   assert.ok(Se.presetMatches("Suji", "筋", S.PRESETS))
   assert.ok(Se.presetMatches("Quiet", "glass", S.PRESETS))
@@ -1787,7 +1478,7 @@ test("inkan: form and its corner are settings; the Inkan preset is Kamon as a se
   }
   assert.ok(Se.CARDS.some(c => c.rows.some(r => r.key === "form")))
   assert.equal(Se.PRESET_KANJI.Inkan, "印")
-  assert.equal(Se.presetFacts(S.resolve({ preset: "Inkan" })), "form inkan · seal bottom-right · panels sheets")
+  assert.equal(Se.presetFacts(S.resolve({ preset: "Inkan" })), "form inkan · seal bottom-right")
 })
 
 test("inkan: the battery wears the carving, always in the same places", () => {
@@ -1867,10 +1558,8 @@ test("inkan: the seal in its corner, the sheet printed away from the edge it sha
 })
 
 
-test("settings: the proof sets every setting once, on its part or on the Scroll page", () => {
-  const onProof = Se.PROOF.flatMap(p => p.cast.concat(p.also))
-  const onScroll = Se.PANELS_CARD.rows.map(r => r.key).concat(["interlude", "endleaf"])
-  const all = onProof.concat(onScroll)
+test("settings: the proof sets every setting once, on its part or on Overview", () => {
+  const all = Se.PROOF.flatMap(p => p.cast.concat(p.also)).concat(["overview"])
   assert.equal(new Set(all).size, all.length)
   const want = S.KEYS.concat(["sealGlyph", "numerals", "hours", "season", "grain", "typeSize", "overview"])
   for (const k of want) assert.ok(all.includes(k), k)
@@ -1884,7 +1573,7 @@ test("settings: the proof sets every setting once, on its part or on the Scroll 
 test("settings: the proof's parts, edits, search and stepping", () => {
   assert.equal(Se.proofPartOf("hours").key, "clock")
   assert.equal(Se.proofPartOf("inkanAt").key, "frame")
-  assert.equal(Se.proofPartOf("interlude"), null)
+  assert.equal(Se.proofPartOf("overview"), null)
   assert.equal(Se.proofPart("nope").key, "seal")
   const doc = S.normalize({ preset: "Ma", edits: { clock: "inline", hours: "24h", form: "inkan" } })
   assert.deepEqual(Se.proofEdits(Se.proofPart("clock"), doc), ["clock"])
@@ -1918,7 +1607,7 @@ test("settings: what a preset would change, in the proof's order", () => {
   assert.ok(keys.indexOf("clock") < keys.indexOf("status"))
   assert.deepEqual(toKamon.find(r => r.key === "clock"), { key: "clock", name: "Clock", no: "04", part: "Clock", from: "inline", to: "stacked" })
   assert.equal(toKamon.find(r => r.key === "status").to, "cells")
-  assert.equal(toKamon.find(r => r.key === "interlude").no, "—")
+  assert.equal(toKamon.find(r => r.key === "height").no, "10")
   assert.deepEqual(Se.presetDiff(S.normalize({ preset: "Ma" }), "Ma", S), [])
   assert.ok(Se.presetDiff(doc, "Shōji", S).some(r => r.key === "sheetStyles"))
 })
@@ -1941,8 +1630,7 @@ test("settings: the timesheet has every motion, the keymap lights its keys", () 
   const sheet = Se.KEYMAP.find(c => c.key === "sheet")
   const lit = Se.keysLit(sheet)
   assert.ok(lit.Esc && lit.Tab && lit.M && lit["↑"] && !lit.H)
-  const scroll = Se.keysLit(Se.KEYMAP.find(c => c.key === "scroll"))
-  assert.ok(scroll["1"] && scroll["8"] && !scroll["9"] && !scroll["0"])
+  assert.ok(!Se.KEYMAP.some(c => c.key === "scroll"))
   const overview = Se.keysLit(Se.KEYMAP.find(c => c.key === "overview"))
   assert.ok(overview["0"] && overview["9"] && overview.J)
   const settings = Se.keysLit(Se.KEYMAP[0])

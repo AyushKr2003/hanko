@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
-import "../../core/Scroll.js" as Scroll
+import "../../core/Dither.js" as Dither
 
 // The Credits plate's art: a hanging scroll (kakejiku) between two rollers,
 // a mountain landscape in 1-bit ink on its paper and the painter's small
@@ -34,7 +34,7 @@ Item {
       var left = root.paperL, right = root.paperR, top = root.paperT, bottom = root.paperB
       var pw = right - left, ph = bottom - top
       // The landscape: three ridges, nearer ones darker, mist between.
-      function ridge(u, base, amp, f, s) { return base - amp * Scroll.fbm(u * f + s, s * 0.7) }
+      function ridge(u, base, amp, f, s) { return base - amp * Dither.fbm(u * f + s, s * 0.7) }
       ctx.fillStyle = ink
       for (var y = top; y < bottom; y += cell) for (var x = left; x < right; x += cell) {
         var u = (x - left) / pw, v = (y - top) / ph
@@ -47,7 +47,7 @@ Item {
         var mx = (u - 0.3) * pw, my = (v - 0.2) * ph, mr = pw * 0.12
         if (mx * mx + my * my < mr * mr) d = Math.max(d, 0.16)
         d *= 0.55 + 0.45 * Math.min(1, (x / w) * 2.2)
-        var t = (Scroll.BAYER[Math.floor(y / cell) % 4][Math.floor(x / cell) % 4] + 0.5) / 16
+        var t = (Dither.BAYER[Math.floor(y / cell) % 4][Math.floor(x / cell) % 4] + 0.5) / 16
         if (d > t) ctx.fillRect(x, y, cell, cell)
       }
       // The paper's edges and the two rollers with their caps.

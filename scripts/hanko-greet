@@ -1,7 +1,7 @@
 #!/bin/bash
 # hanko-greet · Kaze 風, Dōgu 道具: a new terminal's greeting in one line of
 # facts instead of a logo (docs/kaze, mockup 12): the seal, the time of day
-# in English and Japanese, the date, the microseason (from core/Leaf.js's 72
+# in English and Japanese, the date, the microseason (from core/Almanac.js's 72
 # kō) and how many letters are waiting. Put it where fastfetch was, e.g. in
 # fish's config: `hanko-greet` (it lives in hanko.bar/scripts/).
 set -uo pipefail
@@ -15,7 +15,7 @@ else en="Good evening" jp="今晩は"; fi
 
 # The microseason: the last of the 72 kō to have started (before the first
 # one of the year, in early January, the last one of the year before).
-read -r ko koen < <(perl -ne 'while (/\["([^"]+)", "([^"]+)", (\d+), (\d+)\]/g) { print "$3\t$4\t$1\t$2\n" }' "$here/core/Leaf.js" 2>/dev/null \
+read -r ko koen < <(perl -ne 'while (/\["([^"]+)", "([^"]+)", (\d+), (\d+)\]/g) { print "$3\t$4\t$1\t$2\n" }' "$here/core/Almanac.js" 2>/dev/null \
   | sort -t$'\t' -k1,1n -k2,2n \
   | awk -F'\t' -v m="$(date +%-m)" -v d="$(date +%-d)" '{ last = $3 " " $4 } ($1 < m || ($1 == m && $2 <= d)) { pick = $3 " " $4 } END { print (pick != "" ? pick : last) }')
 

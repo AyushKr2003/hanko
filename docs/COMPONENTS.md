@@ -13,7 +13,7 @@ Twenty-three settings give **2,609,192,632,320** distinct bars before you even c
 ## Contents
 
 1. [The rules every option keeps](#1-the-rules-every-option-keeps)
-2. [The thirty-one settings](#2-the-thirty-one-settings)
+2. [The twenty-one settings](#2-the-twenty-one-settings)
 3. [How options interact](#3-how-options-interact)
 4. [Presets](#4-presets)
 5. [Counting the combinations](#5-counting-the-combinations)
@@ -39,7 +39,7 @@ These rules are what let any combination look designed rather than assembled.
 
 ---
 
-## 2. The thirty-one settings
+## 2. The twenty-one settings
 
 Each setting has a key (used in the config file), its options, the default (from the Kamon preset), and where it came from. **Sheet** and **Scroll** are the two earlier designs; **New** is new in Typeset; **Shōji** came from the Shōji design when it was folded into Hanko, drawn with its parts.
 
@@ -153,7 +153,7 @@ All six status × meters pairs are drawn on sheet 12.
 | **`device`** (default) | A `BT 双` cell after the network cell: the connected device's name (`+1` for each more) with its battery as the meter, or `On` / `Off`. | New |
 | `marks` | One kanji mark per connected device, by its kind: 耳 headphones, 響 speaker, 鍵 keyboard, 鼠 mouse, 話 phone, 遊 controller, 機 computer, 器 anything else. In cells each mark is a small box its charge fills from the bottom; in glyphs the charge is a rule under the mark; four at most, then `+N`. | New |
 | `count` | How many devices are connected, as a two-digit count, and a dot for each (six at most). | New |
-| `off` | No Bluetooth cell. The panel is still in the scroll and on Omarchy's hotkey. | New |
+| `off` | No Bluetooth cell. The sheet still opens on Omarchy's hotkey. | New |
 
 In every style a click opens the Bluetooth panel and a middle- or right-click turns Bluetooth on or off; machines without an adapter never show the cell. A device at 15 % or less turns its mark, its dot or the count red (it needs you). The old `on` still reads as `device`. Added after the Typeset mockups were drawn, in the same grammar as the other status cells.
 
@@ -185,7 +185,7 @@ The name is in the same ink as the icon styles (red only for a recording or live
 |---|---|---|
 | `hairline` | A single hairline. | Sheet |
 | `dayrule` | A 24-hour ruler: hour ticks, longer every six hours, the spent part of the day brighter, a red now-notch. | Sheet |
-| `rod` | The scroll's roller with end caps and a centre grip. Hover raises the grip; drag down to unroll. | Scroll |
+| `rod` | A roller with end caps and a centre grip. Hover raises the grip; drag down to drop the sheet under the pointer. | Scroll |
 | **`rodrule`** (default) | The roller carries the day: the hours to come a hairline that thins out at both ends, the spent part one stroke of ink darkening toward the red now-notch, ticks lighter ahead of now, and the grip shown only when the pointer reaches for it. | New |
 
 #### Dividers `rules` 罫
@@ -259,7 +259,7 @@ Per monitor like every setting: `monitors.eDP-1.form = inkan` makes a laptop all
 
 #### Shōji's touches `season` 季, `numerals` 数, `grain` 繊
 
-Three switches beside the thirty-one (like `typeSize`: global, not per monitor, kept by presets, resets and shuffles, not counted in the combinations). They were the Shōji design's touches; a saved `touches` is read into them.
+Three switches beside the twenty-one (like `typeSize`: global, not per monitor, kept by presets, resets and shuffles, not counted in the combinations). They were the Shōji design's touches; a saved `touches` is read into them.
 
 | Key | Options | What it does |
 |---|---|---|
@@ -268,18 +268,11 @@ Three switches beside the thirty-one (like `typeSize`: global, not per monitor, 
 | `grain` | `smooth`, **`fine`**, `toothy` | The washi's fibres (`surface: washi`, the Shōji panels) |
 ### Panels
 
-#### Panels open as `panels` 紙/巻
-
-| Option | What it does | From |
-|---|---|---|
-| **`sheets`** (default) | Clicking a cell inverts it and a flush sheet drops from it, joined to the bar: a mini settings page with eyebrow and folio, serif title over its faint kanji, an italic standfirst, underscored `//` groups and a colophon action strip. | Sheet |
-| `scroll` | Every panel lives on one handscroll that unrolls from the bar, its edges finished by the `sides` setting, with an index plate and an interlude between each two sections. Pan with `H` `L`. | Scroll |
-
-Sheets 20–25 show both on full desktops.
+Every panel is a flush sheet: clicking a cell inverts it and its sheet drops from it, joined to the bar: a mini settings page with eyebrow and folio, serif title over its faint kanji, an italic standfirst, underscored `//` groups and a colophon action strip. The handscroll (`panels: scroll` and its nine settings) was taken out; a style.json that still sets them loads without them, and without a warning.
 
 #### Sheet hands `sheetStyles` 帳/短冊/将棋/算盤/縅/霞/障子
 
-Each cell's sheet can be drawn in one of seven hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the thirty-one: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
+Each cell's sheet can be drawn in one of seven hands, chosen per sheet on Settings › Sheets 紙 (or `hanko style set sheetStyle:sound tanzaku`, `sheetStyle:all kasumi`). Like the overview, it sits beside the twenty-one: no preset sets it and a reset keeps it. Every hand sends the same requests, so what a sheet can do does not change, only how it is laid out.
 
 | Hand | What it does | After |
 |---|---|---|
@@ -331,102 +324,6 @@ What the craft hands show per sheet:
 | Display | the brightness as a figure you scroll and a brush slider (never under 1%), night light, the monitors (a click chooses; Arrange › opens monitors.lua) |
 | Inbox | Letters: the Quiet switch, each letter with its 未 unread seal, show recent again, clear all |
 
-#### Scroll dividers `interlude` 間
-
-What sits between two sections of the scroll. Pick it on the Scroll 巻 page (a gallery that draws each one) or by kanji in the Panels card; from a terminal, `hanko style set interlude kotoba`. Every divider is quieter than the sections, and red appears at most once in a gap. They replace the dithered ink slivers the Scroll design drew; the research and the full set of studies are in `docs/revision1/` on the `docs` branch.
-
-| Option | What it does | Presets |
-|---|---|---|
-| `ma` 間 | Nothing: the gap's space alone separates the sections. | Quiet |
-| `hairline` 罫 | One rule that fades at both ends, with a small ring at its middle. | |
-| `folio` 柱 | A ruler with ticks like the day rule, and both section numbers (`01 — 02`) set sideways. | Sheet, Instrument |
-| `kotoba` 詞 | The next section's red kanji and its number and name set vertically, between two hairlines (a text column, as handscrolls put text between pictures). | Scroll |
-| `tsugime` 継 | A paper join: the next sheet laps over the last, with a soft shadow on the earlier one. | |
-| **`seal`** 鑑 (default) | The paper join, with a seal of the next section's kanji pressed across it, half on each sheet. | Hanko |
-| `jiku` 軸 | A slim inner roller with caps, echoing the rollers the scroll once had at its edges. | |
-| `fuda` 札 | A bone index tab with the next section's red kanji and number, on a faint line. | Islet |
-| `su` 数 | The next section's number, large in the display face and set sideways, with a red point. | |
-
-Added after the Typeset mockups were drawn.
-
-#### Scroll end leaf `endleaf` 跋
-
-What sits on the bare paper right of 08 Inbox, the twin of the weather leaf on the left: `09 // …`, 400 px wide, shown while Inbox is in the middle (the index plate and the number keys skip it, as they skip the weather). Pick it on the Scroll 巻 page (a gallery that draws each one with a sample reading) or by kanji in the Panels card; from a terminal, `hanko style set endleaf shimai`. `hanko hide endleaf` (or the Widgets page, Centre card) leaves the paper bare. The designs and the research behind them are in `docs/revision2/` on the `docs` branch.
-
-| Option | What it shows, and what it does | Presets |
-|---|---|---|
-| `okugaki` 奥 | A colophon, the way a handscroll ends: host and model, kernel, Hyprland, packages and the last upgrade, theme, font and Hanko's version, with three seals (your initial, your theme's, 判). | Scroll |
-| **`koyomi`** 暦 (default) | The almanac: the month (Monday first) with today sealed and a dot on the day the next solar term starts; the solar term (sekki) and microseason (kō) we are in; the moon's phase and the next new or full moon; the year as a rule. Pure date maths, no network. | Hanko |
-| `kiki` 機 | The machine: CPU over the last hour as one ink curve (a sample a minute, kept while this leaf is chosen), CPU, memory, disk and heat as tick meters, and the two busiest processes. | Instrument |
-| `shimai` 終 | The session: Lock, Suspend, Log out, Restart and Shut down as seals, each pressed by holding it (700 ms, the seal fills with ink); the same commands as Omarchy's system menu. | Sheet |
-| `iro` 色 | Omarchy's themes as paper, ink and seal swatches around the current one; a click runs `omarchy-theme-set`, and the foot opens Omarchy's theme picker. | |
-| `dougu` 具 | Omarchy's utilities as tiles: screenshot, record, colour picker, stay awake, night light, silence (do not disturb), emoji, clipboard, lock. The switches show when they are on. | Islet |
-| `shuchu` 集 | A focus timer: 25 minutes on a ruler with the red now-notch, today's sessions stamped, pause, +5 min and stop; a five-minute break follows each one. It keeps time with the scroll rolled up (state in `~/.local/state/hanko/focus.json`) and sends a notification when a part ends. | |
-| `hikae` 控 | Today's list from `~/.config/hanko/notes.md` (`- [ ]` lines tick on a click and are written back), with the last three entries of Omarchy's clipboard history (a click copies one). | |
-| `batsu` 跋 | An afterword: a large 終, "the end of the scroll", the date, and your seal glyph. Nothing to read or do. | Quiet |
-
-Each leaf reads only what it shows and only while the scroll is open (services/Leaf.qml), apart from the machine's hourly curve and the focus timer.
-
-The panels are Time 時, Sound 音, Network 網, Bluetooth 藍, Power 電, Display 明 and Inbox 報 (as sheets), and the scroll adds Spaces 窓 between Display and Inbox: eight sections. Display is the LUM cell's panel (and Omarchy's `omarchy.monitor`, `Super+Ctrl+D`): the chosen monitor's brightness on a ruler, every monitor with its mode and scale, and night light. It was added after the Typeset mockups were drawn, in the same grammar. So was Bluetooth (the BT cell's panel and Omarchy's `omarchy.bluetooth`): what is connected as the title, then connected, known and nearby devices (the adapter scans only while the panel is open); a click disconnects, connects or pairs through `omarchy-bluetooth-device`, and the foot turns it on or off through `omarchy-bluetooth-power`.
-
-**The weather leaf 天.** With `panels: scroll`, Time sits in the middle of the paper when the scroll opens, which left bare paper to its left. A weather leaf (`00 // WEATHER`, not a section: the index plate and the number keys skip it) now fills it and slides away with Time:
-
-- the title is the temperature and the sky (`18°, rain`), the caption the place, how it feels and the wind;
-- today's temperature by the hour as one curve, the hours already spent fainter, daylight as a faint wash, rain chances as bars along the foot, the red now-notch where it meets the curve, the day's high and low;
-- sunrise, sunset and humidity, and the first hour with a 50 % chance of rain;
-- the next three days, each with its kanji (晴 月 曇 霧 雨 雪 雷) and its low to high on the span the four days share.
-
-It uses the same data as Omarchy's own weather panel, so it needs no setting: the place from `~/.local/state/omarchy/settings/weather.json` (or found from your IP address through wttr.in when that has no coordinates), the forecast from Open-Meteo, °C or °F from the `unit` on the `omarchy.weather` entry, else your country, else your locale. It refreshes every 15 minutes (the entry's `refreshMinutes`, 5 at least) and only while the scroll is open. The leaf is 400 px wide and is left out when the screen is too narrow to fit at least 240 px of it beside Time (about 1600 px of scroll). `hanko hide weather` (or the Widgets page, Centre card) takes it off.
-
----
-
-#### Scroll sides `sides`
-
-What finishes the scroll's left and right edges. The rollers with caps that stood there felt heavy next to the paper, so they are gone; ten alternatives were drawn in `docs/revision3/` on the `docs` branch and two were built. Set it on Settings › Scroll or with `hanko style set sides bare`.
-
-| Option | What it is | Presets |
-|---|---|---|
-| `bare` | No rollers and no side lines: the paper simply meets the screen. | Sheet, Quiet, Instrument |
-| **`curl`** 巻 (default) | A soft shaded fold, 22 px, at each edge, as if the paper rolls under; no caps. | Scroll, Hanko, Islet |
-
-Added after the Typeset mockups were drawn.
-
-#### Scroll guides `guides`
-
-What helps you find your way on the scroll: the index plate of tabs (on top; below for a bar at the bottom) and the position bar along the foot with its `H` `L` and `Esc` keys. Hiding them leaves the paper alone; the sections do not move. Set it on Settings › Scroll or with `hanko style set guides tabs`.
-
-| Option | What it shows | Presets |
-|---|---|---|
-| `both` | The tabs and the position bar. | Sheet, Scroll, Quiet, Instrument, Islet, Shōji |
-| `tabs` | The tabs only. | |
-| `foot` | The position bar only. | |
-| **`none`** (default) | Neither: bare paper. Panning by drag, wheel and keys still works. | Hanko |
-| `map` | The whole scroll as one ruled strip of cells along the top (the bottom, for a bar at the bottom), as on Densho sheet 06: each section's sign in the brush face, its number and name (its poetic name too under `order: mokuroku`), the open one inverted, the leaves on lifted paper at the two ends (the colophon with its seal), "Opens here" and "Closes here · Esc" under the ends. A click opens a section. The paper grows by the strip's height. | |
-
-Added after the Typeset mockups were drawn.
-
-#### Densho 伝書: four touches for the scroll
-
-Asked for after the scroll was judged plain ("make this all in the scroll so I can choose in settings"); designed on the `design-densho` branch (`docs/densho/`, sheets 03, 05 and 06). Each is a setting on Settings › Scroll and `hanko style set`; every preset leaves all four off, so the scroll is unchanged until you pick one. `core/Densho.js` holds their logic.
-
-| Key | Options | What it does |
-|---|---|---|
-| `arrival` 筆入 | **`fade`** (default), `brush` | `brush`: a dry brush writes each section's title on as it nears the middle, its broken (kasure) edge leading, the caption behind the stroke and the rows after it. It follows where the paper is, not a clock: a neighbour at rest shows only its head, a pan writes the next one on, panning back lifts the ink. On opening, the middle section is written in 520 ms. |
-| `letters` 炙出 | **`open`** (default), `sealed` | `sealed` (aburidashi, secret ink): who sent a letter and when always show; what it says is a faint impression until the pointer rests on it, when the words darken outward from the pointer, fading 2.5 s after it leaves. |
-| `faults` 朱継 | **`plain`** (default), `seam` | `seam`: one seal-red repair line under the caption of a section that is broken (Network offline, Power low and draining), drawn on from the left in 420 ms and lifted when it mends. |
-| `order` 目録 | **`emaki`** (default), `mokuroku` | `mokuroku`: the scroll in a licence scroll's order. The house 序 (who keeps the desk, the last upgrade, the boot and now down a hairline, your seal) replaces the weather leaf; each section's eyebrow carries its poetic name (*Listening*, *Casting the net*…); the colophon 奥書 ("Transmitted to you, on the day, under the house of your preset", the issuer's seal and a place for yours) replaces the end leaf. It opens on Iai's draw (a held beat with the cut line where the paper will stop, 160 ms, a hard stop); a jump of more than one section (keys 1–8, a tab, a bar cell) cuts to a stance, the section's sign alone for 300 ms, instead of sliding past the ones between; rolling up presses your seal into the colophon, sheathes in 240 ms and presses the bar's seal once. |
-
-#### Scroll sections `fold`
-
-How the sections lie on the paper (Densho sheet 01). Settings › Scroll, or `hanko style set fold collapsed`.
-
-| Option | What it shows | Presets |
-|---|---|---|
-| **`expanded`** (default) | Every section whole, side by side with dividers between, panned; the neighbours fade at the edges. | all |
-| `collapsed` | Only the open section, laid out across the middle. Up to three neighbours each side fold into spines: the sign in the brush face (46, 30, 22 px, nearest largest), the number and name set vertically, the poetic name too on the nearest under `order: mokuroku`, and a red dot on a section that needs you (an unread letter, a fault). The rest are wound on two rollers at the ends, one hairline per section on that side, the ones in view darker, a wound one that needs you red. Two pale kasumi bands cross the seams. A click on a spine, a key, the wheel or a drag of 40 px opens the next; the spines slide on the pan curve and the new section inks (or, under `arrival: brush`, writes) itself in. The leaves and dividers are not drawn. | |
-
-With motion still, the brush is simply written, the warmth has no fade, the seam is there or not, and mokuroku opens, jumps and closes without its beats.
-
 ### Workspace overview 一覧 (not a setting)
 
 Right-click the workspaces (or `omarchy-shell hanko overview`) and every screen lays out its workspaces on a sheet of the theme's paper, under the bar. Workspaces 1–10 (the ten the live one is in) sit in two rows of five pages, a row with nothing on it folded away. Each page has a folio band (number, kanji numeral, how many windows, a red dot when urgent; the live page's number inverted with `//`) over its screen: every window where it really sits, framed in hairlines, live, with its name on a tab (bone for the focused one, ◇ for a floating one). A bare page shows its kanji, large and faint. Every page lies on the sheet with the short paper shadow Hanko's window style gives Hyprland's windows, in ink, stronger under the live page. Arrows or hjkl switch the workspace while the overview stays open, 1–9 and 0 jump, the wheel walks them; a click on a page or a window goes there; dragging a window onto another page moves it there without following; middle-click closes a window; Enter, Esc or a click away is done, and leaves you on the workspace you switched to.
@@ -448,14 +345,13 @@ Most settings are independent. These are the places where one setting changes ho
 | `status: glyphs` + `meters: ticks` | Four-tick ruler after the number; network keeps its name, no bars. |
 | `clockAt: right` | The clock moves after notifications with a divider (if `rules: on`). The centre zone is left empty on purpose, so `media` stays in the right cluster. |
 | `edge: dayrule` or `rodrule` + `clockAt: right` | The now-notch still sits on the ruler at the real hour; it no longer lines up under the clock, and that is fine. |
-| `position: bottom` | `dayrule`, `rod` and `rodrule` draw along the bar's **top** side. A `scroll` unrolls **upward** and the index plate moves to the bottom; `sheets` rise instead of drop. |
+| `position: bottom` | `dayrule`, `rod` and `rodrule` draw along the bar's **top** side. Sheets rise instead of drop. |
 | `surface: inset` | The edge (rod, rule) runs inside the frame, 10 px from each end, so the end caps don't touch the frame. |
 | `surface: glass` | Stamps, the seal and inverted plates stay fully opaque; only the paper goes translucent. |
 | `seal: workspace` + `spaces: kanji` | The active kanji appears twice (seal and inverted page). This is intended: the seal is a mark, the page is a control. |
 | `seal: none` | The left zone starts at 14 px padding; the first divider is dropped. |
 | `title: none` + `media: none` | The bar collapses to identity, clock and status: the Quiet preset. |
-| `panels: sheets` + `edge: rod` | The rod no longer unrolls anything; dragging it opens the sheet for whatever cell is under the pointer, and `Super+Space` opens Time. |
-| `panels: scroll` + no rod edge | `Super+Space` or a click on any status, clock or stamp unrolls the scroll; hovering the bottom edge shows a thin pull tab. |
+| `edge: rod` or `rodrule` | Dragging the rod opens the sheet for whatever cell is under the pointer, and `Super+Space` opens Time. |
 
 ---
 
@@ -463,7 +359,7 @@ Most settings are independent. These are the places where one setting changes ho
 
 ![Six presets](mockups/typeset/03-presets.webp)
 
-A preset sets all thirty-one settings at once. Change any setting afterwards and the settings page shows `PRESET · KAMON + EDITS`; **Reset to preset** puts it back.
+A preset sets all twenty-one settings at once. Change any setting afterwards and the settings page shows `PRESET · KAMON + EDITS`; **Reset to preset** puts it back.
 
 | Setting | Quiet | Islet | Shōji | **Kamon** |
 |---|---|---|---|---|
@@ -485,14 +381,8 @@ A preset sets all thirty-one settings at once. Change any setting afterwards and
 | height | 32 | 36 | 40 | 40 |
 | surface | glass | inset | washi | solid |
 | position | top | top | top | top |
-| panels | sheets | scroll | sheets | sheets |
-| interlude | ma | fuda | ma | seal |
-| endleaf | batsu | dougu | koyomi | koyomi |
-| sides | bare | curl | bare | curl |
-| guides | both | both | both | none |
-| arrival, letters, faults, order | fade, open, plain, emaki | the same | the same | the same |
 
-- **Kamon** 家紋: the family crest, the bar Hanko is known by (this preset was called Hanko; `hanko` still names it, and a style.json that says Hanko loads it). The merge. A stamped seal and kanji pages, Sheet's cells, meters and flush sheets, Scroll's byline and stamps, named kanji indicators shown only when on, and the roller that carries the day.
+- **Kamon** 家紋: the family crest, the bar Hanko is known by (this preset was called Hanko; `hanko` still names it, and a style.json that says Hanko loads it). The merge. A stamped seal and kanji pages, Sheet's cells, meters and flush sheets, the byline and stamps, named kanji indicators shown only when on, and the roller that carries the day.
 - **Shōji**: the Shōji design, folded into Hanko: washi, the carved seal carrying your letters, brush desks, the season by the clock, icons and an ensō for status, a brush mark where you point. Picking it also puts every sheet in the Shōji hand and frames the overview (kept afterwards, like anything beside the settings). A style.json that names the Shōji design loads as this preset.
 - **Quiet**: the least on screen. Dots, an inline clock, numerals, a hairline, on glass.
 - **Islet**: a floating inset strip with kanji status and stamps.
@@ -509,9 +399,8 @@ The four right-side studies are presets too: the Kamon bar with the right zone s
 | indicatorStyle | kanjiname | kanji | kanji | kanji | kanji |
 | rules | on | off | on | on | on |
 | height | 40 | 36 | 40 | 40 | 40 |
-| interlude | seal | fuda | seal | seal | seal |
 
-- **Ma** 間: room between the groups; no dividers anywhere, so space does all the grouping. It is the bar the user runs: 36 px, with index tabs (`fuda`) between the scroll's sections.
+- **Ma** 間: room between the groups; no dividers anywhere, so space does all the grouping. It is the bar the user runs: 36 px.
 - **Shizuka** 静: quiet until it changes.
 - **Suji** 筋: five brush lines.
 - **Inrō** 印籠: one case for everything.
@@ -543,22 +432,12 @@ The four right-side studies are presets too: the Kamon bar with the right zone s
 | surface | 3 |
 | float | 2 |
 | position | 2 |
-| panels | 2 |
-| interlude | 9 |
-| endleaf | 9 |
-| sides | 2 |
-| guides | 5 |
-| fold | 2 |
-| arrival | 2 |
-| letters | 2 |
-| faults | 2 |
-| order | 2 |
 | form | 2 |
 | inkanAt | 4 |
 
-4 × 5 × 4 × 4 × 2 × 4 × 8 × 2 × 3 × 4 × 2 × 4 × 4 × 2 × 2 × 4 × 3 × 2 × 2 × 2 × 9 × 9 × 2 × 5 × 2 × 2 × 2 × 2 × 2 × 2 × 4 = **1,252,412,463,513,600** bars.
+4 × 5 × 4 × 4 × 2 × 4 × 8 × 2 × 3 × 4 × 2 × 4 × 4 × 2 × 2 × 4 × 3 × 2 × 2 × 2 × 4 = **24,159,191,040** bars.
 
-That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position, panels, the scroll's dividers, its end leaf, its sides, its guides and Densho's four touches (and Inkan's form and corner), is 1,509,949,440 combinations.
+That figure is before the seal glyph (any character) and the theme (every Omarchy theme, light or dark). The bar on screen alone, ignoring position (and Inkan's form and corner), is 1,509,949,440 combinations.
 
 ![Twelve random combinations](mockups/typeset/04-shuffle.webp)
 
@@ -578,7 +457,7 @@ Hanko's settings open as their own window in the Ryoku Hub grammar: a numbered r
 | Group | Pages |
 |---|---|
 | `01 BAR` | Typesetting 組版 · Presets 型 · Parts 部品 · Colour 色 · Screens 画面 |
-| `02 PANELS` | Sheets 紙 · Scroll 巻 · Overview 一覧 |
+| `02 PANELS` | Sheets 紙 · Overview 一覧 |
 | `03 FEEL` | Motion 動 · Keys 鍵 |
 | `04 YOU` | Profile 印影 · About 由来 · Credits 謝辞 |
 
@@ -590,7 +469,7 @@ The window opens on Typesetting. Every page is its own file, built only while it
 
 **Sheets 紙**: the seven sheets as tabs (kanji, name, the hand drawing it); the open one printed large and live in its hand; beside it the seven hands, each a picture of that same sheet in that hand (hover prints the sheet in it, a click keeps it for that sheet); "Every sheet in <hand>" sets all seven; Panel opacity at the foot.
 
-**Scroll 巻**: "A click on the bar opens": a sheet, or the scroll, each drawn in small (`panels`); the nine dividers, each drawn between two stub sections; the nine end leaves, each with a sample reading; then Sides and Guides in words. **Overview 一覧**: the three layouts (Pages, Busy spaces, Framed), each drawn live with your spaces as a screen in small.
+**Overview 一覧**: the three layouts (Pages, Busy spaces, Framed), each drawn live with your spaces as a screen in small.
 
 All of these use one tile (`Tile.qml`): a picture over its caption, inverted with a // lead when chosen.
 
@@ -608,7 +487,7 @@ The Advanced switch is gone. Your own seal glyph is typed into the last stone in
 
 **Widgets 部品** shows or hides anything the bar can show, each row `shown | hidden`, in cards: *Left* (seal, workspaces, window title), *Centre* (clock, now playing), *Right · readings* (network, Bluetooth, volume, brightness, battery, notifications), *Marks · Hanko's own* (each indicator, the keyboard layout, the microphone, the tray, as your Omarchy layout has them), *Tray apps* (each app in the tray now), *Widgets · from your Omarchy bar* (every hosted widget, marked Omarchy or third-party) and *Edge*. A part its own setting leaves out (`seal: none`, `title: none`, `media: none`, `bluetooth: off`) reads hidden, and showing it sets it back to the preset's way. Show all puts every hidden part back. Hiding is for this bar only: the widget stays in Omarchy's layout. From a terminal: `hanko hide <part>`, `hanko show <part>`, or `hanko style set show:<part> hidden`.
 
-**Motion 動** holds one switch outside the thirty-one settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
+**Motion 動** holds one switch outside the twenty-one settings, `motion`: `paper` (default) moves like Scroll's motion sheet, `still` cuts every transition to its end frame. Omarchy's own animation switch, off, makes Hanko still too. The page lists every timing.
 
 **Presets 型** is a pattern book (the dyers' stencil sample books): a row of nine swatches in three groups (Bars: Quiet 素, Islet 島, Shōji 障子, Kamon 家紋 · Seal only: Inkan 印 · Right-side studies: Ma 間, Shizuka 静, Suji 筋, Inrō 印籠), each a number, its kanji and name; the one on your bar is marked red. Click one to open it: its number, name and kanji, its blurb and telling facts, **Use <name>** (or ON YOUR BAR, with your edits on top), the pattern set as your bar in the two-line galley (no marks), and **what changes from your bar** (`Settings.presetDiff`): each setting that would change, numbered by its part, yours struck through → the pattern's. Double-click a swatch to use it at once. The search filters the swatches. The action bar adds **Shuffle** and **Reset to preset**.
 
@@ -631,7 +510,7 @@ The Advanced switch is gone. Your own seal glyph is typed into the last stone in
    
    Keys: ← → walk the parts, 1–9 and 0 open one. A search lights the parts that match.
 
-How panels open (Panels open as, Scroll sides, Scroll guides, Scroll sections, Densho's arrival, letters, faults and order, Overview) is a card at the top of **Scroll 巻**, over its dividers and end leaf.
+The overview layout is set on **Overview 一覧**.
 
 4. **Action bar**: Shuffle (on Presets) · Reset to preset (on Presets and Typesetting) · Undo. There is no Save: every change prints live on your bar and is written to `style.json` at once; Undo (or Ctrl+Z) puts the last one back, as many times as you changed something since the window opened.
 

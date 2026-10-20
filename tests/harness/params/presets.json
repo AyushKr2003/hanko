@@ -204,7 +204,7 @@
    "preset": "Hanko",
    "sealGlyph": "寛",
    "edits": {
-    "interlude": "fuda"
+    "rules": "off"
    }
   },
   "page": "presets",
