@@ -21,6 +21,15 @@ Item {
   property int rowHeight: Type.px(detail ? 52 : 40)
   property Component leading: null
   property Component trailing: null
+  // letters: sealed (aburidashi 炙出): the detail is written in secret ink,
+  // a faint impression, until the pointer rests on the row and warms it;
+  // the words darken outward from the pointer and fade a few seconds after
+  // it leaves. `warmed` (0..1) fixes the warmth, for the harness.
+  property bool sealed: false
+  property real warmed: -1
+  readonly property real warmth: warmed >= 0 ? warmed : heat
+  property real heat: 0
+  property real warmX: Type.px(160)
 
   signal clicked()
 
@@ -40,6 +49,7 @@ Item {
   }
 
   Row {
+    id: textRow
     anchors.left: parent.left
     anchors.leftMargin: Type.px(10)
     anchors.verticalCenter: parent.verticalCenter
@@ -62,6 +72,7 @@ Item {
       sourceComponent: root.leading
     }
     Column {
+      id: textColumn
       anchors.verticalCenter: parent.verticalCenter
       spacing: Type.px(2)
       Text {
@@ -70,12 +81,36 @@ Item {
         font.family: Type.text
         font.pixelSize: Type.row
       }
-      Text {
+      Item {
         visible: root.detail !== ""
-        text: root.detail
-        color: root.on ? Ink.boneInk : Ink.inkMuted
-        font.family: Type.text
-        font.pixelSize: Type.note
+        width: detailText.implicitWidth
+        height: detailText.implicitHeight
+        Text {
+          id: detailText
+          text: root.detail
+          color: root.on ? Ink.boneInk : Ink.inkMuted
+          opacity: root.sealed ? 0.09 : 1
+          font.family: Type.text
+          font.pixelSize: Type.note
+        }
+        // Sealed: the warmed part, the same words in full ink, uncovered
+        // from the pointer outward.
+        Item {
+          id: warmPart
+          visible: root.sealed && root.warmth > 0
+          readonly property real reach: root.warmth * (detailText.width + Type.px(80))
+          readonly property real centre: root.warmX - textRow.x - textColumn.x
+          x: Math.max(0, centre - reach / 2)
+          width: Math.max(0, Math.min(detailText.width, centre + reach / 2) - x)
+          height: detailText.height
+          clip: true
+          Text {
+            x: -warmPart.x
+            text: root.detail
+            color: root.on ? Ink.boneInk : Ink.ink
+            font: detailText.font
+          }
+        }
       }
     }
   }
@@ -106,9 +141,21 @@ Item {
   MouseArea {
     id: hover
     anchors.fill: parent
-    enabled: root.interactive
+    enabled: root.interactive || root.sealed
     hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
-    onClicked: root.clicked()
+    cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
+    onClicked: if (root.interactive) root.clicked()
+    onPositionChanged: function(mouse) { if (root.heat < 0.05) root.warmX = mouse.x }
+    onContainsMouseChanged: {
+      if (!root.sealed) return
+      if (containsMouse) { cool.stop(); root.heat = 1 }
+      else cool.restart()
+    }
+  }
+  // It cools a few seconds after the pointer leaves.
+  Timer { id: cool; interval: 2500; onTriggered: root.heat = 0 }
+  Behavior on heat {
+    enabled: !Motion.still
+    NumberAnimation { duration: 700; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.inkCurve }
   }
 }

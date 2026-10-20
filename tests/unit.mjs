@@ -65,9 +65,9 @@ function test(name, fn) {
   try { fn(); passed++ } catch (e) { console.error(`FAIL ${name}\n  ${e.message}`); process.exitCode = 1 }
 }
 
-test("twenty-six settings, 31,310,311,587,840 combinations (COMPONENTS.md §5)", () => {
-  assert.equal(S.KEYS.length, 26)
-  assert.equal(S.combinations(), 31310311587840)
+test("thirty settings, 500,964,985,405,440 combinations (COMPONENTS.md §5)", () => {
+  assert.equal(S.KEYS.length, 30)
+  assert.equal(S.combinations(), 500964985405440)
 })
 
 test("indicators: all or only what is on; icon or kanji, alone or named; set per preset", () => {
@@ -850,7 +850,7 @@ test("motion sits outside the settings: paper or still, kept through presets and
   assert.equal(S.withPreset(d, "Quiet").motion, "still")
   assert.equal(S.shuffled(d, () => 0.5).motion, "still")
   assert.equal(S.withSetting({}, "sealGlyph", "侍たち").sealGlyph, "侍")
-  assert.equal(S.combinations(), 31310311587840)
+  assert.equal(S.combinations(), 500964985405440)
 })
 
 test("type size sits beside motion: small, regular or large, kept through presets and shuffles", () => {
@@ -1177,6 +1177,72 @@ test("scroll guides: the tabs on top, the position bar at the foot, both or none
   assert.equal(S.resolve({ edits: { guides: "tabs" } }).guides, "tabs")
   assert.equal(S.resolve({ edits: { guides: "top" } }).guides, "none")
 })
+const Dn = load("core/Densho.js", ["writeAt", "faultOf", "isJump", "STANCE_MS", "house", "colophon", "seamPath", "WRITE_FULL", "WRITE_NONE"])
+
+test("densho: four scroll touches, off in every preset", () => {
+  assert.deepEqual(S.OPTIONS.arrival, ["fade", "brush"])
+  assert.deepEqual(S.OPTIONS.letters, ["open", "sealed"])
+  assert.deepEqual(S.OPTIONS.faults, ["plain", "seam"])
+  assert.deepEqual(S.OPTIONS.order, ["emaki", "mokuroku"])
+  for (const p of S.PRESET_NAMES) {
+    const st = S.resolve({ preset: p })
+    assert.deepEqual([st.arrival, st.letters, st.faults, st.order], ["fade", "open", "plain", "emaki"], p)
+  }
+  assert.equal(S.resolve({ edits: { order: "mokuroku" } }).order, "mokuroku")
+  assert.equal(S.resolve({ edits: { letters: "secret" } }).letters, "open")
+  assert.deepEqual(S.withSetting({}, "arrival", "brush").edits, { arrival: "brush" })
+})
+
+test("densho: the brush writes a section whole in the middle, nothing near the edge", () => {
+  assert.equal(Dn.writeAt(0, 800), 1)
+  assert.equal(Dn.writeAt(800 * Dn.WRITE_FULL, 800), 1)
+  assert.equal(Dn.writeAt(-800 * Dn.WRITE_NONE, 800), 0)
+  assert.equal(Dn.writeAt(590, 800), 0)        // a neighbour at rest: its head only
+  const mid = Dn.writeAt(800 * (Dn.WRITE_FULL + Dn.WRITE_NONE) / 2, 800)
+  assert.ok(mid > 0.4 && mid < 0.6)
+  assert.equal(Dn.writeAt(100, 0), 1)
+})
+
+test("densho: faults, jumps and the seam", () => {
+  assert.equal(Dn.faultOf("network", { network: { offline: true } }), true)
+  assert.equal(Dn.faultOf("network", { network: { offline: false } }), false)
+  assert.equal(Dn.faultOf("power", { power: { low: true } }), true)
+  assert.equal(Dn.faultOf("sound", { network: { offline: true } }), false)
+  assert.equal(Dn.faultOf("network", null), false)
+  assert.equal(Dn.isJump(2, 3), false)
+  assert.equal(Dn.isJump(3, 2), false)
+  assert.equal(Dn.isJump(2, 7), true)
+  assert.ok(Dn.STANCE_MS > 0 && Dn.STANCE_MS <= 400)
+  const d = Dn.seamPath(300, 26, 26)
+  assert.ok(d.startsWith("M 0 13.0"))
+  assert.ok(/L 300\.0 /.test(d), d)
+  assert.equal(Dn.seamPath(300, 26, 26), d)
+})
+
+test("densho: the house and the colophon of a mokuroku scroll", () => {
+  const raw = "host\tkumo\nupgraded\tMon 05 Oct\nuptime\t3600\nuser\tayush\nname\tAyush\n"
+  const now = new Date(2026, 9, 20, 21, 44)
+  const h = Dn.house(raw, { version: "0.9.0", preset: "Kamon" }, now)
+  assert.equal(h.title, "<i>Ayush</i>")
+  assert.equal(h.caption, "Hanko 0.9.0 · Kamon · kumo")
+  assert.deepEqual(h.points.map(p => p.label), ["Upgraded", "Booted", "Now"])
+  assert.equal(h.points[1].value, "20:44")
+  assert.equal(h.points[2].value, "21:44")
+  assert.ok(h.points[2].now && h.ready)
+  const bare = Dn.house("", {}, now)
+  assert.equal(bare.title, "This house")
+  assert.deepEqual(bare.points.map(p => p.label), ["Now"])
+  assert.equal(bare.ready, false)
+  const c = Dn.colophon(raw, { preset: "Kamon + edits" }, now)
+  assert.deepEqual(c.lines, ["Transmitted to Ayush,", "on the twentieth of October,", "under the house of Kamon."])
+  assert.equal(c.who, "Ayush")
+  assert.equal(Dn.colophon("", {}, now).who, "you")
+})
+
+test("densho: every section has a poetic name", () => {
+  for (const s of Sc.SECTIONS) assert.ok(s.poem && s.poem.length > 3, s.key)
+})
+
 const Pr = load("core/Profile.js", ["PROBE", "BLOCKS", "parseMachine", "fv", "uptime", "edition", "combination", "grouped", "vitals", "specs", "PROJECTS", "PROOFREADERS", "facts", "LINEAGE", "CREDIT_GROUPS", "creditsIn"])
 
 test("profile: the machine probe's lines become facts", () => {

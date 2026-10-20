@@ -104,6 +104,9 @@ Item {
   }
 
   // The cell (clock, a status reading, notif) under x, or "".
+  // The scroll rolling up under order: mokuroku presses the seal.
+  function pressSeal() { seal.press() }
+
   function cellAt(x) {
     var cells = rightCells.concat(centreClock.visible ? ["clock"] : [])
     for (var i = 0; i < cells.length; i++) {

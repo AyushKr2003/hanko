@@ -7,16 +7,17 @@
 // must be for a section to sit in the middle, which section a pan lands
 // on.
 
-// Index order, which is also the order on the paper.
+// Index order, which is also the order on the paper. `poem` is the
+// section's name as a licence scroll would give it (order: mokuroku).
 var SECTIONS = [
-  { key: "time",    no: "01", jp: "時", label: "TIME",    width: 600 },
-  { key: "sound",   no: "02", jp: "音", label: "SOUND",   width: 660 },
-  { key: "network", no: "03", jp: "網", label: "NETWORK", width: 540 },
-  { key: "bluetooth", no: "04", jp: "藍", label: "BLUETOOTH", width: 500 },
-  { key: "power",   no: "05", jp: "電", label: "POWER",   width: 420 },
-  { key: "display", no: "06", jp: "明", label: "DISPLAY", width: 520 },
-  { key: "spaces",  no: "07", jp: "窓", label: "SPACES",  width: 700 },
-  { key: "inbox",   no: "08", jp: "報", label: "INBOX",   width: 560 }
+  { key: "time",    no: "01", jp: "時", label: "TIME",    width: 600, poem: "Keeping the hour" },
+  { key: "sound",   no: "02", jp: "音", label: "SOUND",   width: 660, poem: "Listening" },
+  { key: "network", no: "03", jp: "網", label: "NETWORK", width: 540, poem: "Casting the net" },
+  { key: "bluetooth", no: "04", jp: "藍", label: "BLUETOOTH", width: 500, poem: "The indigo thread" },
+  { key: "power",   no: "05", jp: "電", label: "POWER",   width: 420, poem: "Held breath" },
+  { key: "display", no: "06", jp: "明", label: "DISPLAY", width: 520, poem: "The lantern" },
+  { key: "spaces",  no: "07", jp: "窓", label: "SPACES",  width: 700, poem: "The rooms" },
+  { key: "inbox",   no: "08", jp: "報", label: "INBOX",   width: 560, poem: "Letters" }
 ]
 // The gap between two sections, where the interlude sits.
 var INTERLUDE = 70

@@ -12,6 +12,10 @@ ScrollSection {
   property var letters: []
   property bool dnd: false
   property date now: new Date()
+  // letters: sealed (ListRow.sealed); `warmed` fixes the first row's
+  // warmth for the harness (-1: the pointer decides).
+  property bool sealed: false
+  property real warmed: -1
 
   signal request(string what, var arg)
 
@@ -36,6 +40,8 @@ ScrollSection {
         detail: (modelData.app ? modelData.summary : "") + (modelData.body ? (modelData.app ? " · " : "") + modelData.body.replace(/\s+/g, " ") : "")
         note: StatusJs.age(modelData.timestamp, root.now.getTime())
         upperNote: false
+        sealed: root.sealed
+        warmed: letter.index === 0 ? root.warmed : -1
         leading: Component {
           Rectangle {
             width: Type.px(22)

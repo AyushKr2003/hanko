@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import "../core"
 import "../core/Scroll.js" as Scroll
 import "../core/Inkan.js" as Inkan
+import "../core/Densho.js" as Densho
 import "../services"
 import "scroll"
 
@@ -41,6 +42,16 @@ PanelWindow {
   property real dragFrom: 0
   property real trackX: 0
   property double lastStep: 0
+
+  // Densho 伝書 (Style.js arrival, order). Under order: mokuroku the paper
+  // opens on Iai's draw (a held beat with the cut line, a fast travel, a
+  // hard stop), a jump cuts to a stance instead of sliding, and rolling up
+  // presses the colophon's seal and then the bar's.
+  readonly property bool mokuroku: barWindow.style.order === "mokuroku"
+  readonly property bool brush: barWindow.style.arrival === "brush"
+  property int lastSection: 0
+  // While a jump cuts, the track jumps instead of panning.
+  property bool cutting: false
 
   function ms(v) { return Motion.ms(v) }
   function centre() { trackX = Scroll.centred(bar.scrollSection, view.viewWidth, Type.scale) }
@@ -80,11 +91,23 @@ PanelWindow {
     if (open) {
       closing.stop()
       dragging = false
+      lastSection = bar.scrollSection
+      view.sealed = false
+      stanceOff.stop()
+      view.stance = 0
+      view.writeIn = brush && !Motion.still ? 0 : 1
+      if (view.writeIn < 1) writeOn.restart()
       centre()
+      if (mokuroku && !Motion.still) { view.cut = 1; uncut.restart() }
       view.reveal = 1
       view.ink = 1
       prime.restart()
     } else {
+      stanceHold.stop()
+      writeOn.stop()
+      view.stance = 0
+      view.writeIn = 1
+      if (mokuroku) view.sealed = true
       view.ink = 0
       view.reveal = 0
       closing.restart()
@@ -92,7 +115,40 @@ PanelWindow {
   }
   Connections {
     target: win.bar
-    function onScrollSectionChanged() { if (!win.dragging) win.centre() }
+    function onScrollSectionChanged() {
+      var to = win.bar.scrollSection, from = win.lastSection
+      win.lastSection = to
+      if (win.dragging) return
+      if (win.open && win.mokuroku && !Motion.still && Densho.isJump(from, to)) {
+        // The stance: the sign alone, the paper moved under it, then the
+        // section writes (or inks) itself in.
+        win.cutting = true
+        stanceOff.stop()
+        writeOn.stop()
+        view.stanceAt = to
+        view.stance = 1
+        view.writeIn = win.brush ? 0 : 1
+        win.centre()
+        stanceHold.restart()
+        return
+      }
+      win.centre()
+    }
+  }
+  Timer {
+    id: stanceHold
+    interval: Densho.STANCE_MS
+    onTriggered: {
+      stanceOff.restart()
+      if (view.writeIn < 1) writeOn.restart()
+      win.cutting = false
+    }
+  }
+  // The cut line goes once the paper has reached it.
+  Timer {
+    id: uncut
+    interval: Motion.nukiHold + Motion.nuki
+    onTriggered: view.cut = 0
   }
 
   Timer {
@@ -106,7 +162,9 @@ PanelWindow {
   }
   Timer {
     id: closing
-    interval: win.ms(320)
+    interval: win.mokuroku ? win.ms(Motion.stamp + Motion.noto + 80) : win.ms(320)
+    // Rolled up: the bar's own seal presses once.
+    onTriggered: if (win.mokuroku) win.barWindow.surface.pressSeal()
   }
 
   // A click off the paper rolls it up.
@@ -150,6 +208,10 @@ PanelWindow {
       endleaf: win.barWindow.style.endleaf || "koyomi"
       sides: win.barWindow.style.sides || "curl"
       guides: win.barWindow.style.guides || "both"
+      arrival: win.barWindow.style.arrival || "fade"
+      letters: win.barWindow.style.letters || "open"
+      faults: win.barWindow.style.faults || "plain"
+      order: win.barWindow.style.order || "emaki"
       reveal: 0
       ink: 0
       feed: ({
@@ -180,18 +242,33 @@ PanelWindow {
         sealGlyph: win.barWindow.style.sealGlyph
       })
 
+      // Unroll, or under mokuroku Iai: draw (nuki, after its held beat)
+      // and sheathe (noto, after the colophon's seal is pressed).
       Behavior on reveal {
-        NumberAnimation {
-          duration: win.open ? win.ms(Motion.unroll) : win.ms(Motion.rollUp)
-          easing.type: Easing.BezierSpline
-          easing.bezierCurve: Motion.unrollCurve
+        SequentialAnimation {
+          PauseAnimation { duration: !win.mokuroku ? 0 : win.open ? win.ms(Motion.nukiHold + 60) : win.ms(Motion.stamp + 60) }
+          NumberAnimation {
+            duration: win.mokuroku ? (win.open ? win.ms(Motion.nuki) : win.ms(Motion.noto))
+              : win.open ? win.ms(Motion.unroll) : win.ms(Motion.rollUp)
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: !win.mokuroku ? Motion.unrollCurve : win.open ? Motion.nukiCurve : Motion.notoCurve
+          }
         }
       }
+      // The brush writes the middle section on after the paper is out
+      // (or after a stance).
+      SequentialAnimation {
+        id: writeOn
+        PauseAnimation { duration: win.ms(win.mokuroku ? Motion.nukiHold + Motion.nuki : Motion.inkDelay + 80) }
+        NumberAnimation { target: view; property: "writeIn"; to: 1; duration: win.ms(520); easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.inkCurve }
+      }
+      // The stance lifts off the paper.
+      NumberAnimation { id: stanceOff; target: view; property: "stance"; to: 0; duration: win.ms(120) }
       Behavior on ink {
         SequentialAnimation {
-          PauseAnimation { duration: win.open ? win.ms(Motion.inkDelay) : 0 }
+          PauseAnimation { duration: win.open ? win.ms(Motion.inkDelay) : win.mokuroku ? win.ms(Motion.stamp + 60) : 0 }
           NumberAnimation {
-            duration: win.open ? win.ms(Motion.ink) : win.ms(Motion.ink / 2)
+            duration: win.open ? win.ms(Motion.ink) : win.mokuroku ? win.ms(Motion.noto) : win.ms(Motion.ink / 2)
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Motion.inkCurve
           }
@@ -229,7 +306,7 @@ PanelWindow {
   }
 
   Behavior on trackX {
-    enabled: !win.dragging && win.open
+    enabled: !win.dragging && win.open && !win.cutting
     NumberAnimation {
       duration: win.ms(Motion.pan)
       easing.type: Easing.BezierSpline

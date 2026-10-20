@@ -213,7 +213,11 @@ Column {
   Repeater {
     model: [
       { key: "sides", name: "Sides", line: "Bare paper, or paper curling under at each end" },
-      { key: "guides", name: "Guides", line: "The tabs on top, the position bar along the foot, both, or none" }
+      { key: "guides", name: "Guides", line: "The tabs on top, the position bar along the foot, both, or none" },
+      { key: "arrival", name: "Arrival 筆入", line: "The ink fades in with the paper, or a dry brush writes each title on as it nears the middle" },
+      { key: "letters", name: "Letters 炙出", line: "Open, or in secret ink: who and when show, the words only where the pointer warms them" },
+      { key: "faults", name: "Faults 朱継", line: "Plain, or one seal-red seam across a section that is broken (offline, a low battery)" },
+      { key: "order", name: "Order 目録", line: "Emaki as it was, or mokuroku: the house first, poetic names, a colophon sealed to you, Iai to open, jumps cut to a stance" }
     ]
     Item {
       id: row
@@ -224,11 +228,13 @@ Column {
       Rectangle { visible: row.index > 0; width: parent.width; height: 1; color: Ink.lineSoft }
       Column {
         anchors.verticalCenter: parent.verticalCenter
+        width: row.width - choice.width - Type.px(24)
         spacing: Type.px(1)
         Text { text: row.modelData.name; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row }
-        Text { text: row.modelData.line; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
+        Text { width: parent.width; elide: Text.ElideRight; text: row.modelData.line; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
       }
       Segmented {
+        id: choice
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         options: Settings.optionsFor(row.modelData.key, S.OPTIONS)

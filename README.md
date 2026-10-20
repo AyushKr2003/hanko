@@ -89,6 +89,10 @@ scripts/hanko uninstall
 | Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
 | Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |
 | The scroll's tabs on top, position bar at the foot, both or neither | `scripts/hanko style set guides tabs` (`both`, `tabs`, `foot`, `none`) |
+| A brush writes each scroll section on as it reaches the middle | `scripts/hanko style set arrival brush` (`fade`, `brush`) |
+| Letters on the scroll in secret ink, read where the pointer warms them | `scripts/hanko style set letters sealed` (`open`, `sealed`) |
+| A red seam across a scroll section that is broken (offline, low battery) | `scripts/hanko style set faults seam` (`plain`, `seam`) |
+| The scroll as a licence scroll: the house, poetic names, a sealed colophon, Iai to open | `scripts/hanko style set order mokuroku` (`emaki`, `mokuroku`) |
 | Indicator stamps: only what is on, kanji with names | `scripts/hanko style set indicators active` / `scripts/hanko style set indicatorStyle kanjiname` |
 | Turn motion off | `scripts/hanko style set motion still` |
 | Larger or smaller text (the bar grows with it) | `scripts/hanko style set typeSize large` (`small`, `regular`, `large`) |

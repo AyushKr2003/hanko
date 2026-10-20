@@ -168,6 +168,10 @@ var CARDS = [
     { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
     { key: "sides", name: "Scroll sides", detail: "Bare paper, or paper curling under" },
     { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both or none" },
+    { key: "arrival", name: "Scroll arrival", detail: "The ink fades in, or a brush writes each section on as it reaches the middle" },
+    { key: "letters", name: "Scroll letters", detail: "Open, or sealed in secret ink until the pointer warms a line" },
+    { key: "faults", name: "Scroll faults", detail: "A red seam across a section that is broken, gone when it mends" },
+    { key: "order", name: "Scroll order", detail: "As it was, or a licence scroll: the house first, poetic names, a sealed colophon, Iai to open" },
     { key: "overview", name: "Overview", detail: "Printed pages in a grid, Ryoku's busy spaces and a +, or the live space's windows spread out with search" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
@@ -217,9 +221,10 @@ var PROOF = [
 ]
 
 // The Scroll 巻 page's card: how panels open, and the scroll's own frame
-// (its dividers and end leaf have galleries of their own there).
+// and Densho's four touches (its dividers and end leaf have galleries of
+// their own there).
 var PANELS_CARD = { title: "Panels · how they open", rows: CARDS[5].rows.filter(function(r) {
-  return ["panels", "sides", "guides", "overview"].indexOf(r.key) >= 0
+  return ["panels", "sides", "guides", "arrival", "letters", "faults", "order", "overview"].indexOf(r.key) >= 0
 }) }
 
 // Two indicators lit, for a proof made while none is on (the glyphs and

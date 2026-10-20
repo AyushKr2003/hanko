@@ -3,6 +3,7 @@ import qs.Commons
 import "../../../core"
 import "../../../core/Style.js" as S
 import "../../../core/Sheets.js" as Sheets
+import "../../../core/Scroll.js" as Scroll
 import "../../../core/Skin.js" as Sk
 import "../../../bar"
 import "../../../bar/sheets"
@@ -123,6 +124,21 @@ Rectangle {
             endleaf: desk.style.endleaf
             sides: desk.style.sides
             guides: desk.style.guides
+            arrival: desk.style.arrival
+            letters: desk.style.letters
+            faults: desk.style.faults
+            order: desk.style.order
+            // Densho's moments, fixed: how far the brush has written, a
+            // stance, the cut, the colophon sealed, the first letter warmed.
+            writeIn: deskColumn.modelData.write !== undefined ? deskColumn.modelData.write : 1
+            stance: deskColumn.modelData.stance !== undefined ? 1 : 0
+            stanceAt: deskColumn.modelData.stance || 0
+            cut: deskColumn.modelData.cut ? 1 : 0
+            sealed: !!deskColumn.modelData.sealed
+            warmed: deskColumn.modelData.warmed !== undefined ? deskColumn.modelData.warmed : -1
+            trackX: deskColumn.modelData.trackShift !== undefined
+              ? Scroll.centred(current, width - 2 * Type.px(26), Type.scale) + deskColumn.modelData.trackShift * Type.scale
+              : Scroll.centred(current, width - 2 * Type.px(26), Type.scale)
             current: deskColumn.modelData.current || 0
             ink: deskColumn.modelData.ink !== undefined ? deskColumn.modelData.ink : 1
             reveal: deskColumn.modelData.reveal !== undefined ? deskColumn.modelData.reveal : 1

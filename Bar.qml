@@ -402,7 +402,15 @@ Item {
   Binding { target: Display; property: "wanted"; value: root.sheet === "display" || root.scrollOpen }
   Binding { target: Weather; property: "wanted"; value: root.scrollOpen }
   Binding { target: Leaf; property: "wanted"; value: root.scrollOpen }
-  Binding { target: Leaf; property: "kind"; value: Typeset.styleFor(root.scrollScreen || root.focusedScreen()).endleaf || "koyomi" }
+  // Under order: mokuroku there is no end leaf; the house and the colophon
+  // read the machine as okugaki does.
+  Binding {
+    target: Leaf; property: "kind"
+    value: {
+      var st = Typeset.styleFor(root.scrollScreen || root.focusedScreen())
+      return st.order === "mokuroku" ? "okugaki" : st.endleaf || "koyomi"
+    }
+  }
   Binding { target: Weather; property: "barConfig"; value: root.barConfig }
   Binding { target: Blue; property: "wanted"; value: root.sheet === "bluetooth" || root.scrollOpen }
 

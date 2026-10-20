@@ -4,6 +4,7 @@ import "../../core"
 import "../../core/Scroll.js" as Scroll
 import "../../core/Weather.js" as Wx
 import "../../core/Leaf.js" as LeafJs
+import "../../core/Densho.js" as Densho
 
 // The handscroll 巻 (docs/COMPONENTS.md, "Panels"; panels: scroll): one
 // long paper, its eight sections side by side with an interlude between
@@ -42,6 +43,38 @@ Item {
   // The index plate and the position bar (Style.js `guides`): both, tabs,
   // foot or none.
   property string guides: "both"
+  // Densho 伝書 (Style.js arrival, letters, faults, order; docs/densho on
+  // the design-densho branch).
+  property string arrival: "fade"
+  property string letters: "open"
+  property string faults: "plain"
+  property string order: "emaki"
+  // How far the brush may write (arrival: brush): ScrollWindow runs it
+  // 0 -> 1 as the paper opens and after a stance; the harness fixes it.
+  property real writeIn: 1
+  // 0..1: the stance a jump cuts to (order: mokuroku), the sign of section
+  // `stanceAt` held alone over the paper.
+  property real stance: 0
+  property int stanceAt: 0
+  // 0..1: the cut, a hairline at the depth the paper will reach, held for
+  // the beat before the Iai draw (order: mokuroku).
+  property real cut: 0
+  // The colophon's second seal is pressed: the scroll is rolling up.
+  property bool sealed: false
+  // The first letter's warmth under letters: sealed, for the harness (-1:
+  // the pointer decides).
+  property real warmed: -1
+
+  readonly property bool brush: arrival === "brush"
+  readonly property bool mokuroku: order === "mokuroku"
+  // How far the brush has written what sits at track x `x`, `w` wide.
+  function writeAtX(x, w) {
+    if (!brush) return 1
+    return Math.min(writeIn, Densho.writeAt(trackX + x + w / 2 - view.width / 2, view.width / 2))
+  }
+  function writeOf(i) { return writeAtX(layout.xs[i], layout.widths[i]) }
+  function poemOf(i) { return mokuroku ? sections[i].poem : "" }
+  function faultOf(key) { return faults === "seam" && Densho.faultOf(key, feed) }
 
   signal request(string section, string what, var arg)
   // A name on the index plate was clicked.
@@ -57,15 +90,31 @@ Item {
   readonly property int interlude: Math.round(Scroll.INTERLUDE * Type.scale)
   // The weather leaf's width: the bare paper left of Time while Time is in
   // the middle (0 when the view is too narrow, or the leaf is hidden).
-  readonly property int leafWidth: root.feed.weatherShown === false ? 0
+  readonly property int leafWidth: !root.mokuroku && root.feed.weatherShown === false ? 0
     : Wx.leafWidth(view.width, layout.widths[0], interlude, Type.scale)
 
   // The end leaf's width: the bare paper right of Inbox while Inbox is in
   // the middle, the weather leaf's twin.
-  readonly property int endWidth: root.feed.endShown === false ? 0
+  readonly property int endWidth: !root.mokuroku && root.feed.endShown === false ? 0
     : Wx.leafWidth(view.width, layout.widths[layout.widths.length - 1], interlude, Type.scale)
 
   implicitHeight: Type.px(460)
+
+  // The cut (order: mokuroku): where the paper will stop, before it moves.
+  Rectangle {
+    visible: root.cut > 0
+    opacity: root.cut
+    y: root.atBottom ? 0 : root.height - 1
+    width: root.width
+    height: 1
+    gradient: Gradient {
+      orientation: Gradient.Horizontal
+      GradientStop { position: 0; color: Ink.alpha(Ink.bone, 0) }
+      GradientStop { position: 0.15; color: Ink.bone }
+      GradientStop { position: 0.85; color: Ink.bone }
+      GradientStop { position: 1; color: Ink.alpha(Ink.bone, 0) }
+    }
+  }
 
   // The unrolled part: the paper grows away from the bar.
   Item {
@@ -93,7 +142,7 @@ Item {
         width: parent.width - 2 * x
         height: parent.height
         clip: true
-        opacity: root.ink
+        opacity: root.ink * (1 - root.stance)
 
         // Behind the sections: a drag anywhere on bare paper pans it, and
         // the wheel steps a section at a time. Controls on top keep theirs.
@@ -129,11 +178,27 @@ Item {
           // Before Time, on paper that is otherwise bare: the weather leaf
           // and an interlude between it and the day.
           WeatherLeaf {
-            visible: root.leafWidth > 0
+            visible: root.leafWidth > 0 && !root.mokuroku
             x: root.layout.xs[0] - root.interlude - width
             width: root.leafWidth
             height: track.height
             weather: root.feed.weather || null
+            brush: root.brush
+            write: root.writeAtX(x, width)
+          }
+          DenshoLeaf {
+            visible: root.leafWidth > 0 && root.mokuroku
+            kind: "house"
+            x: root.layout.xs[0] - root.interlude - width
+            width: root.leafWidth
+            height: track.height
+            now: root.feed.now || new Date()
+            reading: root.feed.leaf || ({})
+            version: root.feed.version || ""
+            preset: root.feed.preset || ""
+            sealGlyph: root.feed.sealGlyph || "鑑"
+            brush: root.brush
+            write: root.writeAtX(x, width)
           }
           Interlude {
             visible: root.leafWidth > 0
@@ -147,6 +212,7 @@ Item {
 
           TimeSection {
             x: root.layout.xs[0]; width: root.layout.widths[0]; height: track.height
+            brush: root.brush; write: root.writeOf(0); poem: root.poemOf(0)
             info: root.sections[0]
             now: root.feed.now || new Date()
             zones: root.feed.zones || []
@@ -155,42 +221,53 @@ Item {
           }
           SoundSection {
             x: root.layout.xs[1]; width: root.layout.widths[1]; height: track.height
+            brush: root.brush; write: root.writeOf(1); poem: root.poemOf(1)
             info: root.sections[1]
             sound: root.feed.sound || null
             onRequest: function(what, arg) { root.request("sound", what, arg) }
           }
           NetworkSection {
             x: root.layout.xs[2]; width: root.layout.widths[2]; height: track.height
+            brush: root.brush; write: root.writeOf(2); poem: root.poemOf(2)
+            fault: root.faultOf("network")
             info: root.sections[2]
             net: root.feed.network || null
             onRequest: function(what, arg) { root.request("network", what, arg) }
           }
           BluetoothSection {
             x: root.layout.xs[3]; width: root.layout.widths[3]; height: track.height
+            brush: root.brush; write: root.writeOf(3); poem: root.poemOf(3)
             info: root.sections[3]
             blue: root.feed.bluetooth || null
             onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
           }
           PowerSection {
             x: root.layout.xs[4]; width: root.layout.widths[4]; height: track.height
+            brush: root.brush; write: root.writeOf(4); poem: root.poemOf(4)
+            fault: root.faultOf("power")
             info: root.sections[4]
             power: root.feed.power || null
             onRequest: function(what, arg) { root.request("power", what, arg) }
           }
           DisplaySection {
             x: root.layout.xs[5]; width: root.layout.widths[5]; height: track.height
+            brush: root.brush; write: root.writeOf(5); poem: root.poemOf(5)
             info: root.sections[5]
             display: root.feed.display || null
             onRequest: function(what, arg) { root.request("display", what, arg) }
           }
           SpacesSection {
             x: root.layout.xs[6]; width: root.layout.widths[6]; height: track.height
+            brush: root.brush; write: root.writeOf(6); poem: root.poemOf(6)
             info: root.sections[6]
             spaces: root.feed.spaces || []
             onRequest: function(what, arg) { root.request("spaces", what, arg) }
           }
           InboxSection {
             x: root.layout.xs[7]; width: root.layout.widths[7]; height: track.height
+            brush: root.brush; write: root.writeOf(7); poem: root.poemOf(7)
+            sealed: root.letters === "sealed"
+            warmed: root.warmed
             info: root.sections[7]
             letters: root.feed.letters || []
             dnd: !!root.feed.dnd
@@ -203,15 +280,30 @@ Item {
           Interlude {
             visible: root.endWidth > 0
             seed: root.sections.length - 1
-            after: ({ no: "09", jp: LeafJs.kindOf(root.endleaf).jp, label: LeafJs.kindOf(root.endleaf).label })
+            after: root.mokuroku ? ({ no: "09", jp: "奥", label: "COLOPHON" })
+              : ({ no: "09", jp: LeafJs.kindOf(root.endleaf).jp, label: LeafJs.kindOf(root.endleaf).label })
             style: root.divider
             x: root.layout.xs[root.sections.length - 1] + root.layout.widths[root.sections.length - 1]
             y: Type.px(64)
             width: root.interlude
             height: track.height - Type.px(98)
           }
+          DenshoLeaf {
+            visible: root.endWidth > 0 && root.mokuroku
+            kind: "colophon"
+            x: root.layout.xs[root.sections.length - 1] + root.layout.widths[root.sections.length - 1] + root.interlude
+            width: root.endWidth
+            height: track.height
+            now: root.feed.now || new Date()
+            reading: root.feed.leaf || ({})
+            preset: root.feed.preset || ""
+            sealGlyph: root.feed.sealGlyph || "鑑"
+            sealed: root.sealed
+            brush: root.brush
+            write: root.writeAtX(x, width)
+          }
           EndLeaf {
-            visible: root.endWidth > 0
+            visible: root.endWidth > 0 && !root.mokuroku
             x: root.layout.xs[root.sections.length - 1] + root.layout.widths[root.sections.length - 1] + root.interlude
             width: root.endWidth
             height: track.height
@@ -261,6 +353,59 @@ Item {
             orientation: Gradient.Horizontal
             GradientStop { position: 0; color: Ink.alpha(Ink.paper, 0) }
             GradientStop { position: 0.92; color: Ink.alpha(Ink.paper, root.paperOpacity) }
+          }
+        }
+      }
+
+      // ------------------------------------------------------ the stance
+      // A jump under order: mokuroku cuts here first: the section's sign,
+      // large and alone, its number and poetic name set vertically beside
+      // it, a hairline across, held for Densho.STANCE_MS.
+      Item {
+        id: stanceCard
+        visible: root.stance > 0
+        anchors.fill: parent
+        opacity: root.stance
+        readonly property var sign: root.sections[Math.max(0, Math.min(root.sections.length - 1, root.stanceAt))]
+        Rectangle {
+          anchors.verticalCenter: parent.verticalCenter
+          x: parent.width * 0.12
+          width: parent.width * 0.76
+          height: 1
+          gradient: Gradient {
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0; color: Ink.alpha(Ink.bone, 0) }
+            GradientStop { position: 0.2; color: Ink.alpha(Ink.bone, 0.7) }
+            GradientStop { position: 0.8; color: Ink.alpha(Ink.bone, 0.7) }
+            GradientStop { position: 1; color: Ink.alpha(Ink.bone, 0) }
+          }
+        }
+        Row {
+          anchors.centerIn: parent
+          spacing: Type.px(22)
+          Text {
+            text: stanceCard.sign.jp
+            color: Ink.ink
+            font.family: Type.brush
+            font.pixelSize: Type.px(260)
+            lineHeight: 1
+            lineHeightMode: Text.ProportionalHeight
+          }
+          Vertical {
+            y: Type.px(34)
+            text: stanceCard.sign.no + " · " + stanceCard.sign.label
+            color: Ink.inkMuted
+            family: Type.mono
+            size: Type.eyebrow
+            tracking: Type.trackEyebrow
+          }
+          Vertical {
+            y: Type.px(34)
+            text: stanceCard.sign.poem
+            color: Ink.inkFaint
+            family: Type.display
+            italic: true
+            size: Type.px(20)
           }
         }
       }
@@ -430,5 +575,30 @@ Item {
     font.pixelSize: Type.label
     font.letterSpacing: Type.trackLabel
     font.capitalization: Font.AllUppercase
+  }
+
+  // Text set top to bottom, as on a spine.
+  component Vertical: Item {
+    id: vert
+    property string text: ""
+    property color color: Ink.inkMuted
+    property string family: Type.mono
+    property int size: Type.label
+    property real tracking: 0
+    property bool italic: false
+    width: line.implicitHeight
+    height: line.implicitWidth
+    Text {
+      id: line
+      x: line.implicitHeight
+      rotation: 90
+      transformOrigin: Item.TopLeft
+      text: vert.text
+      color: vert.color
+      font.family: vert.family
+      font.pixelSize: vert.size
+      font.letterSpacing: vert.tracking
+      font.italic: vert.italic
+    }
   }
 }

@@ -1,6 +1,6 @@
 .pragma library
 
-// The twenty-six typesetting settings, the presets, and how a style document
+// The thirty typesetting settings, the presets, and how a style document
 // resolves into the one flat object the bar reads. Pure JavaScript with no
 // QML or Quickshell dependency, so tests/unit.mjs can run it under Node.
 // docs/COMPONENTS.md is the spec for every option below.
@@ -83,6 +83,26 @@ var OPTIONS = {
   // tabs on top and the position bar along the foot, tabs = the plate only,
   // foot = the position bar only, none = bare paper.
   guides: ["both", "tabs", "foot", "none"],
+  // Densho 伝書 (docs/densho on the design-densho branch), four touches for
+  // the scroll:
+  //   arrival  how a section comes in: fade = the ink fades in with the
+  //            paper; brush = a dry brush writes its title on as it nears
+  //            the middle, tied to where the paper is (sheet 03, Fude-iri)
+  //   letters  open = a letter's words always show; sealed = written in
+  //            secret ink (aburidashi), only who and when show until the
+  //            pointer warms the line (sheet 05)
+  //   faults   plain; seam = one seal-red repair line across a section that
+  //            is broken (offline, a low battery draining), gone when it
+  //            mends (sheet 05, Shutsugi)
+  //   order    emaki = the scroll as it was; mokuroku = in a licence
+  //            scroll's order: the house (your seal and the house's line)
+  //            before Time, each section under a poetic name, a colophon
+  //            sealed to you after Inbox, an Iai draw to open, a jump cut
+  //            to a stance, and rolling up presses the bar's seal (sheet 06)
+  arrival: ["fade", "brush"],
+  letters: ["open", "sealed"],
+  faults:  ["plain", "seam"],
+  order:   ["emaki", "mokuroku"],
   // What the bar is (docs/shell-concepts/inkan): bar = the strip across the
   // screen; inkan = the seal only, in one corner, its carving the status
   // (core/Inkan.js); pressed, it prints No. 00, every sheet on one. Per
@@ -97,24 +117,24 @@ var KEYS = Object.keys(OPTIONS)
 var PRESETS = {
   // Kamon 家紋, the family crest: the bar this plugin is known by, as the
   // user runs it (it was the Hanko preset; "hanko" still names it).
-  Kamon:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
+  Kamon:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" },
   // Inkan 印, the seal only: Kamon with the strip taken away, one seal in the
   // bottom-right corner (docs/shell-concepts/inkan).
-  Inkan:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "inkan", inkanAt: "bottom-right" },
-  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both", form: "bar", inkanAt: "bottom-right" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both", form: "bar", inkanAt: "bottom-right" },
+  Inkan:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "inkan", inkanAt: "bottom-right" },
+  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" },
   // Shōji 障子: the Shōji design, folded into Hanko (HANDOFF §10). Its
   // values are drawn with Shōji's parts; picking it also puts every sheet
   // in the Shōji hand and frames the overview (PRESET_BESIDE).
-  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both", form: "bar", inkanAt: "bottom-right" },
+  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" },
   // The four right-side studies (docs/right-side): the Kamon bar with the
   // right zone set each way. The marks are stamps alone (their names on
   // hover), so the zone they cure is not crowded again by the indicators.
   // Ma is the bar the user runs: 36 px, index tabs between the scroll's sections.
-  Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "fuda", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
-  Shizuka:    { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "shizuka", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
-  Suji:       { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "suji", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
-  "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" }
+  Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "fuda", endleaf: "koyomi", sides: "curl", guides: "none", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" },
+  Shizuka:    { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "shizuka", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" },
+  Suji:       { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "suji", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" },
+  "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", arrival: "fade", letters: "open", faults: "plain", order: "emaki", form: "bar", inkanAt: "bottom-right" }
 }
 
 var PRESET_NAMES = ["Quiet", "Islet", "Shōji", "Kamon", "Inkan", "Ma", "Shizuka", "Suji", "Inrō"]
