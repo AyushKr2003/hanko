@@ -88,6 +88,13 @@ remember_previous() {
 activate() {
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   omarchy bar use "$ID"
+  # A running shell's plugin reload keeps the Hanko it already loaded (the
+  # QML engine holds on to its types and singletons), so an update only
+  # shows after a restart.
+  if pgrep -f 'quickshell.*omarchy/shell' >/dev/null 2>&1 && command -v omarchy-restart-shell >/dev/null 2>&1; then
+    say "Restarting the Omarchy shell to load this Hanko."
+    omarchy-restart-shell >/dev/null 2>&1 || true
+  fi
 }
 
 cmd_install() {

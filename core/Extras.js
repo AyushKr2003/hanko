@@ -91,6 +91,23 @@ function tray(items) {
   return out
 }
 
+// Tray items registered by Ayatana's appindicator (Steam, most GTK apps)
+// have no Activate method, only a menu, so a click opens the menu, as
+// KDE's tray does. Quickshell doesn't give an item's DBus path, so they are
+// read from the watcher's list (`busctl ... RegisteredStatusNotifierItems`:
+// `as 2 ":1.127/org/ayatana/NotificationItem/steam" ...`), whose last part
+// is the item's id with anything but letters, digits and _ made _.
+function menuOnlyIds(text) {
+  var out = []
+  var re = /\/org\/ayatana\/NotificationItem\/([A-Za-z0-9_]+)/g
+  var m
+  while ((m = re.exec(String(text || ""))) !== null) if (out.indexOf(m[1]) < 0) out.push(m[1])
+  return out
+}
+function pathId(id) {
+  return String(id || "").replace(/[^A-Za-z0-9_]/g, "_")
+}
+
 // A tray menu entry's label as Hanko prints it: DBus menus mark the access
 // key with an underscore ("_Quit"), and "__" stands for a real one.
 function menuText(text) {

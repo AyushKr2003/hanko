@@ -123,6 +123,19 @@ Singleton {
   // ---------------------------------------------------------- tray
   readonly property var trayItems: wantTray && SystemTray.items ? SystemTray.items.values : []
   readonly property var tray: X.tray(trayItems)
+  // Ayatana items (Steam): no Activate, so a click opens the menu. Read
+  // again each time the tray changes (core/Extras.js menuOnlyIds).
+  property var menuOnly: []
+  onTrayItemsChanged: if (wantTray) _menuOnlyRead.restart()
+  property Timer _menuOnlyRead: Timer {
+    interval: 300
+    onTriggered: if (root._menuOnlyProc.running) restart(); else root._menuOnlyProc.running = true
+  }
+  property Process _menuOnlyProc: Process {
+    command: ["busctl", "--user", "get-property", "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher",
+              "org.kde.StatusNotifierWatcher", "RegisteredStatusNotifierItems"]
+    stdout: StdioCollector { onStreamFinished: root.menuOnly = X.menuOnlyIds(text) }
+  }
   // showMenu(item, cell) draws an item's menu in Hanko (bar/TrayMenuWindow):
   // item.display() asks for a platform menu, which Quickshell only draws in
   // QApplication mode and omarchy-shell doesn't start in, so it did nothing.
@@ -133,7 +146,7 @@ Singleton {
     if (!item) return
     if (how === "up" || how === "down") { item.scroll(how === "up" ? 120 : -120, false); return }
     if (how === "middle") { item.secondaryActivate(); return }
-    if (how === "right" || item.onlyMenu) {
+    if (how === "right" || item.onlyMenu || menuOnly.indexOf(X.pathId(item.id)) >= 0) {
       if (item.hasMenu && item.menu && showMenu) { showMenu(item, cell); return }
       var win = cell && cell.QsWindow ? cell.QsWindow.window : null
       if (!win) return
