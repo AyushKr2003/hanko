@@ -1,7 +1,9 @@
 // Unit tests for the pure logic in core/*.js. Run: node tests/unit.mjs
 // The files are QML JavaScript libraries (".pragma library"), so they are
 // loaded as text with that line removed and evaluated in a function scope.
-import { readFileSync, statSync } from "node:fs"
+import { readFileSync, statSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs"
+import { execFileSync } from "node:child_process"
+import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 import assert from "node:assert/strict"
@@ -2352,6 +2354,31 @@ test("mission: search finds sums, windows, apps and menu leaves", () => {
   assert.equal(Mi.find("1+1", {})[0].value, "2")
   assert.deepEqual(Mi.find("  ", {}), [])
   for (const k of ["calc", "window", "app", "menu"]) assert.ok(Mi.CATEGORIES[k].jp)
+})
+
+test("desk: the CLI never wires style.lua into looknfeel.lua, and takes out the line it once added", () => {
+  const sh = readFileSync(join(root, "scripts/hanko"), "utf8")
+  assert.ok(!/>>\s*"\$LOOK_FILE"/.test(sh), "hanko desk must not append to looknfeel.lua")
+  assert.ok(sh.includes("post-boot.d/50-hanko-desk"), "the desk comes back after a boot")
+  const dir = mkdtempSync(join(tmpdir(), "hanko-desk-"))
+  try {
+    mkdirSync(join(dir, "hypr"))
+    const mine = "-- mine\nhl.config({})\n\nif bar == \"hanko\" then\n  pcall(dofile, \"x/hanko.bar/style.lua\")\nend\n\n\n"
+    const legacy = "\n-- Kaze 風: Hanko's look and motion for the whole desk (hanko desk off removes it).\n" +
+      "pcall(dofile, os.getenv(\"HOME\") .. \"/.config/omarchy/plugins/hanko.bar/style.lua\") -- hanko desk\n"
+    const file = join(dir, "hypr/looknfeel.lua")
+    writeFileSync(file, mine + legacy)
+    const fns = sh.split("\n").filter(l => /^(say\(\)|LOOK_FILE=)/.test(l)).join("\n") + "\n" +
+      sh.slice(sh.indexOf("look_legacy_off() {"), sh.indexOf("\n}\n", sh.indexOf("look_legacy_off() {")) + 3) +
+      sh.slice(sh.indexOf("style_loaded() {"), sh.indexOf("\n", sh.indexOf("style_loaded() {")) + 1)
+    const run = body => execFileSync("bash", ["-c", fns + body], { env: { ...process.env, XDG_CONFIG_HOME: dir } }).toString()
+    run("look_legacy_off >/dev/null")
+    assert.equal(readFileSync(file, "utf8"), mine)
+    assert.equal(run("look_legacy_off || echo none").trim(), "none")
+    assert.equal(run("style_loaded && echo yes").trim(), "yes")
+    writeFileSync(file, "-- pcall(dofile, \"x/hanko.bar/style.lua\")\n")
+    assert.equal(run("style_loaded || echo no").trim(), "no")
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

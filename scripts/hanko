@@ -34,10 +34,14 @@
 #   hanko tools on|off|status Dōgu 道具: btop and Neovim in the theme's inks
 #                            (btop's color_theme and a LazyVim spec; off puts
 #                            Omarchy's back)
-#   hanko desk on|off|status Kaze 風: give the whole desk Hanko's look and motion
-#                            (loads style.lua from looknfeel.lua and installs the
-#                            desk plugin, hanko.desk; any bar). Run `desk on` again
-#                            after an update to refresh the plugin.
+#   hanko desk on|off|status Kaze 風: the desk's plugins (the focus sweep, the
+#                            print and grass, the OSD, letters, the menu, the
+#                            lock; any bar). Run `desk on` again after an update
+#                            to refresh them. It never edits your Hyprland
+#                            config: style.lua (windows, motion) loads only from
+#                            a line you add to looknfeel.lua (see the README).
+#   hanko desk ensure        bring the desk back if it is on but not running
+#                            (a post-boot hook runs this after every boot)
 #   hanko doctor             check the installation
 #
 # Style commands talk to the running shell over IPC (omarchy-shell hanko ...),
@@ -201,17 +205,47 @@ cmd_menu() {
   esac
 }
 
-# Kaze 風, the whole desk (docs/kaze). `desk on` loads style.lua last from
-# ~/.config/hypr/looknfeel.lua with one marked line, so Hyprland's windows
-# move on Iai and wear the bar's paper whichever bar is in use; `desk off`
-# deletes exactly that line.
+# Kaze 風, the whole desk (docs/kaze). The desk is its plugins; whether it
+# is on is one file in the state folder, so it survives a reboot and the
+# Settings page can watch it. Hyprland's look (windows, motion) is style.lua,
+# which `hanko desk` never wires in: add the pcall line to looknfeel.lua
+# yourself when you want it.
+DESK_FLAG="$STATE/desk"
 LOOK_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/looknfeel.lua"
-LOOK_LINE='pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/hanko.bar/style.lua") -- hanko desk'
+LOOK_LINE='pcall(dofile, os.getenv("HOME") .. "/.config/omarchy/plugins/hanko.bar/style.lua")'
 
-# On when the marked line is there. A line of your own inside `if bar ==
-# "hanko"` (the README's) only loads it while Hanko is the bar, so it
-# doesn't count, and `desk off` leaves it alone.
-desk_on() { [[ -f $LOOK_FILE ]] && grep -q -- '-- hanko desk$' "$LOOK_FILE"; }
+# On while the flag is there (or the line an older `desk on` added, until
+# the next `desk on` or `desk off` trades it for the flag).
+desk_on() { [[ -f $DESK_FLAG ]] || { [[ -f $LOOK_FILE ]] && grep -q -- '-- hanko desk$' "$LOOK_FILE"; }; }
+
+# Whether looknfeel.lua loads style.lua on a line that isn't a comment.
+style_loaded() { [[ -f $LOOK_FILE ]] && grep -Eq '^[^-]*hanko\.bar/style\.lua' "$LOOK_FILE"; }
+
+# Before the flag, `desk on` appended a line ending `-- hanko desk` to
+# looknfeel.lua. It was ours, so it goes; a line of your own stays.
+look_legacy_off() {
+  [[ -f $LOOK_FILE ]] && grep -q -- '-- hanko desk$' "$LOOK_FILE" || return 1
+  local text
+  # The blank line it put before its comment goes too; everything else is
+  # kept byte for byte (the x keeps $(...) from eating trailing newlines).
+  text="$(awk '
+    /-- hanko desk$/ { next }
+    /^-- Kaze 風: Hanko.s look and motion/ { held = 0; next }
+    held { print ""; held = 0 }
+    /^$/ { held = 1; next }
+    { print }
+    END { if (held) print "" }' "$LOOK_FILE"; printf x)"
+  # Written through the file, so a looknfeel.lua that is a symlink stays one.
+  printf '%s' "${text%x}" > "$LOOK_FILE"
+  say "Took out the line an older 'hanko desk on' added to $LOOK_FILE."
+  return 0
+}
+
+look_hint() {
+  style_loaded && return
+  say "Windows keep your own look'n'feel. For Hanko's frames and motion, add this to $LOOK_FILE:"
+  say "  $LOOK_LINE"
+}
 
 hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 2>&1 || true; }
 
@@ -317,6 +351,9 @@ desk_plugins_off() {
     [[ -d $PLUGINS/$id ]] || continue
     omarchy plugin remove "$id" --yes >/dev/null 2>&1 || { omarchy plugin disable "$id" >/dev/null 2>&1 || true; rm -rf "${PLUGINS:?}/$id"; }
   done
+  # `plugin remove` keeps a .ID.bak.* copy; ours are only rebuilt copies of
+  # this checkout, so they don't pile up.
+  for id in "${SURFACES[@]}"; do rm -rf "${PLUGINS:?}/.$id.bak."*; done
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
 }
 # Battō 抜刀: the menu in Kaze's grammar through the user-level shell.toml
@@ -326,6 +363,9 @@ KAZE_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/theme-set.d/50-hanko-
 # low (Omarchy's battery service runs the battery-low hooks), 新 after an update.
 KAZE_BATTERY_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/battery-low.d/50-hanko-kaze"
 KAZE_UPDATE_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/post-update.d/50-hanko-kaze"
+# After every boot Omarchy runs the post-boot hooks; this one puts the desk
+# back if the shell came up without it.
+KAZE_BOOT_HOOK="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/post-boot.d/50-hanko-desk"
 write_hook() {
   mkdir -p "$(dirname "$1")"
   printf '#!/bin/bash\n# Kaze 風 (hanko desk off removes this).\n%s\n' "$2" > "$1"
@@ -338,39 +378,76 @@ desk_theme_on() {
 if [[ -f \"$CURSOR_FLAG\" ]]; then \"$SRC/scripts/hanko-cursor\" >/dev/null && hyprctl setcursor Hanko-Brush \"\$(cat \"$CURSOR_FLAG\")\" >/dev/null; fi"
   write_hook "$KAZE_BATTERY_HOOK" 'omarchy-osd -i danger -m "Battery ${1:-}%" -d 1600 >/dev/null 2>&1 || true'
   write_hook "$KAZE_UPDATE_HOOK" 'omarchy-osd -i new -m "Omarchy $(omarchy version 2>/dev/null | head -1)" -d 1400 >/dev/null 2>&1 || true'
+  write_hook "$KAZE_BOOT_HOOK" "mkdir -p \"$STATE\"; \"$SRC/scripts/hanko\" desk ensure >\"$STATE/desk-boot.log\" 2>&1 || true"
 }
 desk_theme_off() {
   "$SRC/scripts/hanko-kaze-theme" --remove || true
-  rm -f "$KAZE_HOOK" "$KAZE_BATTERY_HOOK" "$KAZE_UPDATE_HOOK"
+  rm -f "$KAZE_HOOK" "$KAZE_BATTERY_HOOK" "$KAZE_UPDATE_HOOK" "$KAZE_BOOT_HOOK"
 }
 
-desk_plugins_present() { local id; [[ -f $KAZE_HOOK ]] && return 0; for id in "${SURFACES[@]}"; do [[ -d $PLUGINS/$id ]] && return 0; done; return 1; }
+desk_plugins_present() { local id; [[ -f $KAZE_HOOK || -f $KAZE_BOOT_HOOK ]] && return 0; for id in "${SURFACES[@]}"; do [[ -d $PLUGINS/$id ]] && return 0; done; return 1; }
+
+# Enabled in the shell (its listPlugins), by id, one per line.
+enabled_plugins() { omarchy-shell shell listPlugins 2>/dev/null | jq -r '.[] | select(.enabled) | .id' 2>/dev/null || true; }
+
+# The desk is on but the shell may have come up without it (a reboot, an
+# update, a bar switch that gave a surface back to Omarchy): put back what is
+# missing, quietly when nothing is. Never removes anything.
+desk_ensure() {
+  desk_on || return 0
+  need omarchy
+  local id tries changed="" new=0 enabled missing=()
+  # At boot the shell can take a while to answer.
+  for (( tries = 0; tries < 120; tries++ )); do shell_up && break; sleep 0.5; done
+  shell_up || fail "the Omarchy shell is not running"
+  for id in "${SURFACES[@]}"; do
+    [[ -d $PLUGINS/$id ]] || new=1
+    changed+="$(surface_build "$id" "$PLUGINS/$id")"
+  done
+  if (( new )) || [[ -n $changed ]]; then
+    say "Kaze's plugins were missing or out of date: putting them back."
+    desk_plugins_on
+    return
+  fi
+  enabled="$(enabled_plugins)"
+  for id in "${SURFACES[@]}"; do
+    grep -qx -- "$id" <<<"$enabled" || missing+=("$id")
+  done
+  (( ${#missing[@]} )) || { say "Kaze is on and running."; return 0; }
+  say "Turning back on: ${missing[*]}"
+  omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
+  for id in "${missing[@]}"; do surface_enable "$id"; done
+  # A service enabled on a running shell mounts at once; a clone that took
+  # over from Omarchy's own needs the restart to load cleanly.
+  if command -v omarchy-restart-shell >/dev/null 2>&1; then
+    omarchy-restart-shell >/dev/null 2>&1 || true
+    desk_plugins_check || true
+  fi
+}
 
 cmd_desk() {
   case "${1:-status}" in
     on)
       need omarchy
+      mkdir -p "$STATE"
       desk_plugins_on
       desk_theme_on
-      if desk_on; then hypr_reload; say "Kaze is on (its plugins are up to date; $LOOK_FILE already loads style.lua)."; return; fi
-      mkdir -p "$(dirname "$LOOK_FILE")"
-      [[ -f $LOOK_FILE ]] && cp "$LOOK_FILE" "$LOOK_FILE.bak"
-      printf '\n-- Kaze 風: Hanko'"'"'s look and motion for the whole desk (hanko desk off removes it).\n%s\n' "$LOOK_LINE" >> "$LOOK_FILE"
-      hypr_reload
-      say "Kaze is on: windows move on Iai and wear the bar's paper ($LOOK_FILE; the old file is at .bak)."
+      printf 'on\n' > "$DESK_FLAG"
+      look_legacy_off && hypr_reload
+      say "Kaze is on: the focus sweep, the print and grass, the OSD, letters, the menu and the lock."
+      look_hint
       ;;
     off)
+      rm -f "$DESK_FLAG"
       desk_plugins_off
       desk_theme_off
-      desk_on || { say "Kaze is off."; return; }
-      cp "$LOOK_FILE" "$LOOK_FILE.bak"
-      grep -v -e '-- hanko desk$' -e "^-- Kaze 風: Hanko's look and motion" "$LOOK_FILE.bak" > "$LOOK_FILE"
-      hypr_reload
-      say "Kaze is off: Hyprland is back to your own look'n'feel."
+      look_legacy_off && hypr_reload
+      say "Kaze is off: Omarchy's own background, OSD, notifications, menu and lock are back."
       ;;
+    ensure) desk_ensure ;;
     status) if desk_on; then say "on"; else say "off"; fi ;;
     build) [[ -n ${2:-} && -n ${3:-} ]] || fail "usage: hanko desk build ID DIR"; surface_build "$2" "$3" >/dev/null ;;
-    *) fail "usage: hanko desk on|off|status" ;;
+    *) fail "usage: hanko desk on|off|status|ensure" ;;
   esac
 }
 
@@ -568,7 +645,8 @@ cmd_doctor() {
   check "Hanko is the active bar" "[[ \$(active_bar) == '$ID' ]]"
   check "Noto CJK fonts for the kanji" "fc-list -q 'Noto Sans CJK JP'"
   check "jq is installed" "command -v jq"
-  if desk_on; then say "  ok    Kaze: style.lua loads from looknfeel.lua"; else say "  --    Kaze is off (hanko desk on)"; fi
+  if desk_on; then say "  ok    Kaze is on"; else say "  --    Kaze is off (hanko desk on)"; fi
+  if style_loaded; then say "  ok    style.lua loads from looknfeel.lua"; else say "  --    style.lua isn't loaded (add: $LOOK_LINE)"; fi
   # Each of the desk's surfaces: installed, and answering its IPC call.
   local id
   for id in "${SURFACES[@]}"; do

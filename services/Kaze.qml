@@ -7,7 +7,7 @@ import "../core/Paths.js" as Paths
 
 // Kaze 風 for the settings page: the switches in ~/.config/hanko/kaze.json
 // (read by the desk's plugins; written at once, with its own Undo), whether
-// the desk is on (the marked line in looknfeel.lua that `hanko desk` adds)
+// the desk is on (the flag `hanko desk on` leaves in the state folder)
 // and whether Sumi is on (its shader in the state folder). The desk and
 // Sumi are switched by the `hanko` CLI, as from a terminal.
 Singleton {
@@ -116,11 +116,11 @@ Singleton {
     }
   }
   property FileView _look: FileView {
-    path: root.configHome + "/hypr/looknfeel.lua"
+    path: root.stateHome + "/hanko/desk"
     watchChanges: true
     printErrors: false
     onFileChanged: reload()
-    onLoaded: root.desk = /-- hanko desk$/m.test(text())
+    onLoaded: root.desk = text().length > 0
     onLoadFailed: root.desk = false
   }
   property FileView _sumi: FileView {

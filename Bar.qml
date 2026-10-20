@@ -573,6 +573,13 @@ Item {
     function press(): string { return root.pressSeal(root.focusedScreen()) }
     // Kaze's riding mode (`hanko sumi on|off`): the bar recedes to its rule.
     function riding(on: string): string { root.riding = on === "true" || on === "on"; return "ok" }
+    // The desk switch on the Kaze page, the same detached `hanko desk`
+    // (it may restart the shell; what it says goes to desk.log).
+    function desk(on: string): string {
+      if (on !== "on" && on !== "off") return "invalid"
+      Kaze.setDesk(on === "on")
+      return "ok"
+    }
     function scrollTo(name: string): string {
       return Scroll.indexOf(name) >= 0 && root.openScroll(name, root.focusedScreen()) ? "open" : "unknown"
     }
