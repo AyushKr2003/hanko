@@ -123,13 +123,18 @@ Singleton {
   // ---------------------------------------------------------- tray
   readonly property var trayItems: wantTray && SystemTray.items ? SystemTray.items.values : []
   readonly property var tray: X.tray(trayItems)
-  function trayAction(id, how, cell) {
+  // showMenu(item, cell) draws an item's menu in Hanko (bar/TrayMenuWindow):
+  // item.display() asks for a platform menu, which Quickshell only draws in
+  // QApplication mode and omarchy-shell doesn't start in, so it did nothing.
+  // display() stays for an item that has no DBus menu to read.
+  function trayAction(id, how, cell, showMenu) {
     var item = null
     for (var i = 0; i < trayItems.length; i++) if (String(trayItems[i].id || i) === id) { item = trayItems[i]; break }
     if (!item) return
     if (how === "up" || how === "down") { item.scroll(how === "up" ? 120 : -120, false); return }
     if (how === "middle") { item.secondaryActivate(); return }
     if (how === "right" || item.onlyMenu) {
+      if (item.hasMenu && item.menu && showMenu) { showMenu(item, cell); return }
       var win = cell && cell.QsWindow ? cell.QsWindow.window : null
       if (!win) return
       var p = cell.mapToItem(win.contentItem, 0, cell.height)

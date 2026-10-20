@@ -118,7 +118,7 @@ PanelWindow {
     onKeyboardAction: function(how) { Extras.keyboardAction(how) }
     // Middle-click on the mic opens Sound, where the input is.
     onMicAction: function(how) { if (how === "middle") win.bar.openPanel("sound", win.screenName); else Extras.micAction(how) }
-    onTrayAction: function(id, how, cell) { Extras.trayAction(id, how, cell) }
+    onTrayAction: function(id, how, cell) { Extras.trayAction(id, how, cell, trayMenu.toggle) }
 
     onSealClicked: function(button) {
       if (button === Qt.RightButton) Hypr.openTerminal()
@@ -156,5 +156,10 @@ PanelWindow {
     bar: win.bar
     barWindow: win
     surface: win.surface
+  }
+
+  TrayMenuWindow {
+    id: trayMenu
+    barWindow: win
   }
 }

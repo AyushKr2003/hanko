@@ -50,7 +50,7 @@ const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const Pa = load("core/Paths.js", ["local"])
 const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
 const Bt = load("core/Batto.js", ["CRESTS", "crestFor", "rail", "topOf"])
-const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray"])
+const X = load("core/Extras.js", ["INDICATORS", "indicators", "moduleJson", "keyboard", "tray", "menuText"])
 const D = load("core/Display.js", ["monitors", "brightness", "target", "sheet"])
 const B = load("core/Blue.js", ["human", "kind", "row", "lists", "cell", "action", "sheet", "mark"])
 const E = load("core/Edge.js", ["dayFraction", "hourTicks", "at", "span", "pulled", "PULL_THRESHOLD"])
@@ -754,6 +754,12 @@ test("tray rows: titles, symbolic icons, a letter to fall back on", () => {
   const t = X.tray([{ id: "nm-applet", title: "Network", icon: "image://icon/nm-signal-75-symbolic" },
                     { id: "steam", tooltipTitle: "Steam", icon: "" }, null])
   assert.deepEqual(t.map(x => [x.id, x.letter, x.symbolic]), [["nm-applet", "N", true], ["steam", "S", false]])
+})
+
+test("tray menu labels: access-key underscores dropped, doubled ones kept", () => {
+  assert.equal(X.menuText("_Quit"), "Quit")
+  assert.equal(X.menuText("Show __main__ win_dow"), "Show _main_ window")
+  assert.equal(X.menuText(undefined), "")
 })
 
 test("display: monitors from hyprctl, the focused one first", () => {

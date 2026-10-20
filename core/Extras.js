@@ -90,3 +90,9 @@ function tray(items) {
   }
   return out
 }
+
+// A tray menu entry's label as Hanko prints it: DBus menus mark the access
+// key with an underscore ("_Quit"), and "__" stands for a real one.
+function menuText(text) {
+  return String(text || "").replace(/__/g, "\u0000").replace(/_/g, "").replace(/\u0000/g, "_")
+}
