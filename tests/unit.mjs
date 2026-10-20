@@ -45,7 +45,7 @@ const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "
 const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX", "ripple", "puffAfter", "rippleUniforms"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot"])
-const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence", "CUT_MS", "CUT_FOLDS", "cutFlash", "cutFold"])
+const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence", "CUT_MS", "CUT_CURLS", "cutFlash", "cutRoll", "cutCurl"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const Pa = load("core/Paths.js", ["local"])
 const Ks = load("core/Kaisei.js", ["WINDOW_MS", "crashedRecently"])
@@ -2136,18 +2136,39 @@ test("taiji: the hint says what the lock is doing; red only after a wrong passwo
   assert.equal(Tj.hint({ fingerprint: true }).text, "Type to unlock · or touch the reader")
   assert.equal(Tj.hint({ count: 9 }).text, "9 characters · Enter to cut")
   assert.equal(Tj.hint({ count: 1 }).text, "1 character · Enter to cut")
-  // the unlock cut: the hairline at once, then faded; the folds overlap,
-  // move only forward, and are all turned by the end
+  // the unlock cut: the hairline at once, then faded; each half rolls only
+  // forward, the one above first, and both are gone by the end
   assert.equal(Tj.cutFlash(0), 1)
   assert.equal(Tj.cutFlash(Tj.CUT_MS), 0)
-  for (let k = 1; k <= 3; k++) {
-    assert.equal(Tj.cutFold(k, 0), 0)
-    assert.equal(Tj.cutFold(k, Tj.CUT_MS), 1)
+  for (let k = 0; k < 2; k++) {
+    assert.equal(Tj.cutRoll(k, 0), 0)
+    assert.equal(Tj.cutRoll(k, Tj.CUT_MS), 1)
     let last = 0
-    for (let ms = 0; ms <= Tj.CUT_MS; ms += 10) { const f = Tj.cutFold(k, ms); assert.ok(f >= last - 1e-9); last = f }
+    for (let ms = 0; ms <= Tj.CUT_MS; ms += 10) { const r = Tj.cutRoll(k, ms); assert.ok(r >= last - 1e-9); last = r }
+    assert.ok(Tj.CUT_CURLS[k].at + Tj.CUT_CURLS[k].ms <= Tj.CUT_MS)
   }
-  for (let k = 1; k < 3; k++) assert.ok(Tj.CUT_FOLDS[k].at < Tj.CUT_FOLDS[k - 1].at + Tj.CUT_FOLDS[k - 1].ms)
-  assert.ok(Tj.CUT_FOLDS[2].at + Tj.CUT_FOLDS[2].ms <= Tj.CUT_MS)
+  assert.ok(Tj.CUT_CURLS[0].at < Tj.CUT_CURLS[1].at)
+  // the curl: flat at 0 (its axis at the leading end of the cut), past the
+  // far corner at 1, moving only outward and opening as it goes
+  for (const [w, h] of [[1920, 1080], [2560, 1440], [1080, 1920]]) {
+    const at0 = Tj.cutCurl(0, w, h), at1 = Tj.cutCurl(1, w, h)
+    assert.equal(at0.fold, at0.start)
+    assert.ok(at1.fold - at1.radius >= at1.end)
+    let fold = -Infinity, radius = 0
+    for (let t = 0; t <= 1; t += 0.05) {
+      const c = Tj.cutCurl(t, w, h)
+      assert.ok(c.fold > fold && c.radius >= radius - 1e-9)
+      fold = c.fold; radius = c.radius
+    }
+  }
+  // the shaders read these uniforms, and are compiled
+  const curlVert = readFileSync(join(root, "assets/shaders/curl.vert"), "utf8")
+  for (const name of ["side", "fold", "radius", "tilt", "eye"]) assert.match(curlVert, new RegExp(`float ${name};`))
+  const desk = readFileSync(join(root, "plugins/hanko.desk/Desk.qml"), "utf8")
+  for (const f of ["curl.vert", "curl.frag", "curlshade.frag"]) {
+    assert.match(desk, new RegExp(f.replace(".", "\\.") + "\\.qsb"))
+    assert.ok(statSync(join(root, "assets/shaders", f + ".qsb")).mtimeMs >= statSync(join(root, "assets/shaders", f)).mtimeMs - 1000, f + " changed: run scripts/hanko-shaders")
+  }
   assert.deepEqual(Tj.hint({ failure: "x", attempts: 2 }), { text: "Not that one · 2", red: true })
   assert.equal(Tj.hint({ authenticating: true, failure: "x" }).text, "Checking…")
   assert.equal(Tj.dayLine(new Date(2026, 9, 14)), "Wednesday · 14 October")

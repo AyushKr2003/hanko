@@ -26,8 +26,9 @@ import "core/Taiji.js" as Taiji
 //   Taiji 対峙, the cut: when a password goes to be checked, hanko.lock's
 //   view leaves a note; the desk lays the lock's own picture (core/
 //   Standoff.qml) under the lock, and the moment the session unlocks, cuts
-//   it along the diagonal and rolls the halves away from it, fold over fold
-//   (core/Taiji.js holds the timeline).
+//   it along the diagonal and peels each half away from it like a page
+//   turned in a book (core/Taiji.js holds the timeline, assets/shaders/
+//   curl.vert bends the paper).
 //
 //   Kaisei 回生: when the shell comes back from a crash (a fresh quickshell
 //   core dump, core/Kaisei.js), a small tab says so at the top right for a
@@ -206,117 +207,32 @@ Item {
   }
 
   // ── The cut's halves ──────────────────────────────────────────────────
-  // One side of the cut, in a frame turned so the cut runs along x: three
-  // strips parallel to it, from the cut out to the far corner. Fold 1 turns
-  // the strip at the cut over its outer crease, out of the screen toward you,
-  // onto the next; fold 2 turns those two over the next crease; fold 3 turns
-  // all of it over the last, past the corner and off the screen. The folds
-  // overlap, so the half rolls rather than steps. A strip facing away shows
-  // the back of the sheet; turning edge-on, either face darkens alike, so
-  // nothing jumps as it passes over; a flap coming down over a strip shades
-  // it first.
-  component CutStrip: Item {
-    id: strip
-    required property Item picture
-    required property real picY
-    required property real deg
-    required property real screenWidth
-    required property real screenHeight
-    // its whole turn, the folds it rides on included (degrees)
-    required property real turned
-    // the shadow of the flap above it (0..1)
-    property real shade: 0
-    readonly property real lean: Math.abs(Math.sin(turned * Math.PI / 180))
-    readonly property bool back: Math.cos(turned * Math.PI / 180) < 0
-    clip: true
-    ShaderEffect {
-      visible: !strip.back
-      x: 0; y: strip.picY - strip.y
-      width: strip.screenWidth; height: strip.screenHeight
-      transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
-      property variant source: strip.picture
-    }
-    Rectangle {
-      x: 0; y: strip.picY - strip.y
-      width: strip.screenWidth; height: strip.screenHeight
-      transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
-      visible: strip.back
-      color: Ink.paper2
-    }
-    Rectangle {
-      x: 0; y: strip.picY - strip.y
-      width: strip.screenWidth; height: strip.screenHeight
-      transform: Rotation { origin.x: 0; origin.y: strip.screenHeight; angle: -strip.deg }
-      color: "black"
-      opacity: Math.min(0.7, 0.55 * strip.lean + (strip.back ? 0 : 0.3 * strip.shade))
-    }
-  }
-  // Where a strip lay, the desk under it, shaded by the flap lifting off
-  // it: darkest at the crease, where the flap still touches, gone at the
-  // cut; strongest edge-on, none once the flap is down.
-  component CutShadow: Rectangle {
-    required property bool above
-    required property real fold
-    x: 0
-    opacity: 0.4 * Math.sin(Math.PI * Math.min(1, fold))
-    visible: opacity > 0.005
-    gradient: Gradient {
-      GradientStop { position: 0; color: Qt.rgba(0, 0, 0, above ? 1 : 0) }
-      GradientStop { position: 1; color: Qt.rgba(0, 0, 0, above ? 0 : 1) }
-    }
-  }
-  component CutHalf: Item {
+  // One side of the cut, peeled off like a page turned in a book: the
+  // sheet rolls round a soft curl that runs out from the cut, one end
+  // leading, and lies back over itself face down (assets/shaders/curl.vert
+  // bends a fine mesh of the picture; curl.frag lights it). Taiji.cutCurl
+  // says where the curl is.
+  component CutHalf: ShaderEffect {
     id: half
-    required property bool above
-    required property Item picture
-    required property real screenWidth
-    required property real screenHeight
-    required property real hyp
-    required property real deg
-    required property real big
-    required property real reach
-    required property real fold1
-    required property real fold2
-    required property real fold3
-    readonly property real band: reach / 3
-    // the crease of fold k, and the near edge of strip k, in this frame
-    // (above the cut, y runs toward it; below, away from it)
-    function creaseAt(k) { return above ? big - k * band : k * band }
-    function bandAt(k) { return above ? big - k * band : (k - 1) * band }
-    readonly property real picY: above ? big - screenHeight : -screenHeight
-    // out of the screen, toward you, on either side
-    readonly property real toward: above ? 180 : -180
-    // near enough that a lifting flap swells toward you, as paper does
-    readonly property real eye: hyp * 1.1
-    // Qt draws in order, not by depth: once a fold passes edge-on, the
-    // strip it turns is nearer than the flaps folded onto its face, so it
-    // is drawn over them (else the first strip's picture shows through).
-    readonly property real over1: Math.sin(Math.PI * Math.min(1, fold1))
-    readonly property real over2: Math.sin(Math.PI * Math.min(1, fold2))
-    width: big; height: big
-    transformOrigin: above ? Item.BottomLeft : Item.TopLeft
-    rotation: deg
-    CutShadow { above: half.above; fold: half.fold3; y: half.bandAt(3); width: half.hyp; height: half.band }
-    Item {
-      anchors.fill: parent
-      transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(3); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold3; distanceToPlane: half.eye }
-      // a pixel over the next strip, so no seam shows between them
-      CutStrip { z: half.fold3 > 0.5 ? 2 : 0; x: 0; y: half.bandAt(3) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * half.fold3; shade: half.over2 }
-      CutShadow { z: 1; above: half.above; fold: half.fold2; y: half.bandAt(2); width: half.hyp; height: half.band }
-      Item {
-        z: 1
-        anchors.fill: parent
-        transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(2); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold2; distanceToPlane: half.eye }
-        CutStrip { z: half.fold2 > 0.5 ? 2 : 0; x: 0; y: half.bandAt(2) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * (half.fold2 + half.fold3); shade: half.over1 }
-        CutShadow { z: 1; above: half.above; fold: half.fold1; y: half.bandAt(1); width: half.hyp; height: half.band }
-        Item {
-          z: 1
-          anchors.fill: parent
-          transform: Rotation { origin.x: half.hyp / 2; origin.y: half.creaseAt(1); axis: Qt.vector3d(1, 0, 0); angle: half.toward * half.fold1; distanceToPlane: half.eye }
-          CutStrip { x: 0; y: half.bandAt(1) - 1; width: half.hyp; height: half.band + 2; picture: half.picture; picY: half.picY; deg: half.deg; screenWidth: half.screenWidth; screenHeight: half.screenHeight; turned: 180 * (half.fold1 + half.fold2 + half.fold3) }
-        }
-      }
-    }
+    required property real roll
+    // +1 below the cut, -1 above
+    property real side: 1
+    readonly property var curl: Taiji.cutCurl(roll, width, height)
+    // flat under the lock while armed, gone once rolled off
+    visible: roll < 1
+    // the lock's picture
+    property variant source
+    property vector2d screen: Qt.vector2d(width, height)
+    property real fold: curl.fold
+    property real radius: curl.radius
+    property real tilt: curl.tilt
+    // near enough that a lifting sheet swells toward you, as paper does
+    property real eye: Math.sqrt(width * width + height * height) * 1.1
+    property color back: Ink.paper2
+    // the curl runs across the cut's width and along its depth
+    mesh: GridMesh { resolution: Qt.size(48, 160) }
+    vertexShader: Qt.resolvedUrl("assets/shaders/curl.vert.qsb")
+    fragmentShader: Qt.resolvedUrl("assets/shaders/curl.frag.qsb")
   }
 
   // ── Drawing: one input-transparent overlay per screen ─────────────────
@@ -373,18 +289,15 @@ Item {
         }
       }
 
-      // The cut: the lock's picture, once, as a texture; over it two folding
-      // halves either side of the diagonal from the bottom left to the top
-      // right (CutHalf, below).
+      // The cut: the lock's picture, once, as a texture; over it two halves
+      // either side of the diagonal from the bottom left to the top right,
+      // each peeling off (CutHalf, above).
       Item {
         id: cutLayer
         anchors.fill: parent
         visible: root.cutPhase !== ""
         readonly property real hyp: Math.sqrt(width * width + height * height)
         readonly property real deg: -Math.atan2(height, width) * 180 / Math.PI
-        readonly property real big: hyp * 1.6
-        // how far the far corners lie from the cut
-        readonly property real reach: hyp > 0 ? width * height / hyp : 0
 
         Standoff {
           id: cutPicture
@@ -398,21 +311,32 @@ Item {
           authenticating: root.cutPhase === "armed"
           fingerprint: !!root.cutNote.fingerprint
         }
-        CutHalf {
-          above: true
-          x: 0; y: cutLayer.height - cutLayer.big
-          picture: cutPicture
-          screenWidth: cutLayer.width; screenHeight: cutLayer.height
-          hyp: cutLayer.hyp; deg: cutLayer.deg; big: cutLayer.big; reach: cutLayer.reach
-          fold1: root.cutFold1; fold2: root.cutFold2; fold3: root.cutFold3
+        // the desk beside each roll, shaded where the paper lifts off it
+        ShaderEffect {
+          anchors.fill: parent
+          visible: root.cutRollAbove > 0 && root.cutRollBelow < 1
+          readonly property var above: Taiji.cutCurl(root.cutRollAbove, width, height)
+          readonly property var below: Taiji.cutCurl(root.cutRollBelow, width, height)
+          property vector2d screen: Qt.vector2d(width, height)
+          property real tilt: above.tilt
+          property real start: above.start
+          property real foldA: above.fold
+          property real radiusA: above.radius
+          property real foldB: below.fold
+          property real radiusB: below.radius
+          fragmentShader: Qt.resolvedUrl("assets/shaders/curlshade.frag.qsb")
         }
         CutHalf {
-          above: false
-          x: 0; y: cutLayer.height
-          picture: cutPicture
-          screenWidth: cutLayer.width; screenHeight: cutLayer.height
-          hyp: cutLayer.hyp; deg: cutLayer.deg; big: cutLayer.big; reach: cutLayer.reach
-          fold1: root.cutFold1; fold2: root.cutFold2; fold3: root.cutFold3
+          anchors.fill: parent
+          side: -1
+          roll: root.cutRollAbove
+          source: cutPicture
+        }
+        CutHalf {
+          anchors.fill: parent
+          side: 1
+          roll: root.cutRollBelow
+          source: cutPicture
         }
         // The cut itself: a hairline from corner to corner, lit at once in
         // a faint glow of its own, fading as the halves lift.
@@ -510,13 +434,12 @@ Item {
   // "" nothing; "armed" laid under the lock, waiting; "cutting" parting.
   property string cutPhase: ""
   property var cutNote: ({})
-  // how far into the cut (ms, 0 to Taiji.CUT_MS); the hairline and the
-  // three folds of each half (0 flat to 1 turned over) follow from it
+  // how far into the cut (ms, 0 to Taiji.CUT_MS); the hairline and how far
+  // each half has rolled off (0 flat to 1 gone) follow from it
   property real cutMs: 0
   readonly property real cutFlash: cutPhase === "cutting" ? Taiji.cutFlash(cutMs) : 0
-  readonly property real cutFold1: Taiji.cutFold(1, cutMs)
-  readonly property real cutFold2: Taiji.cutFold(2, cutMs)
-  readonly property real cutFold3: Taiji.cutFold(3, cutMs)
+  readonly property real cutRollAbove: Taiji.cutRoll(0, cutMs)
+  readonly property real cutRollBelow: Taiji.cutRoll(1, cutMs)
   // The note must exist before it can be watched.
   Process {
     running: true
