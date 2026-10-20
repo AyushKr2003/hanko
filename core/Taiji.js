@@ -57,21 +57,26 @@ function sentence(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""
 }
 
-// The cut on unlock (plugins/hanko.desk): one timeline of CUT_MS, so the
-// halves roll out from the cut in one motion rather than three. The
-// hairline is on at once and fades; each half's three folds start a
-// little after one another and overlap, so a strip is still turning while
-// the next crease lifts.
-var CUT_MS = 900
+// The cut on unlock (plugins/hanko.desk): one timeline of CUT_MS. The
+// hairline is on at once and fades; each half peels off from the cut as a
+// page is turned in a book: one end of the cut lifts first, the sheet rolls
+// round a soft curl that grows as it goes, and the curl runs out past the
+// far corner (assets/shaders/curl.vert draws it). The half above lifts a
+// moment before the one below.
+var CUT_MS = 1000
 var CUT_FLASH = { hold: 50, fade: 150 }
-// fold k (1..3): when it starts, how long it turns, on what curve. The
-// first two land on the next strip, so they settle; the last is gone past
-// the corner once edge-on, so it gathers speed and goes, as a sheath does.
-var CUT_FOLDS = [
-  { at: 60,  ms: 500, curve: [0.4, 0, 0.2, 1] },
-  { at: 230, ms: 500, curve: [0.4, 0, 0.2, 1] },
-  { at: 420, ms: 480, curve: [0.55, 0, 0.85, 0.45] }
+// each half: when it starts and how long it rolls; the curve lifts slowly,
+// then the sheet goes, as a page let go of does
+var CUT_CURLS = [
+  { at: 40,  ms: 860 },
+  { at: 110, ms: 860 }
 ]
+var CUT_CURVE = [0.5, 0, 0.3, 1]
+// one end of the cut leads by this much (radians)
+var CUT_TILT = 0.16
+// the curl's radius, as a share of the half's depth: tight as it lifts,
+// open as it goes
+var CUT_RADIUS = { from: 0.05, to: 0.16 }
 function cutFlash(ms) {
   if (ms < 0) return 0
   if (ms <= CUT_FLASH.hold) return 1
@@ -92,7 +97,28 @@ function cutEase(c, x) {
   }
   return ((ay * t + by) * t + cy) * t
 }
-function cutFold(k, ms) {
-  var f = CUT_FOLDS[k - 1]
-  return f ? cutEase(f.curve, (ms - f.at) / f.ms) : 0
+// How far half k (0 above the cut, 1 below) has rolled at `ms`: 0 flat,
+// 1 gone.
+function cutRoll(k, ms) {
+  var c = CUT_CURLS[k]
+  return c ? cutEase(CUT_CURVE, (ms - c.at) / c.ms) : 0
+}
+// Where on the screen the curl is, at roll t (0..1), for a w×h screen cut
+// on the diagonal from the bottom left: `fold` is the roll's axis, measured
+// from the centre along the half's outward direction (tilted by `tilt`),
+// `radius` the curl's. At 0 the axis touches the leading end of the cut,
+// so nothing is lifted; at 1 the whole roll is past the far corner.
+function cutCurl(t, w, h) {
+  var hyp = Math.sqrt(w * w + h * h)
+  if (!(hyp > 0)) return { fold: 0, radius: 1, tilt: CUT_TILT, start: 0 }
+  var reach = w * h / hyp
+  var s = Math.sin(CUT_TILT), co = Math.cos(CUT_TILT)
+  var corner = reach * co + (w * w - h * h) / (2 * hyp) * s
+  var start = Math.min(-hyp / 2 * s, hyp / 2 * s, corner)
+  var end = Math.max(-hyp / 2 * s, hyp / 2 * s, corner)
+  var e = Math.max(0, Math.min(1, t))
+  var grow = 1 - (1 - e) * (1 - e)
+  var radius = reach * (CUT_RADIUS.from + (CUT_RADIUS.to - CUT_RADIUS.from) * grow)
+  var last = reach * CUT_RADIUS.to
+  return { fold: start + (end + last * 1.2 - start) * e, radius: radius, tilt: CUT_TILT, start: start, end: end }
 }
