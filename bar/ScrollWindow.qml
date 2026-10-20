@@ -55,6 +55,11 @@ PanelWindow {
 
   function ms(v) { return Motion.ms(v) }
   function centre() { trackX = Scroll.centred(bar.scrollSection, view.viewWidth, Type.scale) }
+  // Centre without the pan: when the paper unrolls, and whenever its width
+  // changes (the layer is sized only once it is mapped, so the first
+  // centring may have used a width of 0 and shown the wrong section).
+  property bool snapping: false
+  function place() { snapping = true; centre(); snapping = false }
 
   screen: barWindow.screen
   visible: open || closing.running
@@ -97,7 +102,7 @@ PanelWindow {
       view.stance = 0
       view.writeIn = brush && !Motion.still ? 0 : 1
       if (view.writeIn < 1) writeOn.restart()
-      centre()
+      place()
       if (mokuroku && !Motion.still) { view.cut = 1; uncut.restart() }
       view.reveal = 1
       view.ink = 1
@@ -196,6 +201,7 @@ PanelWindow {
       paperOpacity: win.barWindow.shown.panelOpacity > 0 ? win.barWindow.shown.panelOpacity / 100 : 1
       readonly property int margin: Math.max(Type.px(16), Math.round(win.width * 0.069))
       readonly property real viewWidth: width - 2 * Type.px(26)
+      onViewWidthChanged: if (!win.dragging) win.place()
 
       x: margin
       width: win.width - 2 * margin
@@ -315,7 +321,7 @@ PanelWindow {
   }
 
   Behavior on trackX {
-    enabled: !win.dragging && win.open && !win.cutting
+    enabled: !win.dragging && win.open && !win.cutting && !win.snapping
     NumberAnimation {
       duration: win.ms(Motion.pan)
       easing.type: Easing.BezierSpline

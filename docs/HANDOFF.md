@@ -1110,6 +1110,8 @@ Items 1 and 2 are done (§9). Items 3 and 4 wait for the user.
 50. **Densho to verify on the desk:** the brush and the stance at 60 fps with the scroll full of live data (14 clipped title copies per section while writing); the aburidashi warmth following the pointer; `pressSeal()` reaching the bar's seal when the scroll closes under mokuroku; the house's lines once Leaf's colophon script has run.
 51. **The harness on Qt 6.12 (this machine's `qt6-declarative 6.12.0`, PySide6 6.12):** QtQuick 6.12 has a type named `Color`, which shadows the stub `qs.Commons` `Color` in `core/Ink.qml` and the scenes, so renders lose the theme (green ink, no red, blank bone plates) and `tests/motion.py` fails on the Ink warnings, with or without Densho. Densho's renders were checked from a scratch copy with `import qs.Commons as Commons` / `Commons.Color`. Check whether the real omarchy-shell is affected the same way; if so, qualify the import in `core/Ink.qml`.
 
+52. ~~`omarchy-shell hanko scroll` sometimes unrolled on the wrong section (Sound, say), and the first left or right jumped to the right one.~~ **Fixed:** `ScrollWindow` centred the track in `onOpenChanged`, before the layer was mapped and sized, so the width was 0 and the paper sat off the plate's section until the next step re-centred it. It now centres with `place()` (no pan) on opening and again whenever the view's width changes. To verify on the desk.
+
 ## 13. QML pitfalls already hit
 
 - Fraunces is a variable font: `font.weight: Font.Light` was ignored (it drew near-black); set `font.variableAxes: { "wght": 340, "opsz": 144 }`. At 200 px the default renderer broke thin strokes into dashes; `renderType: Text.CurveRendering` fixed it.
