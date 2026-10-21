@@ -47,7 +47,17 @@ Item {
   // The craft hands (Shōgi, Soroban, Odoshi, Kasumi) draw one model of
   // whichever sheet is open (core/Hands.js).
   readonly property var handModel: Hands.HANDS.indexOf(hand) >= 0
-    ? Hands.model(sheet, feed, feed.now || new Date(), { T: TimeJs, St: StatusJs, B: BlueJs }) : null
+    ? Hands.model(sheet, sheet === "inbox" ? Object.assign({}, feed, { openLetter: openLetter }) : feed,
+                  feed.now || new Date(), { T: TimeJs, St: StatusJs, B: BlueJs }) : null
+  // The inbox letter opened to read in full (its stem), in every hand: kept
+  // here, since a craft hand is drawn afresh from its model. A hand asks
+  // ("open", stem) and ("putAway", letter); the second goes on to Bar.qml.
+  property string openLetter: ""
+  function handRequest(what, arg) {
+    if (sheet === "inbox" && what === "open") { openLetter = String(arg || ""); return }
+    if (sheet === "inbox" && what === "putAway") openLetter = ""
+    root.request(sheet, what, arg)
+  }
 
   // A sheet asked for something (a value, a device, a page of the ribbon).
   signal request(string sheet, string what, var arg)
@@ -85,7 +95,7 @@ Item {
   function stepLevel(d) { keys.step(d) }
   function placeCursor() { keys.place() }
 
-  onSheetChanged: keys.reset()
+  onSheetChanged: { keys.reset(); openLetter = "" }
 
   Keys.onPressed: function(event) {
     var a = Cursor.action(event.key, event.text, (event.modifiers & Qt.ShiftModifier) !== 0)
@@ -108,8 +118,8 @@ Item {
     side: root.side
     sheet: root.rail ? root.sheet : ""
     open: root.open && root.rail
-    feed: root.feed
-    onRequest: function(sheet, what, arg) { root.request(sheet, what, arg) }
+    feed: root.sheet === "inbox" ? Object.assign({}, root.feed, { openLetter: root.openLetter }) : root.feed
+    onRequest: function(sheet, what, arg) { if (sheet === "inbox") root.handRequest(what, arg); else root.request(sheet, what, arg) }
     onCloseRequested: root.closeRequested()
     onCycle: function(delta) { root.cycle(delta) }
   }
@@ -207,7 +217,8 @@ Item {
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
       now: root.feed.now || new Date()
-      onRequest: function(what, arg) { root.request("inbox", what, arg) }
+      openStem: root.openLetter
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -269,7 +280,8 @@ Item {
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
       now: root.feed.now || new Date()
-      onRequest: function(what, arg) { root.request("inbox", what, arg) }
+      openStem: root.openLetter
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -294,7 +306,8 @@ Item {
     id: shogiHand
     ShogiHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -302,7 +315,8 @@ Item {
     id: sorobanHand
     SorobanHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -310,7 +324,8 @@ Item {
     id: odoshiHand
     OdoshiHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -318,7 +333,8 @@ Item {
     id: kasumiHand
     KasumiHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 

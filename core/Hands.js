@@ -47,7 +47,7 @@ function row(o) {
 function base(sheet, jp, label) {
   return { sheet: sheet, jp: jp, label: label,
            hero: { mark: jp, name: "", figure: "—", unit: "", line: "", caption: "", red: false, level: -1, rank: false, set: null, min: 0, scales: 0 },
-           levels: [], choices: [], choicesLabel: "", choicesMark: "", inline: false,
+           levels: [], choices: [], letter: null, choicesLabel: "", choicesMark: "", inline: false,
            tally: [], lines: [], hint: "", note: "", buttons: [], keys: { step: null, left: null, right: null, letters: {} } }
 }
 
@@ -298,17 +298,22 @@ function inbox(feed, now, lib) {
   m.hero = { mark: "報", name: "Waiting", figure: St.count2(letters.length), unit: "",
              line: dnd ? "quiet: nothing will pop up" : letters.length === 1 ? "letter waiting" : "letters waiting",
              caption: urgent ? urgent + (urgent === 1 ? " needs" : " need") + " you" : "Newest first", red: false, level: -1, rank: false, set: null, min: 0 }
+  // A click opens a letter (feed.openLetter, its stem), and the frame
+  // (HandSheet) unfolds it in full under the hand, to read or put away.
   for (var i = 0; i < letters.length && i < 5; i++) {
     var l = letters[i]
     var age = now.getTime() - Number(l.timestamp)
+    var open = !!feed.openLetter && l.stem === feed.openLetter
+    if (open) m.letter = l
     m.levels.push(row({ key: "l" + i, name: l.summary || l.app, mark: l.glyph || "報",
                         detail: l.body ? String(l.body).replace(/\s+/g, " ") : l.app,
                         note: St.age(l.timestamp, now.getTime()),
                         level: Math.max(0.08, 1 - clamp01(age / FRESH_MS)), figure: St.age(l.timestamp, now.getTime()),
-                        urgent: !!l.urgent, dashed: dnd }))
+                        urgent: !!l.urgent, dashed: dnd, selected: open,
+                        click: { what: "open", arg: open ? "" : l.stem } }))
   }
   m.tally = [{ name: "Waiting", n: letters.length, lead: true }, { name: "Urgent", n: urgent }]
-  m.hint = letters.length ? "Fresh letters reach furthest" : "Nothing new"
+  m.hint = letters.length ? "Fresh letters reach furthest · click one to read it" : "Nothing new"
   m.buttons = [
     { text: "Quiet", on: dnd, what: "dnd", arg: null },
     { text: "Replay", ghost: true, what: "replay", arg: null },

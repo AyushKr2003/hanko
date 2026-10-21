@@ -172,6 +172,8 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **T4 · Bar focus**: `hanko barFocus` (Super+Ctrl+0), every bar part a stop, the keyboard handed back after a sheet; Settings › Keys and the README.
   - ✅ **T5 · Settings, and one cursor for keys and pointer** (asked for: "in the settings also make it keyboard driven and also the mouse, like we have in Omarchy"): the settings window walks with the same keys over its rail and page (panes, `keyPane`; Left/Right cross, Up/Down stay), Tab for the next page, the page scrolling to the cursor, previews fenced off (`keyStops: false`); the pointer moves the cursor everywhere (sheets, settings, bar focus, tray menus) as Omarchy's single cursor model does, behind its pointer-move gate. Typesetting's parts moved to `[` `]`.
 
+- ✅ **Letters one by one** (asked for: "each notification expand if it is more and remove each one particularly … in all style"): every inbox letter opens to read in full and is put away on its own (deleted from Omarchy's history), in all seven hands: in place on the Ledger and Shōji, unfolded under the slips and the craft hands; an × on each, Delete for the open one.
+
 ## Dev loop
 
 ```sh

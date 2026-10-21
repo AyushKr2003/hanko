@@ -5,7 +5,8 @@ import "../../core/Hands.js" as Hands
 
 // The frame every craft hand (Shōgi, Soroban, Odoshi, Kasumi) sits in:
 // the eyebrow, the hand's own body, the quiet lines (zones, details), the
-// hint, and the foot's buttons, all from one Hands.js model. Keys: the
+// hint, the inbox's open letter, and the foot's buttons, all from one
+// Hands.js model. Keys: the
 // cursor (SheetView, core/Cursor.js) walks the hand's ranks, rods, lames
 // and bands; letters as the model says.
 Item {
@@ -16,6 +17,7 @@ Item {
   default property alias body: content.data
   // The hand's own hint for a row you can set ("Click a square to move it").
   property string setHint: ""
+  property date now: new Date()
   signal request(string what, var arg)
 
   readonly property var hero: model.hero
@@ -53,6 +55,13 @@ Item {
     Column {
       id: content
       width: parent.width
+    }
+    // The inbox's open letter, in full (model.letter).
+    LetterLeaf {
+      letter: root.model.letter || null
+      now: root.now
+      onClosed: root.request("open", "")
+      onPutAway: root.request("putAway", root.model.letter)
     }
 
     Item { width: 1; height: Type.px(10); visible: root.model.lines.length > 0 }
@@ -108,6 +117,12 @@ Item {
     }
   }
   Keys.onPressed: function(event) {
+    // Delete puts the inbox's open letter away.
+    if (event.key === Qt.Key_Delete && root.model.letter) {
+      root.request("putAway", root.model.letter)
+      event.accepted = true
+      return
+    }
     var letters = root.model.keys.letters
     var k = event.text.toUpperCase()
     if (k && letters[k]) { root.act(letters[k]); event.accepted = true }

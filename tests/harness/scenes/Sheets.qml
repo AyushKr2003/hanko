@@ -15,7 +15,7 @@ import "../../../bar/sheets"
 // `feed` is the sheet's plain data (SheetView.feed); `cell` overrides the
 // bar cell the sheet hangs from; `keys` are pressed in turn once it is laid
 // out, to draw the cursor (core/Cursor.js): "down", "up", "left", "right",
-// "enter", "+" or "-".
+// "enter", "+" or "-"; `open` is an inbox letter opened (its stem).
 Rectangle {
   id: sheet
 
@@ -129,6 +129,13 @@ Rectangle {
               f.now = desk.now
               return f
             }
+          }
+          // An inbox letter opened to read in full ("open": its stem), once
+          // the sheet is set (a new sheet folds any open letter).
+          Timer {
+            interval: 60
+            running: !!deskColumn.modelData.open
+            onTriggered: view.openLetter = deskColumn.modelData.open
           }
           Timer {
             interval: 120

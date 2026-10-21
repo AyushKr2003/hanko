@@ -192,6 +192,7 @@ Item {
     } else if (key === "inbox") {
       if (what === "dnd") Status.act("notif", "right")
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
+      else if (what === "putAway") Status.putAwayLetter(arg)
       // `clear` forgets the history, `dismissAll` the toasts still on screen.
       else if (what === "clear") {
         Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])

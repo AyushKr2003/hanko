@@ -25,7 +25,7 @@ const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
-  "stampGlyph", "tilt", "notifications", "count2", "LOW_BATTERY", "age", "short", "fill"])
+  "stampGlyph", "tilt", "notifications", "without", "count2", "LOW_BATTERY", "age", "short", "fill"])
 const Sh = load("core/Sheets.js", ["SHEETS", "ALL", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
@@ -564,6 +564,16 @@ test("inbox: bodies, one copy per notification, and how long ago", () => {
   assert.equal(St.age(0, 12 * 60000), "12m")
   assert.equal(St.age(0, 3 * 3600000), "3h")
   assert.equal(St.age(0, 50 * 3600000), "2d")
+})
+
+test("inbox: each letter carries the stem Omarchy files it under, to put one away", () => {
+  const raw = [
+    JSON.stringify({ app: "Signal", summary: "Mika", timestamp: 1000, originalId: 4 }),
+    JSON.stringify({ app: "Mail", summary: "Rent", timestamp: 2000, originalId: 9 })].join("\n")
+  const n = St.notifications(raw)
+  assert.deepEqual(n.map(l => l.stem), ["2000-9", "1000-4"])
+  assert.deepEqual(St.without(n, { "2000-9": true }).map(l => l.stem), ["1000-4"])
+  assert.equal(St.without(n, null).length, 2)
 })
 
 test("spaces carry each window's app and address for the scroll's map", () => {
@@ -1384,6 +1394,15 @@ test("hands: network, bluetooth, power, display and inbox", () => {
   assert.equal(i.levels[1].level, 0.08)
   assert.equal(i.levels[0].detail, "See you at 8")
   assert.ok(i.levels[1].urgent)
+  assert.equal(i.letter, null)
+  // A letter opened (by its stem): selected, unfolded as m.letter, and a
+  // second click folds it.
+  const letters = [{ app: "Signal", summary: "Mika", body: "A long one", timestamp: handNow.getTime(), stem: "1-4" },
+                   { app: "Mail", summary: "Rent", body: "", timestamp: handNow.getTime(), stem: "2-9" }]
+  const o = Hd.model("inbox", { letters, openLetter: "2-9" }, handNow, handLib)
+  assert.equal(o.letter.summary, "Rent")
+  assert.deepEqual(o.levels.map(r => r.selected), [false, true])
+  assert.deepEqual(o.levels.map(r => r.click), [{ what: "open", arg: "1-4" }, { what: "open", arg: "" }])
 })
 
 

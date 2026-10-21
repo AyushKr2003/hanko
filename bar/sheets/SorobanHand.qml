@@ -272,7 +272,7 @@ HandSheet {
             across: true
             width: wire.beadW
             height: Type.px(16)
-            anchors.verticalCenter: parent.verticalCenter
+            y: (wire.height - height) / 2
             x: index < wire.home ? Type.px(4) + index * wire.beadW : wire.wireW - (10 - index) * wire.beadW
             counted: index < wire.home
             tint: wire.r.urgent || wire.r.selected ? Ink.seal : wire.r.dashed ? Ink.inkFaint : Ink.ink

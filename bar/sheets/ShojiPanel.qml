@@ -152,6 +152,7 @@ Item {
       skin: root.skin
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
+      openStem: root.feed.openLetter || ""
       now: root.feed.now || new Date()
       onRequest: function(s, what, arg) { root.request(s, what, arg) }
       Keys.onEscapePressed: root.closeRequested()

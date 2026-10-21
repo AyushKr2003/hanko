@@ -90,8 +90,30 @@ Singleton {
     // and gawk stops dead on it, before it ever reaches the history.
     command: ["sh", "-c", "for f in \"$1\"/*.json \"$1\"/history/*.json; do [ -f \"$f\" ] && cat \"$f\" && echo; done; true", "--", root.notifDir]
     stdout: StdioCollector {
-      onStreamFinished: root.notifications = StatusJs.notifications(text)
+      onStreamFinished: root.notifications = StatusJs.without(StatusJs.notifications(text), root.putAway)
     }
+  }
+
+  // One letter put away for good: off the screen if it is still a toast
+  // (Omarchy's `dismiss` moves it into the history), then its history file
+  // and images deleted. It leaves the inbox at once; `putAway` keeps it out
+  // while the files go.
+  property var putAway: ({})
+  function putAwayLetter(letter) {
+    if (!letter || !letter.stem) return
+    var gone = Object.assign({}, putAway)
+    gone[letter.stem] = true
+    putAway = gone
+    notifications = StatusJs.without(notifications, gone)
+    run(["sh", "-c",
+      "dir=$1 stem=$2\n" +
+      "if [ -f \"$dir/$stem.json\" ]; then\n" +
+      "  [ -n \"$3\" ] && omarchy-shell notifications dismiss \"$3\" >/dev/null 2>&1\n" +
+      "  i=0; while [ -f \"$dir/$stem.json\" ] && [ $i -lt 30 ]; do sleep 0.1; i=$((i+1)); done\n" +
+      "  rm -f \"$dir/$stem.json\"\n" +
+      "fi\n" +
+      "rm -f \"$dir/history/$stem.json\" \"$dir/images/$stem\"-*", "--",
+      root.notifDir, String(letter.stem), String(letter.summary || "")])
   }
 
   // Without the proxy (an older Omarchy), DND comes from the settings file.
