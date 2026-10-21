@@ -25,11 +25,11 @@ Column {
 
   // A compact board: [label, width in units].
   readonly property var board: [
-    [["Esc", 1.25], ["1", 1], ["2", 1], ["3", 1], ["4", 1], ["5", 1], ["6", 1], ["7", 1], ["8", 1], ["9", 1], ["0", 1], ["Bksp", 1.75]],
+    [["Esc", 1], ["1", 1], ["2", 1], ["3", 1], ["4", 1], ["5", 1], ["6", 1], ["7", 1], ["8", 1], ["9", 1], ["0", 1], ["-", 1], ["+", 1]],
     [["Tab", 1.5], ["Q", 1], ["W", 1], ["E", 1], ["R", 1], ["T", 1], ["Y", 1], ["U", 1], ["I", 1], ["O", 1], ["P", 1], ["/", 1.5]],
     [["Ctrl", 1.75], ["A", 1], ["S", 1], ["D", 1], ["F", 1], ["G", 1], ["H", 1], ["J", 1], ["K", 1], ["L", 1], ["Enter", 2.25]],
     [["Shift", 2.25], ["Z", 1], ["X", 1], ["C", 1], ["V", 1], ["B", 1], ["N", 1], ["M", 1], ["", 1], ["↑", 1], ["", 1.75]],
-    [["Super", 1.5], ["Alt", 1.25], ["Space", 6.25], ["←", 1], ["↓", 1], ["→", 1], ["", 1]]
+    [["Super", 1.5], ["Alt", 1.25], ["Space", 6.25], ["←", 1], ["↓", 1], ["→", 1], ["Menu", 1]]
   ]
   readonly property real unit: Math.min(Type.px(56), (width - Type.px(40)) / 13)
 
@@ -64,6 +64,9 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          readonly property bool keyChosen: tab.open
+          function keyPress() { root.context = tab.modelData.key }
           onClicked: root.context = tab.modelData.key
         }
       }

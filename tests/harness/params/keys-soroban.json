@@ -1,0 +1,629 @@
+{
+ "title": "Keys · the cursor on the soroban hand",
+ "scene": "Sheets",
+ "width": 1600,
+ "theme": {
+  "foreground": "#ddd5c7",
+  "background": "#0a0a09",
+  "red": "#d8452f"
+ },
+ "spaces": [
+  {
+   "id": 1,
+   "active": false,
+   "urgent": false,
+   "count": 2,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "active": false,
+   "urgent": false,
+   "count": 1,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1,
+     "focused": true
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "active": true,
+   "urgent": false,
+   "count": 3,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "active": false,
+   "urgent": true,
+   "count": 4,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "active": false,
+   "urgent": false,
+   "count": 0,
+   "windows": []
+  }
+ ],
+ "window": {
+  "cls": "Alacritty",
+  "title": "nvim /home/ayush/code/hanko/Bar.qml"
+ },
+ "media": {
+  "title": "Water Copy",
+  "artist": "Hiroshi Yoshimura",
+  "progress": 0.38,
+  "playing": true
+ },
+ "volume": {
+  "percent": 62,
+  "level": 0.62,
+  "muted": false,
+  "needsYou": false
+ },
+ "network": {
+  "kind": "wifi",
+  "name": "Kumo",
+  "signal": 68,
+  "bars": 3,
+  "off": false,
+  "needsYou": false
+ },
+ "battery": {
+  "percent": 91,
+  "level": 0.91,
+  "charging": false,
+  "needsYou": false
+ },
+ "brightness": null,
+ "notifications": [
+  {
+   "app": "Signal",
+   "summary": "",
+   "timestamp": 3,
+   "urgent": false,
+   "glyph": "S",
+   "tilt": -3
+  },
+  {
+   "app": "Ghostty",
+   "summary": "",
+   "timestamp": 2,
+   "urgent": false,
+   "glyph": "G",
+   "tilt": 3
+  },
+  {
+   "app": "Firefox",
+   "summary": "",
+   "timestamp": 1,
+   "urgent": false,
+   "glyph": "火",
+   "tilt": -1.5
+  }
+ ],
+ "desks": [
+  {
+   "label": "TIME · SOROBAN · KEYS DOWN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "time": "soroban",
+     "sound": "soroban",
+     "network": "soroban",
+     "bluetooth": "soroban",
+     "power": "soroban",
+     "display": "soroban",
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "time",
+   "feed": {
+    "zones": [
+     {
+      "label": "Tokyo",
+      "id": "Asia/Tokyo",
+      "ready": true,
+      "time": "06:44",
+      "date": "Wed 07 · JST",
+      "rel": "+9"
+     },
+     {
+      "label": "Lisbon",
+      "id": "Europe/Lisbon",
+      "ready": true,
+      "time": "22:44",
+      "date": "Tue 06 · WEST",
+      "rel": "+1"
+     }
+    ]
+   },
+   "height": 700,
+   "keys": [
+    "down"
+   ]
+  },
+  {
+   "label": "SOUND · SOROBAN · KEYS DOWN DOWN",
+   "doc": {
+    "preset": "Sheet",
+    "sheetStyles": {
+     "time": "soroban",
+     "sound": "soroban",
+     "network": "soroban",
+     "bluetooth": "soroban",
+     "power": "soroban",
+     "display": "soroban",
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "sound",
+   "feed": {
+    "sound": {
+     "master": {
+      "percent": 62,
+      "level": 0.62,
+      "muted": false
+     },
+     "outputs": [
+      {
+       "id": 41,
+       "name": "usb",
+       "label": "Studio Monitors",
+       "detail": "USB · Focusrite 2i2 · 48 kHz",
+       "current": true,
+       "note": "Live"
+      },
+      {
+       "id": 52,
+       "name": "bt",
+       "label": "WH-1000XM5",
+       "detail": "Bluetooth · LDAC",
+       "current": false,
+       "note": "Paired"
+      }
+     ],
+     "streams": [
+      {
+       "id": 7,
+       "name": "spotify",
+       "label": "Spotify",
+       "level": 0.8,
+       "percent": 80,
+       "muted": false
+      },
+      {
+       "id": 8,
+       "name": "firefox",
+       "label": "Firefox",
+       "level": 0.45,
+       "percent": 45,
+       "muted": false
+      }
+     ],
+     "input": "Input · Shure MV7",
+     "inputMuted": false
+    }
+   },
+   "height": 700,
+   "keys": [
+    "down",
+    "down"
+   ]
+  },
+  {
+   "label": "NETWORK · SOROBAN · KEYS DOWN DOWN",
+   "doc": {
+    "preset": "Sheet",
+    "sheetStyles": {
+     "time": "soroban",
+     "sound": "soroban",
+     "network": "soroban",
+     "bluetooth": "soroban",
+     "power": "soroban",
+     "display": "soroban",
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "network",
+   "feed": {
+    "network": {
+     "current": {
+      "kind": "wifi",
+      "label": "Kumo",
+      "detail": "Wi-Fi · WPA2 · 5 GHz · 82%"
+     },
+     "radio": true,
+     "offline": false,
+     "networks": [
+      {
+       "ssid": "Kumo",
+       "detail": "WPA2 · 5 GHz · 82%",
+       "current": true,
+       "saved": true,
+       "secure": true,
+       "signal": 82,
+       "note": "Connected"
+      },
+      {
+       "ssid": "Kumo 2.4",
+       "detail": "WPA2 · 2.4 GHz · 64%",
+       "current": false,
+       "saved": true,
+       "secure": true,
+       "signal": 64,
+       "note": "Saved"
+      },
+      {
+       "ssid": "Neighbour",
+       "detail": "WPA3 · 5 GHz · 41%",
+       "current": false,
+       "saved": false,
+       "secure": true,
+       "signal": 41,
+       "note": ""
+      },
+      {
+       "ssid": "Library",
+       "detail": "2.4 GHz · 22%",
+       "current": false,
+       "saved": false,
+       "secure": false,
+       "signal": 22,
+       "note": "Open"
+      }
+     ]
+    }
+   },
+   "height": 700,
+   "keys": [
+    "down",
+    "down"
+   ]
+  },
+  {
+   "label": "BLUETOOTH · SOROBAN · KEYS DOWN DOWN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "time": "soroban",
+     "sound": "soroban",
+     "network": "soroban",
+     "bluetooth": "soroban",
+     "power": "soroban",
+     "display": "soroban",
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "bluetooth",
+   "feed": {
+    "bluetooth": {
+     "title": "WH-1000XM5",
+     "blurb": "Headphones · 80%",
+     "present": true,
+     "enabled": true,
+     "scanning": true,
+     "connected": [
+      {
+       "address": "AC:80:0A:11:22:33",
+       "name": "WH-1000XM5",
+       "detail": "Headphones · 80%",
+       "connected": true,
+       "paired": true,
+       "note": "Connected",
+       "level": 80
+      }
+     ],
+     "known": [
+      {
+       "address": "11:22:33:44:55:66",
+       "name": "MX Keys",
+       "detail": "Keyboard",
+       "connected": false,
+       "paired": true,
+       "note": "Paired",
+       "level": -1
+      },
+      {
+       "address": "22:33:44:55:66:77",
+       "name": "MX Master 3S",
+       "detail": "Mouse · 55%",
+       "connected": false,
+       "paired": true,
+       "note": "Paired",
+       "level": 55
+      }
+     ],
+     "found": [
+      {
+       "address": "DD:EE:FF:00:11:22",
+       "name": "Pixel 9",
+       "detail": "Phone",
+       "connected": false,
+       "paired": false,
+       "note": "",
+       "level": -1
+      }
+     ]
+    }
+   },
+   "height": 700,
+   "bluetooth": {
+    "name": "WH-1000XM5",
+    "enabled": true,
+    "connected": 1,
+    "level": 0.8,
+    "needsYou": false
+   },
+   "keys": [
+    "down",
+    "down"
+   ]
+  },
+  {
+   "label": "POWER · SOROBAN · KEYS DOWN DOWN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "time": "soroban",
+     "sound": "soroban",
+     "network": "soroban",
+     "bluetooth": "soroban",
+     "power": "soroban",
+     "display": "soroban",
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "power",
+   "feed": {
+    "power": {
+     "percent": 91,
+     "low": false,
+     "charging": false,
+     "blurb": "2h 41m left · drawing 9.8W",
+     "details": [
+      {
+       "name": "State",
+       "value": "On battery"
+      },
+      {
+       "name": "Capacity",
+       "value": "57Wh"
+      },
+      {
+       "name": "Cycles",
+       "value": "112"
+      },
+      {
+       "name": "Charge limit",
+       "value": "80%"
+      }
+     ],
+     "profiles": [
+      {
+       "name": "performance",
+       "label": "Performance",
+       "detail": "Everything at full speed",
+       "active": false
+      },
+      {
+       "name": "balanced",
+       "label": "Balanced",
+       "detail": "Fast when it matters, quiet otherwise",
+       "active": true
+      },
+      {
+       "name": "power-saver",
+       "label": "Power saver",
+       "detail": "Longer battery, slower and cooler",
+       "active": false
+      }
+     ],
+     "brightness": {
+      "percent": 70,
+      "level": 0.7,
+      "needsYou": false
+     }
+    }
+   },
+   "height": 700,
+   "keys": [
+    "down",
+    "down"
+   ]
+  },
+  {
+   "label": "DISPLAY · SOROBAN · KEYS DOWN DOWN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "time": "soroban",
+     "sound": "soroban",
+     "network": "soroban",
+     "bluetooth": "soroban",
+     "power": "soroban",
+     "display": "soroban",
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "display",
+   "feed": {
+    "display": {
+     "title": "Built-in",
+     "blurb": "2880×1800 · 120 Hz · ×1.75",
+     "target": "eDP-1",
+     "monitors": [
+      {
+       "name": "eDP-1",
+       "label": "Built-in · eDP-1",
+       "detail": "2880×1800 · 120 Hz · ×1.75",
+       "focused": true,
+       "enabled": true,
+       "internal": true,
+       "current": true
+      },
+      {
+       "name": "DP-2",
+       "label": "LG ULTRAGEAR · DP-2",
+       "detail": "2560×1440 · 144 Hz · ×1.25",
+       "focused": false,
+       "enabled": true,
+       "internal": false,
+       "current": false
+      },
+      {
+       "name": "HDMI-A-1",
+       "label": "TV · HDMI-A-1",
+       "detail": "Switched off in Hyprland",
+       "focused": false,
+       "enabled": false,
+       "internal": false,
+       "current": false
+      }
+     ],
+     "brightness": {
+      "percent": 70,
+      "level": 0.7
+     },
+     "night": false
+    }
+   },
+   "height": 700,
+   "brightness": {
+    "percent": 70,
+    "level": 0.7,
+    "needsYou": false
+   },
+   "keys": [
+    "down",
+    "down"
+   ]
+  },
+  {
+   "label": "INBOX · SOROBAN · KEYS DOWN DOWN",
+   "doc": {
+    "preset": "Instrument",
+    "sheetStyles": {
+     "time": "soroban",
+     "sound": "soroban",
+     "network": "soroban",
+     "bluetooth": "soroban",
+     "power": "soroban",
+     "display": "soroban",
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5
+     }
+    ],
+    "dnd": false
+   },
+   "height": 700,
+   "keys": [
+    "down",
+    "down"
+   ]
+  }
+ ]
+}

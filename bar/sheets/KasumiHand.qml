@@ -133,6 +133,9 @@ HandSheet {
       Item {
         id: day
         required property var modelData
+        readonly property bool keyStop: !!modelData.click
+        readonly property bool keyChosen: !!modelData.selected
+        function keyPress() { root.act(day.modelData.click) }
         width: week.side
         height: week.side + Type.px(18)
         Rectangle {

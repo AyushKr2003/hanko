@@ -1,7 +1,7 @@
 .pragma library
 
 // The settings window (docs/COMPONENTS.md §6): what its rail lists, how the
-// Typesetting 組版 page groups the twenty-six settings into six cards, and the
+// Typesetting 組版 page groups the twenty-one settings into six cards, and the
 // small sums its header and action bar print. bar/settings/ draws these.
 
 var RAIL = [
@@ -11,7 +11,6 @@ var RAIL = [
                                 { key: "colour", label: "Colour", jp: "色" },
                                 { key: "screens", label: "Screens", jp: "画面" }] },
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
-                                { key: "scroll", label: "Scroll", jp: "巻" },
                                 { key: "overview", label: "Overview", jp: "一覧" }] },
   { group: "03 FEEL",   pages: [{ key: "kaze", label: "Kaze", jp: "風" },
                                 { key: "motion", label: "Motion", jp: "動" },
@@ -26,13 +25,12 @@ var PAGE_ALIASES = { widgets: "parts", advanced: "screens" }
 
 // What each page is for, under its title.
 var PAGE_LINES = {
-  typesetting: "Click a part of your bar, then pick how it is set. Hover a way to try it; a click keeps it, live on your desktop. Ctrl+Z puts it back.",
+  typesetting: "Click a part of your bar, then pick how it is set. Hover a way to try it; a click keeps it, live on your desktop. Ctrl+Z puts it back. The arrows or H J K L walk everything here, Enter presses.",
   presets: "Patterns for the whole bar. Pick one to see it set as your bar and what it would change; Use puts it on. Your seal, type size, sheets and set-aside parts stay yours.",
   parts: "Everything that can sit on your bar, in the order it sits. Click a part to set it aside; click it again to put it back.",
   colour: "Hanko takes every colour from your Omarchy theme: one paper, four inks stepped from it, one red. Pick a theme here and the whole desk follows.",
   screens: "Each screen can carry a bar of its own. Pick a screen to see and set what differs on it; the rest follow Typesetting.",
   sheets: "A sheet drops from the cell you click. Pick a sheet, then the hand that draws it; hover a hand to see that sheet in it.",
-  scroll: "The handscroll unrolls from the rod with every panel on it. Choose what sits between its sections and what follows Inbox.",
   overview: "The workspace overview: every space at once, its windows where they sit. Pick how it is laid out; each is drawn with your own spaces.",
   kaze: "The desk beyond the bar: the printed wallpaper, the wind in its grass, sound, and Sumi. Every change is kept as you make it; Undo puts it back.",
   motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, only a new stamp overshoots. The timesheet below is every move Hanko makes; hover a row to play it.",
@@ -68,10 +66,10 @@ var PRESET_KANJI = {
 }
 
 // The settings a preset card names under its title: how the bar reads at
-// a glance (status, clock, height, surface, panels), as small caps.
-var PRESET_FACTS = ["status", "clock", "height", "surface", "panels"]
-// Under Inkan there is no bar to describe: the form, its corner, its panels.
-var INKAN_FACTS = ["form", "inkanAt", "panels"]
+// a glance (status, clock, height, surface), as small caps.
+var PRESET_FACTS = ["status", "clock", "height", "surface"]
+// Under Inkan there is no bar to describe: the form and its corner.
+var INKAN_FACTS = ["form", "inkanAt"]
 function presetFacts(style) {
   var st = style || {}
   if (st.form === "inkan")
@@ -97,7 +95,7 @@ function presetMatches(name, query, presets) {
 // What a preset would change on your bar (the pattern book, Presets 型): one
 // row per setting that resolves differently, in the proof's order, each
 // with the part it is set on: [{ key, name, no, part, from, to }]. Panel
-// settings (on Scroll and Overview) come last, numbered "—"; a preset that
+// settings (on Overview) come last, numbered "—"; a preset that
 // also sets the sheets' hands says so. S is core/Style.js.
 function presetDiff(doc, name, S) {
   var now = S.resolve(doc), then = S.resolve(S.withPreset(doc, name))
@@ -163,11 +161,6 @@ var CARDS = [
     { key: "grain", name: "Paper grain", detail: "The washi's fibres" },
     { key: "position", name: "Position", detail: "" }] },
   { title: "Panels", rows: [
-    { key: "panels", name: "Panels open as", detail: "Flush sheets or one scroll" },
-    { key: "interlude", name: "Scroll dividers", detail: "What sits between the scroll's sections" },
-    { key: "endleaf", name: "Scroll end leaf", detail: "What sits after Inbox" },
-    { key: "sides", name: "Scroll sides", detail: "Bare paper, or paper curling under" },
-    { key: "guides", name: "Scroll guides", detail: "The tabs on top, the position bar at the foot, both or none" },
     { key: "overview", name: "Overview", detail: "Printed pages in a grid, Ryoku's busy spaces and a +, or the live space's windows spread out with search" },
     { key: "sealGlyph", name: "Seal glyph", detail: "Used when seal is fixed" }] }
 ]
@@ -176,7 +169,7 @@ var CARDS = [
 // large as a galley, each part numbered in the margin; a part picked shows
 // its case, a specimen of the part per way it can be set, then the few
 // plain choices that go with it. Every setting of CARDS' first five cards
-// is here once; the sixth (Panels) is on the Scroll 巻 page.
+// is here once; the sixth (Panels) is on the Overview 一覧 page.
 //   cast   settings drawn as specimens (the part, set each way)
 //   also   settings given as words (a segmented row, or the glyph stones)
 //   bar    true when the part is drawn only on the bar (not under Inkan)
@@ -215,12 +208,6 @@ var PROOF = [
     line: "What the bar is, its paper and its size. Inkan takes the strip away and leaves one seal in a corner.",
     cast: ["form", "surface"], also: ["height", "typeSize", "float", "position", "grain", "inkanAt"] }
 ]
-
-// The Scroll 巻 page's card: how panels open, and the scroll's own frame
-// (its dividers and end leaf have galleries of their own there).
-var PANELS_CARD = { title: "Panels · how they open", rows: CARDS[5].rows.filter(function(r) {
-  return ["panels", "sides", "guides", "overview"].indexOf(r.key) >= 0
-}) }
 
 // Two indicators lit, for a proof made while none is on (the glyphs and
 // icons of core/Extras.js INDICATORS).
@@ -295,7 +282,7 @@ var WAYS = {
   edge: {
     hairline: ["Hairline", "One ink line"],
     dayrule: ["Day rule", "The day as a ruler, now in red"],
-    rod: ["Rod", "A rod to pull the panels from"],
+    rod: ["Rod", "A rod to pull the sheets from"],
     rodrule: ["Rod and rule", "The rod, ruled with the day"] },
   form: {
     bar: ["Bar", "The strip across the screen"],
@@ -368,14 +355,14 @@ function proofStep(key, delta) {
   return PROOF[(i + delta + PROOF.length) % PROOF.length].key
 }
 
-// The Motion 動 page: one switch outside the twenty-six (style.json `motion`),
+// The Motion 動 page: one switch outside the twenty-one (style.json `motion`),
 // and the timings it governs (core/Motion.qml holds the numbers).
 var MOTION_CARD = { title: "Motion · paper moves like paper", rows: [
   { key: "motion", name: "Motion", detail: "Paper eases every move; still cuts each one to its end frame" }] }
 var MOTION_OPTIONS = ["paper", "still"]
 var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
 var OVERVIEW_OPTIONS = ["grid", "dynamic", "mission"]
-// Shōji's touches, beside the twenty-six (Style.js SEASONS, NUMERALS, GRAINS).
+// Shōji's touches, beside the twenty-one (Style.js SEASONS, NUMERALS, GRAINS).
 var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
                      hours: ["auto", "24h", "12h"] }
 
@@ -386,9 +373,9 @@ var MOTION_ROWS = [
   ["Cut 斬", "A commit inverts at once; a hairline flashes and fades", "kiri"],
   ["Shake off 振", "Values and labels settle in after their plate", "chiburi"],
   ["Sheath 納", "Anything closes: slow away, into its edge, then the click", "noto"],
-  ["Unroll", "The rod drops and the scroll's paper follows it", "unroll"],
-  ["Ink", "Section ink arrives after the paper has moved", "ink"],
-  ["Pan", "A pan carries on and lands centred on a section", "pan"],
+  ["Unroll", "The overview unrolls from the bar", "unroll"],
+  ["Ink", "Ink arrives after the paper has moved", "ink"],
+  ["Pan", "Mission's tiles glide to their new place", "pan"],
   ["Print", "A sheet draws down from the cell you clicked", "sheetPrint"],
   ["Plates", "The live page's plate slides to the next one", "slide"],
   ["Values", "A changed reading fades through to the new one", "fade"],
@@ -407,9 +394,9 @@ var MOTION_SHEET = [
   { name: "Cut 斬", line: "A commit inverts at once; a hairline flashes and fades", prop: "kiri", delay: 0, curve: [0, 1, 0, 1], ease: "step, then fade" },
   { name: "Shake off 振", line: "Values and labels settle in after their plate", prop: "chiburi", delayProp: "chiburiDelay", curve: [0.25, 0.1, 0.25, 1], ease: "bézier .25 .1 .25 1" },
   { name: "Sheath 納", line: "Anything closes: slow away, into its edge, then the click", prop: "noto", delay: 0, curve: [0.7, 0, 0.84, 0], ease: "bézier .7 0 .84 0" },
-  { name: "Unroll", line: "The rod drops and the scroll's paper follows it", prop: "unroll", delay: 0, curve: [0.2, 0.9, 0.25, 1], ease: "bézier .2 .9 .25 1" },
-  { name: "Ink", line: "Section ink arrives after the paper has moved", prop: "ink", delayProp: "inkDelay", curve: [0.4, 0, 0.2, 1], ease: "bézier .4 0 .2 1" },
-  { name: "Pan", line: "A pan carries on and lands centred on a section", prop: "pan", delay: 0, curve: [0.16, 1, 0.3, 1], ease: "bézier .16 1 .3 1" },
+  { name: "Unroll", line: "The overview unrolls from the bar", prop: "unroll", delay: 0, curve: [0.2, 0.9, 0.25, 1], ease: "bézier .2 .9 .25 1" },
+  { name: "Ink", line: "Ink arrives after the paper has moved", prop: "ink", delayProp: "inkDelay", curve: [0.4, 0, 0.2, 1], ease: "bézier .4 0 .2 1" },
+  { name: "Pan", line: "Mission's tiles glide to their new place", prop: "pan", delay: 0, curve: [0.16, 1, 0.3, 1], ease: "bézier .16 1 .3 1" },
   { name: "Print", line: "A sheet draws down from the cell you clicked (the draw, held beat included)", prop: "sheetPrint", delay: 0, curve: [0.05, 0.9, 0.1, 1], ease: "the draw" },
   { name: "Plates", line: "A sliding plate moves to its new place", prop: "slide", delay: 0, curve: [0.33, 1, 0.68, 1], ease: "out cubic" },
   { name: "Values", line: "A changed reading fades to a trace and back", prop: "fade", delay: 0, curve: [0.11, 0, 0.5, 0], ease: "in quad, out quad", dip: true },
@@ -421,28 +408,42 @@ var MOTION_SHEET = [
 // key handlers in bar/), and the bindings the README suggests.
 var KEYMAP = [
   { key: "settings", jp: "設", name: "Here, in settings", keys: [
+    { caps: ["↑", "↓", "←", "→"], what: "Move the cursor over the rail and the page (the pointer moves it too)" },
+    { caps: ["H", "J", "K", "L"], what: "The same, as on Omarchy's panels" },
+    { caps: ["Enter", "Space"], what: "Press what the cursor is on" },
+    { caps: ["+", "-"], what: "Set a level (the wind's speed)" },
+    { caps: ["Tab"], what: "The next page (Shift for the one before)" },
     { caps: ["/"], what: "Search the settings" },
     { caps: ["Ctrl", "Z"], what: "Undo the last change" },
     { caps: ["Esc"], what: "Clear the search, then close" },
-    { caps: ["←", "→"], what: "Typesetting: the previous or next part" },
+    { caps: ["[", "]"], what: "Typesetting: the previous or next part" },
     { caps: ["1–0"], what: "Typesetting: open part 01 to 10" }] },
   { key: "sheet", jp: "紙", name: "On a sheet", keys: [
+    { caps: ["↑", "↓", "←", "→"], what: "Move the cursor (it shows on the first key)" },
+    { caps: ["H", "J", "K", "L"], what: "The same, as on Omarchy's panels" },
+    { caps: ["Enter", "Space"], what: "Press what the cursor is on" },
+    { caps: ["+", "-"], what: "The sheet's level up or down (← → on a ruler)" },
     { caps: ["Esc"], what: "Close the sheet" },
     { caps: ["Tab"], what: "The next sheet (Shift for the one before)" },
-    { caps: ["↑", "↓"], what: "Sound and Display: up or down 5%" },
-    { caps: ["←", "→"], what: "Time: a day back or on" },
     { caps: ["T"], what: "Time: back to today" },
     { caps: ["M"], what: "Sound: mute" },
     { caps: ["R"], what: "Network: look again" },
-    { caps: ["P"], what: "Bluetooth: power" },
+    { caps: ["P"], what: "Bluetooth: power · No. 00: play or pause" },
     { caps: ["N"], what: "Display: night light" },
-    { caps: ["Space"], what: "No. 00: play or pause" },
-    { caps: ["Enter"], what: "No. 00: open the row" }] },
-  { key: "scroll", jp: "巻", name: "On the scroll", keys: [
-    { caps: ["Esc"], what: "Roll it up" },
-    { caps: ["H", "L"], what: "Pan one section left or right (or ← →)" },
-    { caps: ["Tab"], what: "The next section (Shift for the one before)" },
-    { caps: ["1–8"], what: "Jump to section 1 to 8" }] },
+    { caps: ["1–9"], what: "No. 00: go to a workspace" }] },
+  { key: "bar", jp: "帯", name: "On the bar (bar focus)", keys: [
+    { caps: ["Super", "Ctrl", "0"], what: "The bar takes the keyboard (again: lets go)" },
+    { caps: ["←", "→"], what: "Move along the bar (or H and L, Tab)" },
+    { caps: ["Enter", "Space"], what: "Click what the cursor is on" },
+    { caps: ["Menu"], what: "Right-click it (or Shift F10): a tray app's menu" },
+    { caps: ["↑", "↓"], what: "Volume or brightness, on its reading" },
+    { caps: ["1–9"], what: "Go to a workspace" },
+    { caps: ["Esc"], what: "Let go of the keyboard" }] },
+  { key: "tray", jp: "盆", name: "In a tray menu", keys: [
+    { caps: ["↑", "↓"], what: "Walk the rows (or J and K)" },
+    { caps: ["Enter", "→"], what: "Open the row, or its submenu" },
+    { caps: ["←"], what: "Back out of a submenu" },
+    { caps: ["Esc"], what: "Close" }] },
   { key: "overview", jp: "一覧", name: "On the overview", keys: [
     { caps: ["H", "J", "K", "L"], what: "Move between spaces (or the arrows)" },
     { caps: ["0–9"], what: "Go to a space by number" },
@@ -456,9 +457,10 @@ var KEYMAP = [
 // Each frees its keys first (hl.unbind), so Omarchy's own binding, or one
 // of yours, never fires beside it; unbinding keys nothing holds is harmless.
 var BINDINGS = [
-  { what: "Unroll the scroll", caps: ["Super", "Ctrl", "U"], keys: "SUPER + CTRL + U", name: "Hanko scroll", command: "omarchy-shell hanko scroll" },
   { what: "Press Inkan's seal", caps: ["Super", "Alt", "I"], keys: "SUPER + ALT + I", name: "Hanko seal", command: "omarchy-shell hanko press" },
-  { what: "The overview, in place of Omarchy's", caps: ["Super", "Tab"], keys: "SUPER + TAB", name: "Hanko overview", command: "omarchy-shell hanko overview" }
+  { what: "The overview, in place of Omarchy's", caps: ["Super", "Tab"], keys: "SUPER + TAB", name: "Hanko overview", command: "omarchy-shell hanko overview" },
+  // code:19 is the 0 key, which Omarchy's Super+Ctrl+1..9 panel keys leave free.
+  { what: "The bar takes the keyboard", caps: ["Super", "Ctrl", "0"], keys: "SUPER + CTRL + code:19", name: "Hanko bar focus", command: "omarchy-shell hanko barFocus" }
 ]
 
 // The Lua lines for one binding, or for all of them.
@@ -497,57 +499,6 @@ function keyDoes(context, cap) {
   return ""
 }
 
-// The interludes as the Scroll 巻 page and the Typesetting row show them:
-// a kanji for the segmented control, a name and a line for the gallery.
-var INTERLUDES = [
-  { key: "ma",       jp: "間", name: "Ma",       detail: "Space alone" },
-  { key: "hairline", jp: "罫", name: "Hairline", detail: "One fading rule with a ring" },
-  { key: "folio",    jp: "柱", name: "Folio",    detail: "A ruler with both numbers" },
-  { key: "kotoba",   jp: "詞", name: "Kotoba",   detail: "The next name, set vertically" },
-  { key: "tsugime",  jp: "継", name: "Tsugime",  detail: "A paper join" },
-  { key: "seal",     jp: "鑑", name: "Seal",     detail: "A seal pressed across the join" },
-  { key: "jiku",     jp: "軸", name: "Jiku",     detail: "A slim inner roller" },
-  { key: "fuda",     jp: "札", name: "Fuda",     detail: "An index tab" },
-  { key: "su",       jp: "数", name: "Su",       detail: "The next number, large" }
-]
-
-function interludeOf(key) {
-  for (var i = 0; i < INTERLUDES.length; i++) if (INTERLUDES[i].key === key) return INTERLUDES[i]
-  return INTERLUDES[0]
-}
-
-// value -> kanji, for the Typesetting row's segmented control.
-function interludeLabels() {
-  var out = {}
-  for (var i = 0; i < INTERLUDES.length; i++) out[INTERLUDES[i].key] = INTERLUDES[i].jp
-  return out
-}
-
-// The end leaves as the Scroll 巻 page and the Typesetting row show them
-// (core/Leaf.js KINDS draws them; the unit tests keep the two in step).
-var ENDLEAVES = [
-  { key: "okugaki", jp: "奥", name: "Okugaki", detail: "A colophon: the machine, and seals" },
-  { key: "koyomi",  jp: "暦", name: "Koyomi",  detail: "The month, the season, the moon" },
-  { key: "kiki",    jp: "機", name: "Kiki",    detail: "CPU, memory, disk and heat" },
-  { key: "shimai",  jp: "終", name: "Shimai",  detail: "Lock, suspend, log out, shut down" },
-  { key: "iro",     jp: "色", name: "Iro",     detail: "Omarchy's themes, to switch" },
-  { key: "dougu",   jp: "具", name: "Dōgu",    detail: "Screenshot, picker, stay awake" },
-  { key: "shuchu",  jp: "集", name: "Shūchū",  detail: "A focus timer" },
-  { key: "hikae",   jp: "控", name: "Hikae",   detail: "Today's list and the clipboard" },
-  { key: "batsu",   jp: "跋", name: "Batsu",   detail: "The end of the scroll" }
-]
-
-function endleafOf(key) {
-  for (var i = 0; i < ENDLEAVES.length; i++) if (ENDLEAVES[i].key === key) return ENDLEAVES[i]
-  return ENDLEAVES[1]
-}
-
-function endleafLabels() {
-  var out = {}
-  for (var i = 0; i < ENDLEAVES.length; i++) out[ENDLEAVES[i].key] = ENDLEAVES[i].jp
-  return out
-}
-
 // A setting's name as its card row gives it ("clockAt" -> "Clock position").
 function nameOf(key) {
   for (var i = 0; i < CARDS.length; i++)
@@ -575,9 +526,7 @@ function visibilityCards(ctx) {
       row("title", "Window title", "The focused window")] },
     { title: "Centre · when", rows: [
       row("clock", "Clock", "The time and date"),
-      row("media", "Now playing", "What is playing, while it plays"),
-      row("weather", "Weather leaf 天", "Left of Time on the scroll"),
-      row("endleaf", "End leaf 跋", "Right of Inbox on the scroll")] },
+      row("media", "Now playing", "What is playing, while it plays")] },
     { title: "Right · readings", rows: [
       row("network", "Network 網", "NET"),
       row("bluetooth", "Bluetooth 双", "BT, where there is an adapter"),
@@ -654,10 +603,8 @@ function partsTray(ctx) {
     var name = h.name || prettyId(h.id)
     return sort("hosted:" + h.id, name, "text", { glyph: name.charAt(0).toUpperCase(), detail: h.firstParty ? "Omarchy" : "Third-party" })
   }) })
-  groups.push({ title: "Edge and scroll", jp: "縁", sorts: [
-    sort("edge", "Edge", "crop", { detail: "The line along the foot" }),
-    sort("weather", "Weather leaf", "text", { glyph: "天", detail: "Left of Time on the scroll" }),
-    sort("endleaf", "End leaf", "text", { glyph: "跋", detail: "Right of Inbox on the scroll" })] })
+  groups.push({ title: "Edge", jp: "縁", sorts: [
+    sort("edge", "Edge", "crop", { detail: "The line along the foot" })] })
   return groups
 }
 
@@ -686,7 +633,7 @@ function selected(key, style, glyph) {
 }
 
 // How many settings the draft changes from what is saved: every one of the
-// twenty-six that resolves differently, the seal glyph, and each monitor whose
+// twenty-one that resolves differently, the seal glyph, and each monitor whose
 // overrides differ.
 function changes(savedDoc, draftDoc, resolve) {
   var a = resolve(savedDoc), b = resolve(draftDoc)
@@ -739,7 +686,7 @@ function partName(part) {
   var fixed = { seal: "Seal", spaces: "Workspaces", title: "Window title", clock: "Clock", media: "Now playing",
                 network: "Network", bluetooth: "Bluetooth", volume: "Volume", brightness: "Brightness",
                 battery: "Battery", notif: "Inbox", edge: "Edge", keyboard: "Keyboard layout",
-                mic: "Microphone", tray: "Tray", weather: "Weather leaf", endleaf: "End leaf" }
+                mic: "Microphone", tray: "Tray" }
   if (fixed[p]) return fixed[p]
   if (p.indexOf("indicator:") === 0) {
     var names = { recording: "Screen recording", dictation: "Dictation", reminder: "Reminder", awake: "Stay awake", night: "Night light", dnd: "Do not disturb" }

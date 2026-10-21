@@ -15,5 +15,4 @@ function o.rebind(keys, description, dispatcher, options)
 end
 
 o.rebind("SUPER + TAB", "Hanko overview", "omarchy-shell hanko overview")          -- was: Next workspace
-o.bind("SUPER + D", "Hanko scroll", "omarchy-shell hanko scroll")
 o.bind("SUPER + SHIFT + I", "Hanko settings", "omarchy-shell hanko settings")

@@ -9,6 +9,9 @@ Rectangle {
   property bool plate: false
   property bool faint: false
   signal clicked()
+  // Te 手 (bar/parts/KeyCursor.qml): Enter presses it.
+  readonly property bool keyStop: true
+  function keyPress() { button.clicked() }
   width: buttonText.implicitWidth + 2 * Type.px(14)
   height: Type.px(32)
   radius: 3

@@ -128,6 +128,11 @@ Item {
         visible: root.showKeyboard
         width: kbFrame.width
         height: root.barHeight
+        // Te 手 (bar focus, bar/parts/KeyCursor.qml): Enter is a click,
+        // Menu a right-click, on every mark here.
+        readonly property bool keyStop: true
+        function keyPress() { root.keyboardAction("click") }
+        function keyMenu() { root.keyboardAction("right") }
         Rectangle {
           id: kbFrame
           anchors.verticalCenter: parent.verticalCenter
@@ -160,6 +165,9 @@ Item {
         visible: !!root.mic
         width: micText.implicitWidth
         height: root.barHeight
+        readonly property bool keyStop: true
+        function keyPress() { root.micAction("click") }
+        function keyMenu() { root.micAction("right") }
         Text {
           id: micText
           anchors.verticalCenter: parent.verticalCenter
@@ -191,6 +199,8 @@ Item {
       visible: root.trayFolded
       width: foldRow.implicitWidth
       height: root.barHeight
+      readonly property bool keyStop: true
+      function keyPress() { root.trayOpen = true }
       Row {
         id: foldRow
         anchors.verticalCenter: parent.verticalCenter
@@ -212,6 +222,9 @@ Item {
       Item {
         id: cell
         required property var modelData
+        readonly property bool keyStop: true
+        function keyPress() { root.trayAction(cell.modelData.id, "click", cell) }
+        function keyMenu() { root.trayAction(cell.modelData.id, "right", cell) }
         width: Type.px(16)
         height: root.barHeight
 
@@ -259,6 +272,9 @@ Item {
   component IndicatorStamp: Item {
     id: ind
     property var mark: ({})
+    readonly property bool keyStop: true
+    function keyPress() { root.indicatorAction(ind.mark.key, "click") }
+    function keyMenu() { root.indicatorAction(ind.mark.key, "right") }
     readonly property bool on: mark.on !== false
     // Kanji stamps are small seals, like the one at the far left, when on;
     // off, they are faint outlines like the icon stamps. A seal is carved in

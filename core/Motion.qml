@@ -39,7 +39,7 @@ QtObject {
   readonly property int noto: Iai.BEATS.noto.ms
   readonly property var notoCurve: Iai.qml("noto")
 
-  // The scroll unrolls (and the rod drops) in 300 ms; rolling up is quicker.
+  // The overview unrolls from the bar in 300 ms; rolling up is quicker.
   readonly property int unroll: 300
   readonly property int rollUp: 220
   readonly property var unrollCurve: [0.2, 0.9, 0.25, 1, 1, 1]
@@ -47,7 +47,7 @@ QtObject {
   readonly property int ink: 200
   readonly property int inkDelay: 120
   readonly property var inkCurve: [0.4, 0, 0.2, 1, 1, 1]
-  // A pan carries on and lands centred on a section.
+  // Mission's tiles glide to their new place.
   readonly property int pan: 260
   readonly property var panCurve: [0.16, 1, 0.3, 1, 1, 1]
   // A new stamp: pressed oversized and tilted, then settles. The only

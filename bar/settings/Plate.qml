@@ -1,6 +1,6 @@
 import QtQuick
 import "../../core"
-import "../../core/Scroll.js" as Scroll
+import "../../core/Dither.js" as Dither
 
 // The sample plate behind the preview bar: a dithered marbled orb in the
 // theme's ink, rising from the bottom right, so glass and inset have
@@ -31,9 +31,9 @@ Canvas {
       if (rr >= 1) continue
       var dz = Math.sqrt(1 - rr)
       var light = Math.max(0, -0.5 * dx - 0.6 * dy + 0.62 * dz)
-      var vein = Math.abs(Scroll.fbm(x / 70, y / 40) - 0.5) < 0.03 ? -0.35 : 0
+      var vein = Math.abs(Dither.fbm(x / 70, y / 40) - 0.5) < 0.03 ? -0.35 : 0
       var v = Math.min(1, Math.max(0, light * 0.9 + vein))
-      var t = (Scroll.BAYER[Math.floor(y / cell) % 4][Math.floor(x / cell) % 4] + 0.5) / 16
+      var t = (Dither.BAYER[Math.floor(y / cell) % 4][Math.floor(x / cell) % 4] + 0.5) / 16
       if (v > t) ctx.fillRect(x, y, cell, cell)
     }
   }

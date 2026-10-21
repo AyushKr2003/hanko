@@ -43,6 +43,10 @@ Item {
       id: opt
       required property var modelData
       required property int index
+      // Te 手 (core/Cursor.js): each option is a stop.
+      readonly property bool keyStop: true
+      readonly property bool keyChosen: opt.index === root.index
+      function keyPress() { root.picked(opt.modelData.key) }
       x: index * root.cellW
       width: root.cellW; height: root.height
       Text {

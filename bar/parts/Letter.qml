@@ -5,7 +5,8 @@ import "../../core/Status.js" as StatusJs
 
 // One notification (Kata part `notify`), in the Letters panel: Shōji's
 // row between lattice lines, its 未 seal on the right (the unread part).
-// `opened` on a click.
+// A click asks to unfold it (`toggled`; the whole summary and body) when it
+// runs past its row; the × under the seal asks `putAway`.
 Item {
   id: root
 
@@ -13,7 +14,15 @@ Item {
   property var letter: ({})
   property date now: new Date()
   property bool first: false
-  signal opened()
+  property bool expanded: false
+  // The summary or the body runs past its lines, so unfolding shows more.
+  readonly property bool more: summary.truncated || bodyText.truncated
+  signal toggled()
+  signal putAway()
+
+  // Te 手 (core/Cursor.js): Enter unfolds it; the × is a stop of its own.
+  readonly property bool keyStop: true
+  function keyPress() { if (root.more || root.expanded) root.toggled() }
 
   implicitHeight: body.implicitHeight + Type.px(22)
   width: parent ? parent.width : implicitWidth
@@ -36,14 +45,18 @@ Item {
         color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(12)
       }
       Text {
-        width: parent.width; elide: Text.ElideRight
+        id: summary
+        width: parent.width
+        elide: root.expanded ? Text.ElideNone : Text.ElideRight
+        wrapMode: root.expanded ? Text.Wrap : Text.NoWrap
         text: root.letter.summary || root.letter.app || ""
         color: root.letter.urgent ? Ink.seal : Ink.ink
         font.family: Type.text; font.pixelSize: Type.px(13.5); font.weight: Font.Medium; font.variableAxes: Type.valueAxes
       }
       Text {
+        id: bodyText
         visible: !!root.letter.body
-        width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
+        width: parent.width; wrapMode: Text.Wrap; maximumLineCount: root.expanded ? 1000 : 2; elide: Text.ElideRight
         text: root.letter.body || ""
         color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12.5)
       }
@@ -53,7 +66,21 @@ Item {
 
   MouseArea {
     anchors.fill: parent
+    enabled: root.more || root.expanded
     cursorShape: Qt.PointingHandCursor
-    onClicked: root.opened()
+    onClicked: root.toggled()
+  }
+  // Put away, under the 未 seal.
+  Text {
+    x: root.width - width
+    y: Type.px(24)
+    width: Type.px(22); height: Type.px(20)
+    horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+    readonly property bool keyStop: true
+    function keyPress() { root.putAway() }
+    text: "×"
+    color: away.containsMouse ? Ink.ink : Ink.ink3
+    font.family: Type.text; font.pixelSize: Type.px(15)
+    MouseArea { id: away; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.putAway() }
   }
 }

@@ -267,6 +267,8 @@ Item {
       }
       HoverHandler { id: editHover; cursorShape: Qt.PointingHandCursor }
       TapHandler { onTapped: root.editing = !root.editing }
+      readonly property bool keyStop: true
+      function keyPress() { root.editing = !root.editing }
     }
   }
   }
@@ -737,6 +739,8 @@ Item {
   component EyeChip: Rectangle {
     id: chip
     property string block: ""
+    readonly property bool keyStop: true
+    function keyPress() { root.blockToggled(chip.block) }
     // On a block: beside its middle, or on its top right corner (a stacked
     // page has no room beside). Chips placed by hand set x and y instead.
     property bool beside: true
@@ -839,6 +843,8 @@ Item {
       enabled: root.editing && !inline.armed
       hoverEnabled: root.editing
       cursorShape: Qt.IBeamCursor
+      readonly property bool keyStop: enabled
+      function keyPress() { inline.armed = true }
       onClicked: inline.armed = true
     }
   }
@@ -848,6 +854,8 @@ Item {
     property string label: ""
     property bool plate: false
     signal clicked()
+    readonly property bool keyStop: true
+    function keyPress() { sb.clicked() }
     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
     width: sbText.implicitWidth + 2 * Type.px(12)
     height: Type.px(28)

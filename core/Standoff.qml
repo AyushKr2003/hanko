@@ -2,8 +2,9 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import "Taiji.js" as Taiji
-import "Leaf.js" as Leaf
+import "Almanac.js" as Almanac
 import "Wind.js" as Wind
 
 // Taiji 対峙, the standoff (docs/kaze, mockup 09): the lock screen's picture,
@@ -30,7 +31,7 @@ Rectangle {
   readonly property real bladeX: blade.x
   readonly property real bladeY: blade.y
 
-  color: Color.background
+  color: Commons.Color.background
 
   // Cache-busts the lock background by appending `?v=` (as the stock view).
   function fileUrl(path) {
@@ -55,7 +56,7 @@ Rectangle {
   // The clock and the almanac, once a second.
   property var now: new Date()
   Timer { interval: 1000; running: true; repeat: true; onTriggered: root.now = new Date() }
-  readonly property var ko: Leaf.almanac(root.now).ko
+  readonly property var ko: Almanac.almanac(root.now).ko
 
   // The wallpaper in ink: no colour, a little darker, never blurred.
   Image {
@@ -86,7 +87,7 @@ Rectangle {
     height: Math.round(300 * root.k)
     gradient: Gradient {
       GradientStop { position: 0; color: "transparent" }
-      GradientStop { position: 0.7; color: Color.background }
+      GradientStop { position: 0.7; color: Commons.Color.background }
     }
   }
   Canvas {

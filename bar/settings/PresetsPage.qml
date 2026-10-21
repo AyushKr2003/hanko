@@ -130,6 +130,9 @@ Column {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
+                readonly property bool keyStop: enabled
+                readonly property bool keyChosen: swatch.open
+                function keyPress() { root.viewed = swatch.modelData }
                 onClicked: root.viewed = swatch.modelData
                 onDoubleClicked: root.presetPicked(swatch.modelData)
               }

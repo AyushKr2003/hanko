@@ -5,8 +5,9 @@ import "../../core/Status.js" as StatusJs
 
 // Inbox 報: your notifications as stamped letters, newest first: what it
 // says, who sent it, how long ago, and the app's seal tilted in the corner
-// (solid red when urgent). At the foot: do not disturb, replaying recent
-// ones as toasts, and clearing them all.
+// (solid red when urgent). A letter that runs past its row opens in place
+// on a click; its × puts it away (Delete, for the open one). At the foot:
+// do not disturb, replaying recent ones as toasts, and clearing them all.
 Item {
   id: root
 
@@ -16,8 +17,12 @@ Item {
   property date now: new Date()
   property int maxRows: 6
 
-  // what: dnd | replay | clear
+  // what: dnd | replay | clear | open (arg: a stem, "" to fold it) |
+  // putAway (arg: the letter)
   signal request(string what, var arg)
+
+  // The stem of the letter opened in place (SheetView keeps it).
+  property string openStem: ""
 
   readonly property var shown: letters.slice(0, maxRows)
 
@@ -60,32 +65,64 @@ Item {
         id: letter
         required property var modelData
         required property int index
+        readonly property bool open: modelData.stem === root.openStem
         name: modelData.summary || modelData.app
-        detail: (modelData.app ? modelData.app : "") + (modelData.body ? " · " + modelData.body.replace(/\s+/g, " ") : "")
-        nameWidth: root.width - Type.px(20) - Type.px(12) - Type.px(28) - Type.px(10) - Type.px(40)
-        note: StatusJs.age(modelData.timestamp, root.now.getTime())
-        upperNote: false
+        detail: (modelData.app ? modelData.app : "") + (modelData.body ? " · " + (open ? modelData.body : modelData.body.replace(/\s+/g, " ")) : "")
+        // The row less its margins and the seal, age and × on the right.
+        nameWidth: column.width - Type.px(20) - Type.px(12) - Type.px(100)
         last: index === root.shown.length - 1
+        wrap: open
+        interactive: cut || open
+        trailingOnTop: true
+        onClicked: root.request("open", open ? "" : modelData.stem)
 
-        // The app's seal, tilted like a stamp on an envelope.
-        Rectangle {
-          width: Type.px(22)
-          height: Type.px(22)
-          rotation: letter.modelData.tilt
-          radius: 2
-          color: letter.modelData.urgent ? Ink.seal : "transparent"
-          border.width: 1
-          border.color: root.dnd ? Ink.inkFaint : Ink.seal
+        // The app's seal, tilted like a stamp on an envelope, how long
+        // ago, and the × that puts the letter away.
+        Row {
+          spacing: Type.px(10)
+          Rectangle {
+            anchors.verticalCenter: parent.verticalCenter
+            width: Type.px(22)
+            height: Type.px(22)
+            rotation: letter.modelData.tilt
+            radius: 2
+            color: letter.modelData.urgent ? Ink.seal : "transparent"
+            border.width: 1
+            border.color: root.dnd ? Ink.inkFaint : Ink.seal
+            Text {
+              anchors.centerIn: parent
+              text: letter.modelData.glyph
+              color: letter.modelData.urgent ? Ink.paper : root.dnd ? Ink.inkFaint : Ink.seal
+              font.family: /[　-鿿]/.test(letter.modelData.glyph) ? Type.jpSerif : Type.display
+              font.pixelSize: Type.px(12)
+            }
+          }
           Text {
-            anchors.centerIn: parent
-            text: letter.modelData.glyph
-            color: letter.modelData.urgent ? Ink.paper : root.dnd ? Ink.inkFaint : Ink.seal
-            font.family: /[　-鿿]/.test(letter.modelData.glyph) ? Type.jpSerif : Type.display
-            font.pixelSize: Type.px(12)
+            anchors.verticalCenter: parent.verticalCenter
+            width: Type.px(28)
+            horizontalAlignment: Text.AlignRight
+            text: StatusJs.age(letter.modelData.timestamp, root.now.getTime())
+            color: Ink.inkDim
+            font.family: Type.mono
+            font.pixelSize: Type.label
+            font.weight: Type.labelWeight
+            font.letterSpacing: Type.trackLabel
+          }
+          PutAway {
+            anchors.verticalCenter: parent.verticalCenter
+            onClicked: root.request("putAway", letter.modelData)
           }
         }
       }
     }
+  }
+
+  // Delete puts the open letter away.
+  Keys.onPressed: function(event) {
+    if (event.key !== Qt.Key_Delete || root.openStem === "") return
+    var l = root.letters.filter(function(x) { return x.stem === root.openStem })[0]
+    if (l) root.request("putAway", l)
+    event.accepted = true
   }
 
   ActionBar {

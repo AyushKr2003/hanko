@@ -129,33 +129,46 @@
   "playing": true
  },
  "volume": {
-  "percent": 62,
-  "level": 0.62,
+  "percent": 10,
+  "level": 0.1,
   "muted": false,
   "needsYou": false
  },
  "bluetooth": {
-  "name": "WH-1000XM5",
+  "name": "OPPO Enco Buds2",
   "enabled": true,
   "connected": 1,
-  "level": 0.8,
+  "level": 0.6,
+  "devices": [
+   {
+    "name": "OPPO Enco Buds2",
+    "kind": "Headphones",
+    "mark": "耳",
+    "level": 0.6,
+    "low": false
+   }
+  ],
+  "count": "01",
   "needsYou": false
  },
  "network": {
   "kind": "wifi",
-  "name": "Kumo",
-  "signal": 68,
-  "bars": 3,
+  "name": "Infinix NOTE 50S 5G",
+  "signal": 80,
+  "bars": 4,
   "off": false,
   "needsYou": false
  },
  "battery": {
-  "percent": 91,
-  "level": 0.91,
+  "percent": 81,
+  "level": 0.81,
   "charging": false,
   "needsYou": false
  },
- "brightness": null,
+ "brightness": {
+  "percent": 30,
+  "level": 0.3
+ },
  "notifications": [
   {
    "app": "Signal",
@@ -184,12 +197,21 @@
  ],
  "settings": {
   "saved": {
-   "preset": "Hanko"
+   "preset": "Hanko",
+   "sealGlyph": "寛"
   },
   "draft": {
-   "preset": "Hanko"
+   "preset": "Hanko",
+   "sealGlyph": "寛",
+   "edits": {
+    "rules": "off"
+   }
   },
-  "page": "scroll",
-  "scrollEnd": true
+  "page": "presets",
+  "height": 2150,
+  "keys": [
+   "down",
+   "right"
+  ]
  }
 }

@@ -17,7 +17,9 @@ A bar for [Omarchy](https://github.com/omacom/omarchy), printed in your theme's 
 - **A calm right side, four ways:** Ma 間 (groups held apart by space), Shizuka 静 (quiet until something changes, like a game HUD that shows health only when you're hit), Suji 筋 (one brush line per reading, its length the level) and Inrō 印籠 (one ruled case of compartments). Each is a `status` value and a preset, and every preset has a live specimen on Settings › Presets 型; the research and the study sheets are in [docs/right-side/](docs/right-side/README.md).
 - **Seven hands for every sheet:** each cell's sheet can be a Ledger 帳 (the editorial page), Tanzaku 短冊 (each choice a poem slip hung from a rail, as long as its level), Shōgi 将棋 (each level a piece on a rank of nine squares, choices on the piece stand), Soroban 算盤 (the figures counted in abacus beads), Odoshi 縅 (each level a lame of armour scales laced as far as it goes), Kasumi 霞 (each level a band of gold-leaf mist) or Shōji 障子 (Shōji's washi panels, sliding along a rail under the bar, now on the Hanko bar too, with a Display panel of their own); pick per sheet on Settings › Sheets. The research behind them is in [docs/revision2/sheet-hands.md](docs/revision2/sheet-hands.md).
 - **Inkan 印, the seal only:** set `form: inkan` (or `scripts/hanko inkan`) and the bar goes away, leaving one seal in a corner you choose. Its carving is the status: the strokes wear away as the battery falls, a chipped corner is a letter waiting, an outline is do not disturb, a broken rule is offline; hover sets the time and what needs you beside it. Press it, or a key, and the whole shell prints as one sheet, No. 00: the time, your workspaces and window, what's playing and a row for every sheet, each opening that sheet in its own hand. It lifts off when you're done. Per monitor too: a laptop can be all seal beside a full bar. The design is in [docs/shell-concepts/inkan/](docs/shell-concepts/inkan/README.md).
-- **Panels:** click any cell to drop a sheet, or set `panels: scroll` to unroll every panel as one handscroll. The scroll opens on today's weather, you pick from nine dividers between its sections, and from nine leaves after Inbox (almanac, machine, session, themes, tools, focus timer, notes and more).
+- **Panels:** click any cell to drop its sheet.
+- **Letters one by one:** in every hand, click a letter that runs long to read it in full, and put any one away with its × (or Delete): it leaves Omarchy's history for good, not only the bar.
+- **Keyboard first, like Omarchy:** every sheet in every hand takes Omarchy's panel keys. Omarchy's own hotkeys open them (Super+Ctrl+A, W, B, P, D, Super+Ctrl+1–9), the first arrow shows a cursor (four red corner marks), the arrows or H J K L move it, Enter or Space press, Left and Right set a ruler, + and - set the sheet's level, Tab goes to the next sheet and Esc closes it. The tray menus walk the same way. **Bar focus** (`omarchy-shell hanko barFocus`, Super+Ctrl+0 with the binding below) hands the bar itself the keyboard: walk its parts, Enter to click, Menu to right-click a tray app, Up and Down for volume, 1–9 for a workspace, Esc to let go. A sheet opened from there hands the keyboard back when it closes. **The settings window** walks the same way over its rail and page (Tab for the next page, `[` `]` for Typesetting's parts). As on Omarchy's panels, keys and pointer share one cursor: hovering moves it too, so you can start with the mouse and carry on with the keys.
 - **A workspace overview:** every workspace laid out as a page with its windows live where they sit. Arrows switch (Enter or Esc leaves you where they took you), a click goes there, dragging moves a window, middle-click closes one. Or pick Ryoku's layout: only the workspaces you use, a + for a new one, and desktops along the top.
 - **Your widgets still work:** Omarchy's hotkeys, tray, indicators and third-party bar widgets.
 - **Written, not typeset:** every kanji is drawn in a brush face (Yuji Boku, bundled), and your seal is 鑑 by default, or 漢, 観 or 寛 from Settings › Typesetting.
@@ -75,20 +77,16 @@ scripts/hanko uninstall
 | The seal only (Inkan), or the bar again | `scripts/hanko inkan` (`on`, `off`) |
 | Put the seal in another corner | `scripts/hanko style set inkanAt top-left` (or drag it there) |
 | Press the seal: print No. 00, or lift it off | `scripts/hanko press` |
+| The bar takes the keyboard (again: lets go) | `omarchy-shell hanko barFocus` |
 | Change one setting | `scripts/hanko style set clock mono` |
 | Change it on one monitor | `scripts/hanko style set --monitor DP-2 height 32` |
 | Random look | `scripts/hanko style shuffle` |
 | Back to the preset | `scripts/hanko style reset` |
 | See the current style | `scripts/hanko style get` |
 | Hide or show a part | `scripts/hanko hide tray` / `scripts/hanko show tray` |
-| Unroll the scroll | `scripts/hanko scroll` |
 | Lay out every workspace (the overview) | `omarchy-shell hanko overview`, or right-click the workspaces |
 | Ryoku's overview instead (busy spaces and a +) | `scripts/hanko style set overview dynamic` (`grid`, `dynamic`, `mission`) |
 | The live space's windows spread out, a strip of spaces, type to search | `scripts/hanko style set overview mission` |
-| Pick the scroll's dividers | `scripts/hanko style set interlude kotoba` |
-| Pick the leaf after Inbox | `scripts/hanko style set endleaf shimai` |
-| Bare scroll edges, or the paper curling under | `scripts/hanko style set sides bare` (`bare`, `curl`) |
-| The scroll's tabs on top, position bar at the foot, both or neither | `scripts/hanko style set guides tabs` (`both`, `tabs`, `foot`, `none`) |
 | Indicator stamps: only what is on, kanji with names | `scripts/hanko style set indicators active` / `scripts/hanko style set indicatorStyle kanjiname` |
 | Turn motion off | `scripts/hanko style set motion still` |
 | Larger or smaller text (the bar grows with it) | `scripts/hanko style set typeSize large` (`small`, `regular`, `large`) |
@@ -96,22 +94,22 @@ scripts/hanko uninstall
 
 - Changes show on the bar at once and are saved to `~/.config/hanko/style.json`.
 - Every setting and option is listed in [COMPONENTS.md](docs/COMPONENTS.md).
-- Parts you can hide include `seal`, `clock`, `volume`, `weather`, `tray`, `indicator:<name>`, `tray:<app>` and `hosted:<widget id>`.
+- Parts you can hide include `seal`, `clock`, `volume`, `tray`, `indicator:<name>`, `tray:<app>` and `hosted:<widget id>`.
 
 ## Optional extras
-
-**A key for the scroll.** Add this to `~/.config/hypr/bindings.lua` (each binding frees its keys first with `hl.unbind`, so nothing else fires beside it; Settings › Keys copies them for you):
-
-```lua
-hl.unbind("SUPER + CTRL + U")
-o.bind("SUPER + CTRL + U", "Hanko scroll", "omarchy-shell hanko scroll")
-```
 
 **A key for the seal (Inkan).** `hanko press` prints No. 00 from the seal, or from the bar's seal when you use the bar:
 
 ```lua
 hl.unbind("SUPER + ALT + I")
 o.bind("SUPER + ALT + I", "Hanko seal", "omarchy-shell hanko press")
+```
+
+**A key for bar focus.** The bar takes the keyboard (Super+Ctrl+0 is free in a stock Omarchy: its panel keys use 1–9):
+
+```lua
+hl.unbind("SUPER + CTRL + code:19")
+o.bind("SUPER + CTRL + code:19", "Hanko bar focus", "omarchy-shell hanko barFocus")
 ```
 
 **A key for the overview.** Omarchy's `SUPER + TAB` steps workspaces; to put the overview there instead:
@@ -150,7 +148,6 @@ After a style change in Hanko, run `hyprctl reload` to bring the windows along. 
 - **Bar didn't change:** run `scripts/hanko doctor`.
 - **QML errors:** check `journalctl --user -f`.
 - **A setting was ignored:** `omarchy-shell hanko warnings` lists what `style.json` got wrong.
-- **No weather on the scroll:** it needs `curl` and a network connection, and only shows on screens about 1600 px wide or more.
 
 ## Docs
 

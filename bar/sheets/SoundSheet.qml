@@ -5,7 +5,7 @@ import "../../core"
 // Sound 音: the master as a large number on a ruler (red needle, the whole
 // thing red when muted), the outputs with the live one inverted, a ruler
 // per app that is playing, and the input at the foot.
-// Keys: Up/Down step the master, M mutes.
+// Keys: + and - (or Left/Right on a ruler) step the master, M mutes.
 Item {
   id: root
 
@@ -168,9 +168,6 @@ Item {
       onClicked: root.request("nextOutput", null)
     }
   }
-
-  Keys.onUpPressed: if (root.master) root.request("master", Math.min(1, root.master.level + 0.05))
-  Keys.onDownPressed: if (root.master) root.request("master", Math.max(0, root.master.level - 0.05))
   Keys.onPressed: function(event) {
     if (event.key === Qt.Key_M) { root.request("mute", null); event.accepted = true }
   }

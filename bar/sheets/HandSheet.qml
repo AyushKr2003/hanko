@@ -5,8 +5,10 @@ import "../../core/Hands.js" as Hands
 
 // The frame every craft hand (Shōgi, Soroban, Odoshi, Kasumi) sits in:
 // the eyebrow, the hand's own body, the quiet lines (zones, details), the
-// hint, and the foot's buttons, all from one Hands.js model. Keys: Up/Down
-// step the sheet's level, Left/Right and letters as the model says.
+// hint, the inbox's open letter, and the foot's buttons, all from one
+// Hands.js model. Keys: the
+// cursor (SheetView, core/Cursor.js) walks the hand's ranks, rods, lames
+// and bands; letters as the model says.
 Item {
   id: root
 
@@ -15,6 +17,7 @@ Item {
   default property alias body: content.data
   // The hand's own hint for a row you can set ("Click a square to move it").
   property string setHint: ""
+  property date now: new Date()
   signal request(string what, var arg)
 
   readonly property var hero: model.hero
@@ -24,6 +27,12 @@ Item {
 
   // A row asked for something: its own request, or its level picked.
   function act(o) { if (o) root.request(o.what, o.arg) }
+  // Te 手 (core/Cursor.js): a row's level stepped from the keyboard, and a
+  // week (a hand's inline choices) moved as the model's Left/Right say.
+  function nudge(r, d, step) {
+    if (r && r.set) root.pick(r, Math.max(0, Math.min(1, Math.max(0, r.level) + d * step)))
+  }
+  function weekStep(d) { root.act(d < 0 ? root.model.keys.left : root.model.keys.right) }
   function pick(r, v) {
     if (!r || !r.set) return
     if (r.key === "hero") v = Math.max(hero.min, v)
@@ -46,6 +55,13 @@ Item {
     Column {
       id: content
       width: parent.width
+    }
+    // The inbox's open letter, in full (model.letter).
+    LetterLeaf {
+      letter: root.model.letter || null
+      now: root.now
+      onClosed: root.request("open", "")
+      onPutAway: root.request("putAway", root.model.letter)
     }
 
     Item { width: 1; height: Type.px(10); visible: root.model.lines.length > 0 }
@@ -100,12 +116,13 @@ Item {
       }
     }
   }
-
-  Keys.onUpPressed: { var s = root.model.keys.step; if (s) root.request(s.what, Math.min(1, s.level + 0.05)) }
-  Keys.onDownPressed: { var s = root.model.keys.step; if (s) root.request(s.what, Math.max(s.min, s.level - 0.05)) }
-  Keys.onLeftPressed: root.act(root.model.keys.left)
-  Keys.onRightPressed: root.act(root.model.keys.right)
   Keys.onPressed: function(event) {
+    // Delete puts the inbox's open letter away.
+    if (event.key === Qt.Key_Delete && root.model.letter) {
+      root.request("putAway", root.model.letter)
+      event.accepted = true
+      return
+    }
     var letters = root.model.keys.letters
     var k = event.text.toUpperCase()
     if (k && letters[k]) { root.act(letters[k]); event.accepted = true }

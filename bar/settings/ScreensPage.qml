@@ -135,6 +135,9 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          readonly property bool keyChosen: scr.on
+          function keyPress() { root.monitorSelected(scr.modelData.name) }
           onClicked: root.monitorSelected(scr.modelData.name)
         }
       }
@@ -284,6 +287,8 @@ Column {
               MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
+                readonly property bool keyStop: enabled
+                function keyPress() { root.openKey = row.open ? "" : row.modelData }
                 onClicked: root.openKey = row.open ? "" : row.modelData
               }
             }

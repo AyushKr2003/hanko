@@ -1,9 +1,9 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import "../core"
 import "../core/Sheets.js" as Sheets
-import "../core/Scroll.js" as Scroll
 import "../core/Skin.js" as Skin
 import "../services"
 
@@ -42,7 +42,33 @@ PanelWindow {
 
   WlrLayershell.namespace: "hanko-bar"
   WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+  // Bar focus (Te 手): the bar takes the keyboard on this screen, primed
+  // Exclusive for a moment then OnDemand, as a sheet does.
+  readonly property bool keyed: bar.barFocus !== "" && bar.barFocus === screenName && !parked
+  property bool keyPrimed: false
+  WlrLayershell.keyboardFocus: !keyed ? WlrKeyboardFocus.None
+    : keyPrimed ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
+  onKeyedChanged: {
+    keyPrimed = false
+    if (keyed) { keyPrime.restart(); keyGrabLater.restart(); Qt.callLater(function() { classicSurface.forceActiveFocus() }) }
+    else keyGrab.active = false
+  }
+  function reprime() {
+    if (!keyed) return
+    keyPrimed = false
+    keyPrime.restart()
+    keyGrabLater.restart()
+    classicSurface.forceActiveFocus()
+  }
+  Timer { id: keyPrime; interval: 75; onTriggered: win.keyPrimed = win.keyed }
+  // A click anywhere else lets the bar go.
+  HyprlandFocusGrab {
+    id: keyGrab
+    windows: [win]
+    active: false
+    onCleared: if (win.keyed && !win.bar.sheet) win.bar.leaveBarFocus()
+  }
+  Timer { id: keyGrabLater; interval: 120; onTriggered: keyGrab.active = win.keyed }
 
   anchors {
     top: !win.atBottom
@@ -67,25 +93,19 @@ PanelWindow {
   Component.onCompleted: bar.registerWindow(screenName, win)
   Component.onDestruction: bar.unregisterWindow(screenName, win)
 
-  // panels: scroll unrolls the handscroll; panels: sheets drops sheets.
-  readonly property bool scrolls: shown.panels === "scroll"
-
-  // A click on a cell with a panel opens (or closes) it at that cell's
-  // sheet or section; anything else goes to the service as before.
+  // A click on a cell with a sheet opens (or closes) it; anything else
+  // goes to the service as before.
   function cellClicked(cell, how, fallback) {
     if (how !== "click") { fallback(); return }
-    if (scrolls && Scroll.forCell(cell)) bar.toggleScroll(Scroll.forCell(cell), screenName)
-    else if (bar.sheetReady(Sheets.forCell(cell))) bar.toggleSheet(Sheets.forCell(cell), screenName)
+    if (bar.sheetReady(Sheets.forCell(cell))) bar.toggleSheet(Sheets.forCell(cell), screenName)
     else fallback()
   }
 
-  // A pull on the rod: the scroll unrolls (at the section under the
-  // pointer, else where it was); with sheets, the sheet of the cell under
-  // the pointer drops, or Time.
+  // A pull on the rod: the sheet of the cell under the pointer drops, or
+  // Time.
   function rodPulled(x) {
     var cell = surface.cellAt(x)
-    if (scrolls) bar.openScroll(Scroll.forCell(cell) || "", screenName)
-    else bar.openSheet(Sheets.forCell(cell) || "time", screenName)
+    bar.openSheet(Sheets.forCell(cell) || "time", screenName)
   }
 
   BarSurface {
@@ -124,21 +144,20 @@ PanelWindow {
       if (button === Qt.RightButton) Hypr.openTerminal()
       else Hypr.openMenu()
     }
-    onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id) }
+    onWorkspaceActivated: function(id) { Hypr.focusWorkspace(id); if (win.keyed) reprimeLater.restart() }
     onWorkspaceStepped: function(delta) { Hypr.stepWorkspace(delta) }
     onOverviewRequested: win.bar.toggleOverview()
     onMediaAction: function(name) { Media.act(name) }
     onStatusAction: function(name, how) { win.cellClicked(name, how, function() { Status.act(name, how) }) }
     onInboxAction: function(how) { win.cellClicked("notif", how, function() { Status.act("notif", how) }) }
     onClockClicked: win.cellClicked("clock", "click", function() {})
-    // The rod unrolls the scroll, or drops the sheet under the pull.
+    // The rod drops the sheet under the pull.
     onEdgePulled: function(x) { win.rodPulled(x) }
+    keyMode: win.keyed
+    onKeyLeave: win.bar.leaveBarFocus()
   }
 
-  ScrollWindow {
-    bar: win.bar
-    barWindow: win
-  }
+  Timer { id: reprimeLater; interval: 90; onTriggered: win.reprime() }
 
   SealWindow {
     id: sealWindow
@@ -161,5 +180,7 @@ PanelWindow {
   TrayMenuWindow {
     id: trayMenu
     barWindow: win
+    // Its own focus grab takes the keyboard from bar focus.
+    onOpenChanged: if (open && win.keyed) win.bar.leaveBarFocus()
   }
 }

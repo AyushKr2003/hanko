@@ -7,7 +7,7 @@ import "../core/Edge.js" as E
 //   hairline  one 1 px line
 //   dayrule   a 24-hour ruler: hour ticks, the spent part of the day a shade
 //             stronger, and a red now-notch that moves every minute
-//   rod       the scroll roller: a rod with end caps and a grip; pull it
+//   rod       a roller: a rod with end caps and a grip; pull it for a sheet
 //   rodrule   the rod carrying the day: ticks, spent part and now-notch
 //
 // Everything is drawn as if the bar sat at the top (marks rise from the
@@ -24,8 +24,8 @@ Item {
   // of its own (the frame already is one).
   property bool inset: false
 
-  // Dragged away from the bar far enough to unroll the scroll; x is where
-  // along the bar the pull started.
+  // Dragged away from the bar far enough to drop a sheet; x is where along
+  // the bar the pull started.
   signal pulled(real x)
 
   readonly property bool isRod: mode === "rod" || mode === "rodrule"

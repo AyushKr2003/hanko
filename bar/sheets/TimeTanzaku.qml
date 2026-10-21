@@ -7,7 +7,7 @@ import "../../core/Time.js" as T
 // washed down it, then a week of slips, one a day, each headed with its
 // weekday kanji (月 火 水 木 金 土 日) and its date at the foot; today inked
 // and sealed, days gone a little paler. The other cities run under the rail.
-// Arrows (or ‹ ›) move the week; T or a click on a day brings it back.
+// Left/Right on the week (or ‹ ›) move it; T or a click on a day brings it back.
 Item {
   id: root
 
@@ -89,6 +89,11 @@ Item {
       Text {
         id: weekNav
         text: "‹ week ›"
+        // Te 手 (core/Cursor.js): Left/Right move the week, Enter brings it back.
+        readonly property bool keyStop: true
+        readonly property bool keyStep: true
+        function keyAdjust(d) { root.request("shift", root.shift + d) }
+        function keyPress() { root.request("shift", 0) }
         color: Ink.inkDim
         font.family: Type.mono
         font.pixelSize: Type.tag
@@ -119,9 +124,6 @@ Item {
       }
     }
   }
-
-  Keys.onLeftPressed: root.request("shift", root.shift - 1)
-  Keys.onRightPressed: root.request("shift", root.shift + 1)
   Keys.onPressed: function(event) {
     if (event.key === Qt.Key_T || event.key === Qt.Key_Home) { root.request("shift", 0); event.accepted = true }
   }

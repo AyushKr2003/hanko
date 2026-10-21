@@ -178,6 +178,10 @@ Item {
       count: root.style.notif === "seal"
       letters: root.unread
       dnd: root.dnd
+      // Te 手 (bar focus): Enter is the click, Menu the right-click.
+      readonly property bool keyStop: true
+      function keyPress() { if (root.lettersOnSeal) root.inboxAction("click"); else root.sealClicked(Qt.LeftButton) }
+      function keyMenu() { root.sealClicked(Qt.RightButton) }
 
       MouseArea {
         anchors.fill: parent
@@ -278,6 +282,8 @@ Item {
     timeFormat: root.timeFormat
     season: root.style.season || "off"
     barHeight: root.barHeight
+    readonly property bool keyStop: true
+    function keyPress() { root.clockClicked() }
     onClicked: root.clockClicked()
   }
 
@@ -303,6 +309,9 @@ Item {
       mode: root.shown("media") ? root.style.media || "underline" : "none"
       media: root.media
       barHeight: root.barHeight
+      readonly property bool keyStop: true
+      function keyPress() { root.mediaAction("playPause") }
+      function keyMenu() { root.mediaAction("next") }
       onAction: function(name) { root.mediaAction(name) }
     }
 
@@ -409,6 +418,9 @@ Item {
       notifications: root.notifications
       dnd: root.dnd
       barHeight: root.barHeight
+      readonly property bool keyStop: true
+      function keyPress() { root.inboxAction("click") }
+      function keyMenu() { root.inboxAction("right") }
       onAction: function(how) { root.inboxAction(how) }
     }
 
@@ -423,6 +435,8 @@ Item {
       timeFormat: root.timeFormat
       season: root.style.season || "off"
       barHeight: root.barHeight
+      readonly property bool keyStop: true
+      function keyPress() { root.clockClicked() }
       onClicked: root.clockClicked()
     }
   }
@@ -512,5 +526,47 @@ Item {
     target: pointerHover.hovered ? root.pointedRect(pointerHover.point.position.x)
       : root.pointAt !== "" ? root.pointedCell(root.pointAt) : Qt.rect(0, 0, 0, 0)
     lineY: root.atBottom ? Type.px(17) : root.barHeight
+  }
+
+  // ------------------------------------------------ Te 手, bar focus
+  //
+  // The bar itself takes the keyboard (hanko barFocus, Super+Ctrl+0 in the
+  // README's bindings, as Omacale has it) and a cursor walks its parts with
+  // Omarchy's keys: Left/Right (h/l, Tab) move, Enter or Space click, Menu
+  // or Shift+F10 right-click, Up/Down turn a level (volume, brightness),
+  // 1–9 go to a workspace, Esc lets go. The parts say what they are
+  // (`keyStop`, bar/parts/KeyCursor.qml); it starts on your workspace.
+  property bool keyMode: false
+  // Its parts are stops only for its own cursor: a preview of it in the
+  // settings window is a picture.
+  readonly property bool keyStops: keyMode
+  readonly property alias keyCursor: barKeys
+  signal keyLeave()
+
+  onKeyModeChanged: if (keyMode) Qt.callLater(function() {
+    if (root.keyMode && !barKeys.find(function(s) { return barKeys.says(s, "keyChosen") })) barKeys.reveal()
+  })
+
+  Keys.enabled: keyMode
+  Keys.onPressed: function(event) {
+    var t = event.text
+    var K = event.key
+    if (K === Qt.Key_Escape) root.keyLeave()
+    else if (K === Qt.Key_Left || t === "h" || K === Qt.Key_Backtab || (K === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) barKeys.move(-1, 0)
+    else if (K === Qt.Key_Right || t === "l" || K === Qt.Key_Tab) barKeys.move(1, 0)
+    else if (K === Qt.Key_Up || t === "k") barKeys.move(0, -1)
+    else if (K === Qt.Key_Down || t === "j") barKeys.move(0, 1)
+    else if (K === Qt.Key_Return || K === Qt.Key_Enter || K === Qt.Key_Space) barKeys.activate()
+    else if (K === Qt.Key_Menu || (K === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) barKeys.menu()
+    else if (t >= "1" && t <= "9" && t.length === 1) root.workspaceActivated(Number(t))
+    else return
+    event.accepted = true
+  }
+
+  Parts.KeyCursor {
+    id: barKeys
+    scope: root
+    active: root.keyMode
+    inside: true
   }
 }

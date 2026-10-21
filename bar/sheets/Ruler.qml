@@ -19,6 +19,11 @@ Item {
   // A new value the user asked for (the owner applies it).
   signal moved(real value)
 
+  // Te 手 (core/Cursor.js): Left/Right (or + and -) step it.
+  readonly property bool keyStop: true
+  readonly property bool keyStep: true
+  function keyAdjust(d) { root.moved(Math.max(0, Math.min(1, root.v + d * root.step))) }
+
   implicitWidth: Type.px(200)
   implicitHeight: Type.px(26)
 

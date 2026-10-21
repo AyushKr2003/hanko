@@ -117,6 +117,8 @@ Item {
                 anchors.margins: -Type.px(4)
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
+                readonly property bool keyStop: enabled
+                function keyPress() { root.picked(editRow.modelData, editRow.was) }
                 onClicked: root.picked(editRow.modelData, editRow.was)
               }
             }
@@ -325,6 +327,8 @@ Item {
                       hoverEnabled: true
                       cursorShape: Qt.PointingHandCursor
                       enabled: !stone.own
+                      readonly property bool keyStop: enabled
+                      function keyPress() { root.picked("sealGlyph", stone.modelData) }
                       onClicked: root.picked("sealGlyph", stone.modelData)
                     }
                   }

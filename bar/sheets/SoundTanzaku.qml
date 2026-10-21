@@ -5,7 +5,7 @@ import "../../core"
 // Sound 音, Tanzaku (短冊): the master on the first slip (pull it to set the
 // level; red, and the wash pale, when muted), then a slip for each output
 // (the one playing inked and sealed; a click moves there) and one for each
-// app playing, hung as far as its level (a click mutes it). Up/Down step
+// app playing, hung as far as its level (a click mutes it). + and - step
 // the master, M mutes.
 Item {
   id: root
@@ -77,9 +77,6 @@ Item {
     SheetButton { text: "Mute"; on: !!(root.master && root.master.muted); onClicked: root.request("mute", null) }
     SheetButton { ghost: true; text: root.sound && root.sound.inputMuted ? "Unmute mic" : "Mute mic"; onClicked: root.request("inputMute", null) }
   }
-
-  Keys.onUpPressed: if (root.master) root.request("master", Math.min(1, root.master.level + 0.05))
-  Keys.onDownPressed: if (root.master) root.request("master", Math.max(0, root.master.level - 0.05))
   Keys.onPressed: function(event) {
     if (event.key === Qt.Key_M) { root.request("mute", null); event.accepted = true }
   }

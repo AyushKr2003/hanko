@@ -28,6 +28,12 @@ Item {
   readonly property real len: Math.max(shortest, width * Math.max(0, Math.min(1, level)))
   readonly property bool full: len >= width - Type.px(60)
   signal picked(real level)
+
+  // Te 手 (core/Cursor.js): a band you can set or press is a stop.
+  readonly property bool keyStop: settable || clickable
+  readonly property bool keyStep: settable
+  function keyAdjust(d) { root.picked(Math.max(0, Math.min(1, root.level + d * 0.05))) }
+  function keyPress() { if (root.clickable) root.clicked() }
   signal clicked()
 
   height: Type.px(lead ? 40 : 34)

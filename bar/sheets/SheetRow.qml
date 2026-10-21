@@ -23,9 +23,20 @@ Item {
   // Width of the name column when the row carries a ruler; 0 = natural.
   property int nameWidth: 0
   property int minHeight: Type.px(46)
+  // Name and detail wrap in full instead of eliding (an inbox letter opened).
+  property bool wrap: false
+  // The name or detail runs past its room, so wrapping would show more.
+  readonly property bool cut: nameText.truncated || detailText.truncated
+  // Trailing items take their own clicks (a × on the row) over the row's.
+  property bool trailingOnTop: false
   default property alias trailing: extra.data
 
   signal clicked()
+
+  // Te 手 (core/Cursor.js): the keyboard lands on a row you can pick.
+  readonly property bool keyStop: interactive
+  readonly property bool keyChosen: selected
+  function keyPress() { root.clicked() }
 
   width: parent ? parent.width : 0
   implicitHeight: Math.max(minHeight, texts.implicitHeight + Type.px(14))
@@ -80,17 +91,21 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
       spacing: Type.px(2)
       Text {
+        id: nameText
         width: root.nameWidth > 0 ? parent.width : implicitWidth
-        elide: Text.ElideRight
+        elide: root.wrap ? Text.ElideNone : Text.ElideRight
+        wrapMode: root.wrap ? Text.Wrap : Text.NoWrap
         text: root.name
         color: root.selected ? Ink.boneInk : Ink.ink
         font.family: Type.text
         font.pixelSize: Type.row
       }
       Text {
+        id: detailText
         visible: text !== ""
         width: root.nameWidth > 0 ? parent.width : implicitWidth
-        elide: Text.ElideRight
+        elide: root.wrap ? Text.ElideNone : Text.ElideRight
+        wrapMode: root.wrap ? Text.Wrap : Text.NoWrap
         text: root.detail
         color: root.selected ? Ink.boneInk : Ink.inkMuted
         font.family: Type.text
@@ -127,6 +142,7 @@ Item {
 
   MouseArea {
     id: hover
+    z: root.trailingOnTop ? -1 : 0
     anchors.fill: parent
     enabled: root.interactive
     hoverEnabled: true

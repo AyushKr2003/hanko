@@ -26,6 +26,11 @@ Item {
 
   signal clicked()
 
+  // Te 手 (core/Cursor.js): the keyboard lands on a slip you can pick.
+  readonly property bool keyStop: interactive
+  readonly property bool keyChosen: selected
+  function keyPress() { root.clicked() }
+
   readonly property real cord: Type.px(12)
   readonly property real shortest: reach * 0.5
   readonly property real paperLength: level >= 0 ? shortest + (reach - shortest) * Math.max(0, Math.min(1, level)) : reach * 0.8

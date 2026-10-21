@@ -1,6 +1,6 @@
 .pragma library
 
-// The twenty-six typesetting settings, the presets, and how a style document
+// The twenty-one typesetting settings, the presets, and how a style document
 // resolves into the one flat object the bar reads. Pure JavaScript with no
 // QML or Quickshell dependency, so tests/unit.mjs can run it under Node.
 // docs/COMPONENTS.md is the spec for every option below.
@@ -62,27 +62,6 @@ var OPTIONS = {
   // saved one reads as solid paper, inset (cleanEdits).
   float:    ["flush", "inset"],
   position: ["top", "bottom"],
-  panels:   ["sheets", "scroll"],
-  // What sits between two sections of the scroll (docs/revision1 on the
-  // docs branch): ma = space alone, hairline, folio = a ruler with the
-  // section numbers, kotoba = the next section's name set vertically,
-  // tsugime = a paper join, seal = the join with a seal pressed across it,
-  // jiku = a slim inner roller, fuda = an index tab, su = the next number.
-  interlude: ["ma", "hairline", "folio", "kotoba", "tsugime", "seal", "jiku", "fuda", "su"],
-  // The leaf on the bare paper right of 08 // INBOX (core/Leaf.js; designs
-  // in docs/revision2 on the docs branch): okugaki = a colophon of the
-  // machine, koyomi = the almanac, kiki = the machine's load, shimai = the
-  // session's end, iro = themes, dougu = tools, shuchu = a focus timer,
-  // hikae = notes, batsu = an afterword.
-  endleaf: ["okugaki", "koyomi", "kiki", "shimai", "iro", "dougu", "shuchu", "hikae", "batsu"],
-  // The scroll's two side edges (docs/revision3 on the docs branch; they
-  // replaced the rollers): bare = the paper simply fades out, curl = a soft
-  // shaded fold, as if the paper rolls under.
-  sides: ["bare", "curl"],
-  // What helps you find your way on the scroll: both = the index plate of
-  // tabs on top and the position bar along the foot, tabs = the plate only,
-  // foot = the position bar only, none = bare paper.
-  guides: ["both", "tabs", "foot", "none"],
   // What the bar is (docs/shell-concepts/inkan): bar = the strip across the
   // screen; inkan = the seal only, in one corner, its carving the status
   // (core/Inkan.js); pressed, it prints No. 00, every sheet on one. Per
@@ -97,24 +76,24 @@ var KEYS = Object.keys(OPTIONS)
 var PRESETS = {
   // Kamon 家紋, the family crest: the bar this plugin is known by, as the
   // user runs it (it was the Hanko preset; "hanko" still names it).
-  Kamon:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
+  Kamon:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", form: "bar", inkanAt: "bottom-right" },
   // Inkan 印, the seal only: Kamon with the strip taken away, one seal in the
   // bottom-right corner (docs/shell-concepts/inkan).
-  Inkan:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "inkan", inkanAt: "bottom-right" },
-  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "batsu", sides: "bare", guides: "both", form: "bar", inkanAt: "bottom-right" },
-  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "inset", position: "top", panels: "scroll", interlude: "fuda", endleaf: "dougu", sides: "curl", guides: "both", form: "bar", inkanAt: "bottom-right" },
+  Inkan:      { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "cells", meters: "ticks", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanjiname", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", form: "inkan", inkanAt: "bottom-right" },
+  Quiet:      { seal: "stamp", spaces: "dots", title: "none", clock: "inline", clockAt: "center", media: "none", status: "numerals", meters: "off", notif: "count", bluetooth: "off", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "plain", height: 32, surface: "glass", float: "flush", position: "top", form: "bar", inkanAt: "bottom-right" },
+  Islet:      { seal: "workspace", spaces: "kanji", title: "byline", clock: "inline", clockAt: "center", media: "underline", status: "glyphs", meters: "ticks", notif: "stamps", bluetooth: "marks", indicators: "active", indicatorStyle: "icon", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "inset", position: "top", form: "bar", inkanAt: "bottom-right" },
   // Shōji 障子: the Shōji design, folded into Hanko (HANDOFF §10). Its
   // values are drawn with Shōji's parts; picking it also puts every sheet
   // in the Shōji hand and frames the overview (PRESET_BESIDE).
-  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", float: "flush", position: "top", panels: "sheets", interlude: "ma", endleaf: "koyomi", sides: "bare", guides: "both", form: "bar", inkanAt: "bottom-right" },
+  "Shōji":    { seal: "carved", spaces: "brush", title: "ink", clock: "season", clockAt: "center", media: "ink", status: "ink", meters: "off", notif: "seal", bluetooth: "device", indicators: "active", indicatorStyle: "icon", edge: "hairline", rules: "off", pointer: "brush", height: 40, surface: "washi", float: "flush", position: "top", form: "bar", inkanAt: "bottom-right" },
   // The four right-side studies (docs/right-side): the Kamon bar with the
   // right zone set each way. The marks are stamps alone (their names on
   // hover), so the zone they cure is not crowded again by the indicators.
-  // Ma is the bar the user runs: 36 px, index tabs between the scroll's sections.
-  Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "fuda", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
-  Shizuka:    { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "shizuka", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
-  Suji:       { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "suji", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" },
-  "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", panels: "sheets", interlude: "seal", endleaf: "koyomi", sides: "curl", guides: "none", form: "bar", inkanAt: "bottom-right" }
+  // Ma is the bar the user runs: 36 px.
+  Ma:         { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "ma", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "off", pointer: "plain", height: 36, surface: "solid", float: "flush", position: "top", form: "bar", inkanAt: "bottom-right" },
+  Shizuka:    { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "shizuka", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", form: "bar", inkanAt: "bottom-right" },
+  Suji:       { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "suji", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", form: "bar", inkanAt: "bottom-right" },
+  "Inrō":     { seal: "stamp", spaces: "kanji", title: "byline", clock: "stacked", clockAt: "center", media: "underline", status: "inro", meters: "off", notif: "stamps", bluetooth: "device", indicators: "active", indicatorStyle: "kanji", edge: "rodrule", rules: "on", pointer: "plain", height: 40, surface: "solid", float: "flush", position: "top", form: "bar", inkanAt: "bottom-right" }
 }
 
 var PRESET_NAMES = ["Quiet", "Islet", "Shōji", "Kamon", "Inkan", "Ma", "Shizuka", "Suji", "Inrō"]
@@ -124,7 +103,7 @@ var PRESET_GROUPS = [
   { title: "The seal only", jp: "印", names: ["Inkan"] },
   { title: "Right-side studies", jp: "右", names: ["Ma", "Shizuka", "Suji", "Inrō"] }
 ]
-// What picking a preset also sets beside the twenty-six (only Shōji does:
+// What picking a preset also sets beside the twenty-one (only Shōji does:
 // its panels are a sheet hand). Kept afterwards, like anything beside the
 // settings.
 var PRESET_BESIDE = {
@@ -135,7 +114,7 @@ function foldName(name) { return String(name || "").toLowerCase().replace(/ō/g,
 var DEFAULT_PRESET = "Kamon"
 var DEFAULT_SEAL_GLYPH = "鑑"
 
-// Motion 動 sits outside the twenty-six settings (no preset sets it and it is
+// Motion 動 sits outside the twenty-one settings (no preset sets it and it is
 // not counted): paper moves like paper, still cuts every transition to its
 // end frame. Omarchy's own reduced motion makes Hanko still as well.
 var MOTIONS = ["paper", "still"]
@@ -156,7 +135,7 @@ function normalizeTypeSize(t) {
   return TYPE_SIZES.indexOf(String(t)) >= 0 ? String(t) : DEFAULT_TYPE_SIZE
 }
 
-// Shōji's three touches, beside the twenty-six like type size (global, not
+// Shōji's three touches, beside the twenty-one like type size (global, not
 // per monitor; presets, resets and shuffles keep them). They were Kata's
 // `touches`; a saved `touches` is read into them.
 //   season    the solar term by the clock (clock: season) and the kō in
@@ -180,8 +159,8 @@ function normalizeTouch(key, v, legacy) {
   return TOUCH_DEFAULTS[key]
 }
 
-// Panel opacity 透け, beside the twenty-six like motion: how much of the
-// desk shows through every panel (sheets, the scroll, Kata's panels), in
+// Panel opacity 透け, beside the twenty-one like motion: how much of the
+// desk shows through every panel (sheets and Kata's panels), in
 // percent, 30 to 100. 0 (or no key) leaves it to the design: solid paper,
 // Shōji's washi at 86%.
 var OPACITY_MIN = 30
@@ -192,7 +171,7 @@ function normalizeOpacity(o) {
   return Math.max(OPACITY_MIN, Math.min(100, n))
 }
 
-// Which workspace overview 一覧 opens, beside the twenty-six like motion:
+// Which workspace overview 一覧 opens, beside the twenty-one like motion:
 // grid, Hanko's printed pages in a fixed 2 x 5 grid; dynamic, Ryoku's
 // overview (only workspaces with windows, a + for a new one, desktops);
 // mission, omarchy-overview's mission control (the live space's windows
@@ -207,7 +186,7 @@ function normalizeOverview(o) {
 }
 
 // How each sheet is drawn (style.json `sheetStyles`, Settings › Sheets 紙),
-// beside the twenty-six like the overview: no preset sets them and a reset
+// beside the twenty-one like the overview: no preset sets them and a reset
 // keeps them. The hands for every cell's sheet:
 //   ledger  帳  the editorial page: eyebrow, serif title, `//` groups, rows
 //   tanzaku 短冊 the poem slips: each choice a paper strip hung from a rail,
@@ -246,11 +225,10 @@ function sheetStylesOf(d) {
 }
 
 // Parts of the bar you have hidden (style.json `hidden`, the Widgets 部品
-// page), beside the twenty-six like the seal glyph: no preset sets them and a
+// page), beside the twenty-one like the seal glyph: no preset sets them and a
 // reset keeps them. A part is a name the bar knows: seal, spaces, title,
 // clock, media, network, bluetooth, volume, brightness, battery, notif,
-// edge, keyboard, mic, tray, weather and endleaf (the scroll's two leaves);
-// or indicator:<key>, tray:<item id> and
+// edge, keyboard, mic and tray; or indicator:<key>, tray:<item id> and
 // hosted:<widget id> for the marks, tray apps and hosted widgets.
 // As a setting it is `show:<part>`, shown or hidden, so the settings page
 // and `hanko style set show:mic hidden` go through withSetting().
@@ -258,7 +236,7 @@ var SHOW_OPTIONS = ["shown", "hidden"]
 // Parts a setting can also leave out: showing one again puts it back.
 var OFF = { seal: "none", title: "none", media: "none", bluetooth: "off" }
 var PARTS = ["seal", "spaces", "title", "clock", "media", "network", "bluetooth", "volume",
-             "brightness", "battery", "notif", "edge", "keyboard", "mic", "tray", "weather", "endleaf"]
+             "brightness", "battery", "notif", "edge", "keyboard", "mic", "tray"]
 
 // A part name the bar knows; tray app and widget ids can be anything.
 function isPart(part) {
@@ -271,7 +249,7 @@ function normalizeHidden(list, warnings) {
   if (!Array.isArray(list)) return out
   for (var i = 0; i < list.length; i++) {
     var p = String(list[i] === undefined || list[i] === null ? "" : list[i]).trim()
-    if (!p) continue
+    if (!p || p === "weather" || p === "endleaf") continue
     if (!isPart(p)) { if (warnings) warnings.push("ignored unknown part " + p + " in hidden"); continue }
     if (out.indexOf(p) < 0) out.push(p)
   }
@@ -328,6 +306,7 @@ function cleanEdits(edits, warnings) {
   if (!edits || typeof edits !== "object") return out
   edits = splitInset(edits)
   for (var k in edits) {
+    if (RETIRED.indexOf(k) >= 0) continue
     var v = coerce(k, edits[k])
     if (v === undefined) {
       if (warnings) warnings.push(OPTIONS[k] ? "ignored " + k + "=" + edits[k] : "ignored unknown setting " + k)
@@ -337,6 +316,10 @@ function cleanEdits(edits, warnings) {
   }
   return out
 }
+
+// The handscroll's settings, taken out with it: a style.json from before
+// keeps working, sheets and all, without a warning for each.
+var RETIRED = ["panels", "interlude", "endleaf", "sides", "guides", "fold", "arrival", "letters", "faults", "order"]
 
 // `surface: inset` from before `float`: solid paper, floating.
 function splitInset(edits) {
@@ -577,7 +560,7 @@ function withPreset(doc, name) {
   return d
 }
 
-// rng() returns [0, 1). Position, panels, form and the seal's corner are left
+// rng() returns [0, 1). Position, form and the seal's corner are left
 // alone: they change where things are, not how the bar reads, and a shuffle
 // should never move the bar, or take it away.
 function shuffled(doc, rng) {
@@ -586,7 +569,7 @@ function shuffled(doc, rng) {
   var edits = {}
   for (var i = 0; i < KEYS.length; i++) {
     var k = KEYS[i]
-    if (k === "position" || k === "panels" || k === "form" || k === "inkanAt") {
+    if (k === "position" || k === "form" || k === "inkanAt") {
       if (d.edits[k] !== undefined) edits[k] = d.edits[k]
       continue
     }

@@ -35,6 +35,10 @@ Item {
       id: row
       required property var modelData
       required property int index
+      // Te 手 (core/Cursor.js): each row is a stop.
+      readonly property bool keyStop: true
+      readonly property bool keyChosen: row.on
+      function keyPress() { root.picked(row.index) }
       readonly property bool on: index === root.chosen
       readonly property color strong: Ink.ink
       readonly property color quiet: Ink.ink3

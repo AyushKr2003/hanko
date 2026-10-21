@@ -184,11 +184,22 @@
  ],
  "settings": {
   "saved": {
-   "preset": "Hanko"
+   "preset": "Ma",
+   "edits": {
+    "clock": "inline"
+   }
   },
   "draft": {
-   "preset": "Hanko"
+   "preset": "Ma",
+   "edits": {
+    "clock": "inline"
+   }
   },
-  "page": "scroll"
+  "width": 1320,
+  "height": 980,
+  "part": "status",
+  "keys": [
+   "down"
+  ]
  }
 }

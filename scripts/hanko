@@ -20,7 +20,6 @@
 #   hanko hide PART          take one part off the bar (e.g. tray, volume,
 #                            indicator:night, tray:nm-applet, hosted:omarchy.weather)
 #   hanko show PART          put it back
-#   hanko scroll             unroll (or roll up) the handscroll
 #   hanko press              press the seal: print No. 00 (every sheet on one),
 #                            or lift it off (bind it to a key: see the README)
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
@@ -681,7 +680,6 @@ case "${1:-}" in
   hide|show)
     (( $# == 2 )) || fail "usage: hanko $1 <part> (see the Widgets page in hanko settings)"
     [[ $(ipc "$1" "$2") == ok ]] || fail "'$2' is not a part Hanko knows" ;;
-  scroll) ipc scroll >/dev/null ;;
   press) ipc press >/dev/null ;;
   inkan)
     case "${2:-}" in

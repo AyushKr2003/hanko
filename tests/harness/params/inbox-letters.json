@@ -1,0 +1,509 @@
+{
+ "title": "Inbox · letters opened and put away, in every hand",
+ "scene": "Sheets",
+ "width": 1600,
+ "theme": {
+  "foreground": "#ddd5c7",
+  "background": "#0a0a09",
+  "red": "#d8452f"
+ },
+ "spaces": [
+  {
+   "id": 1,
+   "active": false,
+   "urgent": false,
+   "count": 2,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "active": false,
+   "urgent": false,
+   "count": 1,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 1,
+     "h": 1,
+     "focused": true
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "active": true,
+   "urgent": false,
+   "count": 3,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 1,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "active": false,
+   "urgent": true,
+   "count": 4,
+   "windows": [
+    {
+     "x": 0,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": true
+    },
+    {
+     "x": 0.5,
+     "y": 0,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    },
+    {
+     "x": 0.5,
+     "y": 0.5,
+     "w": 0.5,
+     "h": 0.5,
+     "focused": false
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "active": false,
+   "urgent": false,
+   "count": 0,
+   "windows": []
+  }
+ ],
+ "window": {
+  "cls": "Alacritty",
+  "title": "nvim /home/ayush/code/hanko/Bar.qml"
+ },
+ "media": {
+  "title": "Water Copy",
+  "artist": "Hiroshi Yoshimura",
+  "progress": 0.38,
+  "playing": true
+ },
+ "volume": {
+  "percent": 62,
+  "level": 0.62,
+  "muted": false,
+  "needsYou": false
+ },
+ "network": {
+  "kind": "wifi",
+  "name": "Kumo",
+  "signal": 68,
+  "bars": 3,
+  "off": false,
+  "needsYou": false
+ },
+ "battery": {
+  "percent": 91,
+  "level": 0.91,
+  "charging": false,
+  "needsYou": false
+ },
+ "brightness": null,
+ "notifications": [
+  {
+   "app": "Signal",
+   "summary": "",
+   "timestamp": 3,
+   "urgent": false,
+   "glyph": "S",
+   "tilt": -3
+  },
+  {
+   "app": "Ghostty",
+   "summary": "",
+   "timestamp": 2,
+   "urgent": false,
+   "glyph": "G",
+   "tilt": 3
+  },
+  {
+   "app": "Firefox",
+   "summary": "",
+   "timestamp": 1,
+   "urgent": false,
+   "glyph": "火",
+   "tilt": -1.5
+  }
+ ],
+ "desks": [
+  {
+   "label": "INBOX · LEDGER · A LETTER OPEN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "inbox": "ledger"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station. Bring the umbrella, it is meant to rain all evening, and the long way round by the river is shut for the festival so we walk past the shrine instead.",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3,
+      "stem": "1791322920000-4"
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5,
+      "stem": "1791322200000-7"
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5,
+      "stem": "1791312240000-2"
+     }
+    ],
+    "dnd": false
+   },
+   "height": 760,
+   "open": "1791322920000-4"
+  },
+  {
+   "label": "INBOX · TANZAKU · A LETTER OPEN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "inbox": "tanzaku"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station. Bring the umbrella, it is meant to rain all evening, and the long way round by the river is shut for the festival so we walk past the shrine instead.",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3,
+      "stem": "1791322920000-4"
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5,
+      "stem": "1791322200000-7"
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5,
+      "stem": "1791312240000-2"
+     }
+    ],
+    "dnd": false
+   },
+   "height": 760,
+   "open": "1791322920000-4"
+  },
+  {
+   "label": "INBOX · SHOJI · A LETTER OPEN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "inbox": "shoji"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station. Bring the umbrella, it is meant to rain all evening, and the long way round by the river is shut for the festival so we walk past the shrine instead.",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3,
+      "stem": "1791322920000-4"
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5,
+      "stem": "1791322200000-7"
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5,
+      "stem": "1791312240000-2"
+     }
+    ],
+    "dnd": false
+   },
+   "height": 760,
+   "open": "1791322920000-4"
+  },
+  {
+   "label": "INBOX · SHOGI · A LETTER OPEN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "inbox": "shogi"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station. Bring the umbrella, it is meant to rain all evening, and the long way round by the river is shut for the festival so we walk past the shrine instead.",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3,
+      "stem": "1791322920000-4"
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5,
+      "stem": "1791322200000-7"
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5,
+      "stem": "1791312240000-2"
+     }
+    ],
+    "dnd": false
+   },
+   "height": 760,
+   "open": "1791322920000-4"
+  },
+  {
+   "label": "INBOX · SOROBAN · A LETTER OPEN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "inbox": "soroban"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station. Bring the umbrella, it is meant to rain all evening, and the long way round by the river is shut for the festival so we walk past the shrine instead.",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3,
+      "stem": "1791322920000-4"
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5,
+      "stem": "1791322200000-7"
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5,
+      "stem": "1791312240000-2"
+     }
+    ],
+    "dnd": false
+   },
+   "height": 760,
+   "open": "1791322920000-4"
+  },
+  {
+   "label": "INBOX · ODOSHI · A LETTER OPEN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "inbox": "odoshi"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station. Bring the umbrella, it is meant to rain all evening, and the long way round by the river is shut for the festival so we walk past the shrine instead.",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3,
+      "stem": "1791322920000-4"
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5,
+      "stem": "1791322200000-7"
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5,
+      "stem": "1791312240000-2"
+     }
+    ],
+    "dnd": false
+   },
+   "height": 760,
+   "open": "1791322920000-4"
+  },
+  {
+   "label": "INBOX · KASUMI · A LETTER OPEN",
+   "doc": {
+    "preset": "Hanko",
+    "sheetStyles": {
+     "inbox": "kasumi"
+    }
+   },
+   "sheet": "inbox",
+   "feed": {
+    "letters": [
+     {
+      "app": "Signal",
+      "summary": "Mika",
+      "body": "See you at 8 by the station. Bring the umbrella, it is meant to rain all evening, and the long way round by the river is shut for the festival so we walk past the shrine instead.",
+      "timestamp": 1791322920000.0,
+      "urgent": false,
+      "glyph": "信",
+      "tilt": -3,
+      "stem": "1791322920000-4"
+     },
+     {
+      "app": "Firefox",
+      "summary": "Download complete",
+      "body": "hanko-typeset.zip",
+      "timestamp": 1791322200000.0,
+      "urgent": false,
+      "glyph": "火",
+      "tilt": 4.5,
+      "stem": "1791322200000-7"
+     },
+     {
+      "app": "System",
+      "summary": "Battery low",
+      "body": "12% left, plug in soon",
+      "timestamp": 1791312240000.0,
+      "urgent": true,
+      "glyph": "S",
+      "tilt": -1.5,
+      "stem": "1791312240000-2"
+     }
+    ],
+    "dnd": false
+   },
+   "height": 760,
+   "open": "1791322920000-4"
+  }
+ ]
+}

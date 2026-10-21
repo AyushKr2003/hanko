@@ -93,6 +93,7 @@ HandSheet {
     count: root.hero.scales || 0
     tint: Ink.seal
     settable: !!root.hero.set
+    keyStop: !!root.hero.set
     onPicked: function(v) { root.request(root.hero.set.what, Math.max(root.hero.min, v)) }
   }
   Item { width: 1; height: Type.px(14) }
@@ -130,6 +131,10 @@ HandSheet {
   Item {
     visible: root.model.inline && root.model.choices.length > 0
     width: root.inner
+    // Te 手 (core/Cursor.js): the week as one stop, Left/Right move it.
+    readonly property bool keyStop: !!(root.model.keys.left || root.model.keys.right)
+    readonly property bool keyStep: true
+    function keyAdjust(d) { root.weekStep(d) }
     height: visible ? week.height + Type.px(22) + Type.px(8) : 0
     // The day's kanji over its scale.
     Repeater {
@@ -178,6 +183,12 @@ HandSheet {
   component Plate: Column {
     id: plate
     property var r: null
+    // Te 手 (core/Cursor.js): a lame you can lace or press is a stop.
+    readonly property bool keyStop: !!(r && (r.set || r.click))
+    readonly property bool keyStep: !!(r && r.set)
+    readonly property bool keyChosen: !!(r && r.selected)
+    function keyAdjust(d) { root.nudge(plate.r, d, 0.1) }
+    function keyPress() { if (plate.r) root.act(plate.r.click) }
     width: root.inner
     spacing: Type.px(4)
     bottomPadding: Type.px(8)

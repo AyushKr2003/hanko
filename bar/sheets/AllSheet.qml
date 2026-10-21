@@ -9,8 +9,9 @@ import "../../core/Title.js" as TitleJs
 // window you are in; now playing; then a row for each sheet with its
 // reading (core/Inkan.js rows()), red where it needs you. A row opens that
 // sheet in its own hand where this one was; the clock opens Time, a numeral
-// goes to that workspace. Keys: Up/Down pick a row, Enter opens it, 1–9 go
-// to a workspace, Space plays or pauses. Always the ledger hand.
+// goes to that workspace. Keys: the cursor (SheetView) walks the clock, the
+// numerals, the song, the rows and the links; Enter opens, 1–9 go
+// to a workspace, P plays or pauses. Always the ledger hand.
 Item {
   id: root
 
@@ -30,20 +31,13 @@ Item {
   // what: open (sheet key) | workspace (id) | media (playPause) | menu | settings
   signal request(string what, var arg)
 
-  property int current: -1
-
   width: parent ? parent.width : 0
   implicitHeight: column.y + column.implicitHeight
   focus: true
 
   readonly property var title: window ? TitleJs.describe(window.cls, window.title) : null
-
-  Keys.onUpPressed: current = current <= 0 ? rows.length - 1 : current - 1
-  Keys.onDownPressed: current = (current + 1) % Math.max(1, rows.length)
-  Keys.onReturnPressed: if (current >= 0 && current < rows.length) request("open", rows[current].key)
-  Keys.onEnterPressed: if (current >= 0 && current < rows.length) request("open", rows[current].key)
-  Keys.onSpacePressed: if (media) request("media", "playPause")
   Keys.onPressed: function(event) {
+    if (event.text === "p" && media) { request("media", "playPause"); event.accepted = true; return }
     var n = parseInt(event.text, 10)
     if (n >= 1 && n <= 9) { request("workspace", n); event.accepted = true }
   }
@@ -65,8 +59,10 @@ Item {
 
     // The time, large, then the date in italic: a click opens Time.
     Item {
-      width: parent.width
+      width: clockRow.width
       height: clockRow.height
+      readonly property bool keyStop: true
+      function keyPress() { root.request("open", "time") }
       Row {
         id: clockRow
         spacing: Type.px(14)
@@ -118,6 +114,9 @@ Item {
           Item {
             id: page
             required property var modelData
+            readonly property bool keyStop: true
+            readonly property bool keyChosen: !!modelData.active
+            function keyPress() { root.request("workspace", page.modelData.id) }
             width: Type.px(24)
             height: Type.px(24)
             Rectangle {
@@ -195,6 +194,8 @@ Item {
     Item {
       visible: root.media !== null
       width: parent.width
+      readonly property bool keyStop: true
+      function keyPress() { root.request("media", "playPause") }
       height: visible ? Type.px(28) : 0
       Row {
         anchors.top: parent.top
@@ -244,7 +245,9 @@ Item {
         id: row
         required property var modelData
         required property int index
-        readonly property bool hot: rowHit.containsMouse || root.current === index
+        readonly property bool hot: rowHit.containsMouse
+        readonly property bool keyStop: true
+        function keyPress() { root.request("open", row.modelData.key) }
         width: column.width
         height: Type.px(48)
 
@@ -334,6 +337,8 @@ Item {
             required property var modelData
             required property int index
             text: (index ? "· " : "") + modelData.text
+            readonly property bool keyStop: true
+            function keyPress() { root.request(link.modelData.key, "") }
             color: linkHit.containsMouse ? Ink.ink : Ink.inkDim
             font.family: Type.mono
             font.pixelSize: Type.tag

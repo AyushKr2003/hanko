@@ -109,12 +109,19 @@ function notifications(raw) {
     var key = stamp + "-" + (e.originalId || e.id || "") + "-" + (e.summary || "")
     if (seen[key]) continue
     seen[key] = true
+    // stem: the name Omarchy files it under (timestamp-originalId), live
+    // or in the history, which is how one letter is put away.
     out.push({ app: app, summary: String(e.summary || ""), body: String(e.body || ""), timestamp: stamp,
-               urgent: Number(e.urgency) === 2,
+               stem: stamp + "-" + (e.originalId || e.id || 0), urgent: Number(e.urgency) === 2,
                glyph: stampGlyph(app), tilt: tilt(app + stamp + (e.summary || "")) })
   }
   out.sort(function(a, b) { return b.timestamp - a.timestamp })
   return out
+}
+
+// The letters left once the ones put away (a map of stems) are taken out.
+function without(letters, gone) {
+  return (letters || []).filter(function(l) { return !(gone && gone[l.stem]) })
 }
 
 // "now", "12m", "3h", "2d": how long ago a notification came in.

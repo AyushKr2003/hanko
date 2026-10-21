@@ -5,7 +5,7 @@ import "../../core"
 // Display 明, Tanzaku (短冊): the chosen monitor's brightness on the first
 // slip (pull it to set; never below 1%), then a slip for each monitor (the
 // chosen one inked and sealed, one switched off dashed). A click chooses.
-// Up/Down step the brightness, N toggles night light.
+// + and - step the brightness, N toggles night light.
 Item {
   id: root
 
@@ -61,9 +61,6 @@ Item {
     SheetButton { text: "Night"; on: root.night; onClicked: root.request("night", !root.night) }
     SheetButton { plate: true; text: "Monitors ›"; onClicked: root.request("edit", null) }
   }
-
-  Keys.onUpPressed: if (root.light) root.request("brightness", Math.min(1, root.light.level + 0.05))
-  Keys.onDownPressed: if (root.light) root.request("brightness", Math.max(0.01, root.light.level - 0.05))
   Keys.onPressed: function(event) {
     if (event.key === Qt.Key_N) { root.request("night", !root.night); event.accepted = true }
   }

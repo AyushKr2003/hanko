@@ -16,6 +16,11 @@ Item {
   property int seed: 4
   signal moved(real value)
 
+  // Te 手 (core/Cursor.js): Left/Right (or + and -) step it by 5.
+  readonly property bool keyStop: true
+  readonly property bool keyStep: true
+  function keyAdjust(d) { root.moved(Math.max(0, Math.min(100, root.value + d * 5))) }
+
   readonly property int ticks: thin ? 11 : 21
   readonly property real step: (width - 2) / (ticks - 1)
   readonly property color on: muted ? Ink.seal : Ink.ink

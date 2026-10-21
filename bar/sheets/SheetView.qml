@@ -6,11 +6,13 @@ import "../../core/Hands.js" as Hands
 import "../../core/Time.js" as TimeJs
 import "../../core/Status.js" as StatusJs
 import "../../core/Blue.js" as BlueJs
+import "../../core/Cursor.js" as Cursor
+import "../parts"
 
 // One open sheet: the paper (SheetCard) with the right contents in it.
 // Pure QtQuick like BarSurface: bar/SheetWindow.qml feeds it live data,
 // the harness feeds it fixtures. Each sheet's contents are their own
-// component so the handscroll (Phase 7) can lay them out again.
+// component.
 //
 // feed: { now, zones, timeShift, sound, network, bluetooth, power, display,
 // letters, dnd, all }, where all is No. 00's { rows, spaces, window, home,
@@ -45,7 +47,17 @@ Item {
   // The craft hands (Shōgi, Soroban, Odoshi, Kasumi) draw one model of
   // whichever sheet is open (core/Hands.js).
   readonly property var handModel: Hands.HANDS.indexOf(hand) >= 0
-    ? Hands.model(sheet, feed, feed.now || new Date(), { T: TimeJs, St: StatusJs, B: BlueJs }) : null
+    ? Hands.model(sheet, sheet === "inbox" ? Object.assign({}, feed, { openLetter: openLetter }) : feed,
+                  feed.now || new Date(), { T: TimeJs, St: StatusJs, B: BlueJs }) : null
+  // The inbox letter opened to read in full (its stem), in every hand: kept
+  // here, since a craft hand is drawn afresh from its model. A hand asks
+  // ("open", stem) and ("putAway", letter); the second goes on to Bar.qml.
+  property string openLetter: ""
+  function handRequest(what, arg) {
+    if (sheet === "inbox" && what === "open") { openLetter = String(arg || ""); return }
+    if (sheet === "inbox" && what === "putAway") openLetter = ""
+    root.request(sheet, what, arg)
+  }
 
   // A sheet asked for something (a value, a device, a page of the ribbon).
   signal request(string sheet, string what, var arg)
@@ -60,12 +72,43 @@ Item {
   implicitWidth: sheetWidth
   implicitHeight: rail ? panel.implicitHeight : card.implicitHeight
 
-  // Hand the keyboard to the contents (arrows act inside a sheet).
+  // Hand the keyboard to the contents. Keys they leave alone (the arrows,
+  // Enter, Esc, Tab) come up to this view, which moves the cursor.
   function focusContents() {
     if (rail) { panel.focusContents(); return }
     var contents = body.item as Item
     if (contents) contents.forceActiveFocus()
     else root.forceActiveFocus()
+  }
+
+  // ------------------------------------------------ Te 手, the cursor
+  //
+  // Omarchy's panel keys on every sheet, in every hand (bar/KeyCursor.qml,
+  // core/Cursor.js): the arrows or h j k l move, Enter or Space act, Esc
+  // closes, Tab goes to the next sheet, + and - set a level.
+  readonly property alias cursor: keys
+  // false: a picture of a sheet (Settings › Sheets), fenced off from the
+  // settings window's cursor and without one of its own.
+  property bool keyStops: true
+  function keyMove(dx, dy) { keys.move(dx, dy) }
+  function keyActivate() { keys.activate() }
+  function stepLevel(d) { keys.step(d) }
+  function placeCursor() { keys.place() }
+
+  onSheetChanged: { keys.reset(); openLetter = "" }
+
+  Keys.onPressed: function(event) {
+    var a = Cursor.action(event.key, event.text, (event.modifiers & Qt.ShiftModifier) !== 0)
+    if (!a) {
+      if (event.text === "+" || event.text === "=") { keys.step(1); event.accepted = true }
+      else if (event.text === "-" || event.text === "_") { keys.step(-1); event.accepted = true }
+      return
+    }
+    if (a.kind === "close") root.closeRequested()
+    else if (a.kind === "tab") root.cycle(a.dir)
+    else if (a.kind === "move") keys.move(a.dx, a.dy)
+    else if (a.kind === "activate") keys.activate()
+    event.accepted = true
   }
 
   ShojiPanel {
@@ -75,8 +118,8 @@ Item {
     side: root.side
     sheet: root.rail ? root.sheet : ""
     open: root.open && root.rail
-    feed: root.feed
-    onRequest: function(sheet, what, arg) { root.request(sheet, what, arg) }
+    feed: root.sheet === "inbox" ? Object.assign({}, root.feed, { openLetter: root.openLetter }) : root.feed
+    onRequest: function(sheet, what, arg) { if (sheet === "inbox") root.handRequest(what, arg); else root.request(sheet, what, arg) }
     onCloseRequested: root.closeRequested()
     onCycle: function(delta) { root.cycle(delta) }
   }
@@ -131,9 +174,6 @@ Item {
       home: all.home || ""
       media: all.media || null
       onRequest: function(what, arg) { root.request("all", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -144,9 +184,6 @@ Item {
       zones: root.feed.zones || []
       shift: root.feed.timeShift || 0
       onRequest: function(what, arg) { root.request("time", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -155,9 +192,6 @@ Item {
     SoundSheet {
       sound: root.feed.sound || null
       onRequest: function(what, arg) { root.request("sound", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -166,9 +200,6 @@ Item {
     NetworkSheet {
       net: root.feed.network || null
       onRequest: function(what, arg) { root.request("network", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -177,9 +208,6 @@ Item {
     PowerSheet {
       power: root.feed.power || null
       onRequest: function(what, arg) { root.request("power", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -189,10 +217,8 @@ Item {
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
       now: root.feed.now || new Date()
-      onRequest: function(what, arg) { root.request("inbox", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
+      openStem: root.openLetter
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -201,9 +227,6 @@ Item {
     DisplaySheet {
       display: root.feed.display || null
       onRequest: function(what, arg) { root.request("display", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -212,9 +235,6 @@ Item {
     BluetoothSheet {
       blue: root.feed.bluetooth || null
       onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -227,9 +247,6 @@ Item {
       zones: root.feed.zones || []
       shift: root.feed.timeShift || 0
       onRequest: function(what, arg) { root.request("time", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -238,9 +255,6 @@ Item {
     SoundTanzaku {
       sound: root.feed.sound || null
       onRequest: function(what, arg) { root.request("sound", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -249,9 +263,6 @@ Item {
     NetworkTanzaku {
       net: root.feed.network || null
       onRequest: function(what, arg) { root.request("network", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -260,9 +271,6 @@ Item {
     PowerTanzaku {
       power: root.feed.power || null
       onRequest: function(what, arg) { root.request("power", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -272,10 +280,8 @@ Item {
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
       now: root.feed.now || new Date()
-      onRequest: function(what, arg) { root.request("inbox", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
+      openStem: root.openLetter
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -284,9 +290,6 @@ Item {
     DisplayTanzaku {
       display: root.feed.display || null
       onRequest: function(what, arg) { root.request("display", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -295,9 +298,6 @@ Item {
     BluetoothTanzaku {
       blue: root.feed.bluetooth || null
       onRequest: function(what, arg) { root.request("bluetooth", what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
     }
   }
 
@@ -306,10 +306,8 @@ Item {
     id: shogiHand
     ShogiHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -317,10 +315,8 @@ Item {
     id: sorobanHand
     SorobanHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -328,10 +324,8 @@ Item {
     id: odoshiHand
     OdoshiHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
   }
 
@@ -339,10 +333,14 @@ Item {
     id: kasumiHand
     KasumiHand {
       model: root.handModel
-      onRequest: function(what, arg) { root.request(root.sheet, what, arg) }
-      Keys.onEscapePressed: root.closeRequested()
-      Keys.onTabPressed: root.cycle(1)
-      Keys.onBacktabPressed: root.cycle(-1)
+      now: root.feed.now || new Date()
+      onRequest: function(what, arg) { root.handRequest(what, arg) }
     }
+  }
+
+  KeyCursor {
+    id: keys
+    scope: root.rail ? panel : body.item as Item
+    active: root.open && root.keyStops
   }
 }

@@ -6,7 +6,7 @@ import "../parts"
 
 // Letters 便り: what is waiting for you, newest first, each marked by the
 // unread part; Quiet (do not disturb) at the top; replay and clear at the foot.
-// Requests as InboxSheet's: dnd | replay | clear.
+// Requests as InboxSheet's: dnd | replay | clear | open | putAway.
 Column {
   id: root
 
@@ -15,6 +15,8 @@ Column {
   property bool dnd: false
   property date now: new Date()
   property int maxRows: 5
+  // The letter unfolded (SheetView keeps it).
+  property string openStem: ""
   signal request(string sheet, string what, var arg)
 
   readonly property var shown: letters.slice(0, maxRows)
@@ -45,7 +47,9 @@ Column {
       letter: modelData
       now: root.now
       first: index === 0
-      onOpened: root.request("inbox", "replay", null)
+      expanded: modelData.stem === root.openStem
+      onToggled: root.request("inbox", "open", expanded ? "" : modelData.stem)
+      onPutAway: root.request("inbox", "putAway", modelData)
     }
   }
   Item {
@@ -53,12 +57,16 @@ Column {
     Text {
       anchors.verticalCenter: parent.verticalCenter
       text: "Show recent again"
+      readonly property bool keyStop: true
+      function keyPress() { root.request("inbox", "replay", null) }
       color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12.5)
       MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.request("inbox", "replay", null) }
     }
     Text {
       anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
       text: "Clear all"
+      readonly property bool keyStop: true
+      function keyPress() { root.request("inbox", "clear", null) }
       color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12.5)
       MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.request("inbox", "clear", null) }
     }

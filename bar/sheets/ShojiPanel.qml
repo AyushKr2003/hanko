@@ -99,8 +99,6 @@ Item {
       Keys.onEscapePressed: root.closeRequested()
       Keys.onTabPressed: root.cycle(1)
       Keys.onBacktabPressed: root.cycle(-1)
-      Keys.onUpPressed: if (sound && sound.master) root.request("sound", "master", Math.min(1, sound.master.level + 0.05))
-      Keys.onDownPressed: if (sound && sound.master) root.request("sound", "master", Math.max(0, sound.master.level - 0.05))
     }
   }
   Component {
@@ -154,6 +152,7 @@ Item {
       skin: root.skin
       letters: root.feed.letters || []
       dnd: !!root.feed.dnd
+      openStem: root.feed.openLetter || ""
       now: root.feed.now || new Date()
       onRequest: function(s, what, arg) { root.request(s, what, arg) }
       Keys.onEscapePressed: root.closeRequested()

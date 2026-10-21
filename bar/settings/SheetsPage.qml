@@ -107,6 +107,9 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          readonly property bool keyChosen: tab.open
+          function keyPress() { root.focusSheet = tab.modelData.key }
           onClicked: root.focusSheet = tab.modelData.key
         }
       }
@@ -144,6 +147,7 @@ Column {
         height: printed.height * printed.scale
         SheetView {
           id: printed
+          keyStops: false
           sheet: root.focusSheet
           styles: root.withHand(root.shownHand)
           skin: root.skin
@@ -198,6 +202,7 @@ Column {
               clip: true
               SheetView {
                 id: mini
+                keyStops: false
                 x: Math.max(0, (thumb.width - width * scale) / 2)
                 y: Type.px(4)
                 sheet: root.focusSheet
@@ -261,6 +266,9 @@ Column {
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               onContainsMouseChanged: root.trialHand = containsMouse ? hand.modelData.key : ""
+              readonly property bool keyStop: enabled
+              readonly property bool keyChosen: hand.on
+              function keyPress() { root.trialHand = ""; root.stylePicked(root.focusSheet, hand.modelData.key) }
               onClicked: { root.trialHand = ""; root.stylePicked(root.focusSheet, hand.modelData.key) }
             }
           }
@@ -291,9 +299,8 @@ Column {
 
   Item { width: 1; height: Type.px(26) }
 
-  // Panel opacity 透け: how much of the desk shows through every panel
-  // (sheets in any hand, the scroll), with Shōji's
-  // brush slider. It was on Settings › Design, which went with the design.
+  // Panel opacity 透け: how much of the desk shows through every sheet,
+  // in any hand, with Shōji's brush slider. It was on Settings › Design, which went with the design.
   Item {
     id: opacityRow
     width: root.width
@@ -307,7 +314,7 @@ Column {
       Text { text: "Panel opacity"; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
       Text {
         width: parent.width; wrapMode: Text.Wrap
-        text: "How much of your desk shows through every panel: sheets in any hand and the scroll. Auto keeps each one's own paper (solid, or Shōji's washi at 86%)."
+        text: "How much of your desk shows through every panel: sheets in any hand. Auto keeps each one's own paper (solid, or Shōji's washi at 86%)."
         color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note
       }
     }
@@ -356,6 +363,8 @@ Column {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
+          readonly property bool keyStop: enabled
+          function keyPress() { if (!autoButton.faint) root.opacityPicked("auto") }
           onClicked: if (!autoButton.faint) root.opacityPicked("auto")
         }
       }
