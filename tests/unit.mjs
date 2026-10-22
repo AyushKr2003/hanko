@@ -25,7 +25,7 @@ const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
 const St = load("core/Status.js", ["ticks", "bars", "network", "volume", "battery", "brightness",
-  "stampGlyph", "tilt", "notifications", "without", "count2", "LOW_BATTERY", "age", "short", "fill"])
+  "stampGlyph", "tilt", "notifications", "stillHeld", "without", "count2", "LOW_BATTERY", "age", "short", "fill"])
 const Sh = load("core/Sheets.js", ["SHEETS", "ALL", "byKey", "forCell", "forOmarchyId", "omarchyIdForCell", "step", "panelAt", "place"])
 const Tm = load("core/Time.js", ["dayOfYear", "daysInYear", "isoWeek", "leftInDay", "heading", "ribbon", "parseZones",
   "zonesFromBarConfig", "probeCommand", "parseProbe", "relative", "zoneRow", "ordinal", "counted", "dayAcross"])
@@ -574,6 +574,27 @@ test("inbox: each letter carries the stem Omarchy files it under, to put one awa
   assert.deepEqual(n.map(l => l.stem), ["2000-9", "1000-4"])
   assert.deepEqual(St.without(n, { "2000-9": true }).map(l => l.stem), ["1000-4"])
   assert.equal(St.without(n, null).length, 2)
+})
+
+test("inbox: the deck's live.json and history.json (rc, edge, dev), one letter per key", () => {
+  const live = [{ key: "abc", originalId: 3, app: "Signal", summary: "Mika", body: "Here", urgency: 2, ts: 3 }]
+  const history = [
+    { key: "abc", originalId: 3, app: "Signal", summary: "Mika", body: "Here", ts: 3, closed_ts: 4 },
+    { key: "old", originalId: 1, app: "Mail", summary: "Rent", ts: 1.5, closed_ts: 2 }]
+  const quiet = { snoozes: {}, dnd: true, silencedSince: 0, codesBypassQuiet: false }
+  const raw = ["#live", JSON.stringify(live), "#history", JSON.stringify(history), JSON.stringify(quiet), "[]"].join("\n")
+  const n = St.notifications(raw)
+  assert.deepEqual(n.map(l => [l.stem, l.key, l.live, l.timestamp]), [["abc", "abc", true, 3000], ["old", "old", false, 1500]])
+  assert.equal(n[0].urgent, true)
+  assert.equal(n[0].glyph, "信")
+  assert.deepEqual(St.stillHeld({ old: true, gone: true }, n), { old: true })
+  assert.deepEqual(St.stillHeld(null, n), {})
+})
+
+test("inbox: stable files under #live and #history markers", () => {
+  const one = JSON.stringify({ app: "Mail", summary: "Rent", timestamp: 2000, originalId: 9 })
+  const n = St.notifications(["#live", one, "#history", one].join("\n"))
+  assert.deepEqual(n.map(l => [l.stem, l.key, l.live]), [["2000-9", "", true]])
 })
 
 test("spaces carry each window's app and address for the scroll's map", () => {

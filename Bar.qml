@@ -193,9 +193,12 @@ Item {
       if (what === "dnd") Status.act("notif", "right")
       else if (what === "replay") { closeSheet(); Status.act("notif", "click") }
       else if (what === "putAway") Status.putAwayLetter(arg)
-      // `clear` forgets the history, `dismissAll` the toasts still on screen.
+      // Everything, on screen and in the history: a daemon with `forgetAll`
+      // (a patched clone) in one go; otherwise the toasts first, since on the
+      // deck (rc, edge, dev) a dismissed toast goes into the history, then
+      // `clear` forgets the history.
       else if (what === "clear") {
-        Status.run(["sh", "-c", "omarchy-shell notifications clear; omarchy-shell notifications dismissAll"])
+        Status.run(["sh", "-c", "omarchy-shell notifications forgetAll >/dev/null 2>&1 || { omarchy-shell notifications dismissAll; sleep 0.5; omarchy-shell notifications clear; } >/dev/null 2>&1; true"])
       }
     }
   }

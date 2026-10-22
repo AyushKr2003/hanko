@@ -89,33 +89,60 @@ function tilt(key) {
   return ((Math.abs(h) % 9) - 4) * 1.5   // -6 .. 6 degrees in 1.5° steps
 }
 
-// The persisted popup and history files Omarchy's notification service
-// writes (~/.local/state/omarchy/notifications{,/history}/*.json), one JSON
-// object per line. Newest first.
+// The notifications Omarchy's service keeps on disk, newest first. Two
+// layouts, one per daemon:
+//   stable  one JSON object per file, live toasts in notifications/*.json and
+//           the history in notifications/history/*.json (`timestamp` in ms);
+//   deck    rc, edge and dev: live.json and history.json, each one array of
+//           rows keyed by `key` (`ts` in seconds), beside quiet.json.
+// `raw` is those files one after another, each line a whole file or object;
+// a line "#live" or "#history" says where the lines after it came from, and
+// the live copy of a notification wins over its history copy.
 function notifications(raw) {
   var out = []
   var seen = {}
+  var live = false
   var lines = String(raw || "").split("\n")
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim()
     if (line === "") continue
-    var e
-    try { e = JSON.parse(line) } catch (err) { continue }
-    if (!e || typeof e !== "object") continue
-    var app = String(e.app || e.appName || "")
-    var stamp = Number(e.timestamp || 0)
-    // A live toast and its history copy are one notification (Omarchy keys
-    // them by timestamp and original id).
-    var key = stamp + "-" + (e.originalId || e.id || "") + "-" + (e.summary || "")
-    if (seen[key]) continue
-    seen[key] = true
-    // stem: the name Omarchy files it under (timestamp-originalId), live
-    // or in the history, which is how one letter is put away.
-    out.push({ app: app, summary: String(e.summary || ""), body: String(e.body || ""), timestamp: stamp,
-               stem: stamp + "-" + (e.originalId || e.id || 0), urgent: Number(e.urgency) === 2,
-               glyph: stampGlyph(app), tilt: tilt(app + stamp + (e.summary || "")) })
+    if (line === "#live" || line === "#history") { live = line === "#live"; continue }
+    var read
+    try { read = JSON.parse(line) } catch (err) { continue }
+    var rows = Array.isArray(read) ? read : [read]
+    for (var j = 0; j < rows.length; j++) {
+      var e = rows[j]
+      // quiet.json and anything else that isn't a notification.
+      if (!e || typeof e !== "object" || Array.isArray(e) || e.snoozes !== undefined) continue
+      if (e.summary === undefined && e.body === undefined && e.app === undefined) continue
+      var deck = typeof e.key === "string" && e.key !== ""
+      var app = String(e.app || e.appName || "")
+      var stamp = deck ? Math.round(Number(e.ts || 0) * 1000) : Number(e.timestamp || 0)
+      if (!isFinite(stamp)) stamp = 0
+      // A live toast and its history copy are one notification: the deck keys
+      // them, stable names them by timestamp and original id.
+      var same = deck ? "key:" + e.key : stamp + "-" + (e.originalId || e.id || "") + "-" + (e.summary || "")
+      if (seen[same]) continue
+      seen[same] = true
+      // stem: how one letter is put away. Stable's file name
+      // (timestamp-originalId), live or in the history; the deck's key.
+      out.push({ app: app, summary: String(e.summary || ""), body: String(e.body || ""), timestamp: stamp,
+                 stem: deck ? e.key : stamp + "-" + (e.originalId || e.id || 0), key: deck ? e.key : "", live: live,
+                 urgent: Number(e.urgency) === 2,
+                 glyph: stampGlyph(app), tilt: tilt(app + stamp + (e.summary || "")) })
+    }
   }
   out.sort(function(a, b) { return b.timestamp - a.timestamp })
+  return out
+}
+
+// The stems put away (a map) that the files on disk still hold: what is worth
+// remembering across a restart. Once the daemon has forgotten one, or its
+// file is gone, it never comes back, so it can be dropped.
+function stillHeld(gone, letters) {
+  var held = {}, out = {}
+  for (var i = 0; i < (letters || []).length; i++) held[letters[i].stem] = true
+  for (var k in (gone || {})) if (held[k]) out[k] = true
   return out
 }
 

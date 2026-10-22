@@ -174,6 +174,8 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 
 - ✅ **Letters one by one** (asked for: "each notification expand if it is more and remove each one particularly … in all style"): every inbox letter opens to read in full and is put away on its own (deleted from Omarchy's history), in all seven hands: in place on the Ledger and Shōji, unfolded under the slips and the craft hands; an × on each, Delete for the open one.
 
+- ✅ **Letters on every channel** (asked for: "update the code like in omacale so that it supports all stable and dev"): the inbox reads stable's one-file-per-notification layout and the rc/edge/dev daemon's `live.json`/`history.json`; put-away kept across restarts, `forgetKeys`/`forgetAll` used where the daemon has them. Left: `hanko.notifications` (the desk's Fumi) is still a clone of the stable daemon (HANDOFF §12 #56).
+
 ## Dev loop
 
 ```sh

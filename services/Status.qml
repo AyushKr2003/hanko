@@ -15,6 +15,7 @@ Singleton {
 
   readonly property string home: Quickshell.env("HOME")
   readonly property string notifDir: home + "/.local/state/omarchy/notifications"
+  readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || (home + "/.local/state")
 
   // Set by Bar.qml from shell.firstPartyServiceFor("omarchy.notifications").
   property var notificationsProxy: null
@@ -78,33 +79,59 @@ Singleton {
   }
 
   // ---------------------------------------------------------- notifications
-  // Omarchy keeps every live toast and the last ten it showed as one-line
-  // JSON files; Hanko reads those rather than running a second server.
+  // Omarchy keeps the toasts on screen and the recent history on disk; Hanko
+  // reads those rather than running a second server. Stable keeps one JSON
+  // file per notification (*.json, history/*.json); rc, edge and dev keep
+  // live.json and history.json beside quiet.json (core/Status.js reads both).
   property var notifications: []
   readonly property bool doNotDisturb: notificationsProxy ? notificationsProxy.doNotDisturb === true : dndFallback
-  property bool dndFallback: false
 
   Process {
     id: notifProc
     // A loop, not one awk: with no live toast the first glob stays literal
     // and gawk stops dead on it, before it ever reaches the history.
-    command: ["sh", "-c", "for f in \"$1\"/*.json \"$1\"/history/*.json; do [ -f \"$f\" ] && cat \"$f\" && echo; done; true", "--", root.notifDir]
+    command: ["sh", "-c",
+      "echo '#live'\n" +
+      "for f in \"$1\"/*.json; do\n" +
+      "  case $f in */history.json|*/quiet.json) continue ;; esac\n" +
+      "  [ -f \"$f\" ] && cat \"$f\" && echo\n" +
+      "done\n" +
+      "echo '#history'\n" +
+      "for f in \"$1\"/history.json \"$1\"/history/*.json; do [ -f \"$f\" ] && cat \"$f\" && echo; done\n" +
+      "true", "--", root.notifDir]
     stdout: StdioCollector {
-      onStreamFinished: root.notifications = StatusJs.without(StatusJs.notifications(text), root.putAway)
+      onStreamFinished: {
+        var all = StatusJs.notifications(text)
+        root.notifications = StatusJs.without(all, root.putAway)
+        if (root.putAwayLoaded) root.keepPutAway(StatusJs.stillHeld(root.putAway, all))
+      }
     }
   }
 
-  // One letter put away for good: off the screen if it is still a toast
-  // (Omarchy's `dismiss` moves it into the history), then its history file
-  // and images deleted. It leaves the inbox at once; `putAway` keeps it out
-  // while the files go.
+  // One letter put away for good. It leaves the inbox at once, and `putAway`
+  // (the stems, kept in Hanko's state folder) keeps it out until Omarchy has
+  // forgotten it too, across restarts.
+  //   stable  off the screen if it is still a toast (`dismiss` moves its file
+  //           into the history), then its history file and images deleted;
+  //   deck    the history is one file the daemon rewrites from memory, so it
+  //           is forgotten through the daemon's `forgetKeys` where it has one
+  //           (a patched clone); Omarchy's own only takes a toast off the
+  //           screen by summary, and the letter stays put away here.
   property var putAway: ({})
+  property bool putAwayLoaded: false
   function putAwayLetter(letter) {
     if (!letter || !letter.stem) return
     var gone = Object.assign({}, putAway)
     gone[letter.stem] = true
-    putAway = gone
+    keepPutAway(gone)
     notifications = StatusJs.without(notifications, gone)
+    if (letter.key) {
+      run(["sh", "-c",
+        "omarchy-shell notifications forgetKeys \"$1\" >/dev/null 2>&1 && exit 0\n" +
+        "[ \"$2\" = true ] && [ -n \"$3\" ] && omarchy-shell notifications dismiss \"$3\" >/dev/null 2>&1\n" +
+        "true", "--", String(letter.key), letter.live ? "true" : "false", String(letter.summary || "")])
+      return
+    }
     run(["sh", "-c",
       "dir=$1 stem=$2\n" +
       "if [ -f \"$dir/$stem.json\" ]; then\n" +
@@ -116,13 +143,65 @@ Singleton {
       root.notifDir, String(letter.stem), String(letter.summary || "")])
   }
 
-  // Without the proxy (an older Omarchy), DND comes from the settings file.
+  function keepPutAway(gone) {
+    var text = JSON.stringify(Object.keys(gone).sort())
+    if (text === JSON.stringify(Object.keys(putAway).sort()) && putAwayFile.written === text) return
+    putAway = gone
+    putAwayFile.written = text
+    if (!putAwayMkdir.running) putAwayMkdir.running = true
+  }
+
+  // The state folder may not exist yet; written once it does.
+  Process {
+    id: putAwayMkdir
+    command: ["mkdir", "-p", root.stateHome + "/hanko"]
+    onExited: putAwayFile.setText(putAwayFile.written + "\n")
+  }
+
+  FileView {
+    id: putAwayFile
+    property string written: ""
+    path: root.stateHome + "/hanko/put-away.json"
+    atomicWrites: true
+    printErrors: false
+    onLoaded: {
+      var gone = {}
+      try {
+        var keys = JSON.parse(text())
+        for (var i = 0; i < keys.length; i++) gone[String(keys[i])] = true
+      } catch (e) {}
+      root.putAway = Object.assign(gone, root.putAway)
+      written = text().trim()
+      root.putAwayLoaded = true
+    }
+    onLoadFailed: root.putAwayLoaded = true
+  }
+
+  // Without the proxy (an older Omarchy), DND comes from the daemon's own
+  // file: quiet.json on the deck, which an empty one hasn't written yet, so
+  // the old notifications.json holds until it does (as the daemon reads it).
+  property var quietDnd: null
+  property bool legacyDnd: false
+  readonly property bool dndFallback: quietDnd !== null ? quietDnd : legacyDnd
+
+  FileView {
+    path: root.notifDir + "/quiet.json"
+    watchChanges: root.notificationsProxy === null
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: {
+      try { root.quietDnd = String(text()).trim() === "" ? null : JSON.parse(text()).dnd === true } catch (e) { root.quietDnd = null }
+    }
+    onLoadFailed: root.quietDnd = null
+  }
+
   FileView {
     path: root.home + "/.local/state/omarchy/notifications.json"
     watchChanges: root.notificationsProxy === null
+    printErrors: false
     onFileChanged: reload()
     onLoaded: {
-      try { root.dndFallback = JSON.parse(text()).dnd === true } catch (e) { root.dndFallback = false }
+      try { root.legacyDnd = JSON.parse(text()).dnd === true } catch (e) { root.legacyDnd = false }
     }
   }
 
