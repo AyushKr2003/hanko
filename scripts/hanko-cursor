@@ -25,8 +25,9 @@ M
 
 svg() { printf '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">%s</svg>\n' "$1"; }
 RIM="stroke=\"$PAPER\" stroke-width=\"2.4\" stroke-linejoin=\"round\""
-# The brush tip: a pointer whose edges swell and taper like a stroke.
-TIP="<path d=\"M14 8 C16 23 18 35 20 51 L26 41 L38 53 L44 47 L32 35 L44 31 C34 23 24 15 14 8Z\" fill=\"$INK\" $RIM/>"
+# The brush tip: a pointer with no tail, its three edges bowed like a stroke
+# (the same cut as the Cursor card's picture in Settings › Kaze).
+TIP="<path d=\"M14 8 Q42.75 27.44 43.9 35.65 Q30.68 35.65 24.81 51.7 Q18.6 29.85 14 8Z\" fill=\"$INK\" $RIM/>"
 
 shape() { # name hotspot_x hotspot_y svg-body overrides...
   local name="$1" hx="$2" hy="$3" body="$4"; shift 4
