@@ -8,8 +8,11 @@ import "../core/Paths.js" as Paths
 // Kaze 風 for the settings page: the switches in ~/.config/hanko/kaze.json
 // (read by the desk's plugins; written at once, with its own Undo), whether
 // the desk is on (the flag `hanko desk on` leaves in the state folder)
-// and whether Sumi is on (its shader in the state folder). The desk and
-// Sumi are switched by the `hanko` CLI, as from a terminal.
+// and whether Sumi is on (its shader in the state folder), and the three
+// tools beside the desk: the brush cursor (its flag in the state folder),
+// btop and Neovim in the theme's inks (what `hanko tools on` leaves), and the
+// Hanko theme (Omarchy's current theme name). The desk, Sumi and the tools
+// are switched by the `hanko` CLI, as from a terminal.
 Singleton {
   id: root
 
@@ -25,7 +28,11 @@ Singleton {
   // text in the view, so a failed load says off).
   property bool desk: false
   property bool sumi: false
-  // A switch the CLI is turning ("desk" | "sumi" | ""), so the page can say so.
+  property bool cursor: false
+  readonly property bool tools: _btopBefore.on || _nvimSpec.on
+  property bool theme: false
+  // A switch the CLI is turning ("desk" | "sumi" | "cursor" | "tools" |
+  // "theme" | ""), so the page can say so.
   property string busy: ""
 
   // Undo: the documents before each change, with when it was made.
@@ -76,16 +83,31 @@ Singleton {
     _sumiRun.running = true
   }
 
+  // The brush cursor, the tools and the Hanko theme: `hanko cursor|tools|theme
+  // on|off`. A theme switch takes a few seconds (Omarchy restyles every app);
+  // its words go to the state folder's tools.log.
+  function setTool(key, on) {
+    if (["cursor", "tools", "theme"].indexOf(key) < 0) return
+    busy = key
+    _toolRun.command = ["sh", "-c", "mkdir -p \"$1\" && \"$0\" " + key + " " + (on ? "on" : "off") + " >\"$1/tools.log\" 2>&1",
+      cli, stateHome + "/hanko"]
+    _toolRun.running = true
+  }
+
   function _commit(next) {
     doc = next
     _mkdir.running = true
   }
 
-  onWantedChanged: if (wanted) { _file.reload(); _look.reload(); _sumi.reload() }
+  function _reloadTools() { _cursor.reload(); _btopBefore.reload(); _nvimSpec.reload(); _themeName.reload() }
+  onWantedChanged: if (wanted) { _file.reload(); _look.reload(); _sumi.reload(); _reloadTools() }
 
   property Process _mkdir: Process {
     command: ["mkdir", "-p", root.configHome + "/hanko"]
     onExited: root._file.setText(JSON.stringify(root.doc) + "\n")
+  }
+  property Process _toolRun: Process {
+    onExited: { root.busy = ""; root._reloadTools() }
   }
   property Process _sumiRun: Process {
     onExited: { root.busy = ""; root._sumi.reload() }
@@ -99,7 +121,7 @@ Singleton {
     interval: 3000
     repeat: true
     running: root.wanted
-    onTriggered: { root._look.reload(); root._sumi.reload() }
+    onTriggered: { root._look.reload(); root._sumi.reload(); root._reloadTools() }
   }
 
   property FileView _file: FileView {
@@ -130,5 +152,37 @@ Singleton {
     onFileChanged: reload()
     onLoaded: root.sumi = text().length > 0
     onLoadFailed: root.sumi = false
+  }
+  property FileView _cursor: FileView {
+    path: root.stateHome + "/hanko/cursor"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: root.cursor = text().length > 0
+    onLoadFailed: root.cursor = false
+  }
+  // `hanko tools on` keeps btop's old theme here and writes Neovim's spec;
+  // either one means on, as the CLI's tools_on says.
+  property FileView _btopBefore: FileView {
+    property bool on: false
+    path: root.stateHome + "/hanko/tools/btop-before"
+    printErrors: false
+    onLoaded: on = true
+    onLoadFailed: on = false
+  }
+  property FileView _nvimSpec: FileView {
+    property bool on: false
+    path: root.configHome + "/nvim/lua/plugins/zz-hanko-kaze.lua"
+    printErrors: false
+    onLoaded: on = true
+    onLoadFailed: on = false
+  }
+  property FileView _themeName: FileView {
+    path: Quickshell.env("HOME") + "/.local/state/omarchy/current/theme.name"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: root.theme = text().trim() === "hanko"
+    onLoadFailed: root.theme = false
   }
 }

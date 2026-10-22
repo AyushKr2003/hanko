@@ -788,11 +788,15 @@ function kazeChange(before, after) {
 
 // How many of the desk's switches are on, for the page's eyebrow: the
 // desk itself, motion, Sumi, then each kaze.json switch not at off.
-function kazeOn(doc, desk, still, sumi) {
+// `tools`, when given, is the switches beside the desk ({ cursor, tools,
+// theme }: true when on), counted too.
+function kazeOn(doc, desk, still, sumi, tools) {
   var n = (desk ? 1 : 0) + (still ? 0 : 1) + (sumi ? 1 : 0)
   for (var i = 0; i < KAZE_SWITCHES.length; i++) {
     var v = kazeValue(doc, KAZE_SWITCHES[i].key)
     if (v !== "off" && v !== "original" && v !== "calm") n++
   }
-  return { on: n, of: KAZE_SWITCHES.length + 3 }
+  var extra = 0
+  for (var k in (tools || {})) { extra++; if (tools[k]) n++ }
+  return { on: n, of: KAZE_SWITCHES.length + 3 + extra }
 }

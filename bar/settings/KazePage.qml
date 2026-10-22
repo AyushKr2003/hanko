@@ -6,8 +6,9 @@ import "../../core/Wind.js" as Wind
 
 // Settings › Kaze 風 (docs/kaze, mockup 14): the desk beyond the bar, one
 // card per switch, each a small picture of what it does over its words. The
-// desk itself and Sumi run the `hanko` CLI; motion is style.json's; the rest
-// are kaze.json's, kept at once (Undo puts them back). Turning the desk on
+// desk itself, Sumi and the three tools after them (the brush cursor, btop
+// and Neovim, the Hanko theme) run the `hanko` CLI; motion is style.json's;
+// the rest are kaze.json's, kept at once (Undo puts them back). Turning the desk on
 // can restart the shell (when its parts are new), so On asks for a second
 // click; Off never does, and goes at once.
 Column {
@@ -17,6 +18,8 @@ Column {
   property var kaze: ({})
   property bool desk: false
   property bool sumi: false
+  // The tools beside the desk: { cursor, tools, theme }, true when on.
+  property var tools: ({ cursor: false, tools: false, theme: false })
   property string busy: ""
   property bool compact: false
 
@@ -24,13 +27,14 @@ Column {
   signal kazePicked(string key, string value)
   signal deskPicked(bool on)
   signal sumiPicked(bool on)
+  signal toolPicked(string key, bool on)
   // The virtual wind's speed, km/h (one drag is one step of Undo).
   signal windSpeedPicked(int speed)
 
   readonly property var wind: Settings.kazeWind(kaze)
 
   readonly property bool still: (draft.motion || "paper") === "still"
-  readonly property var count: Settings.kazeOn(kaze, desk, still, sumi)
+  readonly property var count: Settings.kazeOn(kaze, desk, still, sumi, tools)
   readonly property int columns: compact ? 2 : 4
   readonly property real gap: Type.px(10)
   readonly property real cardWidth: (width - (columns - 1) * gap) / columns
@@ -44,6 +48,7 @@ Column {
     if (key === "desk") return desk ? "on" : "off"
     if (key === "motion") return still ? "still" : "paper"
     if (key === "sumi") return sumi ? "on" : "off"
+    if (key === "cursor" || key === "tools" || key === "theme") return tools[key] ? "on" : "off"
     return Settings.kazeValue(kaze, key)
   }
   function pick(key, v) {
@@ -55,6 +60,7 @@ Column {
     }
     else if (key === "motion") settingPicked("motion", v)
     else if (key === "sumi") sumiPicked(v === "on")
+    else if (key === "cursor" || key === "tools" || key === "theme") toolPicked(key, v === "on")
     else kazePicked(key, v)
   }
 
@@ -65,6 +71,12 @@ Column {
       options: ["paper", "still"], labels: { paper: "Iai", still: "Still" } }
   ].concat(Settings.KAZE_SWITCHES).concat([
     { key: "sumi", name: "Sumi", jp: "墨", line: "The screen in ink, your red kept, letters held, the bar riding",
+      options: ["on", "off"], labels: { on: "On", off: "Off" } },
+    { key: "cursor", name: "Cursor", jp: "筆", line: "A brush-tip pointer in your theme's ink, red only for not-allowed",
+      options: ["on", "off"], labels: { on: "On", off: "Off" } },
+    { key: "tools", name: "Tools", jp: "道具", line: "btop and Neovim on the same paper and inks",
+      options: ["on", "off"], labels: { on: "On", off: "Off" } },
+    { key: "theme", name: "Theme", jp: "判子", line: "The Hanko theme for all of Omarchy; Off goes back to yours",
       options: ["on", "off"], labels: { on: "On", off: "Off" } }
   ])
 
@@ -110,7 +122,8 @@ Column {
           Loader {
             anchors.fill: parent
             sourceComponent: ({ desk: deskArt, motion: motionArt, wallpaper: printArt, grass: grassArt,
-                                gusts: grassArt, wind: windArt, sound: soundArt, sumi: sumiArt, osdCard: osdArt })[card.key] || null
+                                gusts: grassArt, wind: windArt, sound: soundArt, sumi: sumiArt, osdCard: osdArt,
+                                cursor: cursorArt, tools: toolsArt, theme: themeArt })[card.key] || null
             onLoaded: {
               item.key = card.key
               item.current = Qt.binding(function() { return card.current })
@@ -252,7 +265,8 @@ Column {
   Text {
     width: parent.width
     wrapMode: Text.WordWrap
-    text: "The ceremonies (終 退 危 新), the lock's standoff, letters and the menu's draw come and go with the desk. "
+    text: "The ceremonies (終 退 危 新), the lock's standoff, letters and the menu's draw come and go with the desk; "
+      + "the cursor, the tools and the theme work with or without it. "
       + "The bar rides, stepping back to its rule, while Sumi is on. Everything here is also in ~/.config/hanko/kaze.json and the hanko command."
     color: Ink.inkFaint
     font.family: Type.text
@@ -480,6 +494,109 @@ Column {
         x: parent.width - Type.px(30); y: Type.px(14)
         width: Type.px(12); height: width
         color: Ink.seal
+      }
+    }
+  }
+
+  // The brush-tip pointer: an arrow cut as a brush's tip, ink with a paper rim.
+  Component {
+    id: cursorArt
+    Item {
+      id: c
+      property string key
+      property string current
+      property bool hovered
+      Canvas {
+        id: tip
+        width: Type.px(30); height: Type.px(42)
+        x: parent.width / 2 - width / 2 + (c.hovered ? Type.px(10) : 0)
+        y: parent.height / 2 - height / 2 + (c.hovered ? Type.px(-4) : 0)
+        Behavior on x { enabled: Motion.live; NumberAnimation { duration: Motion.nuki; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.nukiCurve } }
+        Behavior on y { enabled: Motion.live; NumberAnimation { duration: Motion.nuki; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.nukiCurve } }
+        onPaint: {
+          var g = getContext("2d")
+          g.reset()
+          var w = width, h = height
+          g.beginPath()
+          g.moveTo(2, 2)
+          g.quadraticCurveTo(w * 0.9, h * 0.45, w - 2, h * 0.62)
+          g.quadraticCurveTo(w * 0.55, h * 0.62, w * 0.38, h - 2)
+          g.quadraticCurveTo(w * 0.2, h * 0.5, 2, 2)
+          g.closePath()
+          g.fillStyle = Ink.ink
+          g.fill()
+          g.lineWidth = 1.5
+          g.strokeStyle = Ink.paper
+          g.stroke()
+        }
+        Connections { target: Ink; function onInkChanged() { tip.requestPaint() } }
+      }
+    }
+  }
+
+  // btop's meters and an editor's lines, in the paper's inks.
+  Component {
+    id: toolsArt
+    Item {
+      id: t
+      property string key
+      property string current
+      property bool hovered
+      Rectangle {
+        x: parent.width / 2 - width - Type.px(4); y: Type.px(16)
+        width: Type.px(72); height: Type.px(56)
+        color: "transparent"; border.width: 1; border.color: Ink.inkDim
+        Repeater {
+          model: [0.7, 0.45, 0.85, 0.3]
+          Rectangle {
+            required property int index
+            required property real modelData
+            x: Type.px(6); y: Type.px(9) + index * Type.px(11)
+            width: (parent.width - Type.px(12)) * modelData * (t.hovered ? 0.8 : 1); height: Type.px(3)
+            color: index === 2 ? Ink.seal : Ink.ink
+            Behavior on width { enabled: Motion.live; NumberAnimation { duration: Motion.nuki } }
+          }
+        }
+      }
+      Rectangle {
+        x: parent.width / 2 + Type.px(4); y: Type.px(16)
+        width: Type.px(72); height: Type.px(56)
+        color: "transparent"; border.width: 1; border.color: Ink.line
+        Repeater {
+          model: [0.55, 0.8, 0.4, 0.65, 0.3]
+          Rectangle {
+            required property int index
+            required property real modelData
+            x: Type.px(6) + (index % 2) * Type.px(6); y: Type.px(8) + index * Type.px(9)
+            width: (parent.width - Type.px(18)) * modelData; height: 1
+            color: index === 1 ? Ink.inkDim : Ink.inkMuted
+          }
+        }
+      }
+    }
+  }
+
+  // The theme: paper, four inks and one red, as swatches.
+  Component {
+    id: themeArt
+    Item {
+      id: th
+      property string key
+      property string current
+      property bool hovered
+      Row {
+        anchors.centerIn: parent
+        spacing: th.hovered ? Type.px(6) : Type.px(2)
+        Behavior on spacing { enabled: Motion.live; NumberAnimation { duration: Motion.nuki } }
+        Repeater {
+          model: [Ink.paper, Ink.inkFaint, Ink.inkMuted, Ink.inkDim, Ink.ink, Ink.seal]
+          Rectangle {
+            required property color modelData
+            width: Type.px(18); height: Type.px(40)
+            color: modelData
+            border.width: 1; border.color: Ink.lineSoft
+          }
+        }
       }
     }
   }

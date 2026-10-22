@@ -27,9 +27,9 @@
 #                            off puts your own cursor back
 #   hanko sumi [on|off]      Sumi 墨: the whole screen in ink, letters held, the
 #                            wind stronger; toggles with no argument
-#   hanko theme install|remove|status  the Hanko theme (theme/) linked into
-#                            ~/.config/omarchy/themes/hanko; then `omarchy
-#                            theme set hanko`
+#   hanko theme on|off|install|remove|status  the Hanko theme (theme/) linked
+#                            into ~/.config/omarchy/themes/hanko; on also sets
+#                            it, off goes back to the theme it replaced
 #   hanko tools on|off|status Dōgu 道具: btop and Neovim in the theme's inks
 #                            (btop's color_theme and a LazyVim spec; off puts
 #                            Omarchy's back)
@@ -612,6 +612,8 @@ LUA
 # the terminals. `omarchy theme set hanko` then brings the whole set.
 # Omarchy looks in $HOME/.config (not XDG_CONFIG_HOME) for user themes.
 THEME_LINK="$HOME/.config/omarchy/themes/hanko"
+THEME_NAME_FILE="$HOME/.local/state/omarchy/current/theme.name"
+THEME_BEFORE="$STATE/theme-before"
 cmd_theme() {
   case "${1:-status}" in
     install)
@@ -628,8 +630,33 @@ cmd_theme() {
       rm "$THEME_LINK"
       say "The Hanko theme is removed."
       ;;
-    status) if [[ -L $THEME_LINK ]]; then say installed; else say "not installed"; fi ;;
-    *) fail "usage: hanko theme install|remove|status" ;;
+    # On: installed and in use, the theme it replaced kept to go back to.
+    on)
+      local now
+      now="$(cat "$THEME_NAME_FILE" 2>/dev/null || true)"
+      [[ -L $THEME_LINK ]] || cmd_theme install >/dev/null
+      if [[ $now != hanko ]]; then
+        mkdir -p "$STATE"
+        [[ -n $now ]] && printf '%s\n' "$now" > "$THEME_BEFORE"
+        need omarchy
+        omarchy theme set hanko >/dev/null || fail "omarchy theme set hanko failed"
+      fi
+      say "The Hanko theme is on (hanko theme off goes back to ${now:-your last theme})."
+      ;;
+    # Off: back to the theme Hanko replaced, or, without one, the first other.
+    off)
+      local back
+      [[ $(cat "$THEME_NAME_FILE" 2>/dev/null) == hanko ]] || { say "The Hanko theme is not in use."; return; }
+      need omarchy
+      back="$(cat "$THEME_BEFORE" 2>/dev/null || true)"
+      [[ -n $back && $back != hanko ]] || back="$(omarchy theme list | grep -vix hanko | head -1)"
+      [[ -n $back ]] || fail "no other theme to go back to"
+      omarchy theme set "$back" >/dev/null || fail "omarchy theme set $back failed"
+      rm -f "$THEME_BEFORE"
+      say "Back to $back."
+      ;;
+    status) if [[ $(cat "$THEME_NAME_FILE" 2>/dev/null) == hanko ]]; then say on; elif [[ -L $THEME_LINK ]]; then say installed; else say "not installed"; fi ;;
+    *) fail "usage: hanko theme on|off|install|remove|status" ;;
   esac
 }
 

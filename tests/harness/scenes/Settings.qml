@@ -81,6 +81,7 @@ Rectangle {
     kaze: sheet.s.kaze || ({})
     kazeDesk: !!sheet.s.desk
     kazeSumi: !!sheet.s.sumi
+    kazeTools: sheet.s.tools || ({ cursor: false, tools: false, theme: false })
     kazeBusy: sheet.s.busy || ""
     sheetFeed: Object.assign({ now: new Date(sheet.p.now || "2026-10-06T21:44:00") }, sheet.s.sheetFeed || {})
     barData: ({

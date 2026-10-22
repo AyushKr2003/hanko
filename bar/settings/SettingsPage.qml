@@ -53,6 +53,7 @@ Rectangle {
   property var kaze: ({})
   property bool kazeDesk: false
   property bool kazeSumi: false
+  property var kazeTools: ({ cursor: false, tools: false, theme: false })
   property string kazeBusy: ""
 
   signal settingPicked(string key, string value)
@@ -71,6 +72,7 @@ Rectangle {
   signal kazePicked(string key, string value)
   signal deskPicked(bool on)
   signal sumiPicked(bool on)
+  signal toolPicked(string key, bool on)
   signal windSpeedPicked(int speed)
   // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
   // core/Profile.js BLOCKS.
@@ -643,12 +645,14 @@ Rectangle {
       kaze: root.kaze
       desk: root.kazeDesk
       sumi: root.kazeSumi
+      tools: root.kazeTools
       busy: root.kazeBusy
       compact: root.compact
       onSettingPicked: function(key, value) { root.settingPicked(key, value) }
       onKazePicked: function(key, value) { root.kazePicked(key, value) }
       onDeskPicked: function(on) { root.deskPicked(on) }
       onSumiPicked: function(on) { root.sumiPicked(on) }
+      onToolPicked: function(key, on) { root.toolPicked(key, on) }
       onWindSpeedPicked: function(speed) { root.windSpeedPicked(speed) }
     }
   }
