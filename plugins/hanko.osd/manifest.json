@@ -6,9 +6,12 @@
   "author": "AyushKr2003",
   "license": "MIT",
   "description": "Kaze, Taikan: volume, brightness and switches as one hairline at the foot of the screen that fills from the centre outward, or a crest and a word. Omarchy's OSD calls, redrawn; works with any bar.",
-  "kinds": ["service"],
+  "kinds": [
+    "panel"
+  ],
+  "keepLoaded": true,
   "entryPoints": {
-    "service": "Osd.qml"
+    "panel": "Osd.qml"
   },
   "omarchy": {
     "clonedFrom": "omarchy.osd"

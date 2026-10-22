@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Kaze (Taikan): the volume and brightness keys show Hanko's OSD again. Omarchy now handles those keys inside the shell and hands the reading to the OSD directly, which only reaches an OSD set up the way Omarchy's own is; Hanko's now is.
 - Kaze (Fumi): on Omarchy rc, edge and dev the desk's letters now run on Omarchy's newer notification daemon (snooze, held cards, inline actions, history in history.json), copied fresh from your Omarchy whenever the desk is built, with only the strips Hanko's. An open letter also offers the sender's own actions (Reply, Mark as read…) and Quiet for 30 minutes. If a future Omarchy changes the daemon too much to patch, the desk uses its own older copy instead. Stable keeps the clone it had.
 - `hanko desk ensure` restarts the shell again when it puts back out-of-date desk plugins (it rebuilt them but kept the old ones running).
 - Kaze (Fumi): a letter's strip now always leaves with its motion: cut away when it is dismissed (from the inbox, Clear all, the letter's Dismiss, Omarchy's keys or `omarchy-shell notifications dismissAll`), rolled back up into the bar when it times out or is opened. It used to vanish at once unless you right-clicked it, and the last one took its window with it.
