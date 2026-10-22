@@ -31,6 +31,11 @@
 #   hanko theme on|off|install|remove|status  the Hanko theme (theme/) linked
 #                            into ~/.config/omarchy/themes/hanko; on also sets
 #                            it, off goes back to the theme it replaced
+#   hanko boot on|off|refresh|preview|status  Ōin 押印: the boot and disk-unlock
+#                            screen (Plymouth) in the theme's paper and inks;
+#                            off goes back to Omarchy's (needs root, rebuilds
+#                            the initramfs); refresh redraws it after a theme
+#                            change
 #   hanko tools on|off|status Dōgu 道具: btop and Neovim in the theme's inks
 #                            (btop's color_theme and a LazyVim spec; off puts
 #                            Omarchy's back)
@@ -144,6 +149,7 @@ cmd_uninstall() {
   [[ -f $CURSOR_FLAG ]] && cmd_cursor off
   if tools_on; then cmd_tools off; fi
   if [[ -L $THEME_LINK ]]; then cmd_theme remove; fi
+  if boot_on; then cmd_boot off; fi
   omarchy-shell -q shell rescanPlugins >/dev/null 2>&1 || true
   say "Back to $previous. Your Hanko style is kept in ${XDG_CONFIG_HOME:-$HOME/.config}/hanko/."
 }
@@ -661,6 +667,109 @@ cmd_theme() {
   esac
 }
 
+# Ōin 押印, the boot screen (docs/kaze §4.1): a Plymouth theme, "hanko",
+# drawn by scripts/hanko-boot for the current theme and installed beside
+# Omarchy's in /usr/share/plymouth/themes. On sets it as Plymouth's theme and
+# rebuilds the initramfs (as Omarchy's own `omarchy plymouth set` does); off
+# puts back the theme it replaced (Omarchy's, unless you had another) and
+# rebuilds again. Both need root once: sudo in a terminal, else pkexec.
+#
+# Before anything is installed, the theme is played through
+# assets/boot/sim.mjs (Plymouth's script language, interpreted, with every
+# path a boot takes); a theme that errors there is never installed. If a
+# boot ever shows nothing, the passphrase still works typed blind, and Esc
+# shows Plymouth's text prompt.
+BOOT_BEFORE="$STATE/boot-before"
+BOOT_THEMES=/usr/share/plymouth/themes
+boot_theme() { plymouth-set-default-theme 2>/dev/null || sed -nE 's/^ *Theme *= *//p' /etc/plymouth/plymouthd.conf 2>/dev/null | head -1; }
+boot_on() { [[ $(boot_theme) == hanko ]]; }
+
+as_root() {
+  if (( EUID == 0 )); then "$@"
+  elif [[ -t 0 ]] && command -v sudo >/dev/null; then sudo "$@"
+  elif command -v pkexec >/dev/null; then pkexec "$@"
+  else fail "this needs root, and neither sudo (in a terminal) nor pkexec is here"; fi
+}
+
+# The privileged part, in one go: install (or remove) the theme, set
+# Plymouth's theme, rebuild the initramfs; on a failed rebuild, go back to
+# the theme before and rebuild that.
+# shellcheck disable=SC2016
+BOOT_ROOT='
+set -euo pipefail
+PATH=/usr/bin:/bin
+action=$1 stage=$2 theme=$3 themes=/usr/share/plymouth/themes
+rebuild() {
+  if command -v limine-mkinitcpio >/dev/null; then limine-mkinitcpio; else mkinitcpio -P; fi
+}
+if [[ $action == on ]]; then
+  [[ -d $stage && ! -L $stage && -f $stage/hanko.plymouth && -f $stage/hanko.script ]] || { echo "no theme to install" >&2; exit 1; }
+  for f in "$stage"/*; do
+    n=${f##*/}
+    [[ -f $f && ! -L $f ]] || { echo "refusing $n" >&2; exit 1; }
+    [[ $n == hanko.plymouth || $n == hanko.script || $n =~ ^[a-z0-9-]+\.png$ ]] || { echo "refusing $n" >&2; exit 1; }
+  done
+  rm -rf "$themes/.hanko.new"
+  install -d -m 0755 "$themes/.hanko.new"
+  install -m 0644 "$stage"/* "$themes/.hanko.new/"
+  rm -rf "$themes/hanko"
+  mv "$themes/.hanko.new" "$themes/hanko"
+fi
+[[ -f $themes/$theme/$theme.plymouth ]] || { echo "no Plymouth theme $theme" >&2; exit 1; }
+before=$(plymouth-set-default-theme)
+plymouth-set-default-theme "$theme"
+if ! rebuild; then
+  echo "the initramfs did not rebuild; going back to $before" >&2
+  plymouth-set-default-theme "$before"
+  rebuild || true
+  exit 1
+fi
+[[ $action == off ]] && rm -rf "$themes/hanko"
+exit 0
+'
+
+cmd_boot() {
+  case "${1:-status}" in
+    on|refresh)
+      [[ ${1} == refresh ]] && ! boot_on && { say "The Hanko boot screen is off (hanko boot on)."; return; }
+      need plymouth-set-default-theme
+      local stage now
+      stage="$(mktemp -d "${TMPDIR:-/tmp}/hanko-boot-stage.XXXXXX")"
+      trap 'rm -rf "$stage"' RETURN
+      "$SRC/scripts/hanko-boot" build "$stage" || fail "the boot screen didn't draw"
+      if command -v node >/dev/null; then
+        node "$SRC/assets/boot/sim.mjs" --check "$stage" >/dev/null || fail "the boot screen failed its check; nothing was installed"
+      else
+        say "node isn't installed, so the boot screen's script wasn't checked before installing."
+      fi
+      now="$(boot_theme)"
+      if [[ $now != hanko ]]; then mkdir -p "$STATE"; printf '%s\n' "${now:-omarchy}" > "$BOOT_BEFORE"; fi
+      say "Installing the boot screen and rebuilding the initramfs (this takes a minute)…"
+      as_root /bin/bash -c "$BOOT_ROOT" bash on "$stage" hanko || fail "the boot screen wasn't set (your boot is as it was)"
+      say "The Hanko boot screen is on from the next boot (hanko boot off goes back to ${now:-omarchy})."
+      ;;
+    off)
+      boot_on || { say "The Hanko boot screen is off."; return; }
+      local back
+      back="$(cat "$BOOT_BEFORE" 2>/dev/null || true)"
+      [[ -n $back && $back != hanko && -f $BOOT_THEMES/$back/$back.plymouth ]] || back=omarchy
+      say "Putting back $back and rebuilding the initramfs…"
+      as_root /bin/bash -c "$BOOT_ROOT" bash off "" "$back" || fail "the boot screen wasn't changed"
+      rm -f "$BOOT_BEFORE"
+      say "Back to the $back boot screen from the next boot."
+      ;;
+    preview)
+      local out="${2:-$STATE/boot-preview.png}"
+      mkdir -p "$(dirname "$out")"
+      "$SRC/scripts/hanko-boot" preview "$out" >/dev/null || fail "the preview didn't draw"
+      if [[ -z ${2:-} ]] && command -v imv >/dev/null && [[ -n ${WAYLAND_DISPLAY:-} ]]; then imv "$out" & disown; fi
+      say "$out"
+      ;;
+    status) if boot_on; then say on; else say "off ($(boot_theme))"; fi ;;
+    *) fail "usage: hanko boot on|off|refresh|preview [OUT]|status" ;;
+  esac
+}
+
 # Dōgu 道具: the brush-tip cursor. scripts/hanko-cursor builds Hanko-Brush for
 # the current theme into ~/.local/share/icons; the flag file holds its size,
 # style.lua re-applies it after your own autostart on every reload, and the
@@ -733,6 +842,7 @@ cmd_doctor() {
     else say "  FAIL  $id is installed but does not answer (Omarchy's own may be missing; hanko desk on retries)"; ok=0; fi
   done
   if sumi_on; then say "  --    Sumi is on (hanko sumi off)"; fi
+  if boot_on; then check "Boot: the hanko Plymouth theme is installed" "[[ -f $BOOT_THEMES/hanko/hanko.script ]]"; fi
   if tools_on; then check "Tools: btop's hanko theme is written" "[[ -s '$BTOP_THEME' ]]"; fi
   if shell_up; then
     local w
@@ -767,6 +877,7 @@ case "${1:-}" in
   cursor) shift; cmd_cursor "$@" ;;
   tools) shift; cmd_tools "$@" ;;
   theme) shift; cmd_theme "$@" ;;
+  boot) shift; cmd_boot "$@" ;;
   doctor) cmd_doctor ;;
   -h|--help|"") awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
   *) fail "unknown command '$1' (try hanko --help)" ;;

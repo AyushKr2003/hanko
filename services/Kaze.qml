@@ -8,11 +8,12 @@ import "../core/Paths.js" as Paths
 // Kaze 風 for the settings page: the switches in ~/.config/hanko/kaze.json
 // (read by the desk's plugins; written at once, with its own Undo), whether
 // the desk is on (the flag `hanko desk on` leaves in the state folder)
-// and whether Sumi is on (its shader in the state folder), and the three
+// and whether Sumi is on (its shader in the state folder), and the four
 // tools beside the desk: the brush cursor (its flag in the state folder),
-// btop and Neovim in the theme's inks (what `hanko tools on` leaves), and the
-// Hanko theme (Omarchy's current theme name). The desk, Sumi and the tools
-// are switched by the `hanko` CLI, as from a terminal.
+// btop and Neovim in the theme's inks (what `hanko tools on` leaves), the
+// Hanko theme (Omarchy's current theme name) and the boot screen (Plymouth's
+// theme in /etc/plymouth/plymouthd.conf). The desk, Sumi and the tools are
+// switched by the `hanko` CLI, as from a terminal.
 Singleton {
   id: root
 
@@ -33,8 +34,9 @@ Singleton {
   property int cursorSize: 22
   readonly property bool tools: _btopBefore.on || _nvimSpec.on
   property bool theme: false
+  property bool boot: false
   // A switch the CLI is turning ("desk" | "sumi" | "cursor" | "tools" |
-  // "theme" | ""), so the page can say so.
+  // "theme" | "boot" | ""), so the page can say so.
   property string busy: ""
 
   // Undo: the documents before each change, with when it was made.
@@ -85,13 +87,16 @@ Singleton {
     _sumiRun.running = true
   }
 
-  // The brush cursor, the tools and the Hanko theme: `hanko cursor|tools|theme
-  // on|off`. A theme switch takes a few seconds (Omarchy restyles every app);
-  // its words go to the state folder's tools.log.
+  // The brush cursor, the tools, the Hanko theme and the boot screen: `hanko
+  // cursor|tools|theme|boot on|off`. A theme switch takes a few seconds
+  // (Omarchy restyles every app); the boot screen asks for your password
+  // (pkexec) and rebuilds the initramfs, a minute. Their words go to the
+  // state folder's tools.log (boot.log for the boot screen).
   function setTool(key, on) {
-    if (["cursor", "tools", "theme"].indexOf(key) < 0) return
+    if (["cursor", "tools", "theme", "boot"].indexOf(key) < 0) return
     busy = key
-    _toolRun.command = ["sh", "-c", "mkdir -p \"$1\" && \"$0\" " + key + " " + (on ? "on" : "off") + " >\"$1/tools.log\" 2>&1",
+    var log = key === "boot" ? "boot.log" : "tools.log"
+    _toolRun.command = ["sh", "-c", "mkdir -p \"$1\" && \"$0\" " + key + " " + (on ? "on" : "off") + " >\"$1/" + log + "\" 2>&1",
       cli, stateHome + "/hanko"]
     _toolRun.running = true
   }
@@ -118,7 +123,7 @@ Singleton {
     _mkdir.running = true
   }
 
-  function _reloadTools() { _cursor.reload(); _btopBefore.reload(); _nvimSpec.reload(); _themeName.reload() }
+  function _reloadTools() { _cursor.reload(); _btopBefore.reload(); _nvimSpec.reload(); _themeName.reload(); _plymouth.reload() }
   onWantedChanged: if (wanted) { _file.reload(); _look.reload(); _sumi.reload(); _reloadTools() }
 
   property Process _mkdir: Process {
@@ -207,5 +212,12 @@ Singleton {
     onFileChanged: reload()
     onLoaded: root.theme = text().trim() === "hanko"
     onLoadFailed: root.theme = false
+  }
+  // Plymouth's theme: the boot screen is Hanko's while it says hanko.
+  property FileView _plymouth: FileView {
+    path: "/etc/plymouth/plymouthd.conf"
+    printErrors: false
+    onLoaded: root.boot = /^\s*Theme\s*=\s*hanko\s*$/m.test(text())
+    onLoadFailed: root.boot = false
   }
 }

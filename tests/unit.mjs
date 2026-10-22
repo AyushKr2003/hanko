@@ -2351,4 +2351,63 @@ test("cursor: the nearest stop after the parts are made anew, and the keys", () 
   assert.equal(Cu.action(0, "m", false), null, "a sheet's own letters pass through")
 })
 
+// Ōin 押印, the boot screen: Plymouth's script language is interpreted
+// (assets/boot/plyscript.mjs) so the theme runs here without plymouthd.
+{
+  const { Interpreter } = await import("../assets/boot/plyscript.mjs")
+  const sim = await import("../assets/boot/sim.mjs")
+  const runs = src => { try { new Interpreter({}).run(src); return "" } catch (e) { return e.message } }
+  test("boot: the interpreter refuses what Plymouth would get wrong", () => {
+    // One name space: a global named like a function replaces it.
+    assert.match(runs("fun fit(i) { return i; }\nglobal.fit = 1;\nx = fit(2);"), /not a function/)
+    assert.match(runs("a = [1, 2];"), /array literal/)
+    assert.match(runs("fun f() { return y + 1; }\nf();"), /'y' is read before it is set/)
+    assert.match(runs("x = 1"), /expected ';'/)
+    // What Plymouth does do: hashes made on assignment, locals and globals,
+    // a string and a number joined, the empty array, i++ on a member.
+    const p = new Interpreter({})
+    p.run('a.b[3] = 2; n = []; global.k = 0; fun f(v) { k = v; local.t = 1; global.k++; return "n" + v; } s = f(7);')
+    assert.equal(p.global.get("a").get("b").get("3"), 2)
+    assert.equal(p.global.get("s"), "n7")
+    assert.equal(p.global.get("k"), 8, "k found in the globals, so the function set it there, then ++")
+    assert.equal(p.global.has("t"), false, "a function's local stays in it")
+  })
+  const tool = cmd => { try { execFileSync(cmd, ["-version"], { stdio: "ignore" }); return true } catch { return false } }
+  test("boot: the theme draws and plays every path a boot takes", () => {
+    if (!tool("magick")) return
+    const dir = mkdtempSync(join(tmpdir(), "hanko-boot-"))
+    try {
+      execFileSync(join(root, "scripts/hanko-boot"), ["build", dir],
+        { env: { ...process.env, HANKO_BOOT_COLORS: join(root, "theme/colors.toml") }, stdio: "pipe" })
+      const script = readFileSync(join(dir, "hanko.script"), "utf8")
+      assert.doesNotMatch(script, /@[A-Z_]+@/, "every number filled in")
+      sim.check(dir)
+      // Shutting down: the seal and nothing else.
+      const s = sim.boot(dir, { mode: "shutdown" }); s.tick(60)
+      assert.deepEqual(s.visible().map(x => x.image.src.split("/").pop()), ["seal-7.png"])
+      // A wrong passphrase: the red hint with its count, and the spark.
+      const b = sim.boot(dir); b.tick(40, { held: true }); b.password(0); b.tick(1, { held: true })
+      const hint = () => b.visible().map(x => x.image.src.split("/").pop()).find(f => f.startsWith("hint-"))
+      assert.equal(hint(), "hint-type.png")
+      b.password(5); b.tick(1, { held: true }); assert.equal(hint(), "hint-enter.png")
+      b.normal(); b.tick(5, { held: true }); assert.equal(hint(), "hint-check.png")
+      b.password(0); b.tick(1, { held: true }); assert.equal(hint(), "hint-wrong-1.png")
+      assert.ok(b.visible().some(x => x.image.src.endsWith("spark.png")))
+      // The right one: Plymouth's clock runs again, the rule is progress.
+      b.password(4); b.normal(); b.tick(30)
+      assert.equal(b.global("state"), "booting")
+      assert.ok(b.visible().some(x => x.image.src.endsWith("notch.png")))
+      assert.equal(hint(), undefined)
+    } finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+  test("boot: the CLI checks the theme before it installs, and goes back to the theme it replaced", () => {
+    const cli = readFileSync(join(root, "scripts/hanko"), "utf8")
+    const on = cli.slice(cli.indexOf("cmd_boot() {"), cli.indexOf("    off)", cli.indexOf("cmd_boot() {")))
+    assert.ok(on.indexOf("sim.mjs\" --check") > 0 && on.indexOf("sim.mjs\" --check") < on.indexOf("as_root"), "the check comes first")
+    assert.match(cli, /printf '%s\\n' "\$\{now:-omarchy\}" > "\$BOOT_BEFORE"/)
+    assert.match(cli, /\|\| back=omarchy/)
+    assert.match(cli, /if ! rebuild; then[\s\S]*plymouth-set-default-theme "\$before"/, "a failed rebuild goes back")
+  })
+}
+
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

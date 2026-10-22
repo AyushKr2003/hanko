@@ -6,8 +6,8 @@ import "../../core/Wind.js" as Wind
 
 // Settings › Kaze 風 (docs/kaze, mockup 14): the desk beyond the bar, one
 // card per switch, each a small picture of what it does over its words. The
-// desk itself, Sumi and the three tools after them (the brush cursor, btop
-// and Neovim, the Hanko theme) run the `hanko` CLI; motion is style.json's;
+// desk itself, Sumi and the four tools after them (the brush cursor, btop
+// and Neovim, the Hanko theme, the boot screen) run the `hanko` CLI; motion is style.json's;
 // the rest are kaze.json's, kept at once (Undo puts them back). Turning the desk on
 // can restart the shell (when its parts are new), so On asks for a second
 // click; Off never does, and goes at once.
@@ -18,8 +18,9 @@ Column {
   property var kaze: ({})
   property bool desk: false
   property bool sumi: false
-  // The tools beside the desk: { cursor, tools, theme }, true when on.
-  property var tools: ({ cursor: false, tools: false, theme: false })
+  // The tools beside the desk: { cursor, tools, theme, boot }, true when on.
+  property var tools: ({ cursor: false, tools: false, theme: false, boot: false })
+  readonly property var toolKeys: ["cursor", "tools", "theme", "boot"]
   // The brush cursor's size in pixels (16 to 48).
   property int cursorSize: 22
   property string busy: ""
@@ -51,7 +52,7 @@ Column {
     if (key === "desk") return desk ? "on" : "off"
     if (key === "motion") return still ? "still" : "paper"
     if (key === "sumi") return sumi ? "on" : "off"
-    if (key === "cursor" || key === "tools" || key === "theme") return tools[key] ? "on" : "off"
+    if (toolKeys.indexOf(key) >= 0) return tools[key] ? "on" : "off"
     return Settings.kazeValue(kaze, key)
   }
   function pick(key, v) {
@@ -63,7 +64,7 @@ Column {
     }
     else if (key === "motion") settingPicked("motion", v)
     else if (key === "sumi") sumiPicked(v === "on")
-    else if (key === "cursor" || key === "tools" || key === "theme") toolPicked(key, v === "on")
+    else if (toolKeys.indexOf(key) >= 0) toolPicked(key, v === "on")
     else kazePicked(key, v)
   }
 
@@ -80,6 +81,8 @@ Column {
     { key: "tools", name: "Tools", jp: "道具", line: "btop and Neovim on the same paper and inks",
       options: ["on", "off"], labels: { on: "On", off: "Off" } },
     { key: "theme", name: "Theme", jp: "判子", line: "The Hanko theme for all of Omarchy; Off goes back to yours",
+      options: ["on", "off"], labels: { on: "On", off: "Off" } },
+    { key: "boot", name: "Boot", jp: "押印", line: "The disk's passphrase and the boot under your seal; Off is Omarchy's",
       options: ["on", "off"], labels: { on: "On", off: "Off" } }
   ])
 
@@ -126,7 +129,7 @@ Column {
             anchors.fill: parent
             sourceComponent: ({ desk: deskArt, motion: motionArt, wallpaper: printArt, grass: grassArt,
                                 gusts: grassArt, wind: windArt, sound: soundArt, sumi: sumiArt, osdCard: osdArt,
-                                cursor: cursorArt, tools: toolsArt, theme: themeArt })[card.key] || null
+                                cursor: cursorArt, tools: toolsArt, theme: themeArt, boot: bootArt })[card.key] || null
             onLoaded: {
               item.key = card.key
               item.current = Qt.binding(function() { return card.current })
@@ -169,7 +172,7 @@ Column {
               maximumLineCount: 2
               elide: Text.ElideRight
               readonly property bool warn: card.key === "desk" && root.armed !== ""
-              text: card.key === root.busy ? "Working…"
+              text: card.key === root.busy ? (card.key === "boot" ? "Asks for your password, then rebuilds the boot image (a minute)…" : "Working…")
                 : warn ? "May restart the shell and close this window. Click On again."
                 : card.modelData.line
               color: warn ? Ink.seal : Ink.inkMuted
@@ -334,7 +337,7 @@ Column {
     width: parent.width
     wrapMode: Text.WordWrap
     text: "The ceremonies (終 退 危 新), the lock's standoff, letters and the menu's draw come and go with the desk; "
-      + "the cursor, the tools and the theme work with or without it. "
+      + "the cursor, the tools, the theme and the boot screen work with or without it. "
       + "The bar rides, stepping back to its rule, while Sumi is on. Everything here is also in ~/.config/hanko/kaze.json and the hanko command."
     color: Ink.inkFaint
     font.family: Type.text
@@ -666,6 +669,57 @@ Column {
             width: Type.px(18); height: Type.px(40)
             color: modelData
             border.width: 1; border.color: Ink.lineSoft
+          }
+        }
+      }
+    }
+  }
+  // The boot screen: the seal, and under it the sheath with a nick a key,
+  // drawn out further on hover.
+  Component {
+    id: bootArt
+    Item {
+      id: bt
+      property string key
+      property string current
+      property bool hovered
+      readonly property int keys: hovered ? 6 : 3
+      Rectangle {
+        id: bootSeal
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: Type.px(14)
+        width: Type.px(30); height: width
+        radius: Math.round(width * 0.11)
+        color: Ink.seal
+        Text {
+          anchors.centerIn: parent
+          text: "鑑"
+          color: Ink.paper
+          font.family: Type.jpSerif
+          font.pixelSize: Math.round(parent.width * 0.58)
+        }
+      }
+      Item {
+        id: sheath
+        x: parent.width / 2 - width / 2
+        y: bootSeal.y + bootSeal.height + Type.px(18)
+        width: Type.px(96); height: 1
+        Rectangle { width: parent.width; height: 1; color: Ink.inkFaint; opacity: 0.5 }
+        Rectangle { x: 0; y: -Type.px(4); width: 1; height: Type.px(9); color: Ink.ink }
+        Rectangle {
+          height: 1; color: Ink.ink
+          width: Math.min(parent.width, Type.px(7) + bt.keys * Type.px(8))
+          Behavior on width { enabled: Motion.live; NumberAnimation { duration: Motion.nuki; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.nukiCurve } }
+        }
+        Repeater {
+          model: 6
+          Rectangle {
+            required property int index
+            x: Type.px(8) + index * Type.px(8); y: -Type.px(3)
+            width: 1; height: Type.px(3)
+            color: Ink.ink
+            opacity: index < bt.keys ? 1 : 0
+            Behavior on opacity { enabled: Motion.live; NumberAnimation { duration: Motion.kamae } }
           }
         }
       }

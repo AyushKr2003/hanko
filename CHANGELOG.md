@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Kaze (Ōin 押印): a boot and disk-unlock screen of Hanko's own. The screen goes from black to your paper, the seal is pressed, and the passphrase is drawn out of one hairline as a blade with a nick for each key, as on the lock; a wrong one is deflected in red, the right one turns the hairline into the boot's progress. `hanko boot on` draws it for your theme, checks its script, then (asking for your password once) installs it and rebuilds the boot image; `hanko boot off`, or Off on the new Boot card in Settings › Kaze, goes back to Omarchy's. `hanko boot preview` shows it without changing anything, `hanko boot refresh` redraws it after a theme change.
+
 - The brush cursor has no tail (the same cut as its picture in Settings), and a size: `hanko cursor size N` (16 to 48 px), or the rule its card shows in Settings › Kaze while it is on.
 - Settings › Kaze: three more switches, Cursor (the brush tip), Tools (btop and Neovim in the theme's inks) and Theme (the Hanko theme for all of Omarchy; Off goes back to the theme you had). `hanko theme on|off` does the same from a terminal.
 - Kaze (Taikan): the volume and brightness keys show Hanko's OSD again. Omarchy now handles those keys inside the shell and hands the reading to the OSD directly, which only reaches an OSD set up the way Omarchy's own is; Hanko's now is.

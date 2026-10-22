@@ -53,7 +53,7 @@ Rectangle {
   property var kaze: ({})
   property bool kazeDesk: false
   property bool kazeSumi: false
-  property var kazeTools: ({ cursor: false, tools: false, theme: false })
+  property var kazeTools: ({ cursor: false, tools: false, theme: false, boot: false })
   property int kazeCursorSize: 22
   property string kazeBusy: ""
 

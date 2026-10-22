@@ -215,7 +215,8 @@
     "tools": {
       "cursor": true,
       "tools": false,
-      "theme": false
+      "theme": false,
+      "boot": true
     },
     "cursorSize": 28
   }

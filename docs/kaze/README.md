@@ -186,9 +186,17 @@ hl.animation({ leaf = "borderangle", enabled = true, speed = 6, bezier = "nuki",
 
 Each surface gets a Japanese name that is the thing itself, an English name beside it, what it becomes, and why. Hanko's rule for Japanese touches still applies: kanji only where they mean something, large, with English, each one switchable off.
 
-### 4.1 Boot · 押印 Ōin, the seal pressed (Plymouth, Limine) · *left out*
+### 4.1 Boot · 押印 Ōin, the seal pressed (Plymouth, Limine) · *Plymouth built (2026-10-22), Limine left out*
 
-*The user chose to leave the boot screen out (§9). Kept here as a record of the idea.*
+*First left out (§9); asked for on 2026-10-22: "see how the omarchy unlock theme for plymouth is made and make the same for this … add this option to settings to enable or disable, disabled goes to the default one". Built as below, with the lock's blade for the passphrase; Limine stays Omarchy's.*
+
+**How Omarchy's is made:** `/usr/share/plymouth/themes/omarchy` is a `script` theme (`omarchy.plymouth`, `omarchy.script`, PNGs: logo, entry, lock, bullet, progress box and bar). `omarchy plymouth set BG TEXT LOGO` (`omarchy-plymouth-set`) recolours those PNGs with ImageMagick, swaps in a theme's `unlock.png` as the logo, writes the background into the script, then `plymouth-set-default-theme omarchy` and `limine-mkinitcpio` (or `mkinitcpio -P`); `omarchy-plymouth-current` tells which theme styled it by comparing logo.png. The switcher only changes colours and a logo; the layout is fixed.
+
+**Hanko's:** a theme of its own, `hanko`, beside Omarchy's (`scripts/hanko-boot` draws it; `assets/boot/hanko.script`). `hanko boot on` draws it for the current theme (InkMath's ramp from colors.toml, Fraunces through Pango at weight 340, the user's mono for labels, the seal glyph from style.json in Yuji Boku or Noto Serif CJK), plays it through `assets/boot/sim.mjs` (a Plymouth-script interpreter with Plymouth's scoping, refusing what would quietly break on a boot) and only then, in one root step, installs it, sets it and rebuilds the initramfs, going back to the old theme if the rebuild fails. `off` sets back the theme it replaced (Omarchy's by default) and rebuilds. Settings › Kaze has a Boot card. **Never test a Plymouth theme by running plymouthd on the live desktop**: it took the console from Hyprland and the machine had to be restarted (2026-10-22). Use the interpreter, `hanko boot preview`, or a VM.
+
+What it draws (1080 px tall is 1; the script rescales the pictures on another height): black to the paper over 15 frames; the seal (128 px, centred at 42% of the height) pressed in eight frames of ink spreading unevenly from its middle (a fixed seed, so the same every boot; the last frame keeps a few unprinted specks); 64 px under it a 360 px hairline at 35%: the sheath. A passphrase prompt shows its hilt, `TYPE TO UNLOCK` in tracked mono, and your name in the serif with `SEALED · 封` in the corner; each key is a nick on a blade drawn out of the sheath (Taiji's numbers: a 24 px lead, a nick every 22 px; a long passphrase keeps the newest nicks at the tip), `ENTER TO CUT`. Enter dims the blade, `CHECKING`; a new prompt means it was wrong: a red spark at the tip, a 2 px shudder, the nicks fade, `NOT THAT ONE · N` in red. Plymouth's clock running again (or six seconds with no new prompt) means the disk opened: the blade, name and hint fade and the hairline becomes the boot's progress in ink with the red notch at its head (Omarchy's eased guess to 70% over 15 s, then the real figure). Shutdown and reboot show the seal alone. Boot messages go small at the foot, left, in the muted ink.
+
+The idea as first written:
 
 
 - Limine: paper-coloured background, ink text, no logo art. Only colours and the font.
@@ -441,7 +449,7 @@ This file.
 
 ### KZ10 · Shiki 式, ceremonies ✅
 - `hanko.shiki` overlay: 終 退 危 新 回生 with stroke-order brush animation in QML `Shape`.
-- (Boot 押印 is left out, §9.)
+- (Boot 押印 was left out here; it was built later, §4.1.)
 - Built inside `hanko.osd`, since Omarchy's own `omarchy-system-shutdown`, `-reboot` and `-logout` already call `omarchy-osd -i shutdown|reboot|logout -m … -d 5000`: `core/Taikan.js` `CEREMONIES` turns those icons (and `danger`, `new`) into a `ceremony` view. The paper fills the screen (or, for 危, a band across the middle ruled in red), the kanji is written stroke by stroke over 800 ms from `core/Strokes.js` (KanjiVG's stroke order for 終 退 危 新 回 生, sampled every 1.5 units by `scripts/hanko-strokes.mjs`; CC BY-SA 3.0, credited in About › Credits), each stroke pressed at its start and lifted at its end on a Canvas, the English beside it in the serif, the seal pressed for 終. `hanko desk on` installs `battery-low.d/50-hanko-kaze` (危 with the percentage) and `post-update.d/50-hanko-kaze` (新 with Omarchy's version). The bundled Yuji Boku is a subset with 終 but not 退 危 新, which is why the strokes were needed. 回生: `core/Kaisei.js` (a quickshell core dump in the last 120 s, from `coredumpctl list /usr/bin/quickshell --since=-120s --json=short`; a test) and a small paper tab in `hanko.desk` at the top right of the focused screen for 4 s, drawn and sheathed on Iai; a restart you ask for leaves no core dump, so it stays quiet; `omarchy-shell hankodesk kaisei` previews it. Not built: skipping with a key (the OSD takes no input, and Omarchy goes on shutting down underneath).
 
 ### KZ11 · Sumi 墨 and riding mode ✅
@@ -485,7 +493,7 @@ Order rationale: motion first (everything depends on it), then the cheapest high
 **Decisions (the user, 2026-10-14)**
 
 1. Every surface is in scope, the lock included.
-2. The boot screen (§4.1) is left out: no Plymouth or Limine work, nothing that needs sudo.
+2. The boot screen (§4.1) is left out: no Plymouth or Limine work, nothing that needs sudo. *(Changed 2026-10-22: the Plymouth screen was asked for and built, opt-in, `hanko boot on`; Limine is still left out.)*
 3. One repo for everything: `hanko.bar` at the root, the other surfaces under `plugins/`.
 4. Sound is in (still off by default, one switch turns it on).
 5. Kaze is the working name; it can change later.

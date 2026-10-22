@@ -1,0 +1,449 @@
+# Hanko · Ōin 押印, the seal pressed (docs/kaze §4.1). scripts/hanko-boot
+# fills in the numbers marked with @ and draws the pictures this script shows.
+#
+# Black, then the paper. The seal is pressed: eight frames of ink spreading
+# from its middle. Under it one hairline: the sheath the passphrase is drawn
+# out of (a nick for each key, as on the lock), then the boot's progress
+# with the red notch at its head. A wrong passphrase is deflected: a red
+# spark at the blade's tip, a shudder, the nicks fade.
+#
+# Plymouth runs this at 50 frames a second; times below are in frames.
+
+global.R = @R@;            # the scale the pictures were drawn at (1080 px tall is 1)
+# The paper and the muted ink, as red, green, blue (0 to 1).
+@PAPER@
+@MUTED@
+
+SEAL_SIZE = @SEAL_SIZE@;
+SEAL_AT = @SEAL_AT@;
+RULE_GAP = @RULE_GAP@;
+RULE_W = @RULE_W@;
+HINT_GAP = @HINT_GAP@;
+NICK = @NICK@;
+LEAD = @LEAD@;
+NICK_H = @NICK_H@;
+CORNER = @CORNER@;
+
+# Beats, in frames: black to paper, a hold, then the press (two frames a
+# picture), then the hint comes up.
+PAPER_IN = 15;
+PRESS_AT = 12;
+PRESS_STEP = 2;
+HINT_AT = 30;
+HINT_IN = 12;
+# Deflection: the spark fades in 20, the shudder settles in 8, the nicks in 16.
+SPARK_MS = 20;
+SHUDDER = 8;
+GHOST = 16;
+# After Enter, the boot is taken as unlocked when Plymouth's clock moves on,
+# or after this long with no new prompt.
+CHECK_LIMIT = 300;
+
+Window.SetBackgroundTopColor(0, 0, 0);
+Window.SetBackgroundBottomColor(0, 0, 0);
+
+#----------------------------------------- Pictures --------------------------------
+
+src.seal[0] = Image("seal-0.png");
+src.seal[1] = Image("seal-1.png");
+src.seal[2] = Image("seal-2.png");
+src.seal[3] = Image("seal-3.png");
+src.seal[4] = Image("seal-4.png");
+src.seal[5] = Image("seal-5.png");
+src.seal[6] = Image("seal-6.png");
+src.seal[7] = Image("seal-7.png");
+src.ink = Image("ink.png");
+src.track = Image("track.png");
+src.notch = Image("notch.png");
+src.nick = Image("nick.png");
+src.hilt = Image("hilt.png");
+src.spark = Image("spark.png");
+src.hint_type = Image("hint-type.png");
+src.hint_enter = Image("hint-enter.png");
+src.hint_check = Image("hint-check.png");
+src.wrong[1] = Image("hint-wrong-1.png");
+src.wrong[2] = Image("hint-wrong-2.png");
+src.wrong[3] = Image("hint-wrong-3.png");
+src.wrong[4] = Image("hint-wrong-4.png");
+src.wrong[5] = Image("hint-wrong-5.png");
+src.wrong[6] = Image("hint-wrong-6.png");
+src.wrong[7] = Image("hint-wrong-7.png");
+src.wrong[8] = Image("hint-wrong-8.png");
+src.wrong[9] = Image("hint-wrong-9.png");
+src.name = Image("name.png");
+src.sealed = Image("sealed.png");
+
+seal.sprite = Sprite();
+track.sprite = Sprite();
+fill.sprite = Sprite();
+notch.sprite = Sprite();
+blade.sprite = Sprite();
+hilt.sprite = Sprite();
+spark.sprite = Sprite();
+hint.sprite = Sprite();
+name.sprite = Sprite();
+sealed.sprite = Sprite();
+nicks.sprites = [];
+
+seal.sprite.SetOpacity(0);
+track.sprite.SetOpacity(0);
+fill.sprite.SetOpacity(0);
+notch.sprite.SetOpacity(0);
+blade.sprite.SetOpacity(0);
+hilt.sprite.SetOpacity(0);
+spark.sprite.SetOpacity(0);
+hint.sprite.SetOpacity(0);
+name.sprite.SetOpacity(0);
+sealed.sprite.SetOpacity(0);
+
+#----------------------------------------- State --------------------------------
+
+global.frame = 0;
+global.mode = Plymouth.GetMode();
+# still | password | checking | booting
+global.state = "still";
+global.asked = 0;          # a passphrase was asked for this boot
+global.count = 0;          # keys typed
+global.last_count = 0;     # keys when Enter was pressed
+global.failed = 0;
+global.fail_at = -1000;
+global.check_at = 0;
+global.check_clock = 0;
+global.clock = 0;          # Plymouth's boot duration, as last told
+global.boot_at = 0;
+global.hint_key = "";
+global.blade_alpha = 1;
+
+# Progress, as Omarchy's theme keeps it: an eased guess while the real
+# figure is frozen behind the disk, then the real one when it passes it.
+global.fake_limit = 0.7;
+global.fake_frames = 750;
+global.fake_active = 0;
+global.fake_from = 0;
+global.fake = 0;
+global.max_progress = 0;
+
+#----------------------------------------- Layout --------------------------------
+
+global.layout_w = 0;
+global.layout_h = 0;
+global.k = 1;
+global.zoom = 1;
+# The pictures at the screen's size (layout() fills it).
+disp.ready = 1;
+
+fun fit(image) {
+  # (A global named fit would replace this function: they share one name.)
+  out = image;
+  if (global.zoom < 0.98 || global.zoom > 1.02) {
+    w = Math.Int(image.GetWidth() * global.zoom + 0.5);
+    h = Math.Int(image.GetHeight() * global.zoom + 0.5);
+    if (w < 1) w = 1;
+    if (h < 1) h = 1;
+    out = image.Scale(w, h);
+  }
+  return out;
+}
+
+fun px(v) {
+  return Math.Int(v * global.k + 0.5);
+}
+
+fun layout() {
+  global.layout_w = Window.GetWidth();
+  global.layout_h = Window.GetHeight();
+  global.k = global.layout_h / 1080;
+  global.zoom = global.k / global.R;
+
+  for (i = 0; i < 8; i++) disp.seal[i] = fit(src.seal[i]);
+  disp.nick = fit(src.nick);
+  disp.hilt = fit(src.hilt);
+  disp.spark = fit(src.spark);
+  disp.notch = fit(src.notch);
+  disp.hint_type = fit(src.hint_type);
+  disp.hint_enter = fit(src.hint_enter);
+  disp.hint_check = fit(src.hint_check);
+  for (i = 1; i <= 9; i++) disp.wrong[i] = fit(src.wrong[i]);
+  disp.name = fit(src.name);
+  disp.sealed = fit(src.sealed);
+  global.line_h = src.ink.GetHeight();
+  if (global.zoom < 0.98 || global.zoom > 1.02) global.line_h = px(1);
+  if (global.line_h < 1) global.line_h = 1;
+
+  size = disp.seal[7].GetWidth();
+  global.seal_x = Math.Int(global.layout_w / 2 - size / 2);
+  global.seal_y = Math.Int(global.layout_h * SEAL_AT - size / 2);
+  seal.sprite.SetPosition(global.seal_x, global.seal_y, 10);
+
+  global.rule_w = px(RULE_W);
+  global.rule_x = Math.Int(global.layout_w / 2 - global.rule_w / 2);
+  global.rule_y = global.seal_y + size + px(RULE_GAP);
+  track.sprite.SetImage(src.track.Scale(global.rule_w, global.line_h));
+  track.sprite.SetPosition(global.rule_x, global.rule_y, 10);
+  fill.sprite.SetPosition(global.rule_x, global.rule_y, 11);
+  notch.sprite.SetImage(disp.notch);
+  hilt.sprite.SetImage(disp.hilt);
+  hilt.sprite.SetPosition(global.rule_x, global.rule_y - Math.Int(disp.hilt.GetHeight() / 2), 12);
+  spark.sprite.SetImage(disp.spark);
+  global.hint_y = global.rule_y + px(HINT_GAP);
+
+  name.sprite.SetImage(disp.name);
+  sealed.sprite.SetImage(disp.sealed);
+  bottom = global.layout_h - px(CORNER);
+  right = global.layout_w - px(CORNER);
+  sealed.sprite.SetPosition(right - disp.sealed.GetWidth(), bottom - disp.sealed.GetHeight(), 10);
+  name.sprite.SetPosition(right - disp.name.GetWidth(), bottom - disp.sealed.GetHeight() - px(10) - disp.name.GetHeight(), 10);
+
+  # Sprites made for an older size are dropped and made again.
+  for (i = 0; nicks.sprites[i]; i++) nicks.sprites[i].SetOpacity(0);
+  nicks.sprites = [];
+  global.hint_key = "";
+  draw_blade(global.count, global.blade_alpha);
+  set_hint(hint_for());
+}
+
+#----------------------------------------- The blade --------------------------------
+
+# core/Taiji.js bladeWidth: the hilt, then 22 px a nick, at most the rule.
+fun blade_width(n) {
+  w = 0;
+  if (n > 0) w = LEAD + n * NICK + 16;
+  if (w > RULE_W) w = RULE_W;
+  return w;
+}
+
+fun draw_blade(n, alpha) {
+  global.blade_alpha = alpha;
+  w = blade_width(n);
+  if (w <= 0) {
+    blade.sprite.SetOpacity(0);
+  } else {
+    blade.sprite.SetImage(src.ink.Scale(px(w), global.line_h));
+    blade.sprite.SetOpacity(alpha);
+  }
+  # A long passphrase keeps the last nicks, the newest at the tip.
+  room = Math.Int((w - LEAD - 8) / NICK) + 1;
+  if (n <= 0) room = 0;
+  first = 0;
+  if (n > room) first = n - room;
+  shown = n - first;
+  for (i = 0; i < shown; i++) {
+    if (!nicks.sprites[i]) {
+      nicks.sprites[i] = Sprite(disp.nick);
+    }
+    x = LEAD + i * NICK;
+    if (x > w - 8) x = w - 8;
+    nicks.sprites[i].SetPosition(global.rule_x + px(x), global.rule_y - disp.nick.GetHeight(), 12);
+    nicks.sprites[i].SetOpacity(alpha);
+  }
+  for (i = shown; nicks.sprites[i]; i++) nicks.sprites[i].SetOpacity(0);
+}
+
+fun shift_blade(dx) {
+  blade.sprite.SetX(global.rule_x + dx);
+  hilt.sprite.SetX(global.rule_x + dx);
+}
+
+#----------------------------------------- Hints --------------------------------
+
+fun hint_for() {
+  key = "";
+  if (global.state == "checking") key = "check";
+  if (global.state == "password") {
+    key = "type";
+    if (global.failed > 0) key = "wrong";
+    if (global.count > 0) key = "enter";
+  }
+  return key;
+}
+
+fun set_hint(key) {
+  if (key != global.hint_key) {
+    global.hint_key = key;
+    image = disp.hint_type;
+    if (key == "enter") image = disp.hint_enter;
+    if (key == "check") image = disp.hint_check;
+    if (key == "wrong") {
+      n = global.failed;
+      if (n > 9) n = 9;
+      image = disp.wrong[n];
+    }
+    if (key == "") hint.sprite.SetOpacity(0);
+    hint.sprite.SetImage(image);
+    hint.sprite.SetPosition(Math.Int(global.layout_w / 2 - image.GetWidth() / 2), global.hint_y, 10);
+  }
+}
+
+#----------------------------------------- Progress --------------------------------
+
+fun set_progress(p) {
+  if (p > global.max_progress) {
+    global.max_progress = p;
+    if (p > 1) p = 1;
+    w = Math.Int(global.rule_w * p);
+    if (w < 1) w = 1;
+    fill.sprite.SetImage(src.ink.Scale(w, global.line_h));
+    notch.sprite.SetPosition(global.rule_x + w - px(1), global.rule_y - Math.Int(disp.notch.GetHeight() / 2), 13);
+  }
+}
+
+fun start_booting() {
+  global.state = "booting";
+  global.boot_at = global.frame;
+  global.fake_active = 1;
+  global.fake_from = global.frame;
+  global.max_progress = 0;
+  set_progress(0.001);
+  set_hint("");
+}
+
+#----------------------------------------- Each frame --------------------------------
+
+fun ease_out(t) {
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+  u = 1 - t;
+  return 1 - u * u * u * u;
+}
+
+fun refresh_callback() {
+  if (Window.GetWidth() != global.layout_w || Window.GetHeight() != global.layout_h) layout();
+  global.frame++;
+  f = global.frame;
+
+  # Black to the paper.
+  t = f / PAPER_IN;
+  if (t > 1) t = 1;
+  if (t < 1 || f == PAPER_IN + 1) {
+    Window.SetBackgroundTopColor(global.paper_r * t, global.paper_g * t, global.paper_b * t);
+    Window.SetBackgroundBottomColor(global.paper_r * t, global.paper_g * t, global.paper_b * t);
+  }
+
+  # The press.
+  step = Math.Int((f - PRESS_AT) / PRESS_STEP);
+  if (step >= 0 && step <= 8) {
+    if (step > 7) step = 7;
+    seal.sprite.SetImage(disp.seal[step]);
+    seal.sprite.SetOpacity(1);
+  }
+
+  # Everything under the seal comes up once it is pressed.
+  shutting = (global.mode == "shutdown" || global.mode == "reboot");
+  up = ease_out((f - HINT_AT) / HINT_IN);
+  if (shutting) up = 0;
+  if (global.state == "password" || global.state == "checking") {
+    track.sprite.SetOpacity(0.35 * up);
+    fill.sprite.SetOpacity(0);
+    notch.sprite.SetOpacity(0);
+    hilt.sprite.SetOpacity(up);
+    hint.sprite.SetOpacity(up);
+    name.sprite.SetOpacity(up);
+    sealed.sprite.SetOpacity(up);
+  } else if (global.state == "booting" || (global.state == "still" && global.mode == "boot")) {
+    # The blade sheathes into the progress rule.
+    away = 1 - ease_out((f - global.boot_at) / 12);
+    if (global.state == "still") away = 0;
+    hilt.sprite.SetOpacity(up * away);
+    blade.sprite.SetOpacity(global.blade_alpha * away);
+    for (i = 0; nicks.sprites[i]; i++) nicks.sprites[i].SetOpacity(global.blade_alpha * away);
+    name.sprite.SetOpacity(up * away);
+    sealed.sprite.SetOpacity(up * away);
+    hint.sprite.SetOpacity(0);
+    track.sprite.SetOpacity(0.35 * up);
+    fill.sprite.SetOpacity(up);
+    notch.sprite.SetOpacity(up);
+  }
+
+  # Deflected: the spark at the tip, a shudder, the old nicks fading.
+  d = f - global.fail_at;
+  if (d >= 0 && d <= GHOST + 1) {
+    spark.sprite.SetOpacity(1 - ease_out(d / SPARK_MS));
+    if (d <= SHUDDER) shift_blade(Math.Int(px(2) * Math.Sin(d * 3.1416 / 2) * (1 - d / SHUDDER)));
+    if (global.count == 0) draw_blade(global.last_count, 0.35 * (1 - ease_out(d / GHOST)));
+    if (d == GHOST + 1 && global.count == 0) draw_blade(0, 1);
+  }
+
+  # Checking: no new prompt for a while means the disk opened.
+  if (global.state == "checking" && f - global.check_at > CHECK_LIMIT) start_booting();
+
+  # The eased guess while the real progress is held back.
+  if (global.fake_active == 1) {
+    r = (f - global.fake_from) / global.fake_frames;
+    if (r > 1) r = 1;
+    global.fake = (1 - (1 - r) * (1 - r)) * global.fake_limit;
+    set_progress(global.fake);
+  }
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
+
+#----------------------------------------- Callbacks --------------------------------
+
+fun display_normal_callback() {
+  # Enter: the passphrase goes to be checked; the blade stays, dimmed.
+  if (global.state == "password") {
+    global.state = "checking";
+    global.check_at = global.frame;
+    global.check_clock = global.clock;
+    global.last_count = global.count;
+    draw_blade(global.count, 0.55);
+    set_hint("check");
+  }
+}
+
+fun display_password_callback(prompt, bullets) {
+  # Asked again after Enter: that one was wrong.
+  if (global.state == "checking" || (global.state == "booting" && global.asked == 1)) {
+    global.failed++;
+    global.fail_at = global.frame;
+    global.fake_active = 0;
+    fill.sprite.SetOpacity(0);
+    notch.sprite.SetOpacity(0);
+    tip = blade_width(global.last_count);
+    spark.sprite.SetPosition(global.rule_x + px(tip) - Math.Int(disp.spark.GetWidth() / 2), global.rule_y - Math.Int(disp.spark.GetHeight() / 2), 14);
+  }
+  global.asked = 1;
+  global.state = "password";
+  global.count = bullets;
+  if (bullets > 0 || global.frame - global.fail_at > GHOST) draw_blade(bullets, 1);
+  set_hint(hint_for());
+}
+
+fun progress_callback(duration, progress) {
+  global.clock = duration;
+  # Plymouth's clock is held while the disk is locked; once it moves on
+  # after Enter, the passphrase was right.
+  if (global.state == "checking" && duration > global.check_clock + 0.5) start_booting();
+  if (global.state == "booting" || (global.state == "still" && global.asked == 0)) {
+    if (progress > global.fake) {
+      global.fake_active = 0;
+      set_progress(progress);
+    }
+  }
+}
+
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+Plymouth.SetBootProgressFunction(progress_callback);
+
+#----------------------------------------- Messages --------------------------------
+
+# Anything the boot has to say (a disk check, an error), small, at the foot
+# on the left, in the muted ink.
+message.sprite = Sprite();
+
+fun display_message_callback(text) {
+  image = Image.Text(text, global.muted_r, global.muted_g, global.muted_b);
+  message.sprite.SetImage(image);
+  message.sprite.SetPosition(px(CORNER), global.layout_h - px(CORNER) - image.GetHeight(), 10);
+  message.sprite.SetOpacity(1);
+}
+
+fun hide_message_callback(text) {
+  message.sprite.SetOpacity(0);
+}
+
+Plymouth.SetDisplayMessageFunction(display_message_callback);
+Plymouth.SetHideMessageFunction(hide_message_callback);
+
+layout();

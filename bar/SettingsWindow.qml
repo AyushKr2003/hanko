@@ -103,7 +103,7 @@ FloatingWindow {
       kaze: Kaze.doc
       kazeDesk: Kaze.desk
       kazeSumi: Kaze.sumi
-      kazeTools: ({ cursor: Kaze.cursor, tools: Kaze.tools, theme: Kaze.theme })
+      kazeTools: ({ cursor: Kaze.cursor, tools: Kaze.tools, theme: Kaze.theme, boot: Kaze.boot })
       kazeCursorSize: Kaze.cursorSize
       kazeBusy: Kaze.busy
       onKazePicked: function(key, value) { Kaze.set(key, value) }
