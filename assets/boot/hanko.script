@@ -27,6 +27,17 @@ CORNER = @CORNER@;
 # in ink (1) or there at once (0).
 SHOW_NAME = @SHOW_NAME@;
 PRESS = @PRESS@;
+# The mark: Hanko's seal (0), or the brush (1): 始 written stroke by stroke
+# as the shutdown ceremony writes 終, the words beside it, the seal pressed
+# at its foot.
+MARK = @MARK@;
+BRUSH = @BRUSH@;
+BRUSH_AT = @BRUSH_AT@;
+BRUSH_GAP = @BRUSH_GAP@;
+BRUSH_RULE_GAP = @BRUSH_RULE_GAP@;
+BRUSH_FRAMES = @BRUSH_FRAMES@;
+STAMP = @STAMP@;
+WORDS_GAP = @WORDS_GAP@;
 
 # Beats, in frames: black to paper, a hold, then the press (two frames a
 # picture), then the hint comes up.
@@ -77,6 +88,20 @@ src.wrong[9] = Image("hint-wrong-9.png");
 src.name = Image("name.png");
 src.sealed = Image("sealed.png");
 
+# The brush's frames, and what it shows at shutdown (終, already written by
+# the shutdown ceremony before this screen comes up).
+fun load_brush() {
+  for (i = 0; i < BRUSH_FRAMES; i++) src.brush[i] = Image("brush-" + i + ".png");
+  src.end = Image("end-0.png");
+  src.stamp = Image("stamp.png");
+  src.words_start = Image("words-start.png");
+  src.words_end = Image("words-end.png");
+  src.sub_start = Image("sub-start.png");
+  src.sub_shutdown = Image("sub-shutdown.png");
+  src.sub_reboot = Image("sub-reboot.png");
+}
+if (MARK == 1) load_brush();
+
 seal.sprite = Sprite();
 track.sprite = Sprite();
 fill.sprite = Sprite();
@@ -87,6 +112,9 @@ spark.sprite = Sprite();
 hint.sprite = Sprite();
 name.sprite = Sprite();
 sealed.sprite = Sprite();
+stamp.sprite = Sprite();
+words.sprite = Sprite();
+sub.sprite = Sprite();
 nicks.sprites = [];
 
 seal.sprite.SetOpacity(0);
@@ -99,11 +127,25 @@ spark.sprite.SetOpacity(0);
 hint.sprite.SetOpacity(0);
 name.sprite.SetOpacity(0);
 sealed.sprite.SetOpacity(0);
+stamp.sprite.SetOpacity(0);
+words.sprite.SetOpacity(0);
+sub.sprite.SetOpacity(0);
 
 #----------------------------------------- State --------------------------------
 
 global.frame = 0;
 global.mode = Plymouth.GetMode();
+global.shutting = 0;
+if (global.mode == "shutdown" || global.mode == "reboot") global.shutting = 1;
+# The mark's frames (the seal's eight, the brush's writing; one at shutdown),
+# and the frame its last one lands on.
+global.frames = 8;
+if (MARK == 1) global.frames = BRUSH_FRAMES;
+if (MARK == 1 && global.shutting == 1) global.frames = 1;
+global.done_at = PRESS_AT + global.frames * PRESS_STEP;
+if (PRESS == 0 || global.frames == 1) global.done_at = PRESS_AT;
+global.hint_at = HINT_AT;
+if (MARK == 1) global.hint_at = global.done_at + 4;
 # still | password | checking | booting
 global.state = "still";
 global.asked = 0;          # a passphrase was asked for this boot
@@ -159,7 +201,11 @@ fun layout() {
   global.k = global.layout_h / 1080;
   global.zoom = global.k / global.R;
 
-  for (i = 0; i < 8; i++) disp.seal[i] = fit(src.seal[i]);
+  for (i = 0; i < global.frames; i++) {
+    if (MARK == 1) disp.mark[i] = fit(src.brush[i]);
+    else disp.mark[i] = fit(src.seal[i]);
+  }
+  if (MARK == 1 && global.shutting == 1) disp.mark[0] = fit(src.end);
   disp.nick = fit(src.nick);
   disp.hilt = fit(src.hilt);
   disp.spark = fit(src.spark);
@@ -174,17 +220,22 @@ fun layout() {
   if (global.zoom < 0.98 || global.zoom > 1.02) global.line_h = px(1);
   if (global.line_h < 1) global.line_h = 1;
 
-  size = disp.seal[7].GetWidth();
-  global.seal_x = Math.Int(global.layout_w / 2 - size / 2);
-  global.seal_y = Math.Int(global.layout_h * SEAL_AT - size / 2);
+  size = disp.mark[global.frames - 1].GetWidth();
+  if (MARK == 1) {
+    layout_brush(size);
+  } else {
+    global.seal_x = Math.Int(global.layout_w / 2 - size / 2);
+    global.seal_y = Math.Int(global.layout_h * SEAL_AT - size / 2);
+    global.rule_y = global.seal_y + size + px(RULE_GAP);
+  }
   seal.sprite.SetPosition(global.seal_x, global.seal_y, 10);
 
   global.rule_w = px(RULE_W);
   global.rule_x = Math.Int(global.layout_w / 2 - global.rule_w / 2);
-  global.rule_y = global.seal_y + size + px(RULE_GAP);
   track.sprite.SetImage(src.track.Scale(global.rule_w, global.line_h));
   track.sprite.SetPosition(global.rule_x, global.rule_y, 10);
   fill.sprite.SetPosition(global.rule_x, global.rule_y, 11);
+  blade.sprite.SetPosition(global.rule_x, global.rule_y, 12);
   notch.sprite.SetImage(disp.notch);
   hilt.sprite.SetImage(disp.hilt);
   hilt.sprite.SetPosition(global.rule_x, global.rule_y - Math.Int(disp.hilt.GetHeight() / 2), 12);
@@ -204,6 +255,45 @@ fun layout() {
   global.hint_key = "";
   draw_blade(global.count, global.blade_alpha);
   set_hint(hint_for());
+}
+
+# The brush, as the shutdown ceremony sets it: the kanji and the words beside
+# it centred as one row, the words' two lines centred on the kanji, the seal
+# pressed over its lower right corner, the hairline under it all.
+fun layout_brush(size) {
+  disp.stamp = fit(src.stamp);
+  disp.words = fit(src.words_start);
+  disp.sub = fit(src.sub_start);
+  if (global.shutting == 1) disp.words = fit(src.words_end);
+  if (global.mode == "shutdown") disp.sub = fit(src.sub_shutdown);
+  if (global.mode == "reboot") disp.sub = fit(src.sub_reboot);
+  ww = disp.words.GetWidth();
+  if (disp.sub.GetWidth() > ww) ww = disp.sub.GetWidth();
+  row = size + px(BRUSH_GAP) + ww;
+  global.seal_x = Math.Int(global.layout_w / 2 - row / 2);
+  global.seal_y = Math.Int(global.layout_h * BRUSH_AT - size / 2);
+  block = disp.words.GetHeight() + px(WORDS_GAP) + disp.sub.GetHeight();
+  wx = global.seal_x + size + px(BRUSH_GAP);
+  wy = Math.Int(global.seal_y + size / 2 - block / 2);
+  words.sprite.SetImage(disp.words);
+  words.sprite.SetPosition(wx, wy, 10);
+  sub.sprite.SetImage(disp.sub);
+  sub.sprite.SetPosition(wx, wy + disp.words.GetHeight() + px(WORDS_GAP), 10);
+  # The stamp's middle, kept while it is pressed from 115% to its size.
+  global.stamp_cx = global.seal_x + size - disp.stamp.GetWidth() * 0.4 + disp.stamp.GetWidth() / 2;
+  global.stamp_cy = global.seal_y + size - disp.stamp.GetHeight() * 1.1 + disp.stamp.GetHeight() / 2;
+  press_stamp(1);
+  global.rule_y = global.seal_y + size + px(BRUSH_RULE_GAP);
+}
+
+fun press_stamp(p) {
+  s = 1.15 - 0.15 * p;
+  w = Math.Int(disp.stamp.GetWidth() * s + 0.5);
+  h = Math.Int(disp.stamp.GetHeight() * s + 0.5);
+  image = disp.stamp;
+  if (p < 1) image = disp.stamp.Scale(w, h);
+  stamp.sprite.SetImage(image);
+  stamp.sprite.SetPosition(Math.Int(global.stamp_cx - w / 2), Math.Int(global.stamp_cy - h / 2), 11);
 }
 
 #----------------------------------------- The blade --------------------------------
@@ -323,19 +413,32 @@ fun refresh_callback() {
     Window.SetBackgroundBottomColor(global.paper_r * t, global.paper_g * t, global.paper_b * t);
   }
 
-  # The press.
+  # The press (the seal) or the writing (the brush).
+  last = global.frames - 1;
   step = Math.Int((f - PRESS_AT) / PRESS_STEP);
-  if (PRESS == 0 && f >= PRESS_AT) step = 7;
-  if (step >= 0 && step <= 8) {
-    if (step > 7) step = 7;
-    seal.sprite.SetImage(disp.seal[step]);
+  if ((PRESS == 0 || global.frames == 1) && f >= PRESS_AT) step = last;
+  if (step >= 0 && step <= last + 1) {
+    if (step > last) step = last;
+    seal.sprite.SetImage(disp.mark[step]);
     seal.sprite.SetOpacity(1);
   }
+  # The brush written: the seal pressed beside it, the words after.
+  if (MARK == 1) {
+    d = f - global.done_at;
+    if (d >= 0 && d <= 8) {
+      p = ease_out(d / 7);
+      press_stamp(p);
+      stamp.sprite.SetOpacity(p);
+    }
+    if (d >= 0 && d <= 12) {
+      words.sprite.SetOpacity(ease_out(d / 11));
+      sub.sprite.SetOpacity(ease_out(d / 11));
+    }
+  }
 
-  # Everything under the seal comes up once it is pressed.
-  shutting = (global.mode == "shutdown" || global.mode == "reboot");
-  up = ease_out((f - HINT_AT) / HINT_IN);
-  if (shutting) up = 0;
+  # Everything under the mark comes up once it is made.
+  up = ease_out((f - global.hint_at) / HINT_IN);
+  if (global.shutting == 1) up = 0;
   if (global.state == "password" || global.state == "checking") {
     track.sprite.SetOpacity(0.35 * up);
     fill.sprite.SetOpacity(0);

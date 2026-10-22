@@ -690,7 +690,8 @@ boot_drawn() {
   jq -n --arg theme "$(cat "$THEME_NAME_FILE" 2>/dev/null || true)" --arg glyph "${glyph:0:1}" \
     --arg name "$(jq -r 'if .bootName == "none" then "none" else "name" end' "$kaze" 2>/dev/null || echo name)" \
     --arg press "$(jq -r 'if .bootPress == "still" then "still" else "ink" end' "$kaze" 2>/dev/null || echo ink)" \
-    --arg at "$(date -Iseconds)" '{ theme: $theme, glyph: $glyph, name: $name, press: $press, at: $at }' > "$BOOT_DRAWN"
+    --arg mark "$(jq -r 'if .bootMark == "brush" then "brush" else "seal" end' "$kaze" 2>/dev/null || echo seal)" \
+    --arg at "$(date -Iseconds)" '{ theme: $theme, glyph: $glyph, name: $name, press: $press, mark: $mark, at: $at }' > "$BOOT_DRAWN"
 }
 BOOT_THEMES=/usr/share/plymouth/themes
 boot_theme() { plymouth-set-default-theme 2>/dev/null || sed -nE 's/^ *Theme *= *//p' /etc/plymouth/plymouthd.conf 2>/dev/null | head -1; }

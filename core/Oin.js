@@ -17,7 +17,15 @@ var LAYOUT = {
   lead: 24,
   nickH: 7,
   hiltH: 15,
-  corner: 64      // the corner name's margin from the right and the foot
+  corner: 64,     // the corner name's margin from the right and the foot
+  // The brush mark, laid out as the shutdown ceremony is (plugins/hanko.osd)
+  brush: 432,     // the kanji's box
+  brushAt: 0.42,  // its middle
+  brushGap: 60,   // from the kanji to the words
+  brushRuleGap: 56,
+  brushFrames: 20,
+  stamp: 74,      // the seal pressed beside the last stroke
+  wordsGap: 18
 }
 
 // The blade for `count` keys: its length and the nicks' x, as the script
@@ -64,15 +72,18 @@ function moment(key) {
 }
 
 // One encrypted boot, ms from the start: the paper comes up, the seal is
-// pressed, the prompt; a wrong passphrase, then the right one, then the
-// boot's progress. The script's beats are frames at 50 a second.
+// pressed (or the brush writes, 800 ms, then its seal and words), the
+// prompt; a wrong passphrase, then the right one, then the boot's progress.
+// The script's beats are frames at 50 a second.
 var STORY_MS = 9400
 function story(ms) {
   var t = Math.max(0, ms)
   var paper = Math.min(1, t / 300)
   var press = Math.max(0, Math.min(1, (t - 240) / 320))
-  var o = { state: "password", count: 0, progress: 0, press: press, paper: paper, failed: 0 }
-  if (t < 700) { o.state = "still"; return o }
+  var write = Math.max(0, Math.min(1, (t - 240) / 800))
+  var after = Math.max(0, Math.min(1, (t - 1040) / 220))
+  var o = { state: "password", count: 0, progress: 0, press: press, write: write, after: after, paper: paper, failed: 0 }
+  if (t < 1100) { o.state = "still"; return o }
   if (t < 1400) return o
   if (t < 2800) { o.count = Math.min(6, Math.floor((t - 1400) / 220) + 1); return o }
   if (t < 3400) { o.state = "checking"; o.count = 6; return o }
@@ -97,6 +108,7 @@ function stale(drawn, now, pretty) {
   if (now.glyph && drawn.glyph && drawn.glyph !== now.glyph) return "Drawn with " + drawn.glyph + "; your seal is " + now.glyph + " now"
   if (now.name && drawn.name && drawn.name !== now.name) return "The corner changed since it was drawn"
   if (now.press && drawn.press && drawn.press !== now.press) return "The press changed since it was drawn"
+  if (now.mark && (drawn.mark || "seal") !== now.mark) return "Drawn with the " + (drawn.mark || "seal") + "; the mark is the " + now.mark + " now"
   return ""
 }
 

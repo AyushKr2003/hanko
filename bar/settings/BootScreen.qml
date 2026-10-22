@@ -8,6 +8,8 @@ import "../../core/Oin.js" as Oin
 // scripts/hanko-boot draws (`dir`, the page's preview of what `hanko boot
 // on` would install). Before the first drawing, or without one, the seal and
 // the words are drawn here in the same inks. Pure: a moment in, nothing out.
+// Two marks: the seal, or the brush (始 written as the shutdown ceremony
+// writes 終, the words beside it, a seal pressed at its foot).
 Item {
   id: root
 
@@ -27,13 +29,22 @@ Item {
   property bool pressInk: true
   property string glyph: "鑑"
   property string name: ""
+  // The brush mark, its writing (0..1) and what follows it (the seal
+  // pressed, the words), 0..1.
+  property bool brush: false
+  property real write: 1
+  property real after: 1
 
   readonly property var lay: Oin.LAYOUT
   readonly property bool asking: phase === "password" || phase === "checking" || phase === "wrong"
   readonly property bool ruled: phase !== "shutdown" && phase !== "still"
   readonly property real sealY: Math.round(1080 * lay.sealAt - lay.seal / 2)
   readonly property real ruleX: Math.round(960 - lay.rule / 2)
-  readonly property real ruleY: sealY + lay.seal + lay.ruleGap
+  readonly property real kanjiY: Math.floor(1080 * lay.brushAt - lay.brush / 2)
+  readonly property real wordsW: Math.max(wordsPic.implicitWidth, subPic.implicitWidth)
+  readonly property real kanjiX: Math.floor(960 - (lay.brush + lay.brushGap + wordsW) / 2)
+  readonly property real ruleY: brush ? kanjiY + lay.brush + lay.brushRuleGap : sealY + lay.seal + lay.ruleGap
+  readonly property bool ending: phase === "shutdown"
   readonly property string hintKey: Oin.hint(phase, count, failed)
   function pic(n) { return dir !== "" ? "file://" + dir + "/" + n + ".png" : "" }
 
@@ -46,17 +57,63 @@ Item {
     color: Qt.rgba(Ink.paper.r * root.paper, Ink.paper.g * root.paper, Ink.paper.b * root.paper, 1)
   }
 
+  // The brush: the frame the writing has reached (終 whole at shutdown), the
+  // words beside it, and the seal pressed at its foot from 115%.
+  Item {
+    visible: root.brush
+    Image {
+      visible: root.dir !== "" && root.write > 0
+      x: root.kanjiX; y: root.kanjiY
+      width: root.lay.brush; height: root.lay.brush
+      smooth: true
+      source: root.ending ? root.pic("end-0")
+        : root.pic("brush-" + (root.pressInk ? Math.min(root.lay.brushFrames - 1, Math.floor(root.write * root.lay.brushFrames)) : root.lay.brushFrames - 1))
+    }
+    Text {
+      visible: root.dir === ""
+      x: root.kanjiX; y: root.kanjiY
+      text: root.ending ? "終" : "始"
+      color: Ink.ink
+      font.family: Type.brush
+      font.pixelSize: root.lay.brush
+    }
+    Image {
+      id: wordsPic
+      readonly property real block: implicitHeight + root.lay.wordsGap + subPic.implicitHeight
+      x: root.kanjiX + root.lay.brush + root.lay.brushGap
+      y: Math.floor(root.kanjiY + root.lay.brush / 2 - block / 2)
+      opacity: root.after
+      source: root.pic(root.ending ? "words-end" : "words-start")
+    }
+    Image {
+      id: subPic
+      x: wordsPic.x
+      y: wordsPic.y + wordsPic.implicitHeight + root.lay.wordsGap
+      opacity: root.after
+      source: root.pic(root.ending ? "sub-shutdown" : "sub-start")
+    }
+    Image {
+      readonly property real s: 1.15 - 0.15 * root.after
+      x: root.kanjiX + root.lay.brush - root.lay.stamp * 0.4 + root.lay.stamp / 2 - width / 2
+      y: root.kanjiY + root.lay.brush - root.lay.stamp * 1.1 + root.lay.stamp / 2 - height / 2
+      width: Math.round(root.lay.stamp * s); height: width
+      smooth: true
+      opacity: root.after
+      source: root.pic("stamp")
+    }
+  }
+
   // The seal: the pressed frame, or a plate drawn here before the pictures.
   Image {
     id: seal
-    visible: root.dir !== "" && root.press > 0
+    visible: !root.brush && root.dir !== "" && root.press > 0
     x: 960 - root.lay.seal / 2; y: root.sealY
     width: root.lay.seal; height: root.lay.seal
     smooth: true
     source: root.pic("seal-" + (root.pressInk ? Math.min(7, Math.floor(root.press * 8)) : 7))
   }
   Rectangle {
-    visible: root.dir === "" && root.press > 0
+    visible: !root.brush && root.dir === "" && root.press > 0
     x: 960 - root.lay.seal / 2; y: root.sealY
     width: root.lay.seal; height: root.lay.seal
     radius: Math.round(width * 0.11)

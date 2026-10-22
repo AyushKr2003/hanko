@@ -11,6 +11,10 @@
 //   node sim.mjs THEME_DIR OUT_DIR   draw the moments of a boot (still,
 //                                    typing, deflected, checking, booting)
 //                                    as PNGs
+//   node sim.mjs --sheet THEME OUT [MOMENT]  four moments on one sheet
+//                                    (hanko boot preview), or one moment
+//                                    (asked | typing | wrong | booting |
+//                                    shutdown) at full size
 import { readFileSync, existsSync, mkdirSync } from "node:fs"
 import { execFileSync } from "node:child_process"
 import { join } from "node:path"
@@ -60,7 +64,9 @@ class Sprt {
   GetOpacity() { return this.opacity }
 }
 
-export function boot(themeDir, { mode = "boot", width = 1920, height = 1080 } = {}) {
+// `defines` replaces the script's own constants (MARK, PRESS, SHOW_NAME…),
+// so one theme can be played both ways.
+export function boot(themeDir, { mode = "boot", width = 1920, height = 1080, defines = {} } = {}) {
   const sim = { sprites: [], callbacks: {}, bg: [0, 0, 0], frame: 0, width, height, log: [] }
   const Image = file => {
     need(typeof file === "string", `Image(${file})`)
@@ -94,7 +100,13 @@ export function boot(themeDir, { mode = "boot", width = 1920, height = 1080 } = 
     Random: () => 0.5,
   }
   const ply = new Interpreter({ Window, Image, Sprite, Plymouth, Math: M })
-  ply.run(readFileSync(join(themeDir, "hanko.script"), "utf8"))
+  let script = readFileSync(join(themeDir, "hanko.script"), "utf8")
+  for (const [k, v] of Object.entries(defines)) {
+    const re = new RegExp(`^${k} = [^;]*;`, "m")
+    if (!re.test(script)) throw new PlyError(`the script has no ${k} to set`)
+    script = script.replace(re, `${k} = ${v};`)
+  }
+  ply.run(script)
   const cb = (name, ...args) => ply.call(sim.callbacks[name], args)
   return {
     sim, ply,
@@ -137,8 +149,11 @@ export function draw(b, out) {
 
 // Every path a boot can take through the theme, as plymouthd calls it.
 export function check(themeDir) {
+  for (const defines of [{ MARK: 0 }, { MARK: 1 }, { MARK: 1, PRESS: 0, SHOW_NAME: 0 }, { MARK: 0, PRESS: 0 }]) playAll(themeDir, defines)
+}
+function playAll(themeDir, defines) {
   for (const [w, h] of [[1920, 1080], [3840, 2160], [1366, 768], [2560, 1600]]) {
-    const b = boot(themeDir, { width: w, height: h })
+    const b = boot(themeDir, { width: w, height: h, defines })
     b.tick(20, { held: true }); b.password(0); b.tick(30, { held: true })
     for (let i = 1; i <= 40; i++) { b.password(i); b.tick(1, { held: true }) }
     for (let i = 39; i >= 0; i--) b.password(i)
@@ -148,14 +163,35 @@ export function check(themeDir) {
     b.password(4); b.normal(); b.tick(10, { held: true }); b.tick(800)          // right: the clock runs again
     b.message("A start job is running"); b.tick(2)
     b.resize(w / 2, h / 2); b.tick(2); b.resize(w, h); b.tick(2)               // a display that comes late
-    const c = boot(themeDir, { width: w, height: h })
+    const c = boot(themeDir, { width: w, height: h, defines })
     c.tick(5); c.password(3); c.normal(); c.tick(400, { held: true }); c.tick(20) // no new prompt: taken as open
-    const d = boot(themeDir, { width: w, height: h }); d.tick(600)              // no disk to unlock
+    const d = boot(themeDir, { width: w, height: h, defines }); d.tick(600)    // no disk to unlock
   }
-  for (const mode of ["shutdown", "reboot", "resume", "suspend", "updates", "system-upgrade"]) boot(themeDir, { mode }).tick(80)
+  for (const mode of ["shutdown", "reboot", "resume", "suspend", "updates", "system-upgrade"]) boot(themeDir, { mode, defines }).tick(80)
 }
 
-if (process.argv[2] === "--check") {
+// One moment, as plymouthd would leave the screen in it.
+export function moment(themeDir, key, opts = {}) {
+  const b = boot(themeDir, { ...opts, mode: key === "shutdown" ? "shutdown" : "boot" })
+  if (key === "shutdown") { b.tick(90); return b }
+  b.tick(20, { held: true }); b.password(0); b.tick(60, { held: true })
+  if (key === "typing" || key === "wrong") { for (let i = 1; i <= 7; i++) b.password(i); b.tick(2, { held: true }) }
+  if (key === "wrong") { b.normal(); b.tick(5, { held: true }); b.password(0); b.tick(3, { held: true }) }
+  if (key === "booting") { b.password(6); b.normal(); b.tick(5, { held: true }); b.tick(330) }
+  return b
+}
+export function sheet(themeDir, out, opts = {}) {
+  const parts = ["asked", "typing", "wrong", "booting"].map(k => draw(moment(themeDir, k, opts), `${out}.${k}.png`))
+  execFileSync("magick", ["(", parts[0], parts[1], "+append", ")", "(", parts[2], parts[3], "+append", ")", "-append", "-resize", "50%", out])
+  for (const p of parts) execFileSync("rm", ["-f", p])
+  return out
+}
+
+if (process.argv[2] === "--sheet") {
+  const [theme, out, key] = process.argv.slice(3)
+  try { console.log(key ? draw(moment(theme, key), out) : sheet(theme, out)) }
+  catch (e) { console.error(`boot theme: ${e.message}`); process.exit(1) }
+} else if (process.argv[2] === "--check") {
   try { check(process.argv[3]); console.log("boot theme ok") }
   catch (e) { console.error(`boot theme: ${e.message}`); process.exit(1) }
 } else if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -46,7 +46,9 @@ Column {
   readonly property bool working: busy === "boot"
   readonly property string bootName: Settings.kazeValue(kaze, "bootName")
   readonly property string bootPress: Settings.kazeValue(kaze, "bootPress")
-  readonly property string stale: boot ? Oin.stale(drawn, { theme: themeName, glyph: glyph, name: bootName, press: bootPress }, Th.themeName) : ""
+  readonly property string bootMark: Settings.kazeValue(kaze, "bootMark")
+  readonly property bool brush: bootMark === "brush"
+  readonly property string stale: boot ? Oin.stale(drawn, { theme: themeName, glyph: glyph, name: bootName, press: bootPress, mark: bootMark }, Th.themeName) : ""
   // On, but drawn before `hanko boot on` kept what it drew for.
   readonly property bool unrecorded: boot && !(drawn && drawn.theme)
   readonly property real gap: Type.px(16)
@@ -56,6 +58,7 @@ Column {
   Component.onCompleted: previewWanted()
   onBootNameChanged: previewWanted()
   onBootPressChanged: previewWanted()
+  onBootMarkChanged: previewWanted()
   onGlyphChanged: previewWanted()
   onThemeNameChanged: previewWanted()
 
@@ -71,8 +74,8 @@ Column {
   readonly property bool trying: tryPhase !== ""
   readonly property var shown: {
     if (playing) return Oin.story(playT)
-    if (trying) return { state: tryPhase, count: tryInput.text.length, progress: tryProgress, press: 1, paper: 1, failed: tryFailed, fade: tryFade }
-    return Object.assign({ paper: 1, fade: 0 }, Oin.moment(held))
+    if (trying) return { state: tryPhase, count: tryInput.text.length, progress: tryProgress, press: 1, write: 1, after: 1, paper: 1, failed: tryFailed, fade: tryFade }
+    return Object.assign({ paper: 1, fade: 0, write: 1, after: 1 }, Oin.moment(held))
   }
 
   function hold(key) { stopAll(); held = key }
@@ -156,6 +159,9 @@ Column {
           paper: root.shown.paper === undefined ? 1 : root.shown.paper
           failed: root.shown.failed
           fade: root.shown.fade || 0
+          brush: root.brush
+          write: root.shown.write === undefined ? 1 : root.shown.write
+          after: root.shown.after === undefined ? 1 : root.shown.after
           showName: root.bootName === "name"
           pressInk: root.bootPress === "ink"
           glyph: root.glyph
@@ -218,7 +224,7 @@ Column {
         id: closeUp
         readonly property real k: Type.px(1)
         width: parent.width
-        height: Math.round(290 * k) + 2
+        height: Math.round((root.brush ? 120 : 290) * k) + 2
         radius: 3
         color: "transparent"
         border.width: 1
@@ -229,7 +235,9 @@ Column {
           clip: true
         BootScreen {
           x: Math.round(parent.width / 2 - 960 * closeUp.k)
-          y: -Math.round(360 * closeUp.k)
+          // The seal and the hairline; with the brush, which the whole
+          // screen shows well, the hairline and the hint.
+          y: -Math.round((root.brush ? 672 : 360) * closeUp.k)
           scale: closeUp.k
           transformOrigin: Item.TopLeft
           dir: root.preview
@@ -240,6 +248,9 @@ Column {
           paper: root.shown.paper === undefined ? 1 : root.shown.paper
           failed: root.shown.failed
           fade: root.shown.fade || 0
+          brush: root.brush
+          write: root.shown.write === undefined ? 1 : root.shown.write
+          after: root.shown.after === undefined ? 1 : root.shown.after
           showName: false
           pressInk: root.bootPress === "ink"
           glyph: root.glyph

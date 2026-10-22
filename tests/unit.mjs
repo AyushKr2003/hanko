@@ -2378,8 +2378,10 @@ test("cursor: the nearest stop after the parts are made anew, and the keys", () 
     if (!tool("magick")) return
     const dir = mkdtempSync(join(tmpdir(), "hanko-boot-"))
     try {
+      const empty = mkdtempSync(join(tmpdir(), "hanko-boot-config-"))
       execFileSync(join(root, "scripts/hanko-boot"), ["build", dir],
-        { env: { ...process.env, HANKO_BOOT_COLORS: join(root, "theme/colors.toml") }, stdio: "pipe" })
+        { env: { ...process.env, XDG_CONFIG_HOME: empty, HANKO_BOOT_HEIGHT: "1080", HANKO_BOOT_COLORS: join(root, "theme/colors.toml") }, stdio: "pipe" })
+      rmSync(empty, { recursive: true, force: true })
       const script = readFileSync(join(dir, "hanko.script"), "utf8")
       assert.doesNotMatch(script, /@[A-Z_]+@/, "every number filled in")
       sim.check(dir)
@@ -2407,6 +2409,30 @@ test("cursor: the nearest stop after the parts are made anew, and the keys", () 
       assert.equal(b.global("state"), "booting")
       assert.ok(b.visible().some(x => x.image.src.endsWith("notch.png")))
       assert.equal(hint(), undefined)
+      // The blade lies on the hairline, under either mark (it was once
+      // left at the screen's corner).
+      for (const MARK of [0, 1]) {
+        const t = sim.boot(dir, { defines: { MARK } }); t.tick(70, { held: true }); t.password(6); t.tick(1, { held: true })
+        const blade = t.visible().find(x => x.image.src.endsWith("ink.png") && x.image.w === Oi.bladeWidth(6))
+        assert.ok(blade, `a blade (mark ${MARK})`)
+        assert.deepEqual([blade.x, blade.y], [t.global("rule_x"), t.global("rule_y")], `the blade on the hairline (mark ${MARK})`)
+      }
+      // The brush: 始 written, its seal and words; at shutdown 終, "The end".
+      const names = t => t.visible().map(x => x.image.src.split("/").pop())
+      const up = sim.boot(dir, { defines: { MARK: 1 } }); up.tick(80, { held: true })
+      for (const f of ["brush-19.png", "stamp.png", "words-start.png", "sub-start.png"]) assert.ok(names(up).includes(f), f)
+      const early = sim.boot(dir, { defines: { MARK: 1 } }); early.tick(20, { held: true })
+      assert.ok(names(early).some(f => /^brush-[0-9]\.png$/.test(f)), "written stroke by stroke")
+      assert.ok(!names(early).includes("stamp.png"), "the seal after the strokes")
+      const down = sim.boot(dir, { mode: "reboot", defines: { MARK: 1 } }); down.tick(40)
+      for (const f of ["end-0.png", "words-end.png", "sub-reboot.png", "stamp.png"]) assert.ok(names(down).includes(f), f)
+      assert.ok(!names(down).some(f => f.startsWith("brush-")))
+      // The script's words sit beside the kanji, centred with it as a row.
+      const kanji = up.visible().find(x => x.image.src.endsWith("brush-19.png"))
+      const words = up.visible().find(x => x.image.src.endsWith("words-start.png"))
+      assert.equal(words.x, kanji.x + Oi.LAYOUT.brush + Oi.LAYOUT.brushGap)
+      const row = Oi.LAYOUT.brush + Oi.LAYOUT.brushGap + Math.max(words.image.w, up.visible().find(x => x.image.src.endsWith("sub-start.png")).image.w)
+      assert.ok(Math.abs(kanji.x + row / 2 - 960) <= 1, "the row centred")
     } finally { rmSync(dir, { recursive: true, force: true }) }
   })
   test("boot: the CLI checks the theme before it installs, and goes back to the theme it replaced", () => {
@@ -2425,6 +2451,8 @@ test("boot page: the layout is the one hanko-boot draws, the blade the lock's", 
   const L = Oi.LAYOUT
   assert.deepEqual([L.seal, L.sealAt, L.ruleGap, L.rule, L.hintGap, L.nick, L.lead, L.nickH, L.hiltH, L.corner],
     ["SEAL_SIZE", "SEAL_AT", "RULE_GAP", "RULE_W", "HINT_GAP", "NICK", "LEAD", "NICK_H", "HILT_H", "CORNER"].map(num))
+  assert.deepEqual([L.brush, L.brushAt, L.brushGap, L.brushRuleGap, L.brushFrames, L.stamp, L.wordsGap],
+    ["BRUSH", "BRUSH_AT", "BRUSH_GAP", "BRUSH_RULE_GAP", "BRUSH_FRAMES", "STAMP", "WORDS_GAP"].map(num))
   assert.equal(L.nick, Tj.NICK); assert.equal(L.lead, Tj.LEAD)
   for (const n of [0, 1, 5, 14, 15, 40]) {
     assert.equal(Oi.bladeWidth(n), Tj.bladeWidth(n, L.rule), `width ${n}`)
@@ -2458,6 +2486,9 @@ test("boot page: one boot played, the moments, and when the installed screen is 
   assert.equal(Oi.stale(drawn, { theme: "hanko", glyph: "鑑" }, pretty), "Drawn for Catppuccin; your theme is Hanko now")
   assert.match(Oi.stale(drawn, { theme: "catppuccin", glyph: "漢" }), /your seal is 漢/)
   assert.match(Oi.stale(drawn, { theme: "catppuccin", name: "none" }), /corner/)
+  assert.equal(Oi.stale(drawn, { theme: "catppuccin", mark: "seal" }), "", "a record from before the mark was the seal")
+  assert.match(Oi.stale(drawn, { theme: "catppuccin", mark: "brush" }), /the mark is the brush/)
+  assert.equal(Se.kazeChange({}, { bootMark: "brush" }), "Boot mark · seal → brush")
   assert.equal(Oi.stale({}, { theme: "x" }), "", "nothing installed: nothing to be out of date")
   assert.equal(Oi.day("2026-10-22T16:00:00+05:30"), "22 October")
   // The page's two choices read and say like the Kaze switches, and aren't counted there.
@@ -2468,5 +2499,23 @@ test("boot page: one boot played, the moments, and when the installed screen is 
   assert.deepEqual(Se.kazeOn({ bootName: "none", bootPress: "still" }, false, false, false), Se.kazeOn({}, false, false, false))
   assert.ok(Se.pageInfo("boot").page.jp === "押印" && Se.PAGE_LINES.boot)
 })
+
+{
+  const brush = await import("../assets/boot/brush.mjs")
+  test("boot brush: the shutdown ceremony's hand, and 始 in its stroke order", () => {
+    // The ceremony's Canvas (plugins/hanko.osd) and the boot's SVG draw one stroke.
+    const osd = readFileSync(join(root, "plugins/hanko.osd/Osd.qml"), "utf8")
+    assert.ok(osd.includes("var w = t < 0.12 ? 0.8 + t / 0.12 * 0.2 : (t > 0.7 ? 1 - (t - 0.7) / 0.3 * 0.62 : 1)"))
+    assert.ok(osd.includes("var base = width * 0.062"))
+    const ceremony = t => t < 0.12 ? 0.8 + t / 0.12 * 0.2 : (t > 0.7 ? 1 - (t - 0.7) / 0.3 * 0.62 : 1)
+    for (const t of [0, 0.05, 0.12, 0.5, 0.7, 0.85, 1]) assert.equal(brush.width(t), ceremony(t))
+    const { STROKES } = brush.strokes()
+    assert.equal(STROKES["始"].length, 8, "始 has eight strokes")
+    assert.equal(STROKES["終"].length, 11)
+    const half = brush.svg("始", 432, "#ddd5c7", 4), whole = brush.svg("始", 432, "#ddd5c7", 8)
+    assert.ok(half.split("<line").length < whole.split("<line").length, "half written is fewer marks")
+    assert.match(whole, /stroke-width="26\.78"/, "full width: 6.2% of the box")
+  })
+}
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

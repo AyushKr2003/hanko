@@ -11,8 +11,12 @@
 #
 #   hanko-boot build DIR      write the theme (hanko.plymouth, hanko.script,
 #                             PNGs) into DIR; nothing needs root
-#   hanko-boot preview OUT    a sheet of its four moments (still, drawing,
-#                             deflected, booting) as one PNG
+#   hanko-boot preview OUT    a sheet of four moments (asked, typing, wrong,
+#                             booting) as one PNG, played through the script
+#
+# Two marks, both drawn, the script shows one (kaze.json bootMark): the seal
+# pressed, or the brush, 始 "The beginning" written stroke by stroke in the
+# shutdown ceremony's hand (assets/boot/brush.mjs), with the words beside it.
 #
 # The pictures are drawn at the scale of the tallest monitor (1080 px is 1);
 # the script rescales them on a screen of another height.
@@ -23,6 +27,9 @@ FONTS="$SRC/assets/fonts"
 fail() { printf 'hanko-boot: %s\n' "$*" >&2; exit 1; }
 command -v magick >/dev/null || fail "ImageMagick (magick) is required"
 command -v lua >/dev/null || command -v luajit >/dev/null || fail "lua is required"
+# node draws the brush (assets/boot/brush.mjs) and plays the script for the
+# preview (assets/boot/sim.mjs).
+command -v node >/dev/null || fail "node is required"
 
 # ── The inks ──────────────────────────────────────────────────────────────
 # InkMath's ramp from the theme's colors.toml (assets/kaze/nvim/lua/hanko/ink.lua).
@@ -47,6 +54,11 @@ BOOT_NAME="$(jq -r 'if .bootName == "none" then "none" else "name" end' "$KAZE" 
 BOOT_PRESS="$(jq -r 'if .bootPress == "still" then "still" else "ink" end' "$KAZE" 2>/dev/null || echo ink)"
 [[ $BOOT_NAME == none ]] || BOOT_NAME=name
 [[ $BOOT_PRESS == still ]] || BOOT_PRESS=ink
+# The mark: Hanko's seal, or the brush (始, "The beginning", written stroke by
+# stroke as the shutdown ceremony writes 終). Both are drawn; the script shows
+# one. HANKO_BOOT_MARK overrides kaze.json's bootMark.
+BOOT_MARK="${HANKO_BOOT_MARK:-$(jq -r 'if .bootMark == "brush" then "brush" else "seal" end' "$KAZE" 2>/dev/null || echo seal)}"
+[[ $BOOT_MARK == brush ]] || BOOT_MARK=seal
 # The seal's kanji in Yuji Boku when it has it (the bar's brush face), else Noto Serif CJK.
 has_char() { # font-file char
   local cp ranges
@@ -73,6 +85,14 @@ HINT_GAP=20          # from the hairline to the hint's top
 NICK=22; LEAD=24     # the blade: its hilt, then a nick every 22 px (core/Taiji.js)
 NICK_H=7; HILT_H=15
 CORNER=64            # the corner name's margin from the right and the foot
+# The brush mark, as the shutdown ceremony lays it out (plugins/hanko.osd):
+BRUSH=432            # the kanji's box (0.4 of the height)
+BRUSH_AT=0.42        # its middle, as a share of the height
+BRUSH_GAP=60         # from the kanji to the words
+BRUSH_RULE_GAP=56    # from the kanji's foot to the hairline
+BRUSH_FRAMES=20      # the writing, two frames each: 800 ms
+STAMP=74             # the seal pressed beside the last stroke
+WORDS_GAP=18         # from the words to the line under them
 
 # ── Drawing ───────────────────────────────────────────────────────────────
 text_png() { # out font size colour kerning text
@@ -83,13 +103,13 @@ text_png() { # out font size colour kerning text
 # The serif through Pango, which can set Fraunces' axes (ImageMagick's own
 # text takes the variable font's default, a heavy cut); the bundled fonts
 # are added to fontconfig for it.
-serif_png() { # out size colour text
+serif_png() { # out size colour text [italic]
   local conf="$work/fonts.conf" esc
   [[ -f $conf ]] || printf '%s\n' '<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd">' \
     "<fontconfig><include ignore_missing=\"yes\">/etc/fonts/fonts.conf</include><dir>$FONTS</dir><cachedir>$work/fc</cachedir></fontconfig>" > "$conf"
   esc="$4"; esc="${esc//&/&amp;}"; esc="${esc//</&lt;}"; esc="${esc//>/&gt;}"
   FONTCONFIG_FILE="$conf" magick -background none \
-    pango:"<span font_desc=\"Fraunces $(px "$2")px @wght=340,opsz=$2\" foreground=\"$3\">$esc</span>" -trim +repage "$1"
+    pango:"<span font_desc=\"Fraunces${5:+ Italic} $(px "$2")px @wght=$([[ -n ${5:-} ]] && echo 320 || echo 340),opsz=$2\" foreground=\"$3\">$esc</span>" -trim +repage "$1"
 }
 
 build() {
@@ -124,6 +144,23 @@ build() {
   done
   magick -seed 11 -size "${s}x${s}" xc: +noise Random -channel G -separate +channel -threshold 99.85% -morphology Dilate Disk:0.8 -blur 0x0.5 -negate "$work/specks.png"
   magick "$work/seal.png" \( "$work/specks.png" -alpha copy \) -compose DstIn -composite "$out/seal-7.png"
+
+  # The brush mark: 始 written in BRUSH_FRAMES frames, 終 whole (for
+  # shutdown, after the ceremony has written it), the seal pressed beside
+  # them, and the words: the English in the serif's italic, the line under it
+  # in tracked mono (the ceremony's 64 and 18 px).
+  node "$SRC/assets/boot/brush.mjs" "$out" "$(px $BRUSH)" "$INK" 始 "$BRUSH_FRAMES" brush || fail "the brush didn't draw"
+  node "$SRC/assets/boot/brush.mjs" "$out" "$(px $BRUSH)" "$INK" 終 1 end || fail "the brush didn't draw"
+  local st sr
+  st=$(px $STAMP); sr=$(px 6)
+  magick -size "${st}x${st}" xc:none -fill "$SEAL" -draw "roundrectangle 0,0,$((st - 1)),$((st - 1)),$sr,$sr" \
+    \( -background none -fill "$PAPER" -font Noto-Serif-CJK-JP-SemiBold -pointsize "$(px 42)" label:"$GLYPH" -trim +repage \) \
+    -gravity center -compose over -composite "$out/stamp.png"
+  serif_png "$out/words-start.png" 64 "$INK" "The beginning" italic
+  serif_png "$out/words-end.png" 64 "$INK" "The end" italic
+  text_png "$out/sub-start.png" "$MONO" 18 "$INK_FAINT" 4 "STARTING UP"
+  text_png "$out/sub-shutdown.png" "$MONO" 18 "$INK_FAINT" 4 "SHUTTING DOWN"
+  text_png "$out/sub-reboot.png" "$MONO" 18 "$INK_FAINT" 4 "RESTARTING"
 
   # Lines: one pixel of each ink, stretched by the script.
   local t; t=$(px 1)
@@ -179,63 +216,14 @@ EOF
     -e "s/@SEAL_SIZE@/$SEAL_SIZE/" -e "s/@SEAL_AT@/$SEAL_AT/" -e "s/@RULE_GAP@/$RULE_GAP/" -e "s/@RULE_W@/$RULE_W/" \
     -e "s/@HINT_GAP@/$HINT_GAP/" -e "s/@NICK@/$NICK/" -e "s/@LEAD@/$LEAD/" -e "s/@NICK_H@/$NICK_H/" -e "s/@CORNER@/$CORNER/" \
     -e "s/@SHOW_NAME@/$([[ $BOOT_NAME == name ]] && echo 1 || echo 0)/" -e "s/@PRESS@/$([[ $BOOT_PRESS == ink ]] && echo 1 || echo 0)/" \
+    -e "s/@MARK@/$([[ $BOOT_MARK == brush ]] && echo 1 || echo 0)/" -e "s/@BRUSH@/$BRUSH/" -e "s/@BRUSH_AT@/$BRUSH_AT/" \
+    -e "s/@BRUSH_GAP@/$BRUSH_GAP/" -e "s/@BRUSH_RULE_GAP@/$BRUSH_RULE_GAP/" -e "s/@BRUSH_FRAMES@/$BRUSH_FRAMES/" \
+    -e "s/@STAMP@/$STAMP/" -e "s/@WORDS_GAP@/$WORDS_GAP/" \
     "$SRC/assets/boot/hanko.script" > "$out/hanko.script"
   grep -q '@[A-Z_]*@' "$out/hanko.script" && fail "the script kept a placeholder"
 
-  # A preview for Omarchy-style pickers.
-  preview_png "$out" "$out/preview-unlock.png" drawing 7 >/dev/null
-}
-
-# One moment of the screen, composed from the theme's own pictures with the
-# script's layout: still | drawing N | deflected N | booting SHARE.
-preview_png() { # theme-dir out moment arg
-  local dir="$1" out="$2" moment="$3" arg="${4:-0}"
-  local W H; H=$height; W=$(( height * 16 / 9 ))
-  local k="$R" s cy sx sy rx ry hy
-  s=$(magick identify -format '%w' "$dir/seal-7.png")
-  cy=$(awk -v h="$H" -v a="$SEAL_AT" 'BEGIN { print int(h * a) }')
-  sx=$(( (W - s) / 2 )); sy=$(( cy - s / 2 ))
-  local rw; rw=$(px $RULE_W)
-  rx=$(( (W - rw) / 2 )); ry=$(( sy + s + $(px $RULE_GAP) ))
-  hy=$(( ry + $(px $HINT_GAP) ))
-  local args=( -size "${W}x${H}" "xc:$PAPER" "$dir/seal-7.png" -geometry "+$sx+$sy" -composite )
-  local track=( \( "$dir/track.png" -scale "${rw}x$(px 1)!" -channel A -evaluate multiply 0.35 +channel \) -geometry "+$rx+$ry" -composite )
-  hint() { local f="$1" w; w=$(magick identify -format '%w' "$f"); args+=( "$f" -geometry "+$(( (W - w) / 2 ))+$hy" -composite ); }
-  corner() {
-    local nw nh sw sh
-    nw=$(magick identify -format '%w' "$dir/name.png"); nh=$(magick identify -format '%h' "$dir/name.png")
-    sw=$(magick identify -format '%w' "$dir/sealed.png"); sh=$(magick identify -format '%h' "$dir/sealed.png")
-    local bottom=$(( H - $(px $CORNER) ))
-    args+=( "$dir/sealed.png" -geometry "+$(( W - $(px $CORNER) - sw ))+$(( bottom - sh ))" -composite )
-    args+=( "$dir/name.png" -geometry "+$(( W - $(px $CORNER) - nw ))+$(( bottom - sh - $(px 10) - nh ))" -composite )
-  }
-  blade() { # count opacity
-    local n="$1" o="$2" bw room i first x
-    (( n > 0 )) || return 0
-    bw=$(( LEAD + n * NICK + 16 )); (( bw > RULE_W )) && bw=$RULE_W
-    room=$(( (bw - LEAD - 8) / NICK + 1 )); first=$(( n > room ? n - room : 0 ))
-    args+=( \( "$dir/ink.png" -scale "$(px $bw)x$(px 1)!" -channel A -evaluate multiply "$o" +channel \) -geometry "+$rx+$ry" -composite )
-    for (( i = first; i < n; i++ )); do
-      x=$(( LEAD + (i - first) * NICK )); (( x > bw - 8 )) && x=$(( bw - 8 ))
-      args+=( \( "$dir/nick.png" -channel A -evaluate multiply "$o" +channel \) -geometry "+$(( rx + $(px $x) ))+$(( ry - $(px $NICK_H) ))" -composite )
-    done
-  }
-  local hilt=( "$dir/hilt.png" -geometry "+$rx+$(( ry - $(px $HILT_H) / 2 ))" -composite )
-  case "$moment" in
-    still) args+=( "${track[@]}" "${hilt[@]}" ); hint "$dir/hint-type.png"; corner ;;
-    drawing) args+=( "${track[@]}" "${hilt[@]}" ); blade "$arg" 1; hint "$dir/hint-enter.png"; corner ;;
-    deflected)
-      args+=( "${track[@]}" "${hilt[@]}" ); blade "$arg" 0.35; hint "$dir/hint-wrong-1.png"; corner
-      local bw=$(( LEAD + arg * NICK + 16 )) k2; (( bw > RULE_W )) && bw=$RULE_W
-      k2=$(magick identify -format '%w' "$dir/spark.png")
-      args+=( "$dir/spark.png" -geometry "+$(( rx + $(px $bw) - k2 / 2 ))+$(( ry - k2 / 2 ))" -composite ) ;;
-    booting)
-      local fw; fw=$(awk -v w="$rw" -v p="$arg" 'BEGIN { n = int(w * p); print (n < 1 ? 1 : n) }')
-      args+=( "${track[@]}" \( "$dir/ink.png" -scale "${fw}x$(px 1)!" \) -geometry "+$rx+$ry" -composite )
-      args+=( "$dir/notch.png" -geometry "+$(( rx + fw - $(px 1) ))+$(( ry - $(px 4) ))" -composite ) ;;
-  esac
-  magick "${args[@]}" "$out"
-  printf '%s\n' "$out"
+  # A preview for Omarchy-style pickers: the script itself, played (assets/boot/sim.mjs).
+  node "$SRC/assets/boot/sim.mjs" --sheet "$out" "$out/preview-unlock.png" typing >/dev/null || fail "the screen's script didn't play"
 }
 
 case "${1:-}" in
@@ -244,11 +232,7 @@ case "${1:-}" in
     out="${2:-${TMPDIR:-/tmp}/hanko-boot-preview.png}"
     dir="$(mktemp -d "${TMPDIR:-/tmp}/hanko-boot-theme.XXXXXX")"; trap 'rm -rf "$dir"' EXIT
     build "$dir"
-    preview_png "$dir" "$dir/a.png" still >/dev/null
-    preview_png "$dir" "$dir/b.png" drawing 7 >/dev/null
-    preview_png "$dir" "$dir/c.png" deflected 7 >/dev/null
-    preview_png "$dir" "$dir/d.png" booting 0.46 >/dev/null
-    magick \( "$dir/a.png" "$dir/b.png" +append \) \( "$dir/c.png" "$dir/d.png" +append \) -append -resize 50% "$out"
+    node "$SRC/assets/boot/sim.mjs" --sheet "$dir" "$out" >/dev/null || fail "the screen's script didn't play"
     printf '%s\n' "$out" ;;
   *) fail "usage: hanko-boot build DIR | preview [OUT]" ;;
 esac

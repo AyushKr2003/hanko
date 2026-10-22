@@ -1,11 +1,11 @@
 // hanko-strokes · regenerate core/Strokes.js from KanjiVG SVGs (Shiki 式).
-//   mkdir -p kvg; for h in 07d42 09000 05371 065b0 056de 0751f; do
+//   mkdir -p kvg; for h in 07d42 09000 05371 065b0 056de 0751f 059cb; do
 //     curl -fsSo kvg/$h.svg https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/$h.svg; done
 //   node scripts/hanko-strokes.mjs kvg core/Strokes.js
 // KanjiVG is (C) Ulrich Apel, CC BY-SA 3.0; so is the file this writes.
 import { readFileSync, writeFileSync } from "node:fs"
 const [dir, out] = process.argv.slice(2)
-const chars = { "終": "07d42", "退": "09000", "危": "05371", "新": "065b0", "回": "056de", "生": "0751f" }
+const chars = { "終": "07d42", "退": "09000", "危": "05371", "新": "065b0", "回": "056de", "生": "0751f", "始": "059cb" }
 function tokens(d) { return d.match(/[a-zA-Z]|-?\d*\.?\d+(?:e-?\d+)?/g) }
 function sample(d) {
   const t = tokens(d); let i = 0, cmd = "", x = 0, y = 0, sx = 0, sy = 0, lc = null

@@ -750,9 +750,11 @@ var KAZE_SWITCHES = [
 // (scripts/hanko-boot reads them when it draws the screen). Not counted on
 // the Kaze page.
 var BOOT_CHOICES = [
+  { key: "bootMark", name: "The mark", say: "Boot mark", jp: "印", line: "Your seal pressed, or 始 written in a bold brush, as shutdown writes 終",
+    options: ["seal", "brush"], labels: { seal: "Seal 鑑", brush: "Brush 始" } },
   { key: "bootName", name: "Corner", say: "Boot corner", jp: "名", line: "Your name and SEALED · 封 at the foot while it asks, or nothing",
     options: ["name", "none"], labels: { name: "Your name", none: "Nothing" } },
-  { key: "bootPress", name: "The press", say: "Boot press", jp: "押", line: "The seal pressed in eight frames of spreading ink, or there at once",
+  { key: "bootPress", name: "The press", say: "Boot press", jp: "押", line: "The mark made as you watch (the seal pressed in spreading ink, the brush written), or there at once",
     options: ["ink", "still"], labels: { ink: "Ink", still: "Still" } }
 ]
 
