@@ -7,6 +7,7 @@
 layout(location = 0) in vec2 uv;
 layout(location = 1) in float theta;
 layout(location = 2) in float lay;
+layout(location = 3) in float cut;
 layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
@@ -22,12 +23,19 @@ layout(std140, binding = 0) uniform buf {
 layout(binding = 1) uniform sampler2D source;
 
 void main() {
+    // the picture and the cut's slope first, while every fragment still
+    // runs, so their derivatives are smooth
+    vec3 pic = texture(source, clamp(uv, 0.0, 1.0)).rgb;
+    // the cut's own edge, once it lifts, a screen pixel soft: where the
+    // gap it opens is thinner than a pixel it reads as one faint line, not
+    // a row of single pixels; flat, it stays sharp against the other half
+    float feather = clamp(cut / max(fwidth(cut), 1e-4), 0.0, 1.0);
     // only the screen's own picture; its edges a pixel soft
     vec2 px = uv * screen;
     float edge = min(min(px.x, screen.x - px.x), min(px.y, screen.y - px.y));
     if (edge < -1.0) discard;
     float cover = clamp(edge + 0.5, 0.0, 1.0);
-    vec3 pic = texture(source, clamp(uv, 0.0, 1.0)).rgb;
+    cover *= mix(1.0, feather, smoothstep(0.0, 0.2, theta));
 
     bool face = theta < 1.5707963;
     vec2 normal = vec2(sin(theta), cos(theta)) * (face ? 1.0 : -1.0);

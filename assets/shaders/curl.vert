@@ -14,6 +14,7 @@ layout(location = 1) in vec2 qt_MultiTexCoord0;
 layout(location = 0) out vec2 uv;      // where this paper lay, on the screen (0..1)
 layout(location = 1) out float theta;  // how far round the roll (0 flat, pi face down)
 layout(location = 2) out float lay;    // its distance past the axis while flat (px)
+layout(location = 3) out float cut;    // its distance from the cut while flat (px)
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
@@ -57,6 +58,7 @@ void main() {
         }
     }
     theta = th;
+    cut = d;
     lay = q - fold;
     vec2 at = p + n * (to - q);
     at = c + (at - c) * eye / max(eye - z, 1.0);

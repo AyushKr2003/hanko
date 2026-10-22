@@ -53,9 +53,11 @@ Rectangle {
     NumberAnimation { target: root; property: "deflect"; to: 0; duration: 220 }
   }
 
-  // The clock and the almanac, once a second.
+  // The clock and the almanac, once a second; held still while the desk
+  // cuts this picture, so it isn't redrawn mid-motion.
+  property bool ticking: true
   property var now: new Date()
-  Timer { interval: 1000; running: true; repeat: true; onTriggered: root.now = new Date() }
+  Timer { interval: 1000; running: root.ticking; repeat: true; onTriggered: root.now = new Date() }
   readonly property var ko: Almanac.almanac(root.now).ko
 
   // The wallpaper in ink: no colour, a little darker, never blurred.

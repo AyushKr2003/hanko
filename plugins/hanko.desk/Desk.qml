@@ -229,8 +229,9 @@ Item {
     // near enough that a lifting sheet swells toward you, as paper does
     property real eye: Math.sqrt(width * width + height * height) * 1.1
     property color back: Ink.paper2
-    // the curl runs across the cut's width and along its depth
-    mesh: GridMesh { resolution: Qt.size(48, 160) }
+    // the curl runs across the cut's width and along its depth, fine
+    // enough that the roll's outline has no facets (a few px a cell)
+    mesh: GridMesh { resolution: Qt.size(128, 320) }
     vertexShader: Qt.resolvedUrl("assets/shaders/curl.vert.qsb")
     fragmentShader: Qt.resolvedUrl("assets/shaders/curl.frag.qsb")
   }
@@ -298,17 +299,27 @@ Item {
         visible: root.cutPhase !== ""
         readonly property real hyp: Math.sqrt(width * width + height * height)
         readonly property real deg: -Math.atan2(height, width) * 180 / Math.PI
+        // drawn through a multisampled layer, so the roll's outline and the
+        // cut's edge come out smooth instead of in steps (a mesh's edges
+        // get no antialiasing of their own); laid while armed, so the
+        // first frame of the cut doesn't wait for it
+        layer.enabled: root.cutPhase !== ""
+        layer.samples: 4
 
         Standoff {
           id: cutPicture
           width: cutLayer.width; height: cutLayer.height
-          // drawn only through the halves
+          // drawn only through the halves; sampled smoothly, with
+          // mipmaps for where the roll squeezes it, never pixel by pixel
           layer.enabled: true
+          layer.smooth: true
+          layer.mipmap: true
           opacity: 0
           backgroundPath: root.cutNote.backgroundPath || ""
           backgroundVersion: root.cutNote.backgroundVersion || 0
           loadBackground: root.cutPhase !== ""
           authenticating: root.cutPhase === "armed"
+          ticking: root.cutPhase !== "cutting"
           fingerprint: !!root.cutNote.fingerprint
         }
         // the desk beside each roll, shaded where the paper lifts off it
@@ -347,8 +358,8 @@ Item {
           width: cutLayer.hyp; height: 0
           transformOrigin: Item.TopLeft
           rotation: cutLayer.deg
-          Rectangle { y: -4; width: parent.width; height: 10; color: Ink.bone; opacity: 0.18 }
-          Rectangle { y: 0; width: parent.width; height: 2; color: Qt.tint(Ink.bone, Qt.rgba(1, 1, 1, 0.55)) }
+          Rectangle { y: -4; width: parent.width; height: 10; antialiasing: true; color: Ink.bone; opacity: 0.18 }
+          Rectangle { y: 0; width: parent.width; height: 2; antialiasing: true; color: Qt.tint(Ink.bone, Qt.rgba(1, 1, 1, 0.55)) }
         }
       }
 
