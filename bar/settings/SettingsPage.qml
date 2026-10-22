@@ -54,6 +54,7 @@ Rectangle {
   property bool kazeDesk: false
   property bool kazeSumi: false
   property var kazeTools: ({ cursor: false, tools: false, theme: false })
+  property int kazeCursorSize: 22
   property string kazeBusy: ""
 
   signal settingPicked(string key, string value)
@@ -74,6 +75,7 @@ Rectangle {
   signal sumiPicked(bool on)
   signal toolPicked(string key, bool on)
   signal windSpeedPicked(int speed)
+  signal cursorSizePicked(int size)
   // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
   // core/Profile.js BLOCKS.
   signal profileTextEdited(string field, string value)
@@ -646,6 +648,7 @@ Rectangle {
       desk: root.kazeDesk
       sumi: root.kazeSumi
       tools: root.kazeTools
+      cursorSize: root.kazeCursorSize
       busy: root.kazeBusy
       compact: root.compact
       onSettingPicked: function(key, value) { root.settingPicked(key, value) }
@@ -654,6 +657,7 @@ Rectangle {
       onSumiPicked: function(on) { root.sumiPicked(on) }
       onToolPicked: function(key, on) { root.toolPicked(key, on) }
       onWindSpeedPicked: function(speed) { root.windSpeedPicked(speed) }
+      onCursorSizePicked: function(size) { root.cursorSizePicked(size) }
     }
   }
   Component {

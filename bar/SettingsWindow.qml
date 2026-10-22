@@ -104,12 +104,14 @@ FloatingWindow {
       kazeDesk: Kaze.desk
       kazeSumi: Kaze.sumi
       kazeTools: ({ cursor: Kaze.cursor, tools: Kaze.tools, theme: Kaze.theme })
+      kazeCursorSize: Kaze.cursorSize
       kazeBusy: Kaze.busy
       onKazePicked: function(key, value) { Kaze.set(key, value) }
       onDeskPicked: function(on) { Kaze.setDesk(on) }
       onSumiPicked: function(on) { Kaze.setSumi(on) }
       onToolPicked: function(key, on) { Kaze.setTool(key, on) }
       onWindSpeedPicked: function(speed) { Kaze.set("windSpeed", speed, "windSpeed") }
+      onCursorSizePicked: function(size) { Kaze.setCursorSize(size) }
       lastChange: win.kazeLast ? Kaze.lastChange : Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
       screens: Quickshell.screens.map(function(s) { return { name: s.name, x: s.x, y: s.y, width: s.width, height: s.height } })
       monitors: Quickshell.screens.map(function(s) { return s.name })

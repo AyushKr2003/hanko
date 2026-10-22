@@ -20,6 +20,8 @@ Column {
   property bool sumi: false
   // The tools beside the desk: { cursor, tools, theme }, true when on.
   property var tools: ({ cursor: false, tools: false, theme: false })
+  // The brush cursor's size in pixels (16 to 48).
+  property int cursorSize: 22
   property string busy: ""
   property bool compact: false
 
@@ -30,6 +32,7 @@ Column {
   signal toolPicked(string key, bool on)
   // The virtual wind's speed, km/h (one drag is one step of Undo).
   signal windSpeedPicked(int speed)
+  signal cursorSizePicked(int size)
 
   readonly property var wind: Settings.kazeWind(kaze)
 
@@ -160,7 +163,7 @@ Column {
             height: Math.ceil(lineMetrics.lineSpacing * 2) + 2
             FontMetrics { id: lineMetrics; font.family: Type.text; font.pixelSize: Type.note }
             Text {
-              visible: !(card.key === "wind" && card.current === "virtual")
+              visible: !(card.key === "wind" && card.current === "virtual") && !(card.key === "cursor" && card.current === "on")
               width: parent.width
               wrapMode: Text.WordWrap
               maximumLineCount: 2
@@ -244,6 +247,71 @@ Column {
                 labels: ({ east: "←", west: "→" })
                 selected: root.wind.from
                 onPicked: function(v) { root.kazePicked("windFrom", v) }
+              }
+            }
+            // Cursor on: its size, dragged or scrolled along a hairline
+            // (16 to 48 px), a tick every 8.
+            Row {
+              visible: card.key === "cursor" && card.current === "on"
+              anchors.verticalCenter: parent.verticalCenter
+              width: parent.width
+              spacing: Type.px(8)
+              Item {
+                id: sizeRule
+                width: parent.width - sizeFigure.width - parent.spacing
+                height: Type.px(22)
+                readonly property int low: 16
+                readonly property int high: 48
+                readonly property real share: (root.cursorSize - low) / (high - low)
+                function pick(px) { root.cursorSizePicked(Math.max(low, Math.min(high, px))) }
+                function pickAt(x) { pick(Math.round(low + Math.max(0, Math.min(1, x / width)) * (high - low))) }
+                Repeater {
+                  model: 5
+                  Rectangle {
+                    required property int index
+                    x: Math.round(index * (sizeRule.width - 1) / 4)
+                    y: sizeRule.height / 2 + Type.px(3)
+                    width: 1; height: Type.px(index % 2 === 0 ? 5 : 3)
+                    color: Ink.inkFaint
+                  }
+                }
+                Rectangle { y: sizeRule.height / 2; width: parent.width; height: 1; color: Ink.line }
+                Rectangle {
+                  y: sizeRule.height / 2 - 1
+                  width: Math.max(1, sizeRule.share * parent.width)
+                  height: 3
+                  color: Ink.ink
+                }
+                Rectangle {
+                  x: sizeRule.share * (parent.width - width)
+                  y: sizeRule.height / 2 - height / 2 + 0.5
+                  width: Type.px(3); height: Type.px(13)
+                  color: Ink.bone
+                }
+                MouseArea {
+                  anchors.fill: parent
+                  cursorShape: Qt.PointingHandCursor
+                  preventStealing: true
+                  // Te 手 (bar/parts/KeyCursor.qml): Left/Right set the size.
+                  readonly property bool keyStop: true
+                  readonly property bool keyStep: true
+                  function keyAdjust(d) { sizeRule.pick(root.cursorSize + d) }
+                  onPressed: function(m) { sizeRule.pickAt(m.x) }
+                  onPositionChanged: function(m) { if (pressed) sizeRule.pickAt(m.x) }
+                  onWheel: function(w) { sizeRule.pick(root.cursorSize + (w.angleDelta.y > 0 ? 1 : -1)) }
+                }
+              }
+              Text {
+                id: sizeFigure
+                anchors.verticalCenter: parent.verticalCenter
+                width: Type.px(48)
+                horizontalAlignment: Text.AlignRight
+                text: root.cursorSize + "<font color=\"" + Ink.inkMuted + "\"> px</font>"
+                textFormat: Text.StyledText
+                color: Ink.ink
+                font.family: Type.mono
+                font.pixelSize: Type.label
+                font.features: { "tnum": 1 }
               }
             }
           }
@@ -498,7 +566,8 @@ Column {
     }
   }
 
-  // The brush-tip pointer: an arrow cut as a brush's tip, ink with a paper rim.
+  // The brush-tip pointer: an arrow cut as a brush's tip, ink with a paper rim,
+  // drawn larger or smaller with the size picked (32 px is as drawn).
   Component {
     id: cursorArt
     Item {
@@ -511,6 +580,8 @@ Column {
         width: Type.px(30); height: Type.px(42)
         x: parent.width / 2 - width / 2 + (c.hovered ? Type.px(10) : 0)
         y: parent.height / 2 - height / 2 + (c.hovered ? Type.px(-4) : 0)
+        scale: c.current === "on" ? root.cursorSize / 32 : 1
+        Behavior on scale { enabled: Motion.live; NumberAnimation { duration: Motion.nuki; easing.type: Easing.OutCubic } }
         Behavior on x { enabled: Motion.live; NumberAnimation { duration: Motion.nuki; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.nukiCurve } }
         Behavior on y { enabled: Motion.live; NumberAnimation { duration: Motion.nuki; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.nukiCurve } }
         onPaint: {

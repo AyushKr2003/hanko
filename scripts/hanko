@@ -25,6 +25,7 @@
 #   hanko menu add|remove    put Hanko under Setup in the Omarchy menu
 #   hanko cursor [on|off]    the brush-tip cursor (Hanko-Brush) in the theme's ink;
 #                            off puts your own cursor back
+#   hanko cursor size N      its size in pixels (16-48; turns it on if it's off)
 #   hanko sumi [on|off]      Sumi 墨: the whole screen in ink, letters held, the
 #                            wind stronger; toggles with no argument
 #   hanko theme on|off|install|remove|status  the Hanko theme (theme/) linked
@@ -666,16 +667,38 @@ cmd_theme() {
 # theme-set hook rebuilds it in the new theme's ink. `off` deletes the flag
 # and reloads Hyprland, so your autostart's cursor comes back.
 CURSOR_FLAG="$STATE/cursor"
+CURSOR_SIZE_MIN=16; CURSOR_SIZE_MAX=48
+# The size the cursor is (or was last) worn at: the flag's, else your own.
+cursor_size() {
+  local n; n="$(grep -m1 -oE '[0-9]+' "$CURSOR_FLAG" 2>/dev/null || true)"
+  printf '%s\n' "${n:-${HYPRCURSOR_SIZE:-${XCURSOR_SIZE:-22}}}"
+}
 cmd_cursor() {
   local want="${1:-toggle}" size
   [[ $want == toggle ]] && { [[ -f $CURSOR_FLAG ]] && want=off || want=on; }
   case "$want" in
     on)
+      size="${2:-$(cursor_size)}"
+      [[ $size =~ ^[0-9]+$ ]] && (( size >= CURSOR_SIZE_MIN && size <= CURSOR_SIZE_MAX )) \
+        || fail "the cursor's size is $CURSOR_SIZE_MIN to $CURSOR_SIZE_MAX pixels"
       "$SRC/scripts/hanko-cursor" >/dev/null || fail "the cursor didn't build"
-      size="${HYPRCURSOR_SIZE:-${XCURSOR_SIZE:-22}}"
       mkdir -p "$STATE"; printf '%s\n' "$size" > "$CURSOR_FLAG"
       command -v hyprctl >/dev/null && hyprctl setcursor Hanko-Brush "$size" >/dev/null 2>&1 || true
-      say "The brush-tip cursor is on (hanko cursor off puts yours back)."
+      say "The brush-tip cursor is on at $size px (hanko cursor off puts yours back)."
+      ;;
+    size)
+      size="${2:-}"
+      [[ -n $size ]] || { cursor_size; return; }
+      [[ $size =~ ^[0-9]+$ ]] && (( size >= CURSOR_SIZE_MIN && size <= CURSOR_SIZE_MAX )) \
+        || fail "the cursor's size is $CURSOR_SIZE_MIN to $CURSOR_SIZE_MAX pixels"
+      # Already built: only the size changes, no rebuild.
+      if [[ -f $CURSOR_FLAG && -d ${XDG_DATA_HOME:-$HOME/.local/share}/icons/Hanko-Brush ]]; then
+        printf '%s\n' "$size" > "$CURSOR_FLAG"
+        command -v hyprctl >/dev/null && hyprctl setcursor Hanko-Brush "$size" >/dev/null 2>&1 || true
+        say "The brush-tip cursor is $size px."
+      else
+        cmd_cursor on "$size"
+      fi
       ;;
     off)
       [[ -f $CURSOR_FLAG ]] || { say "The brush-tip cursor is off."; return; }
@@ -684,7 +707,7 @@ cmd_cursor() {
       say "Your own cursor is back."
       ;;
     status) if [[ -f $CURSOR_FLAG ]]; then say on; else say off; fi ;;
-    *) fail "usage: hanko cursor [on|off|status]" ;;
+    *) fail "usage: hanko cursor [on [SIZE]|off|size [SIZE]|status]" ;;
   esac
 }
 

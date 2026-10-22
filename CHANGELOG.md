@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The brush cursor has no tail (the same cut as its picture in Settings), and a size: `hanko cursor size N` (16 to 48 px), or the rule its card shows in Settings › Kaze while it is on.
 - Settings › Kaze: three more switches, Cursor (the brush tip), Tools (btop and Neovim in the theme's inks) and Theme (the Hanko theme for all of Omarchy; Off goes back to the theme you had). `hanko theme on|off` does the same from a terminal.
 - Kaze (Taikan): the volume and brightness keys show Hanko's OSD again. Omarchy now handles those keys inside the shell and hands the reading to the OSD directly, which only reaches an OSD set up the way Omarchy's own is; Hanko's now is.
 - Kaze (Fumi): on Omarchy rc, edge and dev the desk's letters now run on Omarchy's newer notification daemon (snooze, held cards, inline actions, history in history.json), copied fresh from your Omarchy whenever the desk is built, with only the strips Hanko's. An open letter also offers the sender's own actions (Reply, Mark as read…) and Quiet for 30 minutes. If a future Omarchy changes the daemon too much to patch, the desk uses its own older copy instead. Stable keeps the clone it had.

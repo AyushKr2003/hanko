@@ -211,6 +211,12 @@
     "desk": true,
     "sumi": false,
     "undo": 1,
-    "lastChange": "Sound \u00b7 off \u2192 quiet"
+    "lastChange": "Sound \u00b7 off \u2192 quiet",
+    "tools": {
+      "cursor": true,
+      "tools": false,
+      "theme": false
+    },
+    "cursorSize": 28
   }
 }

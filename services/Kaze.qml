@@ -29,6 +29,8 @@ Singleton {
   property bool desk: false
   property bool sumi: false
   property bool cursor: false
+  // The brush cursor's size in pixels, from its flag (`hanko cursor size`).
+  property int cursorSize: 22
   readonly property bool tools: _btopBefore.on || _nvimSpec.on
   property bool theme: false
   // A switch the CLI is turning ("desk" | "sumi" | "cursor" | "tools" |
@@ -92,6 +94,23 @@ Singleton {
     _toolRun.command = ["sh", "-c", "mkdir -p \"$1\" && \"$0\" " + key + " " + (on ? "on" : "off") + " >\"$1/tools.log\" 2>&1",
       cli, stateHome + "/hanko"]
     _toolRun.running = true
+  }
+
+  // The cursor's size: shown at once, handed to `hanko cursor size` once the
+  // drag rests, so a drag is one run of the CLI, not twenty.
+  function setCursorSize(px) {
+    cursorSize = Math.max(16, Math.min(48, Math.round(px)))
+    _sizeRest.restart()
+  }
+  property Timer _sizeRest: Timer {
+    interval: 250
+    onTriggered: {
+      root._sizeRun.command = [root.cli, "cursor", "size", String(root.cursorSize)]
+      root._sizeRun.running = true
+    }
+  }
+  property Process _sizeRun: Process {
+    onExited: root._cursor.reload()
   }
 
   function _commit(next) {
@@ -158,7 +177,11 @@ Singleton {
     watchChanges: true
     printErrors: false
     onFileChanged: reload()
-    onLoaded: root.cursor = text().length > 0
+    onLoaded: {
+      root.cursor = text().length > 0
+      var n = parseInt(text(), 10)
+      if (n > 0 && !root._sizeRest.running && !root._sizeRun.running) root.cursorSize = n
+    }
     onLoadFailed: root.cursor = false
   }
   // `hanko tools on` keeps btop's old theme here and writes Neovim's spec;
