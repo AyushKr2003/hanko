@@ -266,13 +266,32 @@ hypr_reload() { command -v hyprctl >/dev/null 2>&1 && hyprctl reload >/dev/null 
 # validate and lint the result).
 SURFACES=(hanko.desk hanko.background hanko.osd hanko.notifications hanko.menu hanko.lock)
 
+# Omarchy's notification daemon: stable's, or the deck (rc, edge, dev:
+# Store.js, live.json + history.json) when the installed one has Store.js.
+STOCK_NOTIFICATIONS="${OMARCHY_PATH:-/usr/share/omarchy}/shell/plugins/notifications"
+deck_daemon() { [[ -f $STOCK_NOTIFICATIONS/Store.js && -f $STOCK_NOTIFICATIONS/Service.qml ]]; }
+
 # Prints the files it changed (rsync's itemized list), nothing when up to date.
 surface_build() {
-  local id="$1" dest="$2"
+  local id="$1" dest="$2" tmp="" how=(-a)
+  local from="$SRC/plugins/$id"
   need rsync
   [[ -d $SRC/plugins/$id ]] || fail "no such surface: $id"
+  # Fumi on the deck: a fresh copy of the installed daemon with Hanko's
+  # surface (scripts/hanko-fumi-deck); if that refuses, the stable clone,
+  # which runs on the deck too. Compared by content without times, as the
+  # copy is new each time.
+  if [[ $id == hanko.notifications ]] && deck_daemon; then
+    tmp="$(mktemp -d)"
+    if python3 "$SRC/scripts/hanko-fumi-deck" "$STOCK_NOTIFICATIONS" "$SRC/plugins/$id" "$tmp" >&2; then
+      from="$tmp"; how=(-rlpD --checksum)
+    else
+      say "  (Fumi: Omarchy's newer notification daemon could not be patched; using the stable one)" >&2
+    fi
+  fi
   mkdir -p "$dest/bin"
-  rsync -a --delete --itemize-changes --exclude core --exclude bin --exclude assets "$SRC/plugins/$id/" "$dest/"
+  rsync "${how[@]}" --delete --itemize-changes --exclude core --exclude bin --exclude assets --exclude deck "$from/" "$dest/"
+  [[ -n $tmp ]] && rm -rf "$tmp"
   rsync -a --delete --itemize-changes "$SRC/core/" "$dest/core/"
   mkdir -p "$dest/assets"
   rsync -a --delete --itemize-changes "$SRC/assets/fonts/" "$dest/assets/fonts/"
@@ -298,8 +317,10 @@ surface_enable() {
 # Omarchy reloads a plugin when its files change, but a service keeps the
 # QML it first compiled until the shell restarts; so when a surface is new
 # or gets new files, the shell is restarted once (a second without a bar).
+# `desk_plugins_on changed`: the caller already rebuilt the surfaces (desk
+# ensure), so this pass finds nothing new but must still restart.
 desk_plugins_on() {
-  local id dest changed="" new=0
+  local id dest changed="${1:-}" new=0
   for id in "${SURFACES[@]}"; do
     dest="$PLUGINS/$id"
     [[ -d $dest ]] || new=1
@@ -412,7 +433,7 @@ desk_ensure() {
   done
   if (( new )) || [[ -n $changed ]]; then
     say "Kaze's plugins were missing or out of date: putting them back."
-    desk_plugins_on
+    desk_plugins_on changed
     return
   fi
   enabled="$(enabled_plugins)"

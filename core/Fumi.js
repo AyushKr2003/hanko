@@ -85,3 +85,9 @@ function gustShare(right, width) {
 function isScreenshot(app, summary) {
   return /^screenshot\b/i.test(String(summary || "")) || crestFor(app) === "写"
 }
+
+// How long a snooze lasts, short: "30m", "1h", "4h", "14h".
+function forHow(seconds) {
+  var minutes = Math.max(1, Math.round(Number(seconds || 0) / 60))
+  return minutes < 60 ? minutes + "m" : Math.round(minutes / 60) + "h"
+}

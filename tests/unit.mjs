@@ -40,7 +40,7 @@ const Sw = load("core/Sweep.js", ["MS", "HOLD", "LENGTH", "PIECES", "frame", "pe
 const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "wallpaperMode"])
 const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX", "ripple", "puffAfter", "rippleUniforms"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
-const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot"])
+const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot", "forHow"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence", "CUT_MS", "CUT_CURLS", "cutFlash", "cutRoll", "cutCurl"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const Pa = load("core/Paths.js", ["local"])
@@ -2017,6 +2017,47 @@ test("taiji: the lock clone keeps Omarchy's service byte for byte and the view's
     assert.ok(view.includes("signal " + sig), "LockView lost signal " + sig)
   for (const keep of ["echoMode: TextInput.Password", "root.submitPassword(submitted)", "root.passwordTextEdited(text)", "forceActiveFocus()"])
     assert.ok(view.includes(keep), "LockView lost " + keep)
+})
+
+test("fumi: a snooze's length, short", () => {
+  assert.deepEqual([1800, 3600, 14400, 50400, 0].map(Fu.forHow), ["30m", "1h", "4h", "14h", "1m"])
+})
+
+test("fumi on the deck: Omarchy's daemon copied whole, only the surface and two IPC calls Hanko's; refused when it moves", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "hanko-fumi-"))
+  const stock = join(tmp, "stock"), out = join(tmp, "out")
+  mkdirSync(stock)
+  const surface = "  // ------------------------------------------------------------- surface\n"
+  const uses = ["ListModel {\n    id: toasts\n  }", "property var leaving: ({})", "function closeToast(key, reason) {}",
+    "function activate(key) {}", "function rowIndexFor(key) {}", "function storeDrop(key) {}", "property var historyEntries: []",
+    "function saveSoon(file) {}", "function refreshHeld() {}", "function refreshHistory() {}", "property var liveKeys: ({})",
+    "function showsOn(name) {}", "function marginsFor(screenName) {}", "function fullscreenOn(name) {}",
+    "function actionsOf(key, revision) {}", "function invokeAction(key, identifier) {}", "readonly property var snoozeOptions: []",
+    "function snoozeSource(groupKey, label, seconds, fromNow) {}", "readonly property var barRef: null",
+    "readonly property int defaultBarSize: 0", "property int refsRevision: 0", "function clearAll(reason) {}",
+    "var list = surfaceVariants.instances"]
+  const service = 'import "Delivery.js" as Delivery\nimport "Icons.js" as Icons\n\nItem {\n  id: service\n' + uses.join("\n") +
+    '\n  ShellIpc {\n    function ping(): string { return "ok" }\n  }\n' + surface + "  Variants { STOCK_CARDS_MARKER }\n}\n"
+  writeFileSync(join(stock, "Service.qml"), service)
+  writeFileSync(join(stock, "Store.js"), "// store\n")
+  writeFileSync(join(stock, "manifest.json"), '{"id": "omarchy.notifications"}\n')
+  const run = () => execFileSync("python3", [join(root, "scripts/hanko-fumi-deck"), stock, join(root, "plugins/hanko.notifications"), out], { stdio: "pipe" })
+  run()
+  const built = readFileSync(join(out, "Service.qml"), "utf8")
+  assert.equal(readFileSync(join(out, "Store.js"), "utf8"), "// store\n")
+  assert.equal(JSON.parse(readFileSync(join(out, "manifest.json"), "utf8")).id, "hanko.notifications")
+  assert.ok(built.startsWith(service.slice(0, service.indexOf("Item {"))), "the stock imports stay first")
+  assert.ok(built.includes('import "core/Fumi.js" as Fumi'))
+  assert.ok(built.includes(uses.join("\n")), "everything above the surface is stock")
+  assert.ok(built.includes("function forgetKeys(keys: string): string") && built.includes("function forgetAll(): string"))
+  assert.ok(!built.includes("STOCK_CARDS_MARKER") && built.includes('WlrLayershell.namespace: "hanko-notifications"'))
+  assert.ok(built.includes("id: surfaceVariants"), "probe still finds the surfaces")
+  // A stock file that lost something the patch needs is refused, and nothing is written.
+  writeFileSync(join(stock, "Service.qml"), service.replace("function closeToast(key, reason) {}", ""))
+  rmSync(out, { recursive: true, force: true })
+  assert.throws(run, e => e.status === 2)
+  assert.throws(() => statSync(join(out, "Service.qml")))
+  rmSync(tmp, { recursive: true, force: true })
 })
 
 test("oto: silent by default; quiet and on; one sound off on its own; only the bell in Sumi", () => {

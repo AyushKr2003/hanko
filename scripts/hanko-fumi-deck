@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Assemble hanko.notifications from Omarchy's deck daemon.
+
+Omarchy rc, edge and dev ship a rewritten notification daemon (the deck:
+Store.js, live.json + history.json, Toast.qml cards); stable 4.0.x keeps the
+old one, which plugins/hanko.notifications/ is a clone of. On the deck, Fumi
+is built from a fresh copy of the installed daemon instead, so its server,
+quiet, snooze, history, panel and IPC stay Omarchy's own code:
+
+  * every stock file is copied as it is, but the manifest (Hanko's);
+  * Service.qml gets Hanko's imports, its surface section (from the
+    `surface` rule to the end) replaced by deck/Fumi.qml.part, and two IPC
+    calls Hanko's inbox uses: forgetKeys and forgetAll.
+
+If the stock file no longer has what the patch needs, nothing is written and
+the exit status is 2: the caller builds the stable clone instead, which runs
+on the deck too.
+
+  hanko-fumi-deck STOCK_DIR PLUGIN_DIR DEST_DIR
+"""
+import os
+import shutil
+import sys
+
+IMPORT_ANCHOR = 'import "Icons.js" as Icons\n'
+IMPORTS = ('\nimport "core"\nimport "core/Iai.js" as Iai\nimport "core/Fumi.js" as Fumi\n')
+SURFACE_ANCHOR = "  // ------------------------------------------------------------- surface\n"
+IPC_ANCHOR = '    function ping(): string { return "ok" }\n'
+HEADER_ANCHOR = "Item {\n  id: service\n"
+HEADER = """// Fumi 文 (Hanko): this is Omarchy's notification daemon, copied whole from
+// the installed Omarchy by scripts/hanko-fumi-deck. Only the surface section
+// at the end and the forgetKeys/forgetAll IPC calls are Hanko's; the
+// manifest says clonedFrom omarchy.notifications.
+
+"""
+# What the surface and the IPC calls use on the stock service.
+USES = (
+    "ListModel {\n    id: toasts\n", "property var leaving: ({})", "function closeToast(key, reason)",
+    "function activate(key)", "function rowIndexFor(key)", "function storeDrop(key)",
+    "property var historyEntries: []", "function saveSoon(file)", "function refreshHeld()",
+    "function refreshHistory()", "property var liveKeys", "function showsOn(name)",
+    "function marginsFor(screenName)", "function fullscreenOn(name)", "function actionsOf(key, revision)",
+    "function invokeAction(key, identifier)", "readonly property var snoozeOptions",
+    "function snoozeSource(groupKey, label, seconds", "readonly property var barRef",
+    "readonly property int defaultBarSize", "property int refsRevision", "function clearAll(reason)",
+    "surfaceVariants.instances", 'import "Delivery.js" as Delivery', "ShellIpc {",
+)
+
+IPC_BLOCK = '''
+    // Hanko: forget notifications for good, off the screen and out of
+    // history (the bar's inbox puts one away with these). Keys as in
+    // live.json and history.json, separated by spaces.
+    function forgetKeys(keys: string): string {
+      var list = String(keys || "").split(/\\s+/).filter(function(k) { return /^[A-Za-z0-9_-]{1,120}$/.test(k) })
+      if (!list.length) return "none"
+      service.hankoForget(list)
+      return "ok"
+    }
+
+    function forgetAll(): string {
+      service.forgetAllLater = true
+      service.hankoForget(Object.keys(service.liveKeys))
+      service.clearAll("dismissed")
+      return "ok"
+    }
+'''
+
+
+def refuse(why):
+    sys.stderr.write("hanko-fumi-deck: %s\n" % why)
+    sys.exit(2)
+
+
+def main():
+    if len(sys.argv) != 4:
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+    stock, plugin, dest = sys.argv[1:]
+    with open(os.path.join(stock, "Service.qml"), encoding="utf-8") as f:
+        src = f.read()
+    with open(os.path.join(plugin, "deck", "Fumi.qml.part"), encoding="utf-8") as f:
+        part = f.read()
+
+    for anchor in (IMPORT_ANCHOR, SURFACE_ANCHOR, IPC_ANCHOR, HEADER_ANCHOR):
+        if src.count(anchor) != 1:
+            refuse("the stock Service.qml no longer has %r once" % anchor.strip())
+    for use in USES:
+        if use not in src:
+            refuse("the stock Service.qml no longer has %r" % use.strip())
+
+    out = src.replace(IMPORT_ANCHOR, IMPORT_ANCHOR + IMPORTS, 1)
+    out = out.replace(HEADER_ANCHOR, HEADER + HEADER_ANCHOR, 1)
+    out = out.replace(IPC_ANCHOR, IPC_ANCHOR + IPC_BLOCK, 1)
+    out = out[:out.index(SURFACE_ANCHOR)] + part
+
+    os.makedirs(dest, exist_ok=True)
+    for name in sorted(os.listdir(stock)):
+        path = os.path.join(stock, name)
+        if name in ("Service.qml", "manifest.json") or not os.path.isfile(path):
+            continue
+        shutil.copy2(path, os.path.join(dest, name))
+    with open(os.path.join(dest, "Service.qml"), "w", encoding="utf-8") as f:
+        f.write(out)
+    shutil.copy2(os.path.join(plugin, "manifest.json"), os.path.join(dest, "manifest.json"))
+
+
+if __name__ == "__main__":
+    main()

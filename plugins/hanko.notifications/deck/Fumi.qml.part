@@ -1,0 +1,474 @@
+  // ------------------------------------------------------------- surface
+  //
+  // Fumi 文, letters on a branch (docs/kaze, mockup 07), on the deck: this
+  // section replaces the stock surface (scripts/hanko-fumi-deck splices it
+  // into a fresh copy of Omarchy's Service.qml; everything above is stock).
+  // Each card hangs from the bar as a tanzaku strip (core/Fumi.js), newest
+  // nearest the bar's centre, at most five and then a count. A strip unrolls
+  // down on Iai's draw; hovering it opens the letter beside it, with the
+  // sender's actions and a snooze; a click opens it, a right-click cuts it
+  // away. When its time is up it rolls back up into the bar.
+  //
+  // The deck keeps a closing row in the model, marked in `leaving` with its
+  // reason, until the scene clock settles (sceneSettled): the strip plays the
+  // cut for a dismissal and the roll-up for anything else meanwhile, so every
+  // way a card leaves (IPC, the bar's inbox, a snooze) moves the same.
+
+  // The letter open beside a strip: its row key, or "".
+  property string openKey: ""
+  property bool cardHovered: false
+  Timer {
+    id: closeLetter
+    interval: 280
+    onTriggered: if (!service.cardHovered) service.openKey = ""
+  }
+
+  // Super+N (style.lua binds it to `omarchy-shell hankoletters toggle`):
+  // the newest letter opens beside its strip on the focused screen, and
+  // closes on a second press, or by itself after a while unless the
+  // pointer is on it.
+  property string keyScreen: ""
+  Timer {
+    id: keyLetterTimer
+    interval: 6000
+    onTriggered: if (!service.cardHovered) { service.openKey = ""; service.keyScreen = "" }
+  }
+  function newestKey() {
+    for (var i = 0; i < toasts.count; i++) {
+      var key = String(toasts.get(i).key)
+      if (!service.leaving[key]) return key
+    }
+    return ""
+  }
+  function toggleNewest() {
+    if (service.openKey !== "") { service.openKey = ""; service.keyScreen = ""; keyLetterTimer.stop(); return "closed" }
+    var key = newestKey()
+    if (key === "") return "none"
+    var mon = Hyprland.focusedMonitor
+    // The key first: the screen's change looks its strip up by it.
+    service.openKey = key
+    service.keyScreen = mon ? mon.name : ""
+    keyLetterTimer.restart()
+    return "open"
+  }
+  IpcHandler {
+    id: lettersIpc
+    enabled: false
+    target: "hankoletters"
+    function toggle(): string { return service.toggleNewest() }
+  }
+  // Registered a moment after start, as the other Kaze targets are.
+  Timer { interval: 500; running: true; onTriggered: lettersIpc.enabled = true }
+
+  readonly property bool kazeStill: kazeStyle.still
+  QtObject {
+    id: kazeStyle
+    property bool still: false
+  }
+  FileView {
+    path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/hanko/style.json"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: kazeStyle.still = /"motion"\s*:\s*"still"/.test(text())
+    onLoadFailed: kazeStyle.still = false
+  }
+
+  // A new letter: a gust through the grass toward where its strip hangs, and
+  // the paper sound. Not for rows coming back after a restart or a replay.
+  property int lastCount: 0
+  Connections {
+    target: toasts
+    function onCountChanged() {
+      if (toasts.count > service.lastCount) {
+        var newest = toasts.get(0)
+        if (newest && !newest.restored) {
+          Quickshell.execDetached(["omarchy-shell", "-q", "hankowind", "gust", "0.94"])
+          Oto.play(Fumi.isScreenshot(newest.app, newest.summary) ? "screenshot" : "letter")
+        }
+      }
+      service.lastCount = toasts.count
+    }
+  }
+
+  // Forget notifications for good: off the screen if they are on it, and out
+  // of history (Hanko's inbox puts one away with this). Dropped from the
+  // store first, so closing a card records nothing. The history is rewritten
+  // once the strip has left: done at once it holds up the frame mid-cut.
+  property var forgetting: ({})
+  property bool forgetAllLater: false
+  function hankoForget(keys) {
+    var gone = Object.assign({}, service.forgetting)
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i]
+      gone[key] = true
+      service.storeDrop(key)
+      if (service.liveKeys[key]) service.closeToast(key, "dismissed")
+    }
+    service.forgetting = gone
+    forgetLater.restart()
+  }
+  Timer {
+    id: forgetLater
+    interval: Iai.BEATS.kiri.ms + Iai.BEATS.noto.ms + 150
+    onTriggered: {
+      var gone = service.forgetting, all = service.forgetAllLater
+      service.forgetting = ({})
+      service.forgetAllLater = false
+      service.historyEntries = all ? [] : service.historyEntries.filter(function(entry) { return !gone[entry.key] })
+      service.saveSoon("history")
+      service.refreshHeld()
+      service.refreshHistory()
+    }
+  }
+
+  Variants {
+    id: surfaceVariants
+    model: Quickshell.screens
+
+    PanelWindow {
+      id: popupWindow
+      required property var modelData
+      screen: modelData
+      readonly property string screenName: String(modelData.name)
+      readonly property bool showingNotifications: service.showsOn(screenName)
+      readonly property bool stepAside: service.fullscreenOn(screenName)
+      readonly property bool lingering: false
+      visible: showingNotifications && toasts.count > 0
+
+      WlrLayershell.namespace: "hanko-notifications"
+      WlrLayershell.layer: WlrLayer.Overlay
+      WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+      exclusionMode: ExclusionMode.Ignore
+      color: "transparent"
+      anchors { top: true; bottom: true; left: true; right: true }
+
+      readonly property var margins: service.marginsFor(screenName)
+      // Strips hang from the bar's edge itself when it is at the top.
+      readonly property int hangY: service.barPosition === "top"
+        ? Math.max(0, Delivery.barThickness(service.barRef, screenName, service.defaultBarSize))
+        : margins.top
+      readonly property int stripW: 46
+      readonly property int stripH: 192
+      readonly property var counts: Fumi.shown(toasts.count)
+
+      // Only the strips and the open letter take the pointer.
+      mask: Region {
+        item: strips
+        Region { item: letter }
+      }
+
+      Row {
+        id: strips
+        anchors.right: parent.right
+        anchors.rightMargin: popupWindow.margins.right + 50
+        y: popupWindow.hangY
+        spacing: 8
+        height: popupWindow.stripH
+
+        Repeater {
+          id: stripRepeater
+          model: toasts
+
+          delegate: Item {
+            id: slot
+            required property int index
+            required property var model
+            readonly property string key: String(slot.model.key || "")
+            readonly property string app: String(slot.model.app || "")
+            readonly property string summary: String(slot.model.summary || "")
+            readonly property string body: String(slot.model.body || "")
+            readonly property int urgency: Number(slot.model.urgency || 0)
+            readonly property double stamp: Number(slot.model.ts || 0) * 1000
+
+            visible: slot.index < Fumi.MOST
+            width: visible ? popupWindow.stripW : 0
+            height: popupWindow.stripH
+
+            readonly property bool red: Fumi.urgent(slot.urgency)
+            readonly property bool isOpen: service.openKey === slot.key
+            // The deck's own lifetime (durationFor; 0 waits for you),
+            // counted down here as its card would, paused while read.
+            readonly property real lifetime: Number(slot.model.duration || 0)
+            readonly property string arrival: String(slot.model.ts) + ":" + String(slot.model.duration)
+            property real remaining: slot.lifetime
+            onArrivalChanged: slot.remaining = slot.lifetime
+            readonly property bool ticking: slot.lifetime > 0 && !hover.hovered && !slot.isOpen && !slot.leaving
+
+            Timer {
+              interval: 50
+              repeat: true
+              running: slot.ticking
+              onTriggered: {
+                slot.remaining -= 50
+                if (slot.remaining <= 0) service.closeToast(slot.key, "expired")
+              }
+            }
+
+            // 0 rolled up in the bar, 1 hanging.
+            property real drop: service.kazeStill ? 1 : 0
+            Component.onCompleted: if (!service.kazeStill) unroll.start()
+            SequentialAnimation {
+              id: unroll
+              PauseAnimation { duration: Iai.BEATS.nuki.hold }
+              NumberAnimation { target: slot; property: "drop"; to: 1; duration: Iai.BEATS.nuki.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("nuki") }
+            }
+
+            // How it leaves, as the deck says: cut away when dismissed,
+            // rolled back up for anything else (expired, opened, snoozed).
+            readonly property string reason: service.leaving[slot.key] || ""
+            readonly property bool leaving: slot.reason !== ""
+            onReasonChanged: {
+              if (slot.reason === "") return
+              if (service.openKey === slot.key) service.openKey = ""
+              if (service.kazeStill) return
+              unroll.stop()
+              if (slot.reason === "dismissed") cutting.start()
+              else rolling.start()
+            }
+            SequentialAnimation {
+              id: rolling
+              NumberAnimation { target: slot; property: "drop"; to: 0; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
+            }
+            // Dismissed: the cut (a hairline across it for a frame), then
+            // the cut-off half falls away.
+            property real cutAt: 0
+            property real fall: 0
+            SequentialAnimation {
+              id: cutting
+              PropertyAction { target: slot; property: "cutAt"; value: 1 }
+              PauseAnimation { duration: Iai.BEATS.kiri.ms }
+              PropertyAction { target: slot; property: "cutAt"; value: 0 }
+              NumberAnimation { target: slot; property: "fall"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
+            }
+            function cutAway() { service.closeToast(slot.key, "dismissed") }
+
+            // The strip.
+            Rectangle {
+              id: paper
+              visible: !(service.kazeStill && slot.leaving)
+              width: parent.width
+              height: Math.max(12, popupWindow.stripH * slot.drop)
+              color: Ink.lift
+              border.width: 1
+              border.color: Ink.lineStrong
+              clip: true
+              opacity: 1 - slot.fall
+              transform: [
+                Rotation { origin.x: paper.width / 2; origin.y: 0; angle: 9 * slot.fall },
+                Translate { y: 110 * slot.fall }
+              ]
+
+              // Its string to the bar.
+              Rectangle { anchors.horizontalCenter: parent.horizontalCenter; y: 0; width: 1; height: 7; color: Ink.inkFaint }
+              // The top edge is the bar's; cover the border there.
+              Rectangle { x: 1; width: parent.width - 2; height: 1; color: Ink.lift }
+
+              Column {
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 12
+                spacing: 12
+
+                Item {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  width: 28; height: 28
+                  Rectangle {
+                    anchors.fill: parent
+                    radius: width / 2
+                    color: slot.red ? Ink.seal : "transparent"
+                    border.width: 1.5
+                    border.color: slot.red ? Ink.seal : Ink.ink
+                  }
+                  Text {
+                    anchors.centerIn: parent
+                    text: Fumi.crestFor(slot.app, slot.summary)
+                    color: slot.red ? Ink.paper : Ink.ink
+                    font.family: "Noto Serif CJK JP"
+                    font.weight: Font.DemiBold
+                    font.pixelSize: 13
+                  }
+                }
+                // Two kanji for the kind of letter, then the time, set down the strip.
+                Column {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  spacing: 3
+                  Repeater {
+                    model: Fumi.kindFor(slot.app, slot.summary, slot.body, slot.urgency).split("")
+                    Text { required property string modelData; anchors.horizontalCenter: parent.horizontalCenter; text: modelData; color: Ink.inkDim; font.family: "Noto Serif CJK JP"; font.pixelSize: 15 }
+                  }
+                }
+                Column {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  spacing: 0
+                  Repeater {
+                    model: Fumi.timeOf(slot.stamp).split("")
+                    Text { required property string modelData; anchors.horizontalCenter: parent.horizontalCenter; text: modelData; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: 11 }
+                  }
+                }
+              }
+
+              // The cut: a hairline across, for one frame and 70 ms.
+              Rectangle {
+                visible: slot.cutAt > 0
+                width: parent.width * 1.8
+                height: 1
+                x: -parent.width * 0.4
+                y: parent.height * 0.42
+                rotation: -38
+                color: Ink.bone
+              }
+            }
+
+            HoverHandler {
+              id: hover
+              onHoveredChanged: {
+                if (slot.leaving) return
+                if (hovered) { closeLetter.stop(); service.openKey = slot.key; letter.slotItem = slot }
+                else closeLetter.restart()
+              }
+            }
+            TapHandler {
+              acceptedButtons: Qt.LeftButton
+              onTapped: if (!slot.leaving) service.activate(slot.key)
+            }
+            TapHandler {
+              acceptedButtons: Qt.RightButton | Qt.MiddleButton
+              onTapped: slot.cutAway()
+            }
+          }
+        }
+
+        // More than five: one more strip carries the count.
+        Rectangle {
+          visible: popupWindow.counts.more > 0
+          width: popupWindow.stripW
+          height: popupWindow.stripH * 0.62
+          color: Ink.lift
+          border.width: 1
+          border.color: Ink.lineStrong
+          Column {
+            anchors.centerIn: parent
+            spacing: 2
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "文"; color: Ink.inkDim; font.family: "Noto Serif CJK JP"; font.pixelSize: 15 }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "+" + popupWindow.counts.more; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: 11 }
+          }
+        }
+      }
+
+      // Opened by Super+N on this screen: the letter hangs beside the newest strip.
+      Connections {
+        target: service
+        function onKeyScreenChanged() {
+          if (service.keyScreen !== "" && service.keyScreen === popupWindow.screenName) letter.slotItem = stripRepeater.itemAt(service.rowIndexFor(service.openKey))
+          else if (service.keyScreen !== "") letter.slotItem = null
+        }
+      }
+
+      // The letter, opened sideways from its strip.
+      Rectangle {
+        id: letter
+        property var slotItem: null
+        readonly property int at: service.openKey === "" ? -1 : service.rowIndexFor(service.openKey)
+        readonly property bool open: at >= 0 && slotItem !== null && slotItem.key === service.openKey
+        readonly property var row: open ? toasts.get(at) : null
+        readonly property string key: service.openKey
+        readonly property var actions: open ? service.actionsOf(key, service.refsRevision) : []
+        readonly property var snooze: service.snoozeOptions.length ? service.snoozeOptions[0] : null
+        visible: open && row !== null
+        width: 430
+        height: content.implicitHeight + 34
+        x: slotItem ? strips.x + slotItem.x - width + 1 : 0
+        y: popupWindow.hangY
+        color: Ink.paper
+        border.width: 1
+        border.color: Ink.lineStrong
+        HoverHandler {
+          onHoveredChanged: { service.cardHovered = hovered; if (!hovered) closeLetter.restart() }
+        }
+        Rectangle { x: 1; width: parent.width - 1; height: 1; color: Ink.paper }
+
+        Column {
+          id: content
+          x: 22; y: 18
+          width: parent.width - 44
+          spacing: 6
+          Row {
+            width: parent.width
+            Text { width: parent.width - when.width; text: letter.row ? String(letter.row.app || "").toUpperCase() : ""; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: 12; font.letterSpacing: 2.4; elide: Text.ElideRight }
+            Text { id: when; text: letter.row ? Fumi.timeOf(Number(letter.row.ts || 0) * 1000) : ""; color: Ink.inkFaint; font.family: Type.mono; font.pixelSize: 12 }
+          }
+          Text {
+            width: parent.width
+            topPadding: 4
+            text: letter.row ? String(letter.row.summary || "") : ""
+            color: Ink.ink
+            font.family: Type.text
+            font.pixelSize: 19
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
+            textFormat: Text.PlainText
+          }
+          Text {
+            visible: text !== ""
+            width: parent.width
+            text: letter.row ? Fumi.plain(String(letter.row.body || "")) : ""
+            color: Ink.inkDim
+            font.family: Type.text
+            font.pixelSize: 15
+            lineHeight: 1.25
+            wrapMode: Text.Wrap
+            maximumLineCount: 6
+            elide: Text.ElideRight
+            textFormat: Text.PlainText
+          }
+          Rectangle { width: parent.width; height: 1; color: Ink.line }
+          Flow {
+            width: parent.width
+            spacing: 6
+            Rectangle {
+              width: openWord.implicitWidth + 20; height: 28
+              color: openTap.pressed ? Ink.inkDim : Ink.bone
+              Text { id: openWord; anchors.centerIn: parent; text: "// Open"; color: Ink.boneInk; font.family: Type.text; font.pixelSize: 14 }
+              TapHandler { id: openTap; onTapped: { var k = letter.key; service.openKey = ""; service.activate(k) } }
+            }
+            // What the sender offers (Reply, Mark as read…), as the deck's card would.
+            Repeater {
+              model: letter.actions
+              Rectangle {
+                required property var modelData
+                width: actionWord.implicitWidth + 20; height: 28
+                color: "transparent"
+                border.width: 1
+                border.color: Ink.line
+                Text { id: actionWord; anchors.centerIn: parent; text: modelData.text; color: Ink.ink; font.family: Type.text; font.pixelSize: 14 }
+                TapHandler { onTapped: { var k = letter.key; service.openKey = ""; service.invokeAction(k, modelData.id) } }
+              }
+            }
+            // Quiet this sender for the deck's first snooze length.
+            Rectangle {
+              visible: letter.snooze !== null && letter.row !== null && String(letter.row.groupKey || "") !== ""
+              width: snoozeWord.implicitWidth + 20; height: 28
+              color: "transparent"
+              Text { id: snoozeWord; anchors.centerIn: parent; text: letter.snooze ? "Quiet " + Fumi.forHow(letter.snooze.seconds) : ""; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: 14 }
+              TapHandler {
+                onTapped: {
+                  var row = letter.row
+                  if (!row || !letter.snooze) return
+                  service.openKey = ""
+                  service.snoozeSource(String(row.groupKey || ""), String(row.source || row.app || ""), letter.snooze.seconds)
+                }
+              }
+            }
+            Rectangle {
+              width: dismissWord.implicitWidth + 20; height: 28
+              color: "transparent"
+              Text { id: dismissWord; anchors.centerIn: parent; text: "Dismiss"; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: 14 }
+              TapHandler { onTapped: if (letter.slotItem) letter.slotItem.cutAway() }
+            }
+          }
+        }
+      }
+    }
+  }
+}
