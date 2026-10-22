@@ -34,7 +34,20 @@ Singleton {
   property int cursorSize: 22
   readonly property bool tools: _btopBefore.on || _nvimSpec.on
   property bool theme: false
+  // Omarchy's current theme, by its folder name.
+  property string themeName: ""
   property bool boot: false
+  // Settings › Boot: what the installed screen was drawn for (boot-drawn.json:
+  // theme, glyph, name, press, at), the last switch's error ("" when it
+  // went), and the page's preview: the theme drawn into the state folder by
+  // scripts/hanko-boot at 1080 px, its version going up with each drawing.
+  property var bootDrawn: ({})
+  property string bootError: ""
+  readonly property string bootPreviewDir: stateHome + "/hanko/boot-preview"
+  property int bootPreviewVersion: 0
+  // The folder the page draws from ("" before the first drawing).
+  readonly property string bootPreview: bootPreviewVersion > 0 ? bootPreviewDir + "/v" + bootPreviewVersion : ""
+  property bool bootPreviewBusy: false
   // A switch the CLI is turning ("desk" | "sumi" | "cursor" | "tools" |
   // "theme" | "boot" | ""), so the page can say so.
   property string busy: ""
@@ -95,10 +108,31 @@ Singleton {
   function setTool(key, on) {
     if (["cursor", "tools", "theme", "boot"].indexOf(key) < 0) return
     busy = key
+    _runTool(key, on ? "on" : "off")
+  }
+  // Settings › Boot's Redraw: `hanko boot refresh` (the screen drawn again
+  // for the theme, the seal and the choices as they are now).
+  function bootRefresh() { busy = "boot"; _runTool("boot", "refresh") }
+  function _runTool(key, word) {
     var log = key === "boot" ? "boot.log" : "tools.log"
-    _toolRun.command = ["sh", "-c", "mkdir -p \"$1\" && \"$0\" " + key + " " + (on ? "on" : "off") + " >\"$1/" + log + "\" 2>&1",
+    if (key === "boot") bootError = ""
+    _toolRun.key = key
+    _toolRun.command = ["sh", "-c", "mkdir -p \"$1\" && \"$0\" " + key + " " + word + " >\"$1/" + log + "\" 2>&1",
       cli, stateHome + "/hanko"]
     _toolRun.running = true
+  }
+  // Draw the page's preview (a second or two); a request while one draws
+  // waits for it.
+  function buildBootPreview() {
+    if (_previewRun.running) { _previewRun.again = true; return }
+    bootPreviewBusy = true
+    // Each drawing in a folder of its own (v1, v2…): an Image keeps what it
+    // loaded from a path, so a new path is how the page sees the new one.
+    var n = bootPreviewVersion + 1
+    _previewRun.next = n
+    _previewRun.command = ["sh", "-c", "mkdir -p \"$1\" && HANKO_BOOT_HEIGHT=1080 \"$0\" build \"$1/v$2\" >/dev/null 2>&1 && find \"$1\" -mindepth 1 -maxdepth 1 ! -name \"v$2\" -exec rm -rf {} +",
+      Paths.local(Qt.resolvedUrl("../scripts/hanko-boot")), bootPreviewDir, String(n)]
+    _previewRun.running = true
   }
 
   // The cursor's size: shown at once, handed to `hanko cursor size` once the
@@ -123,7 +157,7 @@ Singleton {
     _mkdir.running = true
   }
 
-  function _reloadTools() { _cursor.reload(); _btopBefore.reload(); _nvimSpec.reload(); _themeName.reload(); _plymouth.reload() }
+  function _reloadTools() { _cursor.reload(); _btopBefore.reload(); _nvimSpec.reload(); _themeName.reload(); _plymouth.reload(); _bootDrawn.reload() }
   onWantedChanged: if (wanted) { _file.reload(); _look.reload(); _sumi.reload(); _reloadTools() }
 
   property Process _mkdir: Process {
@@ -131,7 +165,21 @@ Singleton {
     onExited: root._file.setText(JSON.stringify(root.doc) + "\n")
   }
   property Process _toolRun: Process {
-    onExited: { root.busy = ""; root._reloadTools() }
+    property string key: ""
+    onExited: function(code) {
+      root.busy = ""
+      root._reloadTools()
+      if (key === "boot" && code !== 0) { root._bootLog.armed = true; root._bootLog.reload() }
+    }
+  }
+  property Process _previewRun: Process {
+    property bool again: false
+    property int next: 0
+    onExited: function(code) {
+      root.bootPreviewBusy = false
+      if (code === 0) root.bootPreviewVersion = next
+      if (again) { again = false; root.buildBootPreview() }
+    }
   }
   property Process _sumiRun: Process {
     onExited: { root.busy = ""; root._sumi.reload() }
@@ -210,7 +258,7 @@ Singleton {
     watchChanges: true
     printErrors: false
     onFileChanged: reload()
-    onLoaded: root.theme = text().trim() === "hanko"
+    onLoaded: { root.themeName = text().trim(); root.theme = root.themeName === "hanko" }
     onLoadFailed: root.theme = false
   }
   // Plymouth's theme: the boot screen is Hanko's while it says hanko.
@@ -219,5 +267,26 @@ Singleton {
     printErrors: false
     onLoaded: root.boot = /^\s*Theme\s*=\s*hanko\s*$/m.test(text())
     onLoadFailed: root.boot = false
+  }
+  property FileView _bootDrawn: FileView {
+    path: root.stateHome + "/hanko/boot-drawn.json"
+    printErrors: false
+    onLoaded: { try { root.bootDrawn = JSON.parse(text() || "{}") || {} } catch (e) { root.bootDrawn = {} } }
+    onLoadFailed: root.bootDrawn = ({})
+  }
+  // The last words of a switch that failed (the CLI says why on its last
+  // line). A FileView reads its file as soon as it is made, so it only
+  // speaks once a switch has failed (`armed`).
+  property FileView _bootLog: FileView {
+    property bool armed: false
+    path: root.stateHome + "/hanko/boot.log"
+    printErrors: false
+    onLoaded: {
+      if (!armed) return
+      armed = false
+      var lines = text().split("\n").filter(function(l) { return l.trim().length > 0 })
+      root.bootError = lines.length ? lines[lines.length - 1].replace(/^hanko: /, "") : "It didn't take."
+    }
+    onLoadFailed: { if (armed) { armed = false; root.bootError = "It didn't take." } }
   }
 }

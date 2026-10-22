@@ -20,7 +20,7 @@ const S = load("core/Style.js", ["PRESET_GROUPS", "SHEET_STYLES", "SHEET_KEYS", 
   "shows", "withShown", "SHOW_OPTIONS"])
 const Se = load("core/Settings.js", ["PRESET_KANJI", "presetFacts", "presetMatches", "pageInfo", "RAIL", "CARDS", "MOTION_CARD", "MOTION_OPTIONS", "MOTION_ROWS", "GLYPHS", "PRESET_BLURBS", "optionsFor", "nameOf", "selected", "changes",
   "status", "presetLine", "matches", "pageMatches", "visibilityCards", "prettyId", "PLATES",
-  "PROOF", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn", "kazeWind", "KAZE_WIND_MAX"])
+  "PROOF", "proofPart", "proofPartOf", "WAYS", "wayOf", "ALSO", "alsoOf", "proofEdits", "proofMatches", "proofStep", "describeChange", "partName", "PAGE_LINES", "PAGE_ALIASES", "BOOT_CHOICES", "presetDiff", "partsTray", "MOTION_SHEET", "KEYMAP", "BINDINGS", "keysLit", "keyDoes", "bindingCode", "bindingsCode", "KAZE_SWITCHES", "kazeValue", "kazeWith", "kazeChange", "kazeOn", "kazeWind", "KAZE_WIND_MAX"])
 const I = load("core/InkMath.js", ["TIERS", "contrast", "tier", "ramp", "mix", "isLight", "kata"])
 const T = load("core/Title.js", ["appName", "describe", "tildify"])
 const W = load("core/Spaces.js", ["numeral", "folio", "layoutOf", "usableArea", "list"])
@@ -41,6 +41,7 @@ const Pt = load("core/Print.js", ["TONES", "CLIP", "steps", "inkFor", "skyAt", "
 const Wi = load("core/Wind.js", ["FULL", "MAX_LEAN", "MIN_FELT", "GUST_MS", "lean", "field", "gustAt", "blade", "mayMove", "swayAt", "settings", "virtualLean", "VIRTUAL_MAX", "ripple", "puffAfter", "rippleUniforms"])
 const Tk = load("core/Taikan.js", ["LEVELS", "SWITCHES", "ENDS", "CEREMONIES", "view", "crestFor", "word", "halves"])
 const Fu = load("core/Fumi.js", ["CRESTS", "crestFor", "kindFor", "timeOf", "urgent", "MOST", "shown", "plain", "gustShare", "isScreenshot", "forHow"])
+const Oi = load("core/Oin.js", ["LAYOUT", "bladeWidth", "nicks", "hint", "MOMENTS", "moment", "STORY_MS", "story", "stale", "day"])
 const Tj = load("core/Taiji.js", ["NICK", "LEAD", "bladeWidth", "nicks", "hint", "dayLine", "nameOf", "sentence", "CUT_MS", "CUT_CURLS", "cutFlash", "cutRoll", "cutCurl"])
 const Ot = load("core/Oto.js", ["EVENTS", "VOLUME", "mode", "play"])
 const Pa = load("core/Paths.js", ["local"])
@@ -626,8 +627,8 @@ test("settings: six cards hold every one of the twenty-one settings once", () =>
   assert.deepEqual([...keys].sort(), [...S.KEYS].sort())
   assert.equal(Se.CARDS.length, 6)
   assert.deepEqual(Object.keys(Se.PRESET_BLURBS).sort(), [...S.PRESET_NAMES].sort())
-  // Typesetting, Presets, Parts, Colour, Screens · Sheets, Overview · Kaze, Motion, Keys · Profile, About, Credits
-  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 13)
+  // Typesetting, Presets, Parts, Colour, Screens · Sheets, Overview · Kaze, Boot, Motion, Keys · Profile, About, Credits
+  assert.equal(Se.RAIL.flatMap(g => g.pages).length, 14)
 })
 
 test("settings: options, the lit one, and the seal glyph's typed case", () => {
@@ -2390,6 +2391,14 @@ test("cursor: the nearest stop after the parts are made anew, and the keys", () 
       const hint = () => b.visible().map(x => x.image.src.split("/").pop()).find(f => f.startsWith("hint-"))
       assert.equal(hint(), "hint-type.png")
       b.password(5); b.tick(1, { held: true }); assert.equal(hint(), "hint-enter.png")
+      // Settings › Boot draws the same nicks (core/Oin.js).
+      for (const n of [5, 20]) {
+        b.password(n); b.tick(1, { held: true })
+        const ruleX = b.global("rule_x")
+        const xs = b.visible().filter(x => x.image.src.endsWith("nick.png")).map(x => x.x - ruleX)
+        assert.deepEqual(xs, Oi.nicks(n), `nicks for ${n} keys`)
+      }
+      b.password(5); b.tick(1, { held: true })
       b.normal(); b.tick(5, { held: true }); assert.equal(hint(), "hint-check.png")
       b.password(0); b.tick(1, { held: true }); assert.equal(hint(), "hint-wrong-1.png")
       assert.ok(b.visible().some(x => x.image.src.endsWith("spark.png")))
@@ -2409,5 +2418,55 @@ test("cursor: the nearest stop after the parts are made anew, and the keys", () 
     assert.match(cli, /if ! rebuild; then[\s\S]*plymouth-set-default-theme "\$before"/, "a failed rebuild goes back")
   })
 }
+
+test("boot page: the layout is the one hanko-boot draws, the blade the lock's", () => {
+  const cli = readFileSync(join(root, "scripts/hanko-boot"), "utf8")
+  const num = name => Number((new RegExp(`(?:^|; )${name}=([0-9.]+)`, "m").exec(cli) || [])[1])
+  const L = Oi.LAYOUT
+  assert.deepEqual([L.seal, L.sealAt, L.ruleGap, L.rule, L.hintGap, L.nick, L.lead, L.nickH, L.hiltH, L.corner],
+    ["SEAL_SIZE", "SEAL_AT", "RULE_GAP", "RULE_W", "HINT_GAP", "NICK", "LEAD", "NICK_H", "HILT_H", "CORNER"].map(num))
+  assert.equal(L.nick, Tj.NICK); assert.equal(L.lead, Tj.LEAD)
+  for (const n of [0, 1, 5, 14, 15, 40]) {
+    assert.equal(Oi.bladeWidth(n), Tj.bladeWidth(n, L.rule), `width ${n}`)
+    assert.ok(Oi.nicks(n).every(x => x <= Oi.bladeWidth(n) - 8), `nicks ${n}`)
+  }
+  assert.equal(Oi.nicks(40).length, 15, "a long passphrase stops at the rule")
+  assert.equal(Oi.hint("password", 0, 0), "hint-type")
+  assert.equal(Oi.hint("password", 3, 1), "hint-enter")
+  assert.equal(Oi.hint("wrong", 0, 12), "hint-wrong-9", "the pictures stop at nine")
+  assert.equal(Oi.hint("booting", 0, 0), "")
+  // Every hint the page asks for is a picture hanko-boot draws.
+  for (const f of ["hint-type.png", "hint-enter.png", "hint-check.png", "hint-wrong-$i.png", "for i in 1 2 3 4 5 6 7 8 9"]) assert.ok(cli.includes(f), f)
+})
+
+test("boot page: one boot played, the moments, and when the installed screen is out of date", () => {
+  let last = -1
+  const order = ["still", "password", "checking", "wrong", "password", "checking", "booting"]
+  const seen = []
+  for (let t = 0; t <= Oi.STORY_MS; t += 50) {
+    const o = Oi.story(t)
+    if (seen[seen.length - 1] !== o.state) seen.push(o.state)
+    if (o.state === "booting") { assert.ok(o.progress >= last); last = o.progress }
+  }
+  assert.deepEqual(seen, order)
+  assert.ok(last > 0.69 && last <= 0.7)
+  assert.deepEqual(Oi.MOMENTS.map(m => m.key), ["asked", "typing", "wrong", "booting", "shutdown"])
+  for (const m of Oi.MOMENTS) assert.ok(Oi.moment(m.key).state)
+  const drawn = { theme: "catppuccin", glyph: "鑑", name: "name", press: "ink", at: "2026-10-22T16:00:00+05:30" }
+  const pretty = s => s[0].toUpperCase() + s.slice(1)
+  assert.equal(Oi.stale(drawn, { theme: "catppuccin", glyph: "鑑", name: "name", press: "ink" }), "")
+  assert.equal(Oi.stale(drawn, { theme: "hanko", glyph: "鑑" }, pretty), "Drawn for Catppuccin; your theme is Hanko now")
+  assert.match(Oi.stale(drawn, { theme: "catppuccin", glyph: "漢" }), /your seal is 漢/)
+  assert.match(Oi.stale(drawn, { theme: "catppuccin", name: "none" }), /corner/)
+  assert.equal(Oi.stale({}, { theme: "x" }), "", "nothing installed: nothing to be out of date")
+  assert.equal(Oi.day("2026-10-22T16:00:00+05:30"), "22 October")
+  // The page's two choices read and say like the Kaze switches, and aren't counted there.
+  assert.equal(Se.kazeValue({}, "bootName"), "name")
+  assert.equal(Se.kazeValue({ bootPress: "still" }, "bootPress"), "still")
+  assert.equal(Se.kazeValue({ bootPress: "nope" }, "bootPress"), "ink")
+  assert.equal(Se.kazeChange({}, { bootName: "none" }), "Boot corner · name → none")
+  assert.deepEqual(Se.kazeOn({ bootName: "none", bootPress: "still" }, false, false, false), Se.kazeOn({}, false, false, false))
+  assert.ok(Se.pageInfo("boot").page.jp === "押印" && Se.PAGE_LINES.boot)
+})
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

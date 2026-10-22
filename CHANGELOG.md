@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Settings › Boot 押印, a page of its own for the boot screen (it was a card on the Kaze page): the screen as it would be installed, drawn for your theme, with a close-up at true size; hold a moment (asked, typing, wrong, booting, shutdown), play a whole boot, or click it and type, a nick for each key, Enter to cut, Esc for a wrong one. Beside it On/Off, what it was drawn for and a Redraw when your theme or seal has changed since, and two choices: your name in the corner or nothing, and the seal pressed in ink or there at once. Then what to do if a boot ever shows nothing, and the commands.
+
 - Kaze (Ōin 押印): a boot and disk-unlock screen of Hanko's own. The screen goes from black to your paper, the seal is pressed, and the passphrase is drawn out of one hairline as a blade with a nick for each key, as on the lock; a wrong one is deflected in red, the right one turns the hairline into the boot's progress. `hanko boot on` draws it for your theme, checks its script, then (asking for your password once) installs it and rebuilds the boot image; `hanko boot off`, or Off on the new Boot card in Settings › Kaze, goes back to Omarchy's. `hanko boot preview` shows it without changing anything, `hanko boot refresh` redraws it after a theme change.
 
 - The brush cursor has no tail (the same cut as its picture in Settings), and a size: `hanko cursor size N` (16 to 48 px), or the rule its card shows in Settings › Kaze while it is on.

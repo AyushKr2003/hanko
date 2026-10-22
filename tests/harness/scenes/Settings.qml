@@ -3,6 +3,7 @@ import qs.Commons
 import qs.Commons as Commons
 import "../../../core"
 import "../../../core/Style.js" as S
+import "../../../core/Paths.js" as Paths
 import "../../../bar/settings"
 
 // The settings window's page at its design size. render.py passes `params`:
@@ -84,6 +85,13 @@ Rectangle {
     kazeTools: sheet.s.tools || ({ cursor: false, tools: false, theme: false, boot: false })
     kazeCursorSize: sheet.s.cursorSize || 22
     kazeBusy: sheet.s.busy || ""
+    // Boot 押印: `bootPreview` is a folder under the repo (tests/run draws it).
+    bootDrawn: sheet.s.bootDrawn || ({})
+    bootError: sheet.s.bootError || ""
+    bootPreview: sheet.s.bootPreview ? Paths.local(Qt.resolvedUrl("../../../" + sheet.s.bootPreview)) : ""
+    themeName: sheet.s.themeName || ""
+    userName: sheet.s.userName || ""
+    bootMoment: sheet.s.bootMoment || "asked"
     sheetFeed: Object.assign({ now: new Date(sheet.p.now || "2026-10-06T21:44:00") }, sheet.s.sheetFeed || {})
     barData: ({
       now: new Date(sheet.p.now || "2026-10-06T21:44:00"),

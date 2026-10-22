@@ -680,6 +680,18 @@ cmd_theme() {
 # boot ever shows nothing, the passphrase still works typed blind, and Esc
 # shows Plymouth's text prompt.
 BOOT_BEFORE="$STATE/boot-before"
+# What the installed screen was drawn for (Settings › Boot says when the
+# theme, the seal or a choice has changed since).
+BOOT_DRAWN="$STATE/boot-drawn.json"
+boot_drawn() {
+  local kaze="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/kaze.json" style="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/style.json" glyph
+  glyph="$(jq -r '.sealGlyph // "鑑"' "$style" 2>/dev/null || echo 鑑)"
+  [[ -n $glyph && $glyph != null ]] || glyph="鑑"
+  jq -n --arg theme "$(cat "$THEME_NAME_FILE" 2>/dev/null || true)" --arg glyph "${glyph:0:1}" \
+    --arg name "$(jq -r 'if .bootName == "none" then "none" else "name" end' "$kaze" 2>/dev/null || echo name)" \
+    --arg press "$(jq -r 'if .bootPress == "still" then "still" else "ink" end' "$kaze" 2>/dev/null || echo ink)" \
+    --arg at "$(date -Iseconds)" '{ theme: $theme, glyph: $glyph, name: $name, press: $press, at: $at }' > "$BOOT_DRAWN"
+}
 BOOT_THEMES=/usr/share/plymouth/themes
 boot_theme() { plymouth-set-default-theme 2>/dev/null || sed -nE 's/^ *Theme *= *//p' /etc/plymouth/plymouthd.conf 2>/dev/null | head -1; }
 boot_on() { [[ $(boot_theme) == hanko ]]; }
@@ -746,6 +758,7 @@ cmd_boot() {
       if [[ $now != hanko ]]; then mkdir -p "$STATE"; printf '%s\n' "${now:-omarchy}" > "$BOOT_BEFORE"; fi
       say "Installing the boot screen and rebuilding the initramfs (this takes a minute)…"
       as_root /bin/bash -c "$BOOT_ROOT" bash on "$stage" hanko || fail "the boot screen wasn't set (your boot is as it was)"
+      mkdir -p "$STATE"; boot_drawn
       say "The Hanko boot screen is on from the next boot (hanko boot off goes back to ${now:-omarchy})."
       ;;
     off)
@@ -755,7 +768,7 @@ cmd_boot() {
       [[ -n $back && $back != hanko && -f $BOOT_THEMES/$back/$back.plymouth ]] || back=omarchy
       say "Putting back $back and rebuilding the initramfs…"
       as_root /bin/bash -c "$BOOT_ROOT" bash off "" "$back" || fail "the boot screen wasn't changed"
-      rm -f "$BOOT_BEFORE"
+      rm -f "$BOOT_BEFORE" "$BOOT_DRAWN"
       say "Back to the $back boot screen from the next boot."
       ;;
     preview)

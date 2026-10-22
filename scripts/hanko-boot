@@ -40,6 +40,13 @@ MONO_NAME="$(fc-match -f '%{family[0]}' "$MONO" 2>/dev/null || echo monospace)"
 GLYPH="$(jq -r '.sealGlyph // "鑑"' "${XDG_CONFIG_HOME:-$HOME/.config}/hanko/style.json" 2>/dev/null || echo 鑑)"
 [[ -n $GLYPH && $GLYPH != null ]] || GLYPH="鑑"
 GLYPH="${GLYPH:0:1}"
+# The page's two choices (Settings › Boot), in kaze.json: the corner (your
+# name, or nothing) and the press (ink spreading, or the seal there at once).
+KAZE="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/kaze.json"
+BOOT_NAME="$(jq -r 'if .bootName == "none" then "none" else "name" end' "$KAZE" 2>/dev/null || echo name)"
+BOOT_PRESS="$(jq -r 'if .bootPress == "still" then "still" else "ink" end' "$KAZE" 2>/dev/null || echo ink)"
+[[ $BOOT_NAME == none ]] || BOOT_NAME=name
+[[ $BOOT_PRESS == still ]] || BOOT_PRESS=ink
 # The seal's kanji in Yuji Boku when it has it (the bar's brush face), else Noto Serif CJK.
 has_char() { # font-file char
   local cp ranges
@@ -53,7 +60,7 @@ has_char "$FONTS/YujiBoku.ttf" "$GLYPH" && KANJI="$FONTS/YujiBoku.ttf"
 SMALL_KANJI="Noto-Serif-CJK-JP-Medium"
 
 # ── Scale and layout (1080 px tall is 1; the script uses the same numbers) ─
-height="$(hyprctl monitors -j 2>/dev/null | jq '[.[].height] | max // 1080' 2>/dev/null || echo 1080)"
+height="${HANKO_BOOT_HEIGHT:-$(hyprctl monitors -j 2>/dev/null | jq '[.[].height] | max // 1080' 2>/dev/null || echo 1080)}"
 [[ $height =~ ^[0-9]+$ ]] && (( height >= 480 )) || height=1080
 R="$(awk -v h="$height" 'BEGIN { printf "%.4f", h / 1080 }')"
 px() { awk -v v="$1" -v r="$R" 'BEGIN { n = int(v * r + 0.5); print (n < 1 ? 1 : n) }'; }
@@ -139,7 +146,7 @@ build() {
 
   # The corner: your name in the serif, "SEALED · 封" under it.
   local name
-  name="$(getent passwd "$USER" 2>/dev/null | cut -d: -f5 | cut -d, -f1)"
+  name="$(getent passwd "$USER" 2>/dev/null | cut -d: -f5 | cut -d, -f1 || true)"
   [[ -n $name ]] || name="${USER:-}"
   name="${name^}"
   serif_png "$out/name.png" 26 "$INK" "${name:- }"
@@ -171,6 +178,7 @@ EOF
   sed -e "s/@R@/$R/" -e "s/@PAPER@/$rgb/" -e "s/@MUTED@/$mrgb/" \
     -e "s/@SEAL_SIZE@/$SEAL_SIZE/" -e "s/@SEAL_AT@/$SEAL_AT/" -e "s/@RULE_GAP@/$RULE_GAP/" -e "s/@RULE_W@/$RULE_W/" \
     -e "s/@HINT_GAP@/$HINT_GAP/" -e "s/@NICK@/$NICK/" -e "s/@LEAD@/$LEAD/" -e "s/@NICK_H@/$NICK_H/" -e "s/@CORNER@/$CORNER/" \
+    -e "s/@SHOW_NAME@/$([[ $BOOT_NAME == name ]] && echo 1 || echo 0)/" -e "s/@PRESS@/$([[ $BOOT_PRESS == ink ]] && echo 1 || echo 0)/" \
     "$SRC/assets/boot/hanko.script" > "$out/hanko.script"
   grep -q '@[A-Z_]*@' "$out/hanko.script" && fail "the script kept a placeholder"
 

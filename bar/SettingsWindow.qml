@@ -5,6 +5,7 @@ import "../services"
 import "../core/Extras.js" as X
 import "../core/Settings.js" as Settings
 import "../core/Style.js" as S
+import "../core/Taiji.js" as Taiji
 import "settings"
 
 // Hanko's settings as an ordinary window (a Quickshell FloatingWindow, like
@@ -39,7 +40,7 @@ FloatingWindow {
 
   // Kaze's changes have their own history; on its page Undo walks back
   // whichever was made last.
-  readonly property bool kazeLast: page === "kaze" && Kaze.history.length > 0
+  readonly property bool kazeLast: (page === "kaze" || page === "boot") && Kaze.history.length > 0
     && (!Typeset.history.length || Kaze.lastAt >= Typeset._lastAt)
   function undo() { if (kazeLast) Kaze.undo(); else Typeset.undo() }
 
@@ -93,7 +94,7 @@ FloatingWindow {
       anchors.fill: parent
       draft: Typeset.live
       saved: Typeset.doc
-      undoCount: Typeset.history.length + (win.page === "kaze" ? Kaze.history.length : 0)
+      undoCount: Typeset.history.length + (win.page === "kaze" || win.page === "boot" ? Kaze.history.length : 0)
       page: win.page
       query: win.query
       themes: Themes.themes
@@ -112,6 +113,15 @@ FloatingWindow {
       onToolPicked: function(key, on) { Kaze.setTool(key, on) }
       onWindSpeedPicked: function(speed) { Kaze.set("windSpeed", speed, "windSpeed") }
       onCursorSizePicked: function(size) { Kaze.setCursorSize(size) }
+      bootDrawn: Kaze.bootDrawn
+      bootError: Kaze.bootError
+      bootPreview: Kaze.bootPreview
+      bootPreviewBusy: Kaze.bootPreviewBusy
+      themeName: Kaze.themeName
+      userName: Taiji.nameOf(Quickshell.env("USER"))
+      onBootRefreshPicked: Kaze.bootRefresh()
+      onBootPreviewWanted: Kaze.buildBootPreview()
+      onKeysWanted: keys.forceActiveFocus()
       lastChange: win.kazeLast ? Kaze.lastChange : Typeset.history.length ? Settings.describeChange(Typeset.history[Typeset.history.length - 1], Typeset.doc, S.resolve) : ""
       screens: Quickshell.screens.map(function(s) { return { name: s.name, x: s.x, y: s.y, width: s.width, height: s.height } })
       monitors: Quickshell.screens.map(function(s) { return s.name })

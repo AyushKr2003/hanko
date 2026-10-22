@@ -23,6 +23,10 @@ NICK = @NICK@;
 LEAD = @LEAD@;
 NICK_H = @NICK_H@;
 CORNER = @CORNER@;
+# Settings › Boot: the name in the corner (1) or nothing (0); the seal pressed
+# in ink (1) or there at once (0).
+SHOW_NAME = @SHOW_NAME@;
+PRESS = @PRESS@;
 
 # Beats, in frames: black to paper, a hold, then the press (two frames a
 # picture), then the hint comes up.
@@ -321,6 +325,7 @@ fun refresh_callback() {
 
   # The press.
   step = Math.Int((f - PRESS_AT) / PRESS_STEP);
+  if (PRESS == 0 && f >= PRESS_AT) step = 7;
   if (step >= 0 && step <= 8) {
     if (step > 7) step = 7;
     seal.sprite.SetImage(disp.seal[step]);
@@ -337,8 +342,8 @@ fun refresh_callback() {
     notch.sprite.SetOpacity(0);
     hilt.sprite.SetOpacity(up);
     hint.sprite.SetOpacity(up);
-    name.sprite.SetOpacity(up);
-    sealed.sprite.SetOpacity(up);
+    name.sprite.SetOpacity(up * SHOW_NAME);
+    sealed.sprite.SetOpacity(up * SHOW_NAME);
   } else if (global.state == "booting" || (global.state == "still" && global.mode == "boot")) {
     # The blade sheathes into the progress rule.
     away = 1 - ease_out((f - global.boot_at) / 12);
@@ -346,8 +351,8 @@ fun refresh_callback() {
     hilt.sprite.SetOpacity(up * away);
     blade.sprite.SetOpacity(global.blade_alpha * away);
     for (i = 0; nicks.sprites[i]; i++) nicks.sprites[i].SetOpacity(global.blade_alpha * away);
-    name.sprite.SetOpacity(up * away);
-    sealed.sprite.SetOpacity(up * away);
+    name.sprite.SetOpacity(up * away * SHOW_NAME);
+    sealed.sprite.SetOpacity(up * away * SHOW_NAME);
     hint.sprite.SetOpacity(0);
     track.sprite.SetOpacity(0.35 * up);
     fill.sprite.SetOpacity(up);

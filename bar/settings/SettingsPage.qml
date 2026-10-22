@@ -56,6 +56,14 @@ Rectangle {
   property var kazeTools: ({ cursor: false, tools: false, theme: false, boot: false })
   property int kazeCursorSize: 22
   property string kazeBusy: ""
+  // Boot 押印 (services/Kaze.qml): what was drawn, the last error, the preview.
+  property var bootDrawn: ({})
+  property string bootError: ""
+  property string bootPreview: ""
+  property bool bootPreviewBusy: false
+  property string themeName: ""
+  property string userName: ""
+  property string bootMoment: "asked"
 
   signal settingPicked(string key, string value)
   signal presetPicked(string name)
@@ -74,6 +82,9 @@ Rectangle {
   signal deskPicked(bool on)
   signal sumiPicked(bool on)
   signal toolPicked(string key, bool on)
+  signal bootRefreshPicked()
+  signal bootPreviewWanted()
+  signal keysWanted()
   signal windSpeedPicked(int speed)
   signal cursorSizePicked(int size)
   // Profile 印影 (core/Dossier.qml): field name | tagline; block ids from
@@ -489,7 +500,7 @@ Rectangle {
           sourceComponent: ({
             typesetting: typesettingPage, presets: presetsPage, parts: partsPage,
             colour: colourPage, screens: screensPage, sheets: sheetsPage,
-            overview: overviewPage, motion: motionPage, keys: keysPage, kaze: kazePage
+            overview: overviewPage, motion: motionPage, keys: keysPage, kaze: kazePage, boot: bootPage
           })[root.pageKey] || typesettingPage
         }
       }
@@ -658,6 +669,28 @@ Rectangle {
       onToolPicked: function(key, on) { root.toolPicked(key, on) }
       onWindSpeedPicked: function(speed) { root.windSpeedPicked(speed) }
       onCursorSizePicked: function(size) { root.cursorSizePicked(size) }
+    }
+  }
+  Component {
+    id: bootPage
+    BootPage {
+      kaze: root.kaze
+      boot: !!root.kazeTools.boot
+      drawn: root.bootDrawn
+      error: root.bootError
+      busy: root.kazeBusy
+      preview: root.bootPreview
+      previewBusy: root.bootPreviewBusy
+      themeName: root.themeName
+      glyph: root.draft.sealGlyph || "鑑"
+      name: root.userName
+      firstMoment: root.bootMoment
+      compact: root.compact
+      onBootPicked: function(on) { root.toolPicked("boot", on) }
+      onRefreshPicked: root.bootRefreshPicked()
+      onKazePicked: function(key, value) { root.kazePicked(key, value) }
+      onPreviewWanted: root.bootPreviewWanted()
+      onKeysWanted: root.keysWanted()
     }
   }
   Component {

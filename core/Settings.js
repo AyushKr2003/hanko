@@ -13,6 +13,7 @@ var RAIL = [
   { group: "02 PANELS", pages: [{ key: "sheets", label: "Sheets", jp: "紙" },
                                 { key: "overview", label: "Overview", jp: "一覧" }] },
   { group: "03 FEEL",   pages: [{ key: "kaze", label: "Kaze", jp: "風" },
+                                { key: "boot", label: "Boot", jp: "押印" },
                                 { key: "motion", label: "Motion", jp: "動" },
                                 { key: "keys", label: "Keys", jp: "鍵" }] },
   { group: "04 YOU",    pages: [{ key: "profile", label: "Profile", jp: "印影" },
@@ -33,6 +34,7 @@ var PAGE_LINES = {
   sheets: "A sheet drops from the cell you click. Pick a sheet, then the hand that draws it; hover a hand to see that sheet in it.",
   overview: "The workspace overview: every space at once, its windows where they sit. Pick how it is laid out; each is drawn with your own spaces.",
   kaze: "The desk beyond the bar: the printed wallpaper, the wind in its grass, sound, and Sumi. Every change is kept as you make it; Undo puts it back.",
+  boot: "The screen your computer starts on, where the disk asks for its passphrase: your paper, your seal pressed, the passphrase drawn out of one hairline a nick a key. Click the screen below and type to try it; nothing here is your real disk.",
   motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, only a new stamp overshoots. The timesheet below is every move Hanko makes; hover a row to play it.",
   keys: "Every key Hanko answers to, where it answers. Hover a key to read what it does; the commands at the foot are for your own Hyprland bindings."
 }
@@ -744,12 +746,23 @@ var KAZE_SWITCHES = [
     options: ["on", "off"], labels: { on: "On", off: "Off" } }
 ]
 
+// Settings › Boot 押印: the boot screen's two choices, kept in kaze.json too
+// (scripts/hanko-boot reads them when it draws the screen). Not counted on
+// the Kaze page.
+var BOOT_CHOICES = [
+  { key: "bootName", name: "Corner", say: "Boot corner", jp: "名", line: "Your name and SEALED · 封 at the foot while it asks, or nothing",
+    options: ["name", "none"], labels: { name: "Your name", none: "Nothing" } },
+  { key: "bootPress", name: "The press", say: "Boot press", jp: "押", line: "The seal pressed in eight frames of spreading ink, or there at once",
+    options: ["ink", "still"], labels: { ink: "Ink", still: "Still" } }
+]
+
 // The option a switch shows for a kaze.json document. `gusts` is a boolean
 // in the file (absent = on); the rest are words.
 function kazeValue(doc, key) {
   doc = doc || {}
   var sw = null
-  for (var i = 0; i < KAZE_SWITCHES.length; i++) if (KAZE_SWITCHES[i].key === key) sw = KAZE_SWITCHES[i]
+  var all = KAZE_SWITCHES.concat(BOOT_CHOICES)
+  for (var i = 0; i < all.length; i++) if (all[i].key === key) sw = all[i]
   if (!sw) return ""
   if (key === "gusts") return doc.gusts === false ? "off" : "on"
   return sw.options.indexOf(doc[key]) >= 0 ? doc[key] : sw.options[0]
@@ -776,9 +789,10 @@ function kazeWind(doc) {
 
 // The action bar's words for a kaze.json change ("Sound · off → quiet").
 function kazeChange(before, after) {
-  for (var i = 0; i < KAZE_SWITCHES.length; i++) {
-    var sw = KAZE_SWITCHES[i], a = kazeValue(before, sw.key), b = kazeValue(after, sw.key)
-    if (a !== b) return sw.name + " · " + a + " → " + b
+  var all = KAZE_SWITCHES.concat(BOOT_CHOICES)
+  for (var i = 0; i < all.length; i++) {
+    var sw = all[i], a = kazeValue(before, sw.key), b = kazeValue(after, sw.key)
+    if (a !== b) return (sw.say || sw.name) + " · " + a + " → " + b
   }
   var wa = kazeWind(before), wb = kazeWind(after)
   if (wa.speed !== wb.speed) return "Virtual wind · " + wa.speed + " → " + wb.speed + " km/h"

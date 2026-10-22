@@ -61,6 +61,15 @@ timeout 60 python3 tests/motion.py || status=1
 
 step "renders"
 mkdir -p tests/out
+# Settings › Boot draws from the pictures scripts/hanko-boot makes: draw them
+# for the repo's Hanko theme, with no user config and a fixed name.
+if command -v magick >/dev/null; then
+  rm -rf tests/out/boot-theme
+  empty="$(mktemp -d)"
+  XDG_CONFIG_HOME="$empty" USER=hanko HANKO_BOOT_HEIGHT=1080 HANKO_BOOT_COLORS="$ROOT/theme/colors.toml" \
+    scripts/hanko-boot build tests/out/boot-theme >/dev/null || status=1
+  rm -rf "$empty"
+fi
 for params in tests/harness/params/*.json; do
   name="$(basename "$params" .json)"
   # A params file names its scene ("scene": "Sheets"); bar strips by default.
