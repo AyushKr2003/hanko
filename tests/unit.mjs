@@ -1,7 +1,7 @@
 // Unit tests for the pure logic in core/*.js. Run: node tests/unit.mjs
 // The files are QML JavaScript libraries (".pragma library"), so they are
 // loaded as text with that line removed and evaluated in a function scope.
-import { readFileSync, statSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs"
+import { readFileSync, statSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs"
 import { execFileSync } from "node:child_process"
 import { tmpdir } from "node:os"
 import { fileURLToPath } from "node:url"
@@ -2385,11 +2385,14 @@ test("cursor: the nearest stop after the parts are made anew, and the keys", () 
       const script = readFileSync(join(dir, "hanko.script"), "utf8")
       assert.doesNotMatch(script, /@[A-Z_]+@/, "every number filled in")
       sim.check(dir)
-      // Shutting down: the seal and nothing else.
+      // Shutting down: 終 whole, "The end", the seal; no hairline, no corner.
       const s = sim.boot(dir, { mode: "shutdown" }); s.tick(60)
-      assert.deepEqual(s.visible().map(x => x.image.src.split("/").pop()), ["seal-7.png"])
+      assert.deepEqual(s.visible().map(x => x.image.src.split("/").pop()).sort(),
+        ["end-0.png", "stamp.png", "sub-shutdown.png", "words-end.png"])
+      // No picture of the old seal mark is drawn or asked for.
+      assert.ok(!existsSync(join(dir, "seal-7.png")) && !/seal-[0-9]/.test(script))
       // A wrong passphrase: the red hint with its count, and the spark.
-      const b = sim.boot(dir); b.tick(40, { held: true }); b.password(0); b.tick(1, { held: true })
+      const b = sim.boot(dir); b.tick(70, { held: true }); b.password(0); b.tick(1, { held: true })
       const hint = () => b.visible().map(x => x.image.src.split("/").pop()).find(f => f.startsWith("hint-"))
       assert.equal(hint(), "hint-type.png")
       b.password(5); b.tick(1, { held: true }); assert.equal(hint(), "hint-enter.png")
@@ -2409,22 +2412,21 @@ test("cursor: the nearest stop after the parts are made anew, and the keys", () 
       assert.equal(b.global("state"), "booting")
       assert.ok(b.visible().some(x => x.image.src.endsWith("notch.png")))
       assert.equal(hint(), undefined)
-      // The blade lies on the hairline, under either mark (it was once
-      // left at the screen's corner).
-      for (const MARK of [0, 1]) {
-        const t = sim.boot(dir, { defines: { MARK } }); t.tick(70, { held: true }); t.password(6); t.tick(1, { held: true })
+      // The blade lies on the hairline (it was once left at the screen's corner).
+      {
+        const t = sim.boot(dir); t.tick(70, { held: true }); t.password(6); t.tick(1, { held: true })
         const blade = t.visible().find(x => x.image.src.endsWith("ink.png") && x.image.w === Oi.bladeWidth(6))
-        assert.ok(blade, `a blade (mark ${MARK})`)
-        assert.deepEqual([blade.x, blade.y], [t.global("rule_x"), t.global("rule_y")], `the blade on the hairline (mark ${MARK})`)
+        assert.ok(blade, "a blade")
+        assert.deepEqual([blade.x, blade.y], [t.global("rule_x"), t.global("rule_y")], "the blade on the hairline")
       }
       // The brush: 始 written, its seal and words; at shutdown 終, "The end".
       const names = t => t.visible().map(x => x.image.src.split("/").pop())
-      const up = sim.boot(dir, { defines: { MARK: 1 } }); up.tick(80, { held: true })
+      const up = sim.boot(dir); up.tick(80, { held: true })
       for (const f of ["brush-19.png", "stamp.png", "words-start.png", "sub-start.png"]) assert.ok(names(up).includes(f), f)
-      const early = sim.boot(dir, { defines: { MARK: 1 } }); early.tick(20, { held: true })
+      const early = sim.boot(dir); early.tick(20, { held: true })
       assert.ok(names(early).some(f => /^brush-[0-9]\.png$/.test(f)), "written stroke by stroke")
       assert.ok(!names(early).includes("stamp.png"), "the seal after the strokes")
-      const down = sim.boot(dir, { mode: "reboot", defines: { MARK: 1 } }); down.tick(40)
+      const down = sim.boot(dir, { mode: "reboot" }); down.tick(40)
       for (const f of ["end-0.png", "words-end.png", "sub-reboot.png", "stamp.png"]) assert.ok(names(down).includes(f), f)
       assert.ok(!names(down).some(f => f.startsWith("brush-")))
       // The script's words sit beside the kanji, centred with it as a row.
@@ -2449,8 +2451,8 @@ test("boot page: the layout is the one hanko-boot draws, the blade the lock's", 
   const cli = readFileSync(join(root, "scripts/hanko-boot"), "utf8")
   const num = name => Number((new RegExp(`(?:^|; )${name}=([0-9.]+)`, "m").exec(cli) || [])[1])
   const L = Oi.LAYOUT
-  assert.deepEqual([L.seal, L.sealAt, L.ruleGap, L.rule, L.hintGap, L.nick, L.lead, L.nickH, L.hiltH, L.corner],
-    ["SEAL_SIZE", "SEAL_AT", "RULE_GAP", "RULE_W", "HINT_GAP", "NICK", "LEAD", "NICK_H", "HILT_H", "CORNER"].map(num))
+  assert.deepEqual([L.rule, L.hintGap, L.nick, L.lead, L.nickH, L.hiltH, L.corner],
+    ["RULE_W", "HINT_GAP", "NICK", "LEAD", "NICK_H", "HILT_H", "CORNER"].map(num))
   assert.deepEqual([L.brush, L.brushAt, L.brushGap, L.brushRuleGap, L.brushFrames, L.stamp, L.wordsGap],
     ["BRUSH", "BRUSH_AT", "BRUSH_GAP", "BRUSH_RULE_GAP", "BRUSH_FRAMES", "STAMP", "WORDS_GAP"].map(num))
   assert.equal(L.nick, Tj.NICK); assert.equal(L.lead, Tj.LEAD)
@@ -2480,15 +2482,16 @@ test("boot page: one boot played, the moments, and when the installed screen is 
   assert.ok(last > 0.69 && last <= 0.7)
   assert.deepEqual(Oi.MOMENTS.map(m => m.key), ["asked", "typing", "wrong", "booting", "shutdown"])
   for (const m of Oi.MOMENTS) assert.ok(Oi.moment(m.key).state)
-  const drawn = { theme: "catppuccin", glyph: "鑑", name: "name", press: "ink", at: "2026-10-22T16:00:00+05:30" }
+  const drawn = { theme: "catppuccin", glyph: "鑑", name: "name", press: "ink", mark: "brush", at: "2026-10-22T16:00:00+05:30" }
   const pretty = s => s[0].toUpperCase() + s.slice(1)
   assert.equal(Oi.stale(drawn, { theme: "catppuccin", glyph: "鑑", name: "name", press: "ink" }), "")
   assert.equal(Oi.stale(drawn, { theme: "hanko", glyph: "鑑" }, pretty), "Drawn for Catppuccin; your theme is Hanko now")
   assert.match(Oi.stale(drawn, { theme: "catppuccin", glyph: "漢" }), /your seal is 漢/)
   assert.match(Oi.stale(drawn, { theme: "catppuccin", name: "none" }), /corner/)
-  assert.equal(Oi.stale(drawn, { theme: "catppuccin", mark: "seal" }), "", "a record from before the mark was the seal")
-  assert.match(Oi.stale(drawn, { theme: "catppuccin", mark: "brush" }), /the mark is the brush/)
-  assert.equal(Se.kazeChange({}, { bootMark: "brush" }), "Boot mark · seal → brush")
+  // A screen drawn with the old seal (a record with no mark, or "seal") is out of date.
+  assert.match(Oi.stale(Object.assign({}, drawn, { mark: undefined }), { theme: "catppuccin" }), /old seal/)
+  assert.match(Oi.stale(Object.assign({}, drawn, { mark: "seal" }), { theme: "catppuccin" }), /old seal/)
+  assert.deepEqual(Se.BOOT_CHOICES.map(c => c.key), ["bootName", "bootPress"], "no mark to choose: the brush only")
   assert.equal(Oi.stale({}, { theme: "x" }), "", "nothing installed: nothing to be out of date")
   assert.equal(Oi.day("2026-10-22T16:00:00+05:30"), "22 October")
   // The page's two choices read and say like the Kaze switches, and aren't counted there.

@@ -8,9 +8,6 @@
 
 // 1080 px tall is 1.
 var LAYOUT = {
-  seal: 128,      // the seal, square
-  sealAt: 0.42,   // its middle, as a share of the screen's height
-  ruleGap: 64,    // from the seal's foot to the hairline
   rule: 360,      // the hairline's length
   hintGap: 20,    // from the hairline to the hint's top
   nick: 22,       // a nick every 22 px after the lead (core/Taiji.js)
@@ -18,7 +15,7 @@ var LAYOUT = {
   nickH: 7,
   hiltH: 15,
   corner: 64,     // the corner name's margin from the right and the foot
-  // The brush mark, laid out as the shutdown ceremony is (plugins/hanko.osd)
+  // The brush, laid out as the shutdown ceremony is (plugins/hanko.osd)
   brush: 432,     // the kanji's box
   brushAt: 0.42,  // its middle
   brushGap: 60,   // from the kanji to the words
@@ -59,30 +56,28 @@ var MOMENTS = [
   { key: "booting", label: "Booting" },
   { key: "shutdown", label: "Shutdown" }
 ]
-// What the screen shows in each: { state, count, progress, press (0..1),
-// failed }.
+// What the screen shows in each: { state, count, progress, failed }.
 function moment(key) {
   switch (key) {
-    case "typing": return { state: "password", count: 7, progress: 0, press: 1, failed: 0 }
-    case "wrong": return { state: "wrong", count: 7, progress: 0, press: 1, failed: 1 }
-    case "booting": return { state: "booting", count: 0, progress: 0.46, press: 1, failed: 0 }
-    case "shutdown": return { state: "shutdown", count: 0, progress: 0, press: 1, failed: 0 }
-    default: return { state: "password", count: 0, progress: 0, press: 1, failed: 0 }
+    case "typing": return { state: "password", count: 7, progress: 0, failed: 0 }
+    case "wrong": return { state: "wrong", count: 7, progress: 0, failed: 1 }
+    case "booting": return { state: "booting", count: 0, progress: 0.46, failed: 0 }
+    case "shutdown": return { state: "shutdown", count: 0, progress: 0, failed: 0 }
+    default: return { state: "password", count: 0, progress: 0, failed: 0 }
   }
 }
 
-// One encrypted boot, ms from the start: the paper comes up, the seal is
-// pressed (or the brush writes, 800 ms, then its seal and words), the
-// prompt; a wrong passphrase, then the right one, then the boot's progress.
+// One encrypted boot, ms from the start: the paper comes up, the brush
+// writes 始 (800 ms), then the seal and the words, the prompt; a wrong
+// passphrase, then the right one, then the boot's progress.
 // The script's beats are frames at 50 a second.
 var STORY_MS = 9400
 function story(ms) {
   var t = Math.max(0, ms)
   var paper = Math.min(1, t / 300)
-  var press = Math.max(0, Math.min(1, (t - 240) / 320))
   var write = Math.max(0, Math.min(1, (t - 240) / 800))
   var after = Math.max(0, Math.min(1, (t - 1040) / 220))
-  var o = { state: "password", count: 0, progress: 0, press: press, write: write, after: after, paper: paper, failed: 0 }
+  var o = { state: "password", count: 0, progress: 0, write: write, after: after, paper: paper, failed: 0 }
   if (t < 1100) { o.state = "still"; return o }
   if (t < 1400) return o
   if (t < 2800) { o.count = Math.min(6, Math.floor((t - 1400) / 220) + 1); return o }
@@ -108,7 +103,8 @@ function stale(drawn, now, pretty) {
   if (now.glyph && drawn.glyph && drawn.glyph !== now.glyph) return "Drawn with " + drawn.glyph + "; your seal is " + now.glyph + " now"
   if (now.name && drawn.name && drawn.name !== now.name) return "The corner changed since it was drawn"
   if (now.press && drawn.press && drawn.press !== now.press) return "The press changed since it was drawn"
-  if (now.mark && (drawn.mark || "seal") !== now.mark) return "Drawn with the " + (drawn.mark || "seal") + "; the mark is the " + now.mark + " now"
+  // A screen drawn before the seal was taken out has no mark, or "seal".
+  if ((drawn.mark || "seal") !== "brush") return "Drawn with the old seal, before the brush"
   return ""
 }
 

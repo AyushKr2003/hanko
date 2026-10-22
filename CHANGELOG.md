@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Boot screen: the brush only. The seal mark is gone (its pressed frames, its layout and the choice between the two); every boot now writes 始 in the shutdown ceremony's brush, and Settings › Boot has two choices again, the corner and the press. A screen you installed with the seal shows as out of date there until you Redraw.
+
 - Boot screen: a second mark, the brush. In place of the seal, 始 ("The beginning") is written stroke by stroke in the same bold brush the shutdown screen writes 終 with, "The beginning" beside it in the serif's italic and your seal pressed at its foot; when the machine shuts down or restarts, the screen shows 終 and "The end", carrying on from the shutdown ceremony. Pick it under The mark in Settings › Boot (Seal 鑑 or Brush 始). Also fixed: the passphrase's blade would have been drawn at the screen's top left corner instead of on the hairline.
 
 - Settings › Boot 押印, a page of its own for the boot screen (it was a card on the Kaze page): the screen as it would be installed, drawn for your theme, with a close-up at true size; hold a moment (asked, typing, wrong, booting, shutdown), play a whole boot, or click it and type, a nick for each key, Enter to cut, Esc for a wrong one. Beside it On/Off, what it was drawn for and a Redraw when your theme or seal has changed since, and two choices: your name in the corner or nothing, and the seal pressed in ink or there at once. Then what to do if a boot ever shows nothing, and the commands.

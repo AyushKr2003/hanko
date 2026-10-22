@@ -46,9 +46,7 @@ Column {
   readonly property bool working: busy === "boot"
   readonly property string bootName: Settings.kazeValue(kaze, "bootName")
   readonly property string bootPress: Settings.kazeValue(kaze, "bootPress")
-  readonly property string bootMark: Settings.kazeValue(kaze, "bootMark")
-  readonly property bool brush: bootMark === "brush"
-  readonly property string stale: boot ? Oin.stale(drawn, { theme: themeName, glyph: glyph, name: bootName, press: bootPress, mark: bootMark }, Th.themeName) : ""
+  readonly property string stale: boot ? Oin.stale(drawn, { theme: themeName, glyph: glyph, name: bootName, press: bootPress }, Th.themeName) : ""
   // On, but drawn before `hanko boot on` kept what it drew for.
   readonly property bool unrecorded: boot && !(drawn && drawn.theme)
   readonly property real gap: Type.px(16)
@@ -58,7 +56,6 @@ Column {
   Component.onCompleted: previewWanted()
   onBootNameChanged: previewWanted()
   onBootPressChanged: previewWanted()
-  onBootMarkChanged: previewWanted()
   onGlyphChanged: previewWanted()
   onThemeNameChanged: previewWanted()
 
@@ -74,7 +71,7 @@ Column {
   readonly property bool trying: tryPhase !== ""
   readonly property var shown: {
     if (playing) return Oin.story(playT)
-    if (trying) return { state: tryPhase, count: tryInput.text.length, progress: tryProgress, press: 1, write: 1, after: 1, paper: 1, failed: tryFailed, fade: tryFade }
+    if (trying) return { state: tryPhase, count: tryInput.text.length, progress: tryProgress, write: 1, after: 1, paper: 1, failed: tryFailed, fade: tryFade }
     return Object.assign({ paper: 1, fade: 0, write: 1, after: 1 }, Oin.moment(held))
   }
 
@@ -155,16 +152,13 @@ Column {
           phase: root.shown.state
           count: root.shown.count
           progress: root.shown.progress
-          press: root.shown.press
           paper: root.shown.paper === undefined ? 1 : root.shown.paper
           failed: root.shown.failed
           fade: root.shown.fade || 0
-          brush: root.brush
           write: root.shown.write === undefined ? 1 : root.shown.write
           after: root.shown.after === undefined ? 1 : root.shown.after
           showName: root.bootName === "name"
           pressInk: root.bootPress === "ink"
-          glyph: root.glyph
           name: root.name
         }
 
@@ -217,14 +211,12 @@ Column {
         }
       }
 
-      // The middle at its true size (as on a 1080p screen): the seal, the
-      // hairline and the hint, which the whole screen above draws too small
-      // to read.
+      // The middle at its true size (as on a 1080p screen).
       Rectangle {
         id: closeUp
         readonly property real k: Type.px(1)
         width: parent.width
-        height: Math.round((root.brush ? 120 : 290) * k) + 2
+        height: Math.round(120 * k) + 2
         radius: 3
         color: "transparent"
         border.width: 1
@@ -235,25 +227,22 @@ Column {
           clip: true
         BootScreen {
           x: Math.round(parent.width / 2 - 960 * closeUp.k)
-          // The seal and the hairline; with the brush, which the whole
-          // screen shows well, the hairline and the hint.
-          y: -Math.round((root.brush ? 672 : 360) * closeUp.k)
+          // The hairline and the hint (the whole screen above shows the
+          // brush well; these it draws too small to read).
+          y: -Math.round(672 * closeUp.k)
           scale: closeUp.k
           transformOrigin: Item.TopLeft
           dir: root.preview
           phase: root.shown.state
           count: root.shown.count
           progress: root.shown.progress
-          press: root.shown.press
           paper: root.shown.paper === undefined ? 1 : root.shown.paper
           failed: root.shown.failed
           fade: root.shown.fade || 0
-          brush: root.brush
           write: root.shown.write === undefined ? 1 : root.shown.write
           after: root.shown.after === undefined ? 1 : root.shown.after
           showName: false
           pressInk: root.bootPress === "ink"
-          glyph: root.glyph
         }
         }
         MouseArea {
@@ -416,7 +405,7 @@ Column {
       Text {
         width: parent.width
         wrapMode: Text.WordWrap
-        text: "The seal is your bar's, " + root.glyph + " (Typesetting › Seal), and the inks are your theme's."
+        text: "始 is written in the shutdown ceremony's brush, from KanjiVG's stroke order; the seal pressed beside it is your bar's, " + root.glyph + " (Typesetting › Seal), and the inks are your theme's."
         color: Ink.inkFaint
         font.family: Type.text
         font.pixelSize: Type.note

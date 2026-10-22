@@ -1,22 +1,20 @@
 #!/bin/bash
-# hanko-boot · Ōin 押印, the seal pressed (docs/kaze §4.1): the Plymouth boot
-# and disk-unlock screen in Hanko's grammar, drawn for the current Omarchy
-# theme. The screen goes from black to the paper, the seal is pressed (eight
-# frames of ink spreading unevenly from its middle, the same every boot), and
-# under it one hairline: the sheath the passphrase is drawn out of, a nick for
-# each key as on the lock (Taiji), then the boot's progress, with the red
-# notch at its head. A wrong passphrase is deflected: a red spark at the
-# blade's tip, a shudder, the nicks fade. Omarchy's own theme is built the
-# same way (a Plymouth script and PNGs); this one is drawn here, not recoloured.
+# hanko-boot · Ōin 押印 (docs/kaze §4.1): the Plymouth boot and disk-unlock
+# screen in Hanko's grammar, drawn for the current Omarchy theme. The screen
+# goes from black to the paper and 始, "The beginning", is written stroke by
+# stroke in the shutdown ceremony's bold brush (assets/boot/brush.mjs), the
+# words beside it, your seal pressed at its foot; under them one hairline:
+# the sheath the passphrase is drawn out of, a nick for each key as on the
+# lock (Taiji), then the boot's progress, with the red notch at its head. A
+# wrong passphrase is deflected: a red spark at the blade's tip, a shudder,
+# the nicks fade. At shutdown, 終 and "The end". Omarchy's own theme is built
+# the same way (a Plymouth script and PNGs); this one is drawn here, not
+# recoloured.
 #
 #   hanko-boot build DIR      write the theme (hanko.plymouth, hanko.script,
 #                             PNGs) into DIR; nothing needs root
 #   hanko-boot preview OUT    a sheet of four moments (asked, typing, wrong,
 #                             booting) as one PNG, played through the script
-#
-# Two marks, both drawn, the script shows one (kaze.json bootMark): the seal
-# pressed, or the brush, 始 "The beginning" written stroke by stroke in the
-# shutdown ceremony's hand (assets/boot/brush.mjs), with the words beside it.
 #
 # The pictures are drawn at the scale of the tallest monitor (1080 px is 1);
 # the script rescales them on a screen of another height.
@@ -48,27 +46,13 @@ GLYPH="$(jq -r '.sealGlyph // "鑑"' "${XDG_CONFIG_HOME:-$HOME/.config}/hanko/st
 [[ -n $GLYPH && $GLYPH != null ]] || GLYPH="鑑"
 GLYPH="${GLYPH:0:1}"
 # The page's two choices (Settings › Boot), in kaze.json: the corner (your
-# name, or nothing) and the press (ink spreading, or the seal there at once).
+# name, or nothing) and the press (the kanji written as you watch, or there
+# at once).
 KAZE="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/kaze.json"
 BOOT_NAME="$(jq -r 'if .bootName == "none" then "none" else "name" end' "$KAZE" 2>/dev/null || echo name)"
 BOOT_PRESS="$(jq -r 'if .bootPress == "still" then "still" else "ink" end' "$KAZE" 2>/dev/null || echo ink)"
 [[ $BOOT_NAME == none ]] || BOOT_NAME=name
 [[ $BOOT_PRESS == still ]] || BOOT_PRESS=ink
-# The mark: Hanko's seal, or the brush (始, "The beginning", written stroke by
-# stroke as the shutdown ceremony writes 終). Both are drawn; the script shows
-# one. HANKO_BOOT_MARK overrides kaze.json's bootMark.
-BOOT_MARK="${HANKO_BOOT_MARK:-$(jq -r 'if .bootMark == "brush" then "brush" else "seal" end' "$KAZE" 2>/dev/null || echo seal)}"
-[[ $BOOT_MARK == brush ]] || BOOT_MARK=seal
-# The seal's kanji in Yuji Boku when it has it (the bar's brush face), else Noto Serif CJK.
-has_char() { # font-file char
-  local cp ranges
-  cp=$(printf '%d' "'$2")
-  ranges="$(fc-query -f '%{charset}' "$1" 2>/dev/null)" || return 1
-  awk -v cp="$cp" '{ for (i = 1; i <= NF; i++) { n = split($i, a, "-"); lo = strtonum("0x" a[1]); hi = n > 1 ? strtonum("0x" a[2]) : lo
-    if (cp >= lo && cp <= hi) { found = 1; exit } } } END { exit !found }' <<<"$ranges"
-}
-KANJI="Noto-Serif-CJK-JP-Medium"
-has_char "$FONTS/YujiBoku.ttf" "$GLYPH" && KANJI="$FONTS/YujiBoku.ttf"
 SMALL_KANJI="Noto-Serif-CJK-JP-Medium"
 
 # ── Scale and layout (1080 px tall is 1; the script uses the same numbers) ─
@@ -77,15 +61,12 @@ height="${HANKO_BOOT_HEIGHT:-$(hyprctl monitors -j 2>/dev/null | jq '[.[].height
 R="$(awk -v h="$height" 'BEGIN { printf "%.4f", h / 1080 }')"
 px() { awk -v v="$1" -v r="$R" 'BEGIN { n = int(v * r + 0.5); print (n < 1 ? 1 : n) }'; }
 
-SEAL_SIZE=128        # the seal, square
-SEAL_AT=0.42         # its middle, as a share of the screen's height
-RULE_GAP=64          # from the seal's foot to the hairline
 RULE_W=360           # the hairline's length
 HINT_GAP=20          # from the hairline to the hint's top
 NICK=22; LEAD=24     # the blade: its hilt, then a nick every 22 px (core/Taiji.js)
 NICK_H=7; HILT_H=15
 CORNER=64            # the corner name's margin from the right and the foot
-# The brush mark, as the shutdown ceremony lays it out (plugins/hanko.osd):
+# The brush, as the shutdown ceremony lays it out (plugins/hanko.osd):
 BRUSH=432            # the kanji's box (0.4 of the height)
 BRUSH_AT=0.42        # its middle, as a share of the height
 BRUSH_GAP=60         # from the kanji to the words
@@ -118,34 +99,7 @@ build() {
   local work; work="$(mktemp -d "${TMPDIR:-/tmp}/hanko-boot.XXXXXX")"
   trap 'rm -rf "$work"' RETURN
 
-  # The seal: Hanko's stamp (bar/Seal.qml): a rounded red plate, an inner
-  # rule in half-paper, the glyph carved in paper.
-  local s r m lw gs off
-  s=$(px $SEAL_SIZE); r=$(( s * 11 / 100 )); m=$(( s * 8 / 100 )); lw=$(px 1); gs=$(( s * 58 / 100 )); off=$(( s * 2 / 100 ))
-  local half
-  half="$(awk -v a="${PAPER#\#}" -v b="${SEAL#\#}" 'BEGIN { printf "#"; for (i = 1; i <= 5; i += 2) printf "%02x", int((strtonum("0x" substr(a,i,2)) + strtonum("0x" substr(b,i,2))) / 2 + 0.5) }')"
-  magick -size "${s}x${s}" xc:none \
-    -fill "$SEAL" -draw "roundrectangle 0,0,$((s - 1)),$((s - 1)),$r,$r" \
-    -fill none -stroke "$half" -strokewidth "$lw" -draw "roundrectangle $m,$m,$((s - 1 - m)),$((s - 1 - m)),$((r - 1)),$((r - 1))" \
-    \( -background none -fill "$PAPER" -stroke none -font "$KANJI" -pointsize "$gs" label:"$GLYPH" -trim +repage \) \
-    -gravity center -geometry "+0-$off" -compose over -composite "$work/seal.png"
-
-  # The press: ink spreads from the middle, its front uneven (a fixed seed,
-  # so it is the same every boot). The last frame keeps a few unprinted
-  # specks, as a real impression does.
-  magick -size "${s}x${s}" radial-gradient:white-black "$work/radial.png"
-  magick -seed 7 -size "${s}x${s}" xc: +noise Random -channel G -separate +channel -blur "0x$(( s / 12 + 1 ))" -normalize "$work/noise.png"
-  magick "$work/radial.png" "$work/noise.png" -fx '0.68*u + 0.32*v' "$work/field.png"
-  local levels=(93 84 74 63 52 41 30) i=0 l
-  for l in "${levels[@]}"; do
-    magick "$work/field.png" -threshold "$l%" -blur 0x0.8 "$work/mask.png"
-    magick "$work/seal.png" \( "$work/mask.png" -alpha copy \) -compose DstIn -composite "$out/seal-$i.png"
-    i=$(( i + 1 ))
-  done
-  magick -seed 11 -size "${s}x${s}" xc: +noise Random -channel G -separate +channel -threshold 99.85% -morphology Dilate Disk:0.8 -blur 0x0.5 -negate "$work/specks.png"
-  magick "$work/seal.png" \( "$work/specks.png" -alpha copy \) -compose DstIn -composite "$out/seal-7.png"
-
-  # The brush mark: 始 written in BRUSH_FRAMES frames, 終 whole (for
+  # The brush: 始 written in BRUSH_FRAMES frames, 終 whole (for
   # shutdown, after the ceremony has written it), the seal pressed beside
   # them, and the words: the English in the serif's italic, the line under it
   # in tracked mono (the ceremony's 64 and 18 px).
@@ -213,10 +167,10 @@ MonospaceFont=$MONO_NAME 11
 Font=$MONO_NAME 11
 EOF
   sed -e "s/@R@/$R/" -e "s/@PAPER@/$rgb/" -e "s/@MUTED@/$mrgb/" \
-    -e "s/@SEAL_SIZE@/$SEAL_SIZE/" -e "s/@SEAL_AT@/$SEAL_AT/" -e "s/@RULE_GAP@/$RULE_GAP/" -e "s/@RULE_W@/$RULE_W/" \
+    -e "s/@RULE_W@/$RULE_W/" \
     -e "s/@HINT_GAP@/$HINT_GAP/" -e "s/@NICK@/$NICK/" -e "s/@LEAD@/$LEAD/" -e "s/@NICK_H@/$NICK_H/" -e "s/@CORNER@/$CORNER/" \
     -e "s/@SHOW_NAME@/$([[ $BOOT_NAME == name ]] && echo 1 || echo 0)/" -e "s/@PRESS@/$([[ $BOOT_PRESS == ink ]] && echo 1 || echo 0)/" \
-    -e "s/@MARK@/$([[ $BOOT_MARK == brush ]] && echo 1 || echo 0)/" -e "s/@BRUSH@/$BRUSH/" -e "s/@BRUSH_AT@/$BRUSH_AT/" \
+    -e "s/@BRUSH@/$BRUSH/" -e "s/@BRUSH_AT@/$BRUSH_AT/" \
     -e "s/@BRUSH_GAP@/$BRUSH_GAP/" -e "s/@BRUSH_RULE_GAP@/$BRUSH_RULE_GAP/" -e "s/@BRUSH_FRAMES@/$BRUSH_FRAMES/" \
     -e "s/@STAMP@/$STAMP/" -e "s/@WORDS_GAP@/$WORDS_GAP/" \
     "$SRC/assets/boot/hanko.script" > "$out/hanko.script"

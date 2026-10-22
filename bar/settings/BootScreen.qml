@@ -6,10 +6,10 @@ import "../../core/Oin.js" as Oin
 // Ōin 押印 in small, for Settings › Boot: the boot screen at 1920 × 1080,
 // placed as assets/boot/hanko.script places it, from the very pictures
 // scripts/hanko-boot draws (`dir`, the page's preview of what `hanko boot
-// on` would install). Before the first drawing, or without one, the seal and
-// the words are drawn here in the same inks. Pure: a moment in, nothing out.
-// Two marks: the seal, or the brush (始 written as the shutdown ceremony
-// writes 終, the words beside it, a seal pressed at its foot).
+// on` would install): 始 written as the shutdown ceremony writes 終, the
+// words beside it, your seal pressed at its foot, the hairline under them.
+// Before the first drawing the kanji is set here in the brush face. Pure: a
+// moment in, nothing out.
 Item {
   id: root
 
@@ -19,31 +19,27 @@ Item {
   property string phase: "password"
   property int count: 0
   property real progress: 0
-  // The press, 0..1 (eight frames), and black to the paper, 0..1.
-  property real press: 1
+  // Black to the paper, 0..1.
   property real paper: 1
   property int failed: 0
   // A wrong passphrase's fade, 0..1 (the spark and the old nicks go).
   property real fade: 0
   property bool showName: true
+  // Written as you watch (Settings › Boot's press), or whole at once.
   property bool pressInk: true
-  property string glyph: "鑑"
   property string name: ""
-  // The brush mark, its writing (0..1) and what follows it (the seal
-  // pressed, the words), 0..1.
-  property bool brush: false
+  // The writing (0..1) and what follows it (the seal pressed, the words), 0..1.
   property real write: 1
   property real after: 1
 
   readonly property var lay: Oin.LAYOUT
   readonly property bool asking: phase === "password" || phase === "checking" || phase === "wrong"
   readonly property bool ruled: phase !== "shutdown" && phase !== "still"
-  readonly property real sealY: Math.round(1080 * lay.sealAt - lay.seal / 2)
   readonly property real ruleX: Math.round(960 - lay.rule / 2)
   readonly property real kanjiY: Math.floor(1080 * lay.brushAt - lay.brush / 2)
   readonly property real wordsW: Math.max(wordsPic.implicitWidth, subPic.implicitWidth)
   readonly property real kanjiX: Math.floor(960 - (lay.brush + lay.brushGap + wordsW) / 2)
-  readonly property real ruleY: brush ? kanjiY + lay.brush + lay.brushRuleGap : sealY + lay.seal + lay.ruleGap
+  readonly property real ruleY: kanjiY + lay.brush + lay.brushRuleGap
   readonly property bool ending: phase === "shutdown"
   readonly property string hintKey: Oin.hint(phase, count, failed)
   function pic(n) { return dir !== "" ? "file://" + dir + "/" + n + ".png" : "" }
@@ -60,7 +56,6 @@ Item {
   // The brush: the frame the writing has reached (終 whole at shutdown), the
   // words beside it, and the seal pressed at its foot from 115%.
   Item {
-    visible: root.brush
     Image {
       visible: root.dir !== "" && root.write > 0
       x: root.kanjiX; y: root.kanjiY
@@ -100,31 +95,6 @@ Item {
       smooth: true
       opacity: root.after
       source: root.pic("stamp")
-    }
-  }
-
-  // The seal: the pressed frame, or a plate drawn here before the pictures.
-  Image {
-    id: seal
-    visible: !root.brush && root.dir !== "" && root.press > 0
-    x: 960 - root.lay.seal / 2; y: root.sealY
-    width: root.lay.seal; height: root.lay.seal
-    smooth: true
-    source: root.pic("seal-" + (root.pressInk ? Math.min(7, Math.floor(root.press * 8)) : 7))
-  }
-  Rectangle {
-    visible: !root.brush && root.dir === "" && root.press > 0
-    x: 960 - root.lay.seal / 2; y: root.sealY
-    width: root.lay.seal; height: root.lay.seal
-    radius: Math.round(width * 0.11)
-    color: Ink.seal
-    opacity: root.pressInk ? root.press : 1
-    Text {
-      anchors.centerIn: parent
-      text: root.glyph
-      color: Ink.paper
-      font.family: Type.jpSerif
-      font.pixelSize: Math.round(parent.width * 0.58)
     }
   }
 

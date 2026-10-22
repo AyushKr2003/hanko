@@ -64,7 +64,7 @@ class Sprt {
   GetOpacity() { return this.opacity }
 }
 
-// `defines` replaces the script's own constants (MARK, PRESS, SHOW_NAME…),
+// `defines` replaces the script's own constants (PRESS, SHOW_NAME…),
 // so one theme can be played both ways.
 export function boot(themeDir, { mode = "boot", width = 1920, height = 1080, defines = {} } = {}) {
   const sim = { sprites: [], callbacks: {}, bg: [0, 0, 0], frame: 0, width, height, log: [] }
@@ -149,7 +149,7 @@ export function draw(b, out) {
 
 // Every path a boot can take through the theme, as plymouthd calls it.
 export function check(themeDir) {
-  for (const defines of [{ MARK: 0 }, { MARK: 1 }, { MARK: 1, PRESS: 0, SHOW_NAME: 0 }, { MARK: 0, PRESS: 0 }]) playAll(themeDir, defines)
+  for (const defines of [{}, { PRESS: 0, SHOW_NAME: 0 }]) playAll(themeDir, defines)
 }
 function playAll(themeDir, defines) {
   for (const [w, h] of [[1920, 1080], [3840, 2160], [1366, 768], [2560, 1600]]) {

@@ -34,7 +34,7 @@ var PAGE_LINES = {
   sheets: "A sheet drops from the cell you click. Pick a sheet, then the hand that draws it; hover a hand to see that sheet in it.",
   overview: "The workspace overview: every space at once, its windows where they sit. Pick how it is laid out; each is drawn with your own spaces.",
   kaze: "The desk beyond the bar: the printed wallpaper, the wind in its grass, sound, and Sumi. Every change is kept as you make it; Undo puts it back.",
-  boot: "The screen your computer starts on, where the disk asks for its passphrase: your paper, your seal pressed, the passphrase drawn out of one hairline a nick a key. Click the screen below and type to try it; nothing here is your real disk.",
+  boot: "The screen your computer starts on, where the disk asks for its passphrase: your paper, 始 written in the shutdown ceremony's bold brush, the passphrase drawn out of one hairline a nick a key. Click the screen below and type to try it; nothing here is your real disk.",
   motion: "No springs, no glow: paper drops with weight and settles, ink arrives after it, only a new stamp overshoots. The timesheet below is every move Hanko makes; hover a row to play it.",
   keys: "Every key Hanko answers to, where it answers. Hover a key to read what it does; the commands at the foot are for your own Hyprland bindings."
 }
@@ -750,11 +750,9 @@ var KAZE_SWITCHES = [
 // (scripts/hanko-boot reads them when it draws the screen). Not counted on
 // the Kaze page.
 var BOOT_CHOICES = [
-  { key: "bootMark", name: "The mark", say: "Boot mark", jp: "印", line: "Your seal pressed, or 始 written in a bold brush, as shutdown writes 終",
-    options: ["seal", "brush"], labels: { seal: "Seal 鑑", brush: "Brush 始" } },
   { key: "bootName", name: "Corner", say: "Boot corner", jp: "名", line: "Your name and SEALED · 封 at the foot while it asks, or nothing",
     options: ["name", "none"], labels: { name: "Your name", none: "Nothing" } },
-  { key: "bootPress", name: "The press", say: "Boot press", jp: "押", line: "The mark made as you watch (the seal pressed in spreading ink, the brush written), or there at once",
+  { key: "bootPress", name: "The press", say: "Boot press", jp: "押", line: "始 written stroke by stroke as you watch, then your seal pressed, or all there at once",
     options: ["ink", "still"], labels: { ink: "Ink", still: "Still" } }
 ]
 
