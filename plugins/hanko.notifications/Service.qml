@@ -321,12 +321,73 @@ Item {
     }
   }
 
+  // Every way a toast leaves the screen goes through its strip's motion: a
+  // dismissal is cut away, an expiry or an opened letter rolls back up into
+  // the bar. The row is marked as leaving (every screen's strip plays it)
+  // and taken out of the model only once the motion is over, so a dismissal
+  // from outside the strip (IPC, the bar's inbox, the letter's Dismiss) and
+  // the last toast going both move instead of vanishing. Motion still, or a
+  // row that has no strip on screen, leaves at once.
   function dismissPopup(index) {
-    removePopup(index, "dismiss")
+    sendOff(index, "cut")
   }
 
   function expirePopup(index) {
-    removePopup(index, "expire")
+    sendOff(index, "roll")
+  }
+
+  // Row key -> "cut" | "roll" while its strip is leaving.
+  property var leavingRows: ({})
+  property var departures: []
+
+  function rowKey(row) {
+    return row ? NotificationLogic.popupFileName(row) : ""
+  }
+
+  function isLeaving(index) {
+    return index >= 0 && index < popupModel.count && !!leavingRows[rowKey(popupModel.get(index))]
+  }
+
+  function sendOff(index, how) {
+    if (index < 0 || index >= popupModel.count) return
+    var key = rowKey(popupModel.get(index))
+    if (leavingRows[key]) return
+    var reason = how === "roll" ? "expire" : "dismiss"
+    if (service.kazeStill || index >= Fumi.MOST) {
+      removePopup(index, reason)
+      return
+    }
+    var next = Object.assign({}, leavingRows)
+    next[key] = how
+    leavingRows = next
+    var ms = how === "roll" ? Iai.BEATS.noto.ms : Iai.BEATS.kiri.ms + Iai.BEATS.noto.ms
+    departures = departures.concat([{ key: key, reason: reason, at: Date.now() + ms + 20 }])
+    departureSweep.start()
+  }
+
+  function sweepDepartures() {
+    var now = Date.now(), waiting = [], due = []
+    for (var i = 0; i < departures.length; i++) (departures[i].at <= now ? due : waiting).push(departures[i])
+    departures = waiting
+    if (!waiting.length) departureSweep.stop()
+    if (!due.length) return
+    var next = Object.assign({}, leavingRows)
+    for (var d = 0; d < due.length; d++) {
+      delete next[due[d].key]
+      for (var r = popupModel.count - 1; r >= 0; r--) {
+        if (rowKey(popupModel.get(r)) !== due[d].key) continue
+        removePopup(r, due[d].reason)
+        break
+      }
+    }
+    leavingRows = next
+  }
+
+  Timer {
+    id: departureSweep
+    interval: 16
+    repeat: true
+    onTriggered: service.sweepDepartures()
   }
 
   function removePopup(index, reason) {
@@ -360,7 +421,7 @@ Item {
   }
 
   function clearPopups() {
-    while (popupModel.count > 0) dismissPopup(0)
+    for (var i = popupModel.count - 1; i >= 0; i--) dismissPopup(i)
   }
 
   // Run the popup's click action, then dismiss. Omarchy's own toasts carry the
@@ -377,7 +438,7 @@ Item {
     var argv = NotificationLogic.parseExecArgv(entry ? entry.execArgv : "")
     if (argv) {
       Util.execArgv(argv)
-      dismissPopup(index)
+      expirePopup(index)
       return
     }
     // Restored rows have no live actions, and looking up liveRefs by their
@@ -404,7 +465,7 @@ Item {
     // focus their window. Fall back to focusing the sending app by class so
     // that click-to-jump actually works.
     if (!invoked) focusApp(entry)
-    dismissPopup(index)
+    expirePopup(index)
   }
 
   // Try to focus an existing Hyprland window matching the notification's
@@ -906,16 +967,22 @@ Item {
 
     // Dismiss the most recent popup.
     function dismissOne(): string {
-      if (popupModel.count === 0) return "none"
-      service.dismissPopup(0)
-      return "ok"
+      for (var i = 0; i < popupModel.count; i++) {
+        if (service.isLeaving(i)) continue
+        service.dismissPopup(i)
+        return "ok"
+      }
+      return "none"
     }
 
     // Fire the default action on the most recent popup, then dismiss it.
     function invokeLast(): string {
-      if (popupModel.count === 0) return "none"
-      service.invokePopupDefault(0)
-      return "ok"
+      for (var i = 0; i < popupModel.count; i++) {
+        if (service.isLeaving(i)) continue
+        service.invokePopupDefault(i)
+        return "ok"
+      }
+      return "none"
     }
 
     // Take a toast off the screen by summary substring, used by the
@@ -1082,6 +1149,7 @@ Item {
             required property int urgency
             required property double expireTimeout
             required property double timestamp
+            required property int originalId
 
             visible: slot.index < Fumi.MOST
             width: visible ? popupWindow.stripW : 0
@@ -1118,38 +1186,35 @@ Item {
               PauseAnimation { duration: Iai.BEATS.nuki.hold }
               NumberAnimation { target: slot; property: "drop"; to: 1; duration: Iai.BEATS.nuki.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("nuki") }
             }
-            property bool leaving: false
-            // Time up: roll back up into the bar on the sheath.
-            function rollUp() {
-              if (slot.leaving) return
-              slot.leaving = true
+            // How it leaves, as the service says (sendOff): the same on
+            // every screen, whatever sent it off. The service takes the row
+            // out once the motion is over.
+            readonly property string how: service.leavingRows[NotificationLogic.popupFileName({ timestamp: slot.timestamp, originalId: slot.originalId })] || ""
+            readonly property bool leaving: slot.how !== ""
+            onHowChanged: {
+              if (slot.how === "") return
               if (service.openIndex === slot.index) service.openIndex = -1
-              if (service.kazeStill) { service.expirePopup(slot.index); return }
-              rolling.start()
+              unroll.stop()
+              if (slot.how === "roll") rolling.start()
+              else cutting.start()
             }
+            // Time up: roll back up into the bar on the sheath.
+            function rollUp() { service.expirePopup(slot.index) }
             SequentialAnimation {
               id: rolling
               NumberAnimation { target: slot; property: "drop"; to: 0; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
-              ScriptAction { script: service.expirePopup(slot.index) }
             }
             // Dismissed: the cut (a hairline across it for a frame), then
             // the cut-off half falls away.
             property real cutAt: 0
             property real fall: 0
-            function cutAway() {
-              if (slot.leaving) return
-              slot.leaving = true
-              if (service.openIndex === slot.index) service.openIndex = -1
-              if (service.kazeStill) { service.dismissPopup(slot.index); return }
-              cutting.start()
-            }
+            function cutAway() { service.dismissPopup(slot.index) }
             SequentialAnimation {
               id: cutting
               PropertyAction { target: slot; property: "cutAt"; value: 1 }
               PauseAnimation { duration: Iai.BEATS.kiri.ms }
               PropertyAction { target: slot; property: "cutAt"; value: 0 }
               NumberAnimation { target: slot; property: "fall"; to: 1; duration: Iai.BEATS.noto.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: Iai.qml("noto") }
-              ScriptAction { script: service.dismissPopup(slot.index) }
             }
 
             // The strip.
