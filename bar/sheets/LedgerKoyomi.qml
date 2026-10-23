@@ -210,8 +210,8 @@ Item {
                     y: Type.px(8)
                     size: Type.px(9)
                     age: cell.c.moon === "full" ? 14.77 : 0
-                    tint: cell.c.today ? Ink.boneInk : Ink.inkDim
-                    ring: cell.c.today ? Ink.boneInk : Ink.inkMuted
+                    ink: cell.c.today ? Ink.boneInk : Ink.inkDim
+                    paper: cell.c.today ? Ink.bone : Ink.paper
                   }
                   // The forecast.
                   Text {

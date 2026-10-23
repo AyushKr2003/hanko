@@ -621,6 +621,7 @@ Rectangle {
       compact: root.compact
       onStylePicked: function(sheet, style) { root.settingPicked("sheetStyle:" + sheet, style) }
       onOpacityPicked: function(value) { root.settingPicked("panelOpacity", value) }
+      onTouchPicked: function(key, value) { root.settingPicked(key, value) }
     }
   }
   Component {

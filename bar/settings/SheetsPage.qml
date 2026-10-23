@@ -23,8 +23,12 @@ Column {
   signal stylePicked(string sheet, string style)
   // Panel opacity: a percent (30..100) as text, or "auto" for each hand's own.
   signal opacityPicked(string value)
+  // The Time sheet's two settings (Koyomi 暦): calendar and weather.
+  signal touchPicked(string key, string value)
 
   readonly property var styles: S.resolve(doc).sheetStyles
+  // The previews draw the Time sheet as the draft says: almanac or week.
+  readonly property var shownFeed: Object.assign({}, feed, { calendar: S.resolve(doc).calendar, sky: S.resolve(doc).weather === "off" ? null : feed.sky })
   property string focusSheet: "sound"
   // A hand under the pointer, tried on the large print.
   property string trialHand: ""
@@ -153,7 +157,7 @@ Column {
           skin: root.skin
           scale: Math.min(1, root.printRoom / Math.max(1, width))
           transformOrigin: Item.TopLeft
-          feed: root.feed
+          feed: root.shownFeed
           animate: false
           tearX: Type.px(30)
           tearWidth: Type.px(80)
@@ -210,7 +214,7 @@ Column {
                 skin: root.skin
                 scale: Math.min(0.5, (thumb.width - Type.px(8)) / Math.max(1, width))
                 transformOrigin: Item.TopLeft
-                feed: root.feed
+                feed: root.shownFeed
                 animate: false
                 tearX: Type.px(30)
                 tearWidth: Type.px(80)
@@ -371,4 +375,39 @@ Column {
     }
   }
 
+  // Koyomi 暦: the Time sheet as the almanac (the whole month, in every
+  // hand) or the week, and the forecast on it.
+  Item { width: 1; height: Type.px(14) }
+  Repeater {
+    model: [
+      { key: "calendar", name: "Time sheet", options: ["koyomi", "week"], labels: { koyomi: "Koyomi 暦", week: "Week" },
+        line: "Koyomi: the whole month in every hand, with its solar terms, the seventy-two microseasons, the moon and the year. Week: the sheet as it was, a week and the day's rulers." },
+      { key: "weather", name: "Weather on the almanac", options: ["on", "off"], labels: { on: "On", off: "Off" },
+        line: "The forecast on the days ahead and the weather now, from Open-Meteo at the place Omarchy's weather panel has. Off: nothing is fetched." }
+    ]
+    Item {
+      id: touch
+      required property var modelData
+      width: root.width
+      height: touchLabel.implicitHeight + Type.px(24) + (root.compact ? touchSeg.height + Type.px(10) : 0)
+      Rectangle { width: parent.width; height: 1; color: Ink.line }
+      Column {
+        id: touchLabel
+        y: Type.px(12)
+        width: root.compact ? parent.width : parent.width - touchSeg.width - Type.px(24)
+        spacing: Type.px(2)
+        Text { text: touch.modelData.name; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.row; font.weight: Font.Medium; font.variableAxes: Type.valueAxes }
+        Text { width: parent.width; wrapMode: Text.Wrap; text: touch.modelData.line; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.note }
+      }
+      Segmented {
+        id: touchSeg
+        x: root.compact ? 0 : parent.width - width
+        y: root.compact ? touchLabel.y + touchLabel.implicitHeight + Type.px(10) : Type.px(12)
+        options: touch.modelData.options
+        labels: touch.modelData.labels
+        selected: String(S.resolve(root.doc)[touch.modelData.key])
+        onPicked: function(v) { root.touchPicked(touch.modelData.key, v) }
+      }
+    }
+  }
 }

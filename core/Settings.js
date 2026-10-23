@@ -366,6 +366,7 @@ var TYPE_SIZE_OPTIONS = ["small", "regular", "large"]
 var OVERVIEW_OPTIONS = ["grid", "dynamic", "mission"]
 // Shōji's touches, beside the twenty-one (Style.js SEASONS, NUMERALS, GRAINS).
 var TOUCH_OPTIONS = { season: ["off", "kanji", "english"], numerals: ["arabic", "kanji"], grain: ["smooth", "fine", "toothy"],
+                     calendar: ["koyomi", "week"], weather: ["on", "off"],
                      hours: ["auto", "24h", "12h"] }
 
 // [name, what moves, Motion.qml property for its time]
@@ -665,7 +666,7 @@ function describeChange(before, after, resolve) {
     if (skip.indexOf(k) >= 0) continue
     if (String(a[k]) === String(b[k])) continue
     var nm = nameOf(k)
-    if (nm === k) nm = { motion: "Motion", panelOpacity: "Panel opacity" }[k] || k
+    if (nm === k) nm = { motion: "Motion", panelOpacity: "Panel opacity", calendar: "Time sheet", weather: "Weather" }[k] || k
     return nm + " · " + a[k] + " → " + b[k]
   }
   var sa = JSON.stringify(a.sheetStyles || {}), sb = JSON.stringify(b.sheetStyles || {})

@@ -232,8 +232,6 @@ Item {
                 y: Type.px(20) - height / 2
                 size: Type.px(8)
                 age: bead.c.moon === "full" ? 14.77 : 0
-                tint: Ink.inkDim
-                ring: Ink.inkMuted
               }
               // Ringed: the picked day.
               Rectangle {
@@ -277,7 +275,8 @@ Item {
     Wire {
       label: "年 The year · " + ko.view.y
       count: ko.k.year.length
-      counted: ko.view.m
+      // The months gone, counted against today, whichever year is shown.
+      counted: ko.view.y < ko.k.today.getFullYear() ? 11 : ko.view.y > ko.k.today.getFullYear() ? -1 : ko.k.today.getMonth()
       names: ko.k.year.map(function(m) { return m.jp.replace("月", "") })
       red: ko.k.year.findIndex(function(m) { return m.current })
       ring: ko.view.m

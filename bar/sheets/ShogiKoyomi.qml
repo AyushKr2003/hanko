@@ -206,8 +206,6 @@ Item {
                   anchors.bottomMargin: Type.px(5)
                   size: Type.px(9)
                   age: sq.c.moon === "full" ? 14.77 : 0
-                  tint: Ink.inkDim
-                  ring: Ink.inkMuted
                 }
                 Text {
                   visible: !!sq.c.sky

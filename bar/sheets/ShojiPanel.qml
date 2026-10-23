@@ -28,7 +28,9 @@ Item {
     time: ["時", "Time"], sound: ["音", "Sound"], network: ["繋", "Network"], bluetooth: ["藍", "Bluetooth"], power: ["電", "Power"], display: ["明", "Display"], inbox: ["便り", "Letters"]
   })
   readonly property int signW: Type.px(52)
-  readonly property int contentW: Type.px(panel === "time" ? ((skin.season || "off") !== "off" ? 640 : 420) : panel === "inbox" ? 420 : 400)
+  // Koyomi 暦: the Time panel as the almanac (style `calendar`), or the week.
+  readonly property bool koyomi: panel === "time" && (feed.calendar || "koyomi") === "koyomi"
+  readonly property int contentW: Type.px(koyomi ? 660 : panel === "time" ? ((skin.season || "off") !== "off" ? 640 : 420) : panel === "inbox" ? 420 : 400)
   readonly property int pad: Type.px(20)
 
   width: contentW + 2 * pad + signW
@@ -69,7 +71,7 @@ Item {
       Loader {
         id: loader
         width: parent.width
-        sourceComponent: ({ sound: soundPanel, time: timePanel, network: networkPanel, bluetooth: bluetoothPanel, power: powerPanel, display: displayPanel, inbox: lettersPanel })[root.panel] || null
+        sourceComponent: ({ sound: soundPanel, time: root.koyomi ? timeKoyomi : timePanel, network: networkPanel, bluetooth: bluetoothPanel, power: powerPanel, display: displayPanel, inbox: lettersPanel })[root.panel] || null
         onLoaded: if (root.open) root.focusContents()
       }
     }
@@ -95,6 +97,20 @@ Item {
     SoundPanel {
       skin: root.skin
       sound: root.feed.sound || null
+      onRequest: function(s, what, arg) { root.request(s, what, arg) }
+      Keys.onEscapePressed: root.closeRequested()
+      Keys.onTabPressed: root.cycle(1)
+      Keys.onBacktabPressed: root.cycle(-1)
+    }
+  }
+  Component {
+    id: timeKoyomi
+    ShojiKoyomi {
+      skin: root.skin
+      now: root.feed.now || new Date()
+      pick: root.feed.timePick || 0
+      sky: root.feed.sky || null
+      zones: root.feed.zones || []
       onRequest: function(s, what, arg) { root.request(s, what, arg) }
       Keys.onEscapePressed: root.closeRequested()
       Keys.onTabPressed: root.cycle(1)

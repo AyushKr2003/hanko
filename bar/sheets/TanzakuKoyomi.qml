@@ -263,8 +263,8 @@ Item {
                 anchors.bottomMargin: Type.px(slip.c.sky ? 22 : 7)
                 size: Math.min(Type.px(8), pillar.slipW - 4)
                 age: slip.c.moon === "full" ? 14.77 : 0
-                tint: paper.ink
-                ring: slip.c.today ? Ink.boneInk : Ink.inkMuted
+                ink: slip.c.today ? Ink.boneInk : Ink.inkDim
+                paper: slip.c.today ? Ink.bone : Ink.paper
               }
               // The weather at the foot.
               Text {
