@@ -91,7 +91,8 @@ Item {
   // closes, Tab goes to the next sheet, + and - set a level.
   readonly property alias cursor: keys
   // false: a picture of a sheet (Settings › Sheets), fenced off from the
-  // settings window's cursor and without one of its own.
+  // settings window's cursor and without one of its own; it never takes
+  // the keyboard from the window either.
   property bool keyStops: true
   function keyMove(dx, dy) { keys.move(dx, dy) }
   function keyActivate() { keys.activate() }
@@ -121,6 +122,7 @@ Item {
     side: root.side
     sheet: root.rail ? root.sheet : ""
     open: root.open && root.rail
+    takesKeys: root.keyStops
     feed: root.sheet === "inbox" ? Object.assign({}, root.feed, { openLetter: root.openLetter }) : root.feed
     onRequest: function(sheet, what, arg) { if (sheet === "inbox") root.handRequest(what, arg); else root.request(sheet, what, arg) }
     onCloseRequested: root.closeRequested()
@@ -163,7 +165,7 @@ Item {
               power: powerTanzaku, display: displayTanzaku, inbox: inboxTanzaku }
           : { all: allSheet, time: timeSheet, sound: soundSheet, network: networkSheet, bluetooth: bluetoothSheet,
               power: powerSheet, display: displaySheet, inbox: inboxSheet })[root.sheet] || null
-      onLoaded: if (root.open) root.focusContents()
+      onLoaded: if (root.open && root.keyStops) root.focusContents()
     }
   }
 

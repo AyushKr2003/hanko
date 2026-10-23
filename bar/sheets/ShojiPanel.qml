@@ -16,6 +16,8 @@ Item {
   property string sheet: ""
   property var feed: ({})
   property bool open: true
+  // false: a picture (Settings › Sheets), which leaves the keyboard where it is.
+  property bool takesKeys: true
   // Which side of the screen the panel's cell is on, for the slide (-1 left, 1 right).
   property int side: 1
 
@@ -72,7 +74,7 @@ Item {
         id: loader
         width: parent.width
         sourceComponent: ({ sound: soundPanel, time: root.koyomi ? timeKoyomi : timePanel, network: networkPanel, bluetooth: bluetoothPanel, power: powerPanel, display: displayPanel, inbox: lettersPanel })[root.panel] || null
-        onLoaded: if (root.open) root.focusContents()
+        onLoaded: if (root.open && root.takesKeys) root.focusContents()
       }
     }
 
