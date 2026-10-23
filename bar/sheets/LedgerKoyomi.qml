@@ -146,7 +146,11 @@ Item {
                 interval: (ko.dir > 0 ? week.index : 5 - week.index) * 38
                 onTriggered: setAnim.start()
               }
-              Component.onCompleted: if (ko.entering) { setIn = 0; setDelay.start() }
+              // Set in on a turn: made for the new month (onCompleted) or kept
+              // from the last (turned), whichever Qt does first.
+              function enter() { setAnim.stop(); setIn = 0; setDelay.restart() }
+              Component.onCompleted: if (ko.entering) week.enter()
+              Connections { target: ko; function onTurned() { week.enter() } }
 
               Rectangle { y: table.ch; width: parent.width; height: 1; color: Ink.lineSoft }
 

@@ -242,7 +242,11 @@ Item {
                     easing.bezierCurve: Motion.nukiCurve
                   }
                   Timer { id: setDelay; interval: Motion.nukiHold + (ko.dir > 0 ? sq.order : 41 - sq.order) * 9; onTriggered: setAnim.start() }
-                  Component.onCompleted: if (ko.entering && visible) { set = 0; setDelay.start() }
+                  // Set in on a turn: made for the new month (onCompleted) or kept
+                  // from the last (turned), whichever Qt does first.
+                  function enter() { setAnim.stop(); set = 0; setDelay.restart() }
+                  Component.onCompleted: if (ko.entering) piece.enter()
+                  Connections { target: ko; function onTurned() { piece.enter() } }
                 }
                 MouseArea {
                   id: hover

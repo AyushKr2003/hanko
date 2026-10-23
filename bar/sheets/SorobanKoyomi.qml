@@ -213,7 +213,11 @@ Item {
                 easing.type: Easing.OutQuart
               }
               Timer { id: wait; interval: Motion.nukiHold + (ko.dir > 0 ? bead.order : 41 - bead.order) * 11; onTriggered: flick.start() }
-              Component.onCompleted: if (ko.entering) { swept = 1; wait.start() }
+              // Set in on a turn: made for the new month (onCompleted) or kept
+              // from the last (turned), whichever Qt does first.
+              function enter() { flick.stop(); swept = 1; wait.restart() }
+              Component.onCompleted: if (ko.entering) bead.enter()
+              Connections { target: ko; function onTurned() { bead.enter() } }
 
               // A term starting, beside its bead on the wire; a full or new
               // moon on the other side.

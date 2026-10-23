@@ -150,7 +150,11 @@ Item {
             easing.bezierCurve: Motion.nukiCurve
           }
           Timer { id: settleWait; interval: Motion.nukiHold + (ko.dir > 0 ? plate.index : 5 - plate.index) * 46; onTriggered: settleAnim.start() }
-          Component.onCompleted: if (ko.entering) { settle = 0; settleWait.start() }
+          // Set in on a turn: made for the new month (onCompleted) or kept
+          // from the last (turned), whichever Qt does first.
+          function enter() { settleAnim.stop(); settle = 0; settleWait.restart() }
+          Component.onCompleted: if (ko.entering) plate.enter()
+          Connections { target: ko; function onTurned() { plate.enter() } }
 
           Lame {
             width: parent.width

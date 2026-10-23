@@ -124,7 +124,8 @@ Item {
               model: Array.from(root.leaf.dayJp + "日")
               Text {
                 required property string modelData
-                anchors.horizontalCenter: parent.horizontalCenter
+                width: lead.width
+                horizontalAlignment: Text.AlignHCenter
                 text: modelData
                 color: Ink.ink
                 font.family: Type.brush
@@ -141,7 +142,8 @@ Item {
               model: Array.from(root.leaf.sekki.jp)
               Text {
                 required property string modelData
-                anchors.horizontalCenter: parent.horizontalCenter
+                width: lead.width
+                horizontalAlignment: Text.AlignHCenter
                 text: modelData
                 color: Ink.inkDim
                 font.family: Type.jp
@@ -180,7 +182,11 @@ Item {
           // Hung one after another on a turn, in the order they are read.
           property real hang: 1
           opacity: hang
-          Component.onCompleted: if (ko.entering) { hang = 0; hangDelay.start() }
+          // Set in on a turn: made for the new month (onCompleted) or kept
+          // from the last (turned), whichever Qt does first.
+          function enter() { hangAnim.stop(); hang = 0; hangDelay.restart() }
+          Component.onCompleted: if (ko.entering) slip.enter()
+          Connections { target: ko; function onTurned() { slip.enter() } }
           Timer {
             id: hangDelay
             interval: (ko.dir > 0 ? slip.index : root.days.length - 1 - slip.index) * 16
@@ -234,7 +240,8 @@ Item {
                   model: Array.from(slip.c.jp)
                   Text {
                     required property string modelData
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: pillar.slipW
+                    horizontalAlignment: Text.AlignHCenter
                     text: modelData
                     color: paper.ink
                     font.family: Type.brush
@@ -246,7 +253,8 @@ Item {
                   model: slip.c.term !== "" ? Array.from(slip.c.term) : []
                   Text {
                     required property string modelData
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: pillar.slipW
+                    horizontalAlignment: Text.AlignHCenter
                     text: modelData
                     color: slip.c.today ? Ink.boneInk : Ink.ink
                     font.family: Type.jp

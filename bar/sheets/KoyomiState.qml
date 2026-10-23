@@ -34,12 +34,15 @@ QtObject {
   readonly property int monthKey: view.y * 12 + view.m
   property int dir: 1
   property bool entering: false
+  // Sent as a turn starts, to the days the hand kept from the last month.
+  signal turned()
   property int _last: -1
   onMonthKeyChanged: {
     if (_last >= 0 && monthKey !== _last) {
       dir = monthKey > _last ? 1 : -1
       entering = Motion.live
       _settle.restart()
+      if (entering) turned()
     }
     _last = monthKey
   }

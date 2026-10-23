@@ -149,7 +149,11 @@ Item {
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Motion.unrollCurve
           }
-          Component.onCompleted: if (ko.entering) { drift = 0; driftAnim.start() }
+          // Set in on a turn: made for the new month (onCompleted) or kept
+          // from the last (turned), whichever Qt does first.
+          function enter() { drift = 0; driftAnim.restart() }
+          Component.onCompleted: if (ko.entering) band.enter()
+          Connections { target: ko; function onTurned() { band.enter() } }
 
           // The thin mist under every week, then the gold laid on it.
           MistBand { y: Type.px(8); width: parent.width; level: 1; gilt: false }
