@@ -176,6 +176,11 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 
 - ✅ **Letters on every channel** (asked for: "update the code like in omacale so that it supports all stable and dev"): the inbox reads stable's one-file-per-notification layout and the rc/edge/dev daemon's `live.json`/`history.json`; put-away kept across restarts, `forgetKeys`/`forgetAll` used where the daemon has them. The desk's Fumi strips cut or roll up however a letter leaves, and on rc/edge/dev `hanko.notifications` is built from the installed deck daemon with only its surface Hanko's (`scripts/hanko-fumi-deck`).
 
+- ✅ **Koyomi 暦, the Time sheet as an almanac** (asked for: "redesign the time sheet in all styles … all the dates in a month like Shōji … selectable, the current one or the new one … research Ghost of Tsushima, Ghost of Yōtei, Assassin's Creed Shadows, Sekiro … the Japanese seasons and the weather"): the whole month in every hand with its solar terms, the 72 kō, the moon, the forecast and the year's twelve months by their old names; a turn of the month of its own in each hand; `calendar: koyomi | week` and `weather: on | off`. Research and design in [koyomi/](koyomi/README.md).
+  - ✅ **Koyomi 1 · the model, the weather, four hands**: `core/Koyomi.js`, `services/Sky.qml`, the settings; Ledger, Tanzaku, Shōgi, Soroban.
+  - ✅ **Koyomi 2 · the other three, and Settings**: Odoshi, Kasumi, Shōji; the Time sheet rows on Settings › Sheets; the moon on light paper.
+  - ✅ **Koyomi 3 · every turn starts**: the turn as a signal; the design doc, pictures and `tests/harness/turn.py`.
+
 ## Dev loop
 
 ```sh

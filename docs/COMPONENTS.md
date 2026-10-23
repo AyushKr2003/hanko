@@ -266,6 +266,15 @@ Three switches beside the twenty-one (like `typeSize`: global, not per monitor, 
 | `season` | `off`, **`kanji`**, `english` | The solar term by the clock (`clock: season`) and the micro-season in the Shōji Time panel |
 | `numerals` | **`arabic`**, `kanji` | Workspace numbers in `spaces: brush` and on the Shōji panels |
 | `grain` | `smooth`, **`fine`**, `toothy` | The washi's fibres (`surface: washi`, the Shōji panels) |
+
+#### The Time sheet's `calendar` 暦 and `weather` 天
+
+Two more switches beside the twenty-one, the same way (global, kept by presets, resets and shuffles). Design in [koyomi/README.md](koyomi/README.md).
+
+| Key | Options | What it does |
+|---|---|---|
+| `calendar` | **`koyomi`**, `week` | Koyomi: the Time sheet as an almanac in every hand: six weeks with the solar terms, the 72 kō, the moon and the forecast, the picked day's leaf and the year's twelve months; each hand turns the month its own way. Week: the sheets as they were (a week, the day's rulers). |
+| `weather` | **`on`**, `off` | The forecast on the almanac's days and the weather now, from Open-Meteo at the place Omarchy's weather panel has. Off: nothing is fetched. |
 ### Panels
 
 Every panel is a flush sheet: clicking a cell inverts it and its sheet drops from it, joined to the bar: a mini settings page with eyebrow and folio, serif title over its faint kanji, an italic standfirst, underscored `//` groups and a colophon action strip. The handscroll (`panels: scroll` and its nine settings) was taken out; a style.json that still sets them loads without them, and without a warning.

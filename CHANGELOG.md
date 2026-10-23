@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Time sheet: an almanac (Koyomi 暦) in every hand. The whole month, not only in Shōji: the day each solar term starts named on it, the 72 microseasons, the moon by its old names, the forecast on the days ahead (from Open-Meteo, at the place Omarchy's weather panel has) and the twelve months by their old names. Click a day for its leaf: its season, term and microseason and how far through each, the moon and the sky. Each hand turns the month its own way, with the wheel, `[` `]`, Page Up/Down or the foot's buttons; T is today. `hanko style set calendar week` (or Settings › Sheets) keeps the sheets as they were; `weather off` fetches nothing.
+
 - Boot screen: the brush only. The seal mark is gone (its pressed frames, its layout and the choice between the two); every boot now writes 始 in the shutdown ceremony's brush, and Settings › Boot has two choices again, the corner and the press. A screen you installed with the seal shows as out of date there until you Redraw.
 
 - Boot screen: a second mark, the brush. In place of the seal, 始 ("The beginning") is written stroke by stroke in the same bold brush the shutdown screen writes 終 with, "The beginning" beside it in the serif's italic and your seal pressed at its foot; when the machine shuts down or restarts, the screen shows 終 and "The end", carrying on from the shutdown ceremony. Pick it under The mark in Settings › Boot (Seal 鑑 or Brush 始). Also fixed: the passphrase's blade would have been drawn at the screen's top left corner instead of on the hairline.
