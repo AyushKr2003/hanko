@@ -109,6 +109,8 @@ Item {
       skin: root.skin
       now: root.feed.now || new Date()
       pick: root.feed.timePick || 0
+      // The panel's own padding comes off the room.
+      room: root.feed.room ? root.feed.room - 2 * Type.px(18) : 0
       sky: root.feed.sky || null
       zones: root.feed.zones || []
       onRequest: function(s, what, arg) { root.request(s, what, arg) }

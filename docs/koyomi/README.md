@@ -104,6 +104,10 @@ The picked day's mark (frame, ring, underline, brush) slides between days as the
 
 **The wind (Tanzaku):** when the forecast has a wind, the slips stir on their cords, each a little out of step with the next, up to 1.4° at 25 km/h. No wind, no forecast or motion still: they hang straight.
 
+### Fitting the screen
+
+The almanac is the same height on every day and every month, in every hand: every line of text has a fixed number of lines (cut short with … rather than wrapped onto another), an empty sky keeps its room, and Elsewhen is a grid of cells, up to five across (`bar/sheets/KoyomiZones.qml`), not a line per city. `SheetWindow` hands each sheet the room it has (`feed.room`: the screen less the bar, Shōji's rail gap and the crop marks); `KoyomiState.fit()` shortens the week rows until the sheet fits, and on a screen too short even then turns `compact` on: the year is left out, Elsewhen kept to one row (the rest counted, "+2 more"), Shōgi's stand and terms' rank put away. Every part that moves on a turn is clipped to its own box, and a slip's paper clips what is written on it; the lead slip sets a long date (二十六日) smaller so it never runs into the term. `tests/koyomi.py` (run by `tests/run`) opens every hand on a day in every third kō and on months back and on, with 0, 5 and 7 cities, on 1080, 768 and 640 px screens, and fails on a sheet taller than its room, one whose height changes, or a part past its edges or cut off by its box (`--all` for every kō).
+
 ---
 
 ## 4. Weather

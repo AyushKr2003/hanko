@@ -189,16 +189,17 @@ Item {
     LedgerKoyomi {
       now: root.feed.now || new Date()
       pick: root.feed.timePick || 0
+      room: root.feed.room || 0
       sky: root.feed.sky || null
       zones: root.feed.zones || []
       onRequest: function(what, arg) { root.request("time", what, arg) }
     }
   }
-  Component { id: tanzakuKoyomi; TanzakuKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
-  Component { id: shogiKoyomi; ShogiKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
-  Component { id: sorobanKoyomi; SorobanKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
-  Component { id: odoshiKoyomi; OdoshiKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
-  Component { id: kasumiKoyomi; KasumiKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: tanzakuKoyomi; TanzakuKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; room: root.feed.room || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: shogiKoyomi; ShogiKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; room: root.feed.room || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: sorobanKoyomi; SorobanKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; room: root.feed.room || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: odoshiKoyomi; OdoshiKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; room: root.feed.room || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: kasumiKoyomi; KasumiKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; room: root.feed.room || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
 
   Component {
     id: timeSheet

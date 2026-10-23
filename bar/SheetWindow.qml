@@ -56,6 +56,10 @@ PanelWindow {
     calendar: Typeset.current.calendar,
     timePick: win.bar.timePick,
     sky: Sky.forecast,
+    // The height a sheet may take on this screen: the screen less the bar
+    // (or, under Inkan, the margins), Shōji's rail gap and room for the
+    // print's crop marks. The almanac fits itself to it.
+    room: win.screenH - (win.inkan ? 2 * Sheets.SCREEN_MARGIN : win.strip) - (classicView.rail ? (win.skin.gap || 0) : 0) - Type.px(24),
     sound: Sound.reading,
     network: Net.reading,
     bluetooth: Blue.reading,

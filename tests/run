@@ -57,6 +57,11 @@ step "motion"
 # The renders are end frames; this drives the counters with motion on.
 timeout 60 python3 tests/motion.py || status=1
 
+step "koyomi"
+# The almanac in every hand, day after day, on short and tall screens:
+# one height, inside the room, nothing past its edges.
+timeout 900 python3 tests/koyomi.py || status=1
+
 [[ ${1:-} == --quick ]] && exit $status
 
 step "renders"

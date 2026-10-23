@@ -22,6 +22,7 @@ Item {
   property int pick: 0
   property var sky: null
   property var zones: []
+  property real room: 0
   signal request(string what, var arg)
 
   KoyomiState {
@@ -29,6 +30,12 @@ Item {
     now: root.now
     pick: root.pick
     sky: root.sky
+    room: root.room
+    sheet: root
+    // The slips' length is the row here: 128 px, down to 96 on a short screen.
+    rows: 2.67
+    rowMax: Type.px(48)
+    rowMin: Type.px(36)
     onRequest: function(what, arg) { root.request(what, arg) }
   }
   readonly property var leaf: ko.leaf
@@ -52,6 +59,8 @@ Item {
 
   width: parent ? parent.width : 0
   implicitHeight: column.y + column.implicitHeight + foot.implicitHeight
+  onImplicitHeightChanged: ko.fit(implicitHeight)
+  Component.onCompleted: ko.fit(implicitHeight)
 
   Column {
     id: column
@@ -70,11 +79,13 @@ Item {
       readonly property real leadW: Type.px(66)
       readonly property real gap: Type.px(3)
       readonly property real weekGap: Type.px(8)
-      readonly property real room: width - leadW - Type.px(14)
-      readonly property real slipW: Math.floor((room - root.mondays * weekGap - (root.days.length - 1) * gap) / Math.max(1, root.days.length))
+      readonly property real span: width - leadW - Type.px(14)
+      readonly property real slipW: Math.floor((span - root.mondays * weekGap - (root.days.length - 1) * gap) / Math.max(1, root.days.length))
       readonly property real cord: Type.px(10)
-      readonly property real base: Type.px(128)
+      readonly property real base: Math.round(ko.rowH * 2.67)
       height: cord + base + Type.px(64)
+      // Slips are hung from just above on a turn; they stay under the rail.
+      clip: true
 
       WheelHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -108,32 +119,48 @@ Item {
           color: Ink.alpha(Ink.bone, 0.06)
           border.width: 1
           border.color: Ink.lineStrong
-          Column {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: Type.px(10)
-            spacing: Type.px(2)
-            Text {
-              anchors.horizontalCenter: parent.horizontalCenter
-              text: root.leaf.weekdayJp.charAt(0)
-              color: Ink.inkMuted
-              font.family: Type.brush
-              font.pixelSize: Type.px(16)
-            }
-            Item { width: 1; height: Type.px(4) }
+          // Whatever is written on it stays on it.
+          clip: true
+          // The weekday at the head.
+          Text {
+            id: leadWeek
+            width: lead.width
+            y: Type.px(8)
+            horizontalAlignment: Text.AlignHCenter
+            text: root.leaf.weekdayJp.charAt(0)
+            color: Ink.inkMuted
+            font.family: Type.brush
+            font.pixelSize: Type.px(16)
+          }
+          // The date down the middle, in as much room as the head and the
+          // foot (the term, the seal) leave it: 六日 is set large, 二十六日
+          // smaller, so it never runs into the term.
+          Item {
+            id: dateBox
+            readonly property var chars: Array.from(root.leaf.dayJp + "日")
+            readonly property real cell: height / Math.max(1, chars.length)
+            y: leadWeek.y + leadWeek.height + Type.px(6)
+            width: lead.width
+            height: leadFoot.y - y - Type.px(8)
             Repeater {
-              model: Array.from(root.leaf.dayJp + "日")
+              model: dateBox.chars
               Text {
                 required property string modelData
+                required property int index
+                y: index * dateBox.cell
                 width: lead.width
+                height: dateBox.cell
                 horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
                 text: modelData
                 color: Ink.ink
                 font.family: Type.brush
-                font.pixelSize: Type.px(26)
+                font.pixelSize: Math.max(Type.px(12), Math.min(Type.px(26), Math.floor(dateBox.cell * 0.84)))
               }
             }
           }
           Column {
+            id: leadFoot
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: Type.px(10)
@@ -170,7 +197,7 @@ Item {
           readonly property var c: modelData
           // Mondays part the weeks.
           readonly property int weeksBefore: root.days.slice(1, index + 1).filter(function(d) { return d.dow === 0 }).length
-          x: pillar.room - (index + 1) * pillar.slipW - index * pillar.gap - weeksBefore * pillar.weekGap
+          x: pillar.span - (index + 1) * pillar.slipW - index * pillar.gap - weeksBefore * pillar.weekGap
           width: pillar.slipW
           height: pillar.height
 
@@ -221,6 +248,8 @@ Item {
               border.width: 1
               border.color: slip.c.today ? Ink.bone : slip.c.picked ? Ink.ink : Ink.line
               opacity: slip.c.past && !slip.c.today ? 0.55 : 1
+              // A long date and a term on a short slip are cut at its edge.
+              clip: true
               Behavior on height { enabled: Motion.live && !ko.entering; NumberAnimation { duration: Motion.ms(Motion.slide); easing.type: Easing.OutCubic } }
 
               readonly property color ink: slip.c.today ? Ink.boneInk : slip.c.weekend ? Ink.inkMuted : Ink.ink
@@ -314,15 +343,16 @@ Item {
     Row {
       id: leafRow
       width: parent.width
+      height: Type.px(56)
       spacing: Type.px(20)
       readonly property real col: (width - 2 * spacing) / 3
       Column {
         width: leafRow.col
         spacing: Type.px(3)
-        Text { text: root.leaf.sekki.jp + "  " + root.leaf.sekki.romaji; color: Ink.ink; font.family: Type.jp; font.pixelSize: Type.px(14) }
-        Text { text: (root.leaf.sekki.english + " · day " + root.leaf.sekki.day + " of " + root.leaf.sekki.days).toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
+        Text { width: parent.width; elide: Text.ElideRight; text: root.leaf.sekki.jp + "  " + root.leaf.sekki.romaji; color: Ink.ink; font.family: Type.jp; font.pixelSize: Type.px(14) }
+        Text { width: parent.width; elide: Text.ElideRight; text: (root.leaf.sekki.english + " · day " + root.leaf.sekki.day + " of " + root.leaf.sekki.days).toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
         Item { width: 1; height: Type.px(4) }
-        Text { width: parent.width; wrapMode: Text.WordWrap; text: root.leaf.ko.jp + "  " + root.leaf.ko.english; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+        Text { width: parent.width; elide: Text.ElideRight; text: root.leaf.ko.jp + "  " + root.leaf.ko.english; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
       }
       Row {
         width: leafRow.col
@@ -330,28 +360,31 @@ Item {
         MoonMark { anchors.verticalCenter: parent.verticalCenter; size: Type.px(22); age: root.leaf.moon.age }
         Column {
           anchors.verticalCenter: parent.verticalCenter
-          Text { text: root.leaf.moon.jp; color: Ink.ink; font.family: Type.jp; font.pixelSize: Type.px(14) }
-          Text { text: (root.leaf.moon.name + " · " + Math.round(root.leaf.moon.lit * 100) + "%").toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
+          width: leafRow.col - Type.px(32)
+          Text { width: parent.width; elide: Text.ElideRight; text: root.leaf.moon.jp; color: Ink.ink; font.family: Type.jp; font.pixelSize: Type.px(14) }
+          Text { width: parent.width; elide: Text.ElideRight; text: (root.leaf.moon.name + " · " + Math.round(root.leaf.moon.lit * 100) + "%").toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
         }
       }
       Row {
         width: leafRow.col
         spacing: Type.px(10)
-        visible: ko.skyLine !== ""
+        // Held empty without a sky, so the sheet doesn't change height.
+        opacity: ko.skyLine !== "" ? 1 : 0
         Text { anchors.verticalCenter: parent.verticalCenter; text: ko.skyMark; color: Ink.ink; font.family: Type.brush; font.pixelSize: Type.px(24) }
         Column {
           anchors.verticalCenter: parent.verticalCenter
           width: leafRow.col - Type.px(34)
           Text { width: parent.width; elide: Text.ElideRight; text: ko.skyLine; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.px(12) }
-          Text { width: parent.width; wrapMode: Text.WordWrap; text: ko.skyNote.toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
+          Text { width: parent.width; elide: Text.ElideRight; text: ko.skyNote.toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
         }
       }
     }
 
     // ------------------------------------------------ the twelve months
-    Item { width: 1; height: Type.px(18) }
+    Item { width: 1; height: Type.px(18); visible: !ko.compact }
     Item {
       id: months
+      visible: !ko.compact
       width: parent.width
       height: Type.px(6) + Type.px(8) + Type.px(62)
       readonly property real mw: (width - 11 * Type.px(5)) / 12
@@ -407,21 +440,11 @@ Item {
     }
 
     Item { width: 1; height: Type.px(12); visible: root.zones.length > 0 }
-    Flow {
+    KoyomiZones {
       width: parent.width
-      layoutDirection: Qt.RightToLeft
-      spacing: Type.px(18)
-      Repeater {
-        model: root.zones
-        Text {
-          required property var modelData
-          text: modelData.label.toUpperCase() + "  " + modelData.time + "  " + modelData.rel
-          color: Ink.inkMuted
-          font.family: Type.mono
-          font.pixelSize: Type.tag
-          font.letterSpacing: Type.trackTag
-        }
-      }
+      zones: root.zones
+      hand: "mono"
+      rows: ko.compact ? 1 : 2
     }
   }
 

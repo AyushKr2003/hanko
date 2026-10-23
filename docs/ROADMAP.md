@@ -180,6 +180,7 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **Koyomi 1 · the model, the weather, four hands**: `core/Koyomi.js`, `services/Sky.qml`, the settings; Ledger, Tanzaku, Shōgi, Soroban.
   - ✅ **Koyomi 2 · the other three, and Settings**: Odoshi, Kasumi, Shōji; the Time sheet rows on Settings › Sheets; the moon on light paper.
   - ✅ **Koyomi 3 · every turn starts**: the turn as a signal; the design doc, pictures and `tests/harness/turn.py`.
+  - ✅ **Koyomi 4 · nothing overflows** (asked for: "some places overflowing on changing … the ledger going over the screen height with lots of Elsewhen … handle all edge cases"): one height every day, fitted to the screen (`feed.room`, `KoyomiState.fit`, `compact`), Elsewhen as a grid (`KoyomiZones`), turns clipped, the lead slip's long date set to fit; `tests/koyomi.py` in `tests/run`.
 
 ## Dev loop
 

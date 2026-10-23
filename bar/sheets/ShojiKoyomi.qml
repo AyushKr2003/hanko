@@ -22,6 +22,7 @@ Item {
   property int pick: 0
   property var sky: null
   property var zones: []
+  property real room: 0
   signal request(string sheet, string what, var arg)
 
   KoyomiState {
@@ -29,6 +30,10 @@ Item {
     now: root.now
     pick: root.pick
     sky: root.sky
+    room: root.room
+    sheet: root
+    rowMax: Type.px(44)
+    rowMin: Type.px(34)
     onRequest: function(what, arg) { root.request("time", what, arg) }
   }
   readonly property var leaf: ko.leaf
@@ -38,7 +43,9 @@ Item {
     "twenty-first", "twenty-second", "twenty-third", "twenty-fourth", "twenty-fifth", "twenty-sixth", "twenty-seventh", "twenty-eighth",
     "twenty-ninth", "thirtieth", "thirty-first"]
 
-  implicitHeight: Math.max(left.implicitHeight, right.implicitHeight) + Type.px(16) + year.height + (root.zones.length ? Type.px(14) + zonesRow.height : 0)
+  implicitHeight: Math.max(left.implicitHeight, right.implicitHeight) + (year.visible ? Type.px(16) + year.height : 0) + (root.zones.length ? Type.px(14) + zonesRow.height : 0)
+  onImplicitHeightChanged: ko.fit(implicitHeight)
+  Component.onCompleted: ko.fit(implicitHeight)
 
   Column {
     id: left
@@ -57,6 +64,8 @@ Item {
       }
     }
     Text {
+      width: left.width
+      elide: Text.ElideRight
       text: ko.view.name + " " + ko.view.y + " · " + ko.view.wafu + " " + ko.view.romaji + (ko.k.moved ? " · " + root.leaf.when.toLowerCase() : "")
       color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(12.5)
       bottomPadding: Type.px(8)
@@ -72,7 +81,7 @@ Item {
     Item {
       id: lattice
       readonly property real cw: left.width / 7
-      readonly property real ch: Type.px(44)
+      readonly property real ch: ko.rowH
       width: left.width
       height: 6 * ch
       clip: true
@@ -137,7 +146,10 @@ Item {
             Text {
               visible: text !== ""
               anchors.horizontalCenter: parent.horizontalCenter
-              y: Type.px(27)
+              y: lattice.ch - height - Type.px(4)
+              width: lattice.cw - Type.px(4)
+              horizontalAlignment: Text.AlignHCenter
+              elide: Text.ElideRight
               // Today's sky is in the leaf; its ensō would sit on it here.
               text: pane.c.term !== "" ? pane.c.term : pane.c.sky && !pane.c.today ? pane.c.sky.jp + pane.c.sky.hi : ""
               color: pane.c.term !== "" ? Ink.ink : Ink.ink4
@@ -163,7 +175,7 @@ Item {
           }
           visible: at >= 0 && !ko.k.weeks[Math.floor(at / 7)][at % 7].today
           x: (at % 7) * lattice.cw + lattice.cw * 0.22
-          y: Math.floor(at / 7) * lattice.ch + Type.px(23)
+          y: Math.floor(at / 7) * lattice.ch + Math.round(lattice.ch * 0.52)
           width: lattice.cw * 0.56
           height: Type.px(4)
           path: Brush.stroke(lattice.cw * 0.56, Type.px(4), 7)
@@ -201,9 +213,9 @@ Item {
       Column {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Type.px(2)
-        Text { text: root.leaf.sekki.jp + "  " + root.leaf.sekki.english; color: Ink.ink; font.family: Type.jp; font.pixelSize: Type.px(13) }
-        Text { text: root.leaf.sekki.romaji + " · day " + root.leaf.sekki.day + " of " + root.leaf.sekki.days; color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11.5) }
-        Text { text: root.leaf.season.name + ", " + Math.round(root.leaf.season.through * 100) + "% gone"; color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11.5) }
+        Text { width: right.width - Type.px(86); elide: Text.ElideRight; text: root.leaf.sekki.jp + "  " + root.leaf.sekki.english; color: Ink.ink; font.family: Type.jp; font.pixelSize: Type.px(13) }
+        Text { width: right.width - Type.px(86); elide: Text.ElideRight; text: root.leaf.sekki.romaji + " · day " + root.leaf.sekki.day + " of " + root.leaf.sekki.days; color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11.5) }
+        Text { width: right.width - Type.px(86); elide: Text.ElideRight; text: root.leaf.season.name + ", " + Math.round(root.leaf.season.through * 100) + "% gone"; color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11.5) }
       }
     }
     Divider { skin: root.skin; width: parent.width; bleed: 0 }
@@ -218,35 +230,37 @@ Item {
       Column {
         width: right.width - Type.px(46)
         spacing: Type.px(6)
+        // Two lines kept for the kō and three for its note, however long.
         Text {
-          width: parent.width; wrapMode: Text.WordWrap
+          width: parent.width; height: Type.px(48); wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
           text: root.leaf.ko.english
           color: Ink.ink
           font.family: Type.display; font.pixelSize: Type.px(20); font.weight: Font.Normal
           font.variableAxes: Type.axes(Type.px(20), 380)
         }
         Text {
-          width: parent.width; wrapMode: Text.WordWrap
-          text: "Kō " + root.leaf.ko.no + " of the seventy-two, about five days long. "
+          width: parent.width; height: Type.px(46); wrapMode: Text.WordWrap; maximumLineCount: 3; elide: Text.ElideRight
+          text: "Kō " + root.leaf.ko.no + " of the seventy-two, about five days each. "
             + (root.leaf.ko.left === root.leaf.next.in
-               ? "The next, " + root.leaf.next.romaji + " " + root.leaf.next.jp + ", opens a new term " + (root.leaf.next.in === 1 ? "tomorrow." : "in " + root.leaf.next.in + " days.")
-               : "The next " + (root.leaf.ko.left === 1 ? "begins tomorrow" : "in " + root.leaf.ko.left + " days") + "; " + root.leaf.next.romaji + " " + root.leaf.next.jp + " in " + root.leaf.next.in + ".")
+               ? "Next, " + root.leaf.next.jp + " " + root.leaf.next.romaji + (root.leaf.next.in === 1 ? " tomorrow." : " in " + root.leaf.next.in + " days.")
+               : "Next kō " + (root.leaf.ko.left === 1 ? "tomorrow" : "in " + root.leaf.ko.left + " days") + "; " + root.leaf.next.jp + " in " + root.leaf.next.in + ".")
           color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11.5)
         }
         Item { width: 1; height: Type.px(4) }
         Row {
           spacing: Type.px(8)
           MoonMark { anchors.verticalCenter: parent.verticalCenter; size: Type.px(15); age: root.leaf.moon.age; ink: Ink.ink }
-          Text { anchors.verticalCenter: parent.verticalCenter; text: root.leaf.moon.jp + " · " + root.leaf.moon.name; color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12) }
+          Text { anchors.verticalCenter: parent.verticalCenter; width: right.width - Type.px(70); elide: Text.ElideRight; text: root.leaf.moon.jp + " · " + root.leaf.moon.name; color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12) }
         }
         Row {
-          visible: ko.skyLine !== ""
+          opacity: ko.skyLine !== "" ? 1 : 0
+          height: Type.px(30)
           spacing: Type.px(8)
           Text { anchors.verticalCenter: parent.verticalCenter; text: ko.skyMark; color: Ink.ink; font.family: Type.brush; font.pixelSize: Type.px(16) }
           Column {
             anchors.verticalCenter: parent.verticalCenter
-            Text { text: ko.skyLine; color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12) }
-            Text { width: right.width - Type.px(70); wrapMode: Text.WordWrap; text: ko.skyNote; color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11) }
+            Text { width: right.width - Type.px(70); elide: Text.ElideRight; text: ko.skyLine; color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(12) }
+            Text { width: right.width - Type.px(70); elide: Text.ElideRight; text: ko.skyNote; color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11) }
           }
         }
       }
@@ -256,6 +270,7 @@ Item {
   // The year: twelve panes, the one turned to lit like washi with light behind.
   Item {
     id: year
+    visible: !ko.compact
     y: Math.max(left.implicitHeight, right.implicitHeight) + Type.px(16)
     width: root.width
     height: Type.px(46)
@@ -294,31 +309,13 @@ Item {
     }
   }
 
-  Row {
+  KoyomiZones {
     id: zonesRow
-    visible: root.zones.length > 0
-    y: year.y + year.height + Type.px(14)
-    spacing: Type.px(28)
-    Repeater {
-      model: root.zones
-      Row {
-        id: zone
-        required property var modelData
-        spacing: Type.px(10)
-        Column {
-          anchors.verticalCenter: parent.verticalCenter
-          Text { text: zone.modelData.label || ""; color: Ink.ink2; font.family: Type.text; font.pixelSize: Type.px(13) }
-          Text { text: zone.modelData.day || zone.modelData.date || ""; color: Ink.ink3; font.family: Type.text; font.pixelSize: Type.px(11.5) }
-        }
-        Text {
-          anchors.verticalCenter: parent.verticalCenter
-          text: zone.modelData.time || ""
-          color: Ink.ink
-          font.family: Type.display; font.pixelSize: Type.px(18); font.weight: Font.Normal
-          font.variableAxes: Type.axes(Type.px(18), 400)
-        }
-      }
-    }
+    y: (year.visible ? year.y + year.height : Math.max(left.implicitHeight, right.implicitHeight)) + Type.px(14)
+    width: root.width
+    zones: root.zones
+    hand: "shoji"
+    rows: ko.compact ? 1 : 2
   }
 
   Keys.onPressed: function(event) { if (ko.key(event)) event.accepted = true }

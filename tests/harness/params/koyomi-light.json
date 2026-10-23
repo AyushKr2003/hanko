@@ -189,25 +189,45 @@
    "feed": {
     "zones": [
      {
-      "label": "Tokyo",
-      "id": "Asia/Tokyo",
+      "label": "Kolkata",
       "ready": true,
-      "time": "06:44",
-      "date": "Wed 07 · JST",
+      "time": "07:14",
+      "date": "",
+      "rel": "+5:30"
+     },
+     {
+      "label": "Tokyo",
+      "ready": true,
+      "time": "10:44",
+      "date": "",
       "rel": "+9"
      },
      {
-      "label": "Lisbon",
-      "id": "Europe/Lisbon",
+      "label": "Los Angeles",
       "ready": true,
-      "time": "22:44",
-      "date": "Tue 06 · WEST",
+      "time": "18:44",
+      "date": "",
+      "rel": "−7"
+     },
+     {
+      "label": "New York",
+      "ready": true,
+      "time": "21:44",
+      "date": "",
+      "rel": "−4"
+     },
+     {
+      "label": "London",
+      "ready": true,
+      "time": "02:44",
+      "date": "",
       "rel": "+1"
      }
     ],
-    "timePick": -40
+    "timePick": -40,
+    "room": 1020
    },
-   "height": 1000
+   "height": 1080
   },
   {
    "label": "TIME · KOYOMI · TANZAKU · TURNED +57 DAYS",
@@ -221,19 +241,38 @@
    "feed": {
     "zones": [
      {
-      "label": "Tokyo",
-      "id": "Asia/Tokyo",
+      "label": "Kolkata",
       "ready": true,
-      "time": "06:44",
-      "date": "Wed 07 · JST",
+      "time": "07:14",
+      "date": "",
+      "rel": "+5:30"
+     },
+     {
+      "label": "Tokyo",
+      "ready": true,
+      "time": "10:44",
+      "date": "",
       "rel": "+9"
      },
      {
-      "label": "Lisbon",
-      "id": "Europe/Lisbon",
+      "label": "Los Angeles",
       "ready": true,
-      "time": "22:44",
-      "date": "Tue 06 · WEST",
+      "time": "18:44",
+      "date": "",
+      "rel": "−7"
+     },
+     {
+      "label": "New York",
+      "ready": true,
+      "time": "21:44",
+      "date": "",
+      "rel": "−4"
+     },
+     {
+      "label": "London",
+      "ready": true,
+      "time": "02:44",
+      "date": "",
       "rel": "+1"
      }
     ],
@@ -365,9 +404,10 @@
       }
      }
     },
-    "timePick": 57
+    "timePick": 57,
+    "room": 1020
    },
-   "height": 1000
+   "height": 1080
   },
   {
    "label": "TIME · KOYOMI · SOROBAN · TURNED +100 DAYS · WEATHER OFF",
@@ -382,25 +422,45 @@
    "feed": {
     "zones": [
      {
-      "label": "Tokyo",
-      "id": "Asia/Tokyo",
+      "label": "Kolkata",
       "ready": true,
-      "time": "06:44",
-      "date": "Wed 07 · JST",
+      "time": "07:14",
+      "date": "",
+      "rel": "+5:30"
+     },
+     {
+      "label": "Tokyo",
+      "ready": true,
+      "time": "10:44",
+      "date": "",
       "rel": "+9"
      },
      {
-      "label": "Lisbon",
-      "id": "Europe/Lisbon",
+      "label": "Los Angeles",
       "ready": true,
-      "time": "22:44",
-      "date": "Tue 06 · WEST",
+      "time": "18:44",
+      "date": "",
+      "rel": "−7"
+     },
+     {
+      "label": "New York",
+      "ready": true,
+      "time": "21:44",
+      "date": "",
+      "rel": "−4"
+     },
+     {
+      "label": "London",
+      "ready": true,
+      "time": "02:44",
+      "date": "",
       "rel": "+1"
      }
     ],
-    "timePick": 100
+    "timePick": 100,
+    "room": 1020
    },
-   "height": 1000
+   "height": 1080
   }
  ]
 }

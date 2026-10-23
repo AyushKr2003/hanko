@@ -19,6 +19,55 @@ QtObject {
   // K.forecast() or null (weather off, or nothing fetched yet).
   property var sky: null
 
+  // Fitting the screen. `room` is the height the sheet may take (feed.room:
+  // the screen less the bar and a margin; 0, no limit). Each hand gives
+  // its week rows' tallest and shortest height; fit() is handed the hand's
+  // height and sets `rowH` so the whole sheet fits, and when even the
+  // shortest rows don't, sets `compact` (the hand leaves out its year and
+  // keeps its cities to one row). Every other part of a hand has a fixed
+  // height, so the sheet is the same height on every day and month.
+  property real room: 0
+  property real rowMax: Type.px(48)
+  property real rowMin: Type.px(34)
+  property real rowH: rowMax
+  // How many rows the hand's height carries (six weeks; a pillar of slips
+  // carries its slips' length, so it gives its own).
+  property real rows: 6
+  property bool compact: false
+  property real _h: 0
+  property real _at: 0
+  property int _tries: 0
+  property real _prevH: 0
+  property real _prevAt: 0
+  // The hand itself (each hand sets it), measured afresh at every step.
+  property Item sheet: null
+  function fit(h) {
+    // The height as it was at this row height; laid out again, it is fitted again.
+    _h = h
+    _at = rowH
+    Qt.callLater(_fit)
+  }
+  function _fit() {
+    if (sheet) { _h = sheet.implicitHeight; _at = rowH }
+    if (room <= 0) { rowH = rowMax; compact = false; return }
+    // A few steps settle it; past that, stop rather than chase rounding.
+    if (++_tries > 16) return
+    var fixed = _h - rows * _at
+    var r = Math.max(rowMin, Math.min(rowMax, Math.floor((room - Math.ceil(fixed)) / rows)))
+    if (fixed + rows * r > room && !compact) { compact = true; return }
+    // Still over as measured: when shorter rows didn't make the sheet any
+    // shorter (a hand's side column, not its rows, sets its height there),
+    // or the rows are as short as they go, it goes compact.
+    if (Math.ceil(_h) > room && !compact && (_at <= rowMin || (_prevH > 0 && _h >= _prevH && _at < _prevAt))) { compact = true; return }
+    if (Math.ceil(_h) > room && r >= _at) r = Math.max(rowMin, _at - Type.px(2))
+    _prevH = _h
+    _prevAt = _at
+    // Laid out at once; measured again next, as its height may not change.
+    if (Math.abs(r - rowH) >= 1) { rowH = r; Qt.callLater(_fit) }
+  }
+  onRoomChanged: { compact = false; _tries = 0; _prevH = 0; rowH = rowMax; if (_h > 0) Qt.callLater(_fit) }
+  onRowMaxChanged: { _tries = 0; rowH = rowMax; if (_h > 0) Qt.callLater(_fit) }
+
   // what: "pick" (arg: days from today)
   signal request(string what, var arg)
 

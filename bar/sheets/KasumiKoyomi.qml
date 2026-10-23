@@ -21,6 +21,7 @@ Item {
   property int pick: 0
   property var sky: null
   property var zones: []
+  property real room: 0
   signal request(string what, var arg)
 
   KoyomiState {
@@ -28,12 +29,18 @@ Item {
     now: root.now
     pick: root.pick
     sky: root.sky
+    room: root.room
+    sheet: root
+    rowMax: Type.px(52)
+    rowMin: Type.px(42)
     onRequest: function(what, arg) { root.request(what, arg) }
   }
   readonly property var leaf: ko.leaf
 
   width: parent ? parent.width : 0
   implicitHeight: column.y + column.implicitHeight + foot.implicitHeight
+  onImplicitHeightChanged: ko.fit(implicitHeight)
+  Component.onCompleted: ko.fit(implicitHeight)
 
   Column {
     id: column
@@ -58,9 +65,14 @@ Item {
         font.pixelSize: Type.px(44)
       }
       Column {
+        id: scene
         y: Type.px(10)
+        // Clear of the month's name at the right.
+        width: parent.width - Type.px(150)
         spacing: Type.px(2)
         Text {
+          width: scene.width
+          elide: Text.ElideRight
           text: root.leaf.weekday + ", " + root.leaf.day + " " + ko.view.name
           color: Ink.ink
           font.family: Type.display
@@ -69,6 +81,8 @@ Item {
           font.variableAxes: Type.axes(Type.px(30), 360)
         }
         Text {
+          width: scene.width
+          elide: Text.ElideRight
           text: root.leaf.sekki.romaji + ", " + root.leaf.sekki.english.toLowerCase() + " · " + root.leaf.ko.english.toLowerCase()
           color: Ink.inkDim
           font.family: Type.display
@@ -76,6 +90,8 @@ Item {
           font.pixelSize: Type.px(15)
         }
         Text {
+          width: scene.width
+          elide: Text.ElideRight
           text: (root.leaf.when + " · " + ko.view.y + " · " + ko.view.english).toUpperCase()
           color: root.leaf.offset === 0 ? Ink.seal : Ink.inkMuted
           font.family: Type.mono
@@ -110,8 +126,12 @@ Item {
       id: screen
       width: parent.width
       readonly property real dayW: width / 7
-      readonly property real bandH: Type.px(52)
+      readonly property real bandH: ko.rowH
+      // Where the mist sits in its row, and the figures on it.
+      readonly property real mistY: Math.round((bandH - Type.px(40)) / 2) + Type.px(2)
       height: 6 * bandH
+      // The bands drift in from either side on a turn; they stay on the screen.
+      clip: true
 
       WheelHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -156,10 +176,10 @@ Item {
           Connections { target: ko; function onTurned() { band.enter() } }
 
           // The thin mist under every week, then the gold laid on it.
-          MistBand { y: Type.px(8); width: parent.width; level: 1; gilt: false }
+          MistBand { y: screen.mistY + Type.px(3); width: parent.width; level: 1; gilt: false }
           MistBand {
             visible: band.gilt > 0
-            y: Type.px(8)
+            y: screen.mistY + (band.sealed ? 0 : Type.px(3))
             width: parent.width
             level: band.gilt
             gilt: true
@@ -183,7 +203,7 @@ Item {
               Text {
                 id: fig
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: Type.px(13)
+                y: screen.mistY + Type.px(8)
                 text: dd.c.day
                 color: dd.onGold ? Ink.boneInk : dd.c.picked ? Ink.ink : Ink.inkDim
                 font.family: Type.display
@@ -214,7 +234,10 @@ Item {
               Text {
                 visible: !!dd.c.sky
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: Type.px(36)
+                y: screen.bandH - height - Type.px(1)
+                width: screen.dayW - Type.px(4)
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
                 text: dd.c.sky ? dd.c.sky.jp + " " + dd.c.sky.hi : ""
                 color: Ink.inkFaint
                 font.family: Type.mono
@@ -242,7 +265,7 @@ Item {
         }
         visible: at >= 0
         x: (at % 7) * screen.dayW + screen.dayW * 0.3
-        y: Math.floor(at / 7) * screen.bandH + Type.px(48)
+        y: Math.floor(at / 7) * screen.bandH + screen.bandH - Type.px(4)
         width: screen.dayW * 0.4
         height: 2
         color: Ink.ink
@@ -252,9 +275,10 @@ Item {
     }
 
     // ------------------------------------------------ the year
-    Item { width: 1; height: Type.px(12) }
+    Item { width: 1; height: Type.px(12); visible: !ko.compact }
     Row {
       id: year
+      visible: !ko.compact
       width: parent.width
       spacing: Type.px(4)
       Repeater {
@@ -290,33 +314,34 @@ Item {
     }
 
     Item { width: 1; height: Type.px(8) }
-    Flow {
+    // The kō, the moon and the sky on one line of fixed height, a third each.
+    Row {
+      id: facts
       width: parent.width
-      spacing: Type.px(22)
-      Text { text: root.leaf.ko.jp + " · kō " + root.leaf.ko.no + " of 72"; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+      height: Type.px(22)
+      spacing: Type.px(14)
+      readonly property real third: (width - 2 * spacing) / 3
+      Text { anchors.verticalCenter: parent.verticalCenter; width: facts.third; elide: Text.ElideRight; text: root.leaf.ko.jp + " · kō " + root.leaf.ko.no + " of 72"; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
       Row {
+        width: facts.third
         spacing: Type.px(8)
         MoonMark { anchors.verticalCenter: parent.verticalCenter; size: Type.px(16); age: root.leaf.moon.age }
-        Text { anchors.verticalCenter: parent.verticalCenter; text: root.leaf.moon.jp + " · " + root.leaf.moon.name; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+        Text { anchors.verticalCenter: parent.verticalCenter; width: facts.third - Type.px(24); elide: Text.ElideRight; text: root.leaf.moon.jp + " · " + root.leaf.moon.name; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
       }
       Row {
-        visible: ko.skyLine !== ""
+        width: facts.third
+        opacity: ko.skyLine !== "" ? 1 : 0
         spacing: Type.px(8)
-        Text { anchors.verticalCenter: parent.verticalCenter; text: ko.skyMark; color: Ink.ink; font.family: Type.brush; font.pixelSize: Type.px(16) }
-        Text { anchors.verticalCenter: parent.verticalCenter; text: ko.skyLine + (ko.skyNote ? " · " + ko.skyNote : ""); color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+        Text { id: skyK; anchors.verticalCenter: parent.verticalCenter; text: ko.skyMark; color: Ink.ink; font.family: Type.brush; font.pixelSize: Type.px(16) }
+        Text { anchors.verticalCenter: parent.verticalCenter; width: facts.third - skyK.width - Type.px(8); elide: Text.ElideRight; text: ko.skyLine; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
       }
-      Repeater {
-        model: root.zones
-        Text {
-          required property var modelData
-          topPadding: Type.px(3)
-          text: modelData.label.toUpperCase() + "  " + modelData.time + "  " + modelData.rel
-          color: Ink.inkMuted
-          font.family: Type.mono
-          font.pixelSize: Type.tag
-          font.letterSpacing: Type.trackTag
-        }
-      }
+    }
+    Item { width: 1; height: Type.px(8); visible: root.zones.length > 0 }
+    KoyomiZones {
+      width: parent.width
+      zones: root.zones
+      hand: "mono"
+      rows: ko.compact ? 1 : 2
     }
   }
 

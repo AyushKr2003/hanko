@@ -22,6 +22,7 @@ Item {
   property int pick: 0
   property var sky: null
   property var zones: []
+  property real room: 0
   signal request(string what, var arg)
 
   KoyomiState {
@@ -29,6 +30,10 @@ Item {
     now: root.now
     pick: root.pick
     sky: root.sky
+    room: root.room
+    sheet: root
+    rowMax: Type.px(62)
+    rowMin: Type.px(40)
     onRequest: function(what, arg) { root.request(what, arg) }
   }
   readonly property var leaf: ko.leaf
@@ -56,6 +61,8 @@ Item {
 
   width: parent ? parent.width : 0
   implicitHeight: column.y + column.implicitHeight + foot.implicitHeight
+  onImplicitHeightChanged: ko.fit(implicitHeight)
+  Component.onCompleted: ko.fit(implicitHeight)
 
   Column {
     id: column
@@ -102,7 +109,7 @@ Item {
       Item {
         id: board
         readonly property real cw: Type.px(58)
-        readonly property real ch: Type.px(62)
+        readonly property real ch: ko.rowH
         width: 7 * cw + Type.px(22)
         height: Type.px(18) + 6 * ch
 
@@ -143,6 +150,8 @@ Item {
 
         Rectangle {
           id: grid
+          // Pieces are set down from just above on a turn; they stay on the board.
+          clip: true
           y: Type.px(18)
           width: 7 * board.cw
           height: 6 * board.ch
@@ -280,6 +289,8 @@ Item {
         id: side
         width: spread.width - board.width - spread.spacing
         spacing: Type.px(8)
+        // On a short screen (compact) the terms' rank is left out, with the stand.
+        readonly property bool tall: !ko.compact
 
         Text { text: "季 THE SEASON"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag; topPadding: Type.px(2) }
         Rank {
@@ -289,38 +300,44 @@ Item {
         }
         Text { text: (root.leaf.season.name + " · day " + root.leaf.season.day + " of " + root.leaf.season.days).toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
         Item { width: 1; height: Type.px(6) }
-        Text { text: "節 ITS TERMS"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
+        Text { visible: side.tall; text: "節 ITS TERMS"; color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
         Rank {
+          visible: side.tall
           names: ["1", "2", "3", "4", "5", "6"]
           on: root.leaf.sekki.index % 6
           glyph: root.leaf.sekki.jp
         }
-        Text { text: root.leaf.sekki.romaji + " · " + root.leaf.sekki.english; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.px(13) }
-        Text { text: ("Day " + root.leaf.sekki.day + " of " + root.leaf.sekki.days + " · next " + root.leaf.next.jp + " in " + root.leaf.next.in).toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
+        Text { width: side.width; elide: Text.ElideRight; text: root.leaf.sekki.romaji + " · " + root.leaf.sekki.english; color: Ink.ink; font.family: Type.text; font.pixelSize: Type.px(13) }
+        Text { width: side.width; elide: Text.ElideRight; text: ("Day " + root.leaf.sekki.day + " of " + root.leaf.sekki.days + " · next " + root.leaf.next.jp + " in " + root.leaf.next.in).toUpperCase(); color: Ink.inkMuted; font.family: Type.mono; font.pixelSize: Type.tag; font.letterSpacing: Type.trackTag }
         Item { width: 1; height: Type.px(6) }
         Rectangle { width: side.width; height: 1; color: Ink.lineSoft }
-        Text { width: side.width; wrapMode: Text.WordWrap; text: root.leaf.ko.jp + "  " + root.leaf.ko.english; color: Ink.inkDim; font.family: Type.display; font.italic: true; font.pixelSize: Type.px(14) }
+        // Two lines kept for the kō, whether it takes one or two.
+        Text { width: side.width; height: Type.px(40); wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight; text: root.leaf.ko.jp + "  " + root.leaf.ko.english; color: Ink.inkDim; font.family: Type.display; font.italic: true; font.pixelSize: Type.px(14) }
         Row {
           spacing: Type.px(8)
           MoonMark { anchors.verticalCenter: parent.verticalCenter; size: Type.px(16); age: root.leaf.moon.age }
-          Text { anchors.verticalCenter: parent.verticalCenter; text: root.leaf.moon.jp + " · " + root.leaf.moon.name; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+          Text { anchors.verticalCenter: parent.verticalCenter; width: side.width - Type.px(24); elide: Text.ElideRight; text: root.leaf.moon.jp + " · " + root.leaf.moon.name; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
         }
+        // The sky, or its room held empty, so the sheet doesn't change height.
         Row {
-          visible: ko.skyLine !== ""
+          opacity: ko.skyLine !== "" ? 1 : 0
+          height: Type.px(30)
           spacing: Type.px(8)
           Text { anchors.verticalCenter: parent.verticalCenter; text: ko.skyMark; color: Ink.ink; font.family: Type.brush; font.pixelSize: Type.px(16) }
           Column {
             anchors.verticalCenter: parent.verticalCenter
-            Text { text: ko.skyLine; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
-            Text { width: side.width - Type.px(26); wrapMode: Text.WordWrap; text: ko.skyNote; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(11) }
+            width: side.width - Type.px(26)
+            Text { width: parent.width; elide: Text.ElideRight; text: ko.skyLine; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+            Text { width: parent.width; elide: Text.ElideRight; text: ko.skyNote; color: Ink.inkMuted; font.family: Type.text; font.pixelSize: Type.px(11) }
           }
         }
       }
     }
 
     // ------------------------------------------------ the piece stand
-    Item { width: 1; height: Type.px(16) }
+    Item { width: 1; height: Type.px(16); visible: !ko.compact }
     Row {
+      visible: !ko.compact
       spacing: Type.px(10)
       Text { anchors.verticalCenter: parent.verticalCenter; text: "駒台"; color: Ink.inkMuted; font.family: Type.brush; font.pixelSize: Type.px(13) }
       Text {
@@ -332,9 +349,10 @@ Item {
         font.letterSpacing: Type.trackTag
       }
     }
-    Item { width: 1; height: Type.px(8) }
+    Item { width: 1; height: Type.px(8); visible: !ko.compact }
     Item {
       id: stand
+      visible: !ko.compact
       width: parent.width
       readonly property real slot: width / 7
       readonly property real piece: Type.px(28)
@@ -370,6 +388,9 @@ Item {
           Text {
             anchors.horizontalCenter: parent.horizontalCenter
             y: stand.piece * 1.12 + Type.px(12)
+            width: stand.slot - Type.px(4)
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
             text: (held.modelData.kanji + " " + held.modelData.day + (held.modelData.sky ? " · " + held.modelData.sky.hi : "")).toUpperCase()
             color: held.index === 0 ? Ink.ink : Ink.inkMuted
             font.family: Type.mono
@@ -381,14 +402,12 @@ Item {
       }
     }
 
-    Item { width: 1; height: Type.px(8); visible: root.zones.length > 0 }
-    Text {
-      visible: root.zones.length > 0
-      text: root.zones.map(function(z) { return z.label.toUpperCase() + "  " + z.time + "  " + z.rel }).join("     ")
-      color: Ink.inkMuted
-      font.family: Type.mono
-      font.pixelSize: Type.tag
-      font.letterSpacing: Type.trackTag
+    Item { width: 1; height: Type.px(10); visible: root.zones.length > 0 }
+    KoyomiZones {
+      width: parent.width
+      zones: root.zones
+      hand: "mono"
+      rows: ko.compact ? 1 : 2
     }
   }
 

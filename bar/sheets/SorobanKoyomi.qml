@@ -22,6 +22,7 @@ Item {
   property int pick: 0
   property var sky: null
   property var zones: []
+  property real room: 0
   signal request(string what, var arg)
 
   KoyomiState {
@@ -29,6 +30,10 @@ Item {
     now: root.now
     pick: root.pick
     sky: root.sky
+    room: root.room
+    sheet: root
+    rowMax: Type.px(46)
+    rowMin: Type.px(40)
     onRequest: function(what, arg) { root.request(what, arg) }
   }
   readonly property var leaf: ko.leaf
@@ -47,6 +52,8 @@ Item {
 
   width: parent ? parent.width : 0
   implicitHeight: column.y + column.implicitHeight + foot.implicitHeight
+  onImplicitHeightChanged: ko.fit(implicitHeight)
+  Component.onCompleted: ko.fit(implicitHeight)
 
   Column {
     id: column
@@ -163,7 +170,10 @@ Item {
       readonly property real beamW: Type.px(6)
       readonly property real wireW: width - beamW
       readonly property real slot: wireW / 7
-      readonly property real wireH: Type.px(46)
+      readonly property real wireH: ko.rowH
+      // Where the wire runs in each row, and the date under it.
+      readonly property real wireY: Math.round(wireH * 0.43)
+      readonly property real labelY: wireH - Type.px(17)
       height: 6 * wireH + Type.px(6)
 
       WheelHandler {
@@ -184,7 +194,7 @@ Item {
           y: Type.px(3) + index * tray.wireH
           width: tray.width
           height: tray.wireH
-          Rectangle { x: tray.beamW; y: Type.px(20); width: tray.wireW - Type.px(2); height: 1; color: Ink.line }
+          Rectangle { x: tray.beamW; y: tray.wireY; width: tray.wireW - Type.px(2); height: 1; color: Ink.line }
           Repeater {
             model: wire.modelData
             Item {
@@ -224,7 +234,7 @@ Item {
               Text {
                 visible: bead.c.term !== ""
                 x: parent.width / 2 + Type.px(18)
-                y: Type.px(20) - height / 2
+                y: tray.wireY - height / 2
                 text: bead.c.term
                 color: Ink.ink
                 font.family: Type.jp
@@ -233,7 +243,7 @@ Item {
               MoonMark {
                 visible: bead.c.moon !== ""
                 x: parent.width / 2 - Type.px(18) - width
-                y: Type.px(20) - height / 2
+                y: tray.wireY - height / 2
                 size: Type.px(8)
                 age: bead.c.moon === "full" ? 14.77 : 0
               }
@@ -241,7 +251,7 @@ Item {
               Rectangle {
                 visible: bead.c.picked
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: Type.px(20) - height / 2
+                y: tray.wireY - height / 2
                 width: Type.px(34); height: Type.px(22); radius: height / 2
                 color: "transparent"
                 border.width: 1
@@ -249,7 +259,7 @@ Item {
               }
               Bead {
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: Type.px(20) - height / 2
+                y: tray.wireY - height / 2
                 width: Type.px(bead.c.today ? 28 : 24)
                 height: Type.px(bead.c.today ? 14 : 12)
                 counted: bead.c.past || bead.c.today
@@ -257,7 +267,10 @@ Item {
               }
               Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: Type.px(29)
+                y: tray.labelY
+                width: tray.slot - Type.px(4)
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
                 text: bead.c.day + (bead.c.sky ? " " + bead.c.sky.jp : "")
                 color: bead.c.today ? Ink.seal : bead.c.picked ? Ink.ink : Ink.inkMuted
                 font.family: Type.mono
@@ -275,8 +288,9 @@ Item {
     }
 
     // ------------------------------------------------ the counts
-    Item { width: 1; height: Type.px(16) }
+    Item { width: 1; height: Type.px(16); visible: !ko.compact }
     Wire {
+      visible: !ko.compact
       label: "年 The year · " + ko.view.y
       count: ko.k.year.length
       // The months gone, counted against today, whichever year is shown.
@@ -288,6 +302,7 @@ Item {
       onBeadClicked: function(i) { ko.month(i) }
     }
     Wire {
+      visible: !ko.compact
       label: "節 " + root.leaf.season.name + "'s terms"
       count: 6
       counted: root.leaf.sekki.index % 6
@@ -297,6 +312,7 @@ Item {
       note: root.leaf.sekki.jp + " " + root.leaf.sekki.romaji + " · " + root.leaf.sekki.english + " · day " + root.leaf.sekki.day + " of " + root.leaf.sekki.days
     }
     Wire {
+      visible: !ko.compact
       label: "候 Its kō"
       count: 3
       counted: (root.leaf.ko.no - 1) % 3
@@ -307,32 +323,33 @@ Item {
     }
 
     Item { width: 1; height: Type.px(10) }
-    Flow {
+    // The moon and the sky on one line of fixed height, each in its half.
+    Row {
+      id: facts
       width: parent.width
-      spacing: Type.px(22)
+      height: Type.px(22)
+      spacing: Type.px(16)
+      readonly property real half: (width - spacing) / 2
       Row {
+        width: facts.half
         spacing: Type.px(8)
         MoonMark { anchors.verticalCenter: parent.verticalCenter; size: Type.px(16); age: root.leaf.moon.age }
-        Text { anchors.verticalCenter: parent.verticalCenter; text: root.leaf.moon.jp + " · " + root.leaf.moon.name + " · " + Math.round(root.leaf.moon.lit * 100) + "%"; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+        Text { anchors.verticalCenter: parent.verticalCenter; width: facts.half - Type.px(24); elide: Text.ElideRight; text: root.leaf.moon.jp + " · " + root.leaf.moon.name + " · " + Math.round(root.leaf.moon.lit * 100) + "%"; color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
       }
       Row {
-        visible: ko.skyLine !== ""
+        width: facts.half
+        opacity: ko.skyLine !== "" ? 1 : 0
         spacing: Type.px(8)
-        Text { anchors.verticalCenter: parent.verticalCenter; text: ko.skyMark; color: Ink.ink; font.family: Type.brush; font.pixelSize: Type.px(16) }
-        Text { anchors.verticalCenter: parent.verticalCenter; text: ko.skyLine + (ko.skyNote ? " · " + ko.skyNote : ""); color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
+        Text { id: skyK; anchors.verticalCenter: parent.verticalCenter; text: ko.skyMark; color: Ink.ink; font.family: Type.brush; font.pixelSize: Type.px(16) }
+        Text { anchors.verticalCenter: parent.verticalCenter; width: facts.half - skyK.width - Type.px(8); elide: Text.ElideRight; text: ko.skyLine + (ko.skyNote ? " · " + ko.skyNote : ""); color: Ink.inkDim; font.family: Type.text; font.pixelSize: Type.px(12) }
       }
-      Repeater {
-        model: root.zones
-        Text {
-          required property var modelData
-          text: modelData.label.toUpperCase() + "  " + modelData.time + "  " + modelData.rel
-          color: Ink.inkMuted
-          font.family: Type.mono
-          font.pixelSize: Type.tag
-          font.letterSpacing: Type.trackTag
-          topPadding: Type.px(3)
-        }
-      }
+    }
+    Item { width: 1; height: Type.px(8); visible: root.zones.length > 0 }
+    KoyomiZones {
+      width: parent.width
+      zones: root.zones
+      hand: "mono"
+      rows: ko.compact ? 1 : 2
     }
   }
 
