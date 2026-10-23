@@ -188,7 +188,8 @@
      "power": "odoshi",
      "display": "odoshi",
      "inbox": "odoshi"
-    }
+    },
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {

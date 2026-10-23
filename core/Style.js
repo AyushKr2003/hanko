@@ -145,12 +145,20 @@ function normalizeTypeSize(t) {
 // And the clock's hours, global the same way:
 //   hours     auto follows Omarchy's clock (its `format` in shell.json),
 //             24h or 12h set it here
+// And the time sheet's, the same way (docs/koyomi/README.md):
+//   calendar  koyomi, the almanac: the whole month in every hand, with its
+//             solar terms, microseasons, moon and weather; week, the sheets
+//             as they were before it (a week, the day's rulers)
+//   weather   the forecast on the almanac (Open-Meteo, at the place
+//             Omarchy's weather panel has), on or off
 var SEASONS = ["off", "kanji", "english"]
 var NUMERALS = ["arabic", "kanji"]
 var GRAINS = ["smooth", "fine", "toothy"]
 var HOURS = ["auto", "24h", "12h"]
-var TOUCH_DEFAULTS = { season: "kanji", numerals: "arabic", grain: "fine", hours: "auto" }
-var TOUCH_LISTS = { season: SEASONS, numerals: NUMERALS, grain: GRAINS, hours: HOURS }
+var CALENDARS = ["koyomi", "week"]
+var WEATHERS = ["on", "off"]
+var TOUCH_DEFAULTS = { season: "kanji", numerals: "arabic", grain: "fine", hours: "auto", calendar: "koyomi", weather: "on" }
+var TOUCH_LISTS = { season: SEASONS, numerals: NUMERALS, grain: GRAINS, hours: HOURS, calendar: CALENDARS, weather: WEATHERS }
 
 function normalizeTouch(key, v, legacy) {
   var list = TOUCH_LISTS[key]
@@ -353,7 +361,7 @@ function withoutKata(obj) {
 
 // A style document as stored in style.json:
 //   { preset, edits: {...}, sealGlyph, motion, typeSize, overview, sheetStyles, hidden: [...], monitors: { "<name>": {...} },
-//     season, numerals, grain, hours }
+//     season, numerals, grain, hours, calendar, weather }
 // Anything missing or invalid falls back, so resolve() always returns a full style.
 //
 // A file from before Shōji was folded into Hanko may name a design. Shōji
@@ -400,6 +408,8 @@ function normalize(doc, warnings) {
     numerals: normalizeTouch("numerals", doc.numerals, doc.touches),
     grain: normalizeTouch("grain", doc.grain, doc.touches),
     hours: normalizeTouch("hours", doc.hours),
+    calendar: normalizeTouch("calendar", doc.calendar),
+    weather: normalizeTouch("weather", doc.weather),
     overview: normalizeOverview(doc.overview),
     hidden: normalizeHidden(doc.hidden, warnings),
     monitors: monitors
@@ -443,6 +453,8 @@ function resolve(doc, monitor) {
   style.numerals = d.numerals
   style.grain = d.grain
   style.hours = d.hours
+  style.calendar = d.calendar
+  style.weather = d.weather
   style.overview = d.overview
   style.panelOpacity = d.panelOpacity || 0
   style.sheetStyles = sheetStylesOf(d)

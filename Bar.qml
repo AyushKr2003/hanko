@@ -88,6 +88,8 @@ Item {
   property string sheetScreen: ""
   // Weeks the Time sheet's ribbon is moved from today.
   property int timeShift: 0
+  // The almanac's picked day (Koyomi 暦), in days from today.
+  property int timePick: 0
   // The sheets that can open (all = No. 00, Inkan's sheet of every sheet).
   readonly property var sheetsReady: ["all", "time", "sound", "network", "bluetooth", "power", "display", "inbox"]
   // "all" while the open sheet was opened from No. 00, so it can go back.
@@ -105,7 +107,7 @@ Item {
     if (!sheetReady(key) || barHidden) return false
     closeOverview()
     closeHostedPopout()
-    if (key !== sheet) timeShift = 0
+    if (key !== sheet) { timeShift = 0; timePick = 0 }
     sheetScreen = screenName || focusedScreen()
     sheetFrom = key === "all" ? "" : from || ""
     sheet = key
@@ -157,6 +159,7 @@ Item {
       else if (what === "menu") { closeSheet(); Hypr.openMenu() }
       else if (what === "settings") { closeSheet(); openSettings() }
     } else if (key === "time" && what === "shift") timeShift = Number(arg) || 0
+    else if (key === "time" && what === "pick") timePick = Number(arg) || 0
     else if (key === "sound") {
       if (what === "master") Sound.setMaster(Number(arg))
       else if (what === "mute") Sound.toggleMute()
@@ -359,6 +362,8 @@ Item {
   Binding { target: Zones; property: "barConfig"; value: root.barConfig }
   // Data for a sheet is gathered while it is open.
   Binding { target: Zones; property: "wanted"; value: root.sheet === "time" }
+  Binding { target: Sky; property: "wanted"; value: root.sheet === "time" && Typeset.current.calendar === "koyomi" }
+  Binding { target: Sky; property: "on"; value: Typeset.current.weather !== "off" }
   Binding { target: Sound; property: "wanted"; value: root.sheet === "sound" }
   Binding { target: Net; property: "wanted"; value: root.sheet === "network" }
   Binding { target: Power; property: "wanted"; value: root.sheet === "power" }

@@ -322,7 +322,8 @@
   {
    "label": "TIME \u00b7 HANKO PRESET \u00b7 FROM THE CENTRE CLOCK",
    "doc": {
-    "preset": "Hanko"
+    "preset": "Hanko",
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {
@@ -350,7 +351,8 @@
   {
    "label": "TIME \u00b7 INSTRUMENT (CLOCK RIGHT) \u00b7 THREE ZONES",
    "doc": {
-    "preset": "Instrument"
+    "preset": "Instrument",
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {
@@ -389,7 +391,8 @@
     "preset": "Hanko",
     "edits": {
      "position": "bottom"
-    }
+    },
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {

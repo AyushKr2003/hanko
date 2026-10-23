@@ -234,7 +234,8 @@
     {
       "label": "TIME · HANKO PRESET · FROM THE CENTRE CLOCK",
       "doc": {
-        "preset": "Hanko"
+        "preset": "Hanko",
+        "calendar": "week"
       },
       "sheet": "time",
       "feed": {

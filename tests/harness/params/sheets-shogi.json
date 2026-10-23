@@ -188,7 +188,8 @@
      "power": "shogi",
      "display": "shogi",
      "inbox": "shogi"
-    }
+    },
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {

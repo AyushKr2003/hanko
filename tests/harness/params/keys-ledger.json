@@ -188,7 +188,8 @@
      "power": "ledger",
      "display": "ledger",
      "inbox": "ledger"
-    }
+    },
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {

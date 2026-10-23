@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 
@@ -57,7 +58,10 @@ Item {
       g.stroke()
     }
   }
+  // A two-character name is written down the piece, as 飛車 and 角行 are.
+  readonly property bool pair: glyph.length > 1
   Text {
+    visible: !root.pair
     anchors.horizontalCenter: parent.horizontalCenter
     y: parent.height * (root.away ? 0.16 : 0.3)
     rotation: root.away ? 180 : 0
@@ -65,5 +69,25 @@ Item {
     color: root.promoted ? Ink.seal : root.letter
     font.family: Type.brush
     font.pixelSize: root.size * 0.56
+  }
+  Column {
+    visible: root.pair
+    anchors.horizontalCenter: parent.horizontalCenter
+    y: parent.height * 0.24
+    Repeater {
+      model: root.pair ? root.glyph.slice(0, 2).split("") : []
+      Text {
+        id: half
+        required property string modelData
+        width: root.size * 0.5
+        height: root.size * 0.37
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        text: half.modelData
+        color: root.promoted ? Ink.seal : root.letter
+        font.family: Type.brush
+        font.pixelSize: root.size * 0.34
+      }
+    }
   }
 }

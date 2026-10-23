@@ -127,6 +127,8 @@ Rectangle {
             feed: {
               var f = Object.assign({}, deskColumn.modelData.feed || {})
               f.now = desk.now
+              // As SheetWindow: the almanac or the week (style `calendar`).
+              if (!f.calendar) f.calendar = desk.style.calendar
               return f
             }
           }

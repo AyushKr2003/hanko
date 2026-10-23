@@ -56,6 +56,8 @@ const Sk = load("core/Skin.js", ["skin", "fromStyle", "SHOJI", "TEMPOS", "RADII"
 const Ik = load("core/Inkan.js", ["SIZE", "MARGIN", "CORNERS", "ROWS", "NUMERALS", "wear", "specks", "worn", "chips", "chipSize", "carving",
   "reading", "rows", "place", "sheetPlace", "nearest", "cornerOf"])
 const Br = load("core/Brush.js", ["stroke", "kasure", "enso", "noise"])
+const Ky = load("core/Koyomi.js", ["WAFU", "SEASONS", "sheet", "step", "toMonth", "forecast", "sky", "wind", "kanjiDay", "url", "geocodeUrl", "geocoded", "imperial", "addMonths"])
+const AlM = load("core/Almanac.js", ["moon", "SYNODIC"])
 
 let passed = 0
 function test(name, fn) {
@@ -2520,5 +2522,99 @@ test("boot page: one boot played, the moments, and when the installed screen is 
     assert.match(whole, /stroke-width="26\.78"/, "full width: 6.2% of the box")
   })
 }
+
+test("koyomi: the month in six weeks, its terms, moons and weather, and the picked day's leaf", () => {
+  const lib = { Se: Sn, Al: AlM }
+  const now = new Date(2026, 9, 23, 14, 0)
+  const k = Ky.sheet(now, 0, null, lib)
+  assert.equal(k.weeks.length, 6, "always six weeks, so a turn never changes the height")
+  assert.ok(k.weeks.every(w => w.length === 7))
+  assert.equal(k.weeks[0][0].dow, 0, "Monday first")
+  assert.deepEqual([k.view.wafu, k.view.romaji, k.view.jp], ["神無月", "Kannazuki", "十月"])
+  const days = k.weeks.flat()
+  assert.equal(days.filter(c => c.inMonth).length, 31)
+  assert.equal(days.filter(c => c.today).length, 1)
+  const term = d => days.find(c => c.inMonth && c.day === d).term
+  // 2026: 寒露 on 8 October, 霜降 on 23 October (the real dates, from the sun).
+  assert.equal(term(8), "寒露")
+  assert.equal(term(23), "霜降")
+  assert.equal(days.filter(c => c.inMonth && c.term).length, 2)
+  assert.equal(days.find(c => c.inMonth && c.moon === "full").day, 26, "the full moon of 26 October 2026")
+  // The leaf: first day of 霜降 and of its first kō, autumn's last term.
+  assert.equal(k.leaf.sekki.jp, "霜降")
+  assert.equal(k.leaf.sekki.day, 1)
+  assert.equal(k.leaf.ko.jp, "霜始降")
+  assert.equal(k.leaf.ko.no, 52)
+  assert.equal(k.leaf.season.key, "autumn")
+  assert.equal(k.leaf.next.jp, "立冬")
+  assert.equal(k.leaf.next.in, 15, "立冬 on 7 November")
+  assert.equal(k.leaf.when, "Today")
+  assert.equal(k.moved, false)
+  // The year: twelve months, two terms each, autumn's three marked.
+  assert.equal(k.year.length, 12)
+  assert.ok(k.year.every(m => m.terms.length === 2))
+  assert.deepEqual(k.year.filter(m => m.season === "autumn").map(m => m.m), [7, 8, 9])
+  assert.equal(k.year.find(m => m.current).m, 9)
+  assert.deepEqual(Ky.WAFU.map(w => w[0]).slice(0, 3), ["睦月", "如月", "弥生"])
+})
+
+test("koyomi: moves by day, week, month and year stay inside the month; the year rail and today", () => {
+  const now = new Date(2026, 0, 31, 9)
+  assert.equal(Ky.step(now, 0, "day+"), 1)
+  assert.equal(Ky.step(now, 3, "week-"), -4)
+  assert.equal(Ky.step(now, 0, "month+"), 28, "31 January → 28 February")
+  assert.equal(Ky.step(now, 0, "month-"), -31, "→ 31 December")
+  assert.equal(Ky.step(now, 0, "year+"), 365)
+  assert.equal(Ky.step(now, 40, "today"), 0)
+  assert.equal(Ky.toMonth(now, 0, 0), 0, "this month is today")
+  assert.equal(Ky.toMonth(now, 0, 3), 89, "30 April")
+  const later = Ky.sheet(now, 28, null, { Se: Sn, Al: AlM })
+  assert.equal(later.view.m, 1)
+  assert.equal(later.monthsAway, 1)
+  assert.equal(later.leaf.when, "In 28 days")
+  assert.equal(later.weeks.flat().filter(c => c.picked).length, 1)
+  assert.equal(Ky.addMonths(new Date(2024, 0, 31), 1).getDate(), 29, "a leap February")
+})
+
+test("koyomi: day numbers in kanji, and the sky from Open-Meteo", () => {
+  assert.deepEqual([1, 6, 10, 11, 16, 20, 23, 30, 31].map(Ky.kanjiDay), ["一", "六", "十", "十一", "十六", "二十", "二十三", "三十", "三十一"])
+  assert.deepEqual([0, 2, 3, 45, 53, 63, 75, 81, 86, 96].map(c => Ky.sky(c).jp), ["晴", "曇", "曇", "霧", "雨", "雨", "雪", "雨", "雪", "雷"])
+  assert.equal(Ky.sky(null), null)
+  assert.equal(Ky.sky(123), null, "not a WMO code")
+  assert.equal(Ky.wind(40).from, "north-east")
+  assert.equal(Ky.wind(350).jp, "北風")
+  const raw = { current: { temperature_2m: 14.2, apparent_temperature: 12.6, weather_code: 1, wind_speed_10m: 11.4, wind_direction_10m: 200, is_day: 0 },
+                daily: { time: ["2026-10-23", "2026-10-24"], weather_code: [61, 0], temperature_2m_max: [18.4, 20], temperature_2m_min: [9.6, 11], precipitation_probability_max: [80, null] } }
+  const f = Ky.forecast(JSON.stringify(raw), false)
+  assert.deepEqual(f.now, { temp: "14°", feels: "13°", jp: "晴", word: "Fair", wind: { jp: "南風", from: "south" }, speed: 11, day: false })
+  assert.deepEqual(f.days["2026-10-23"], { jp: "雨", word: "Rain", hi: "18°", lo: "10°", rain: 80 })
+  assert.equal(f.days["2026-10-24"].rain, -1, "no chance given")
+  assert.equal(Ky.forecast(raw, true).now.temp, "58°", "Fahrenheit")
+  assert.deepEqual(Ky.forecast("not json", false), { now: null, days: {} })
+  // On the grid: the forecast lands on its day.
+  const k = Ky.sheet(new Date(2026, 9, 23, 8), 0, f, { Se: Sn, Al: AlM })
+  assert.equal(k.weeks.flat().find(c => c.key === "2026-10-23").sky.jp, "雨")
+  assert.equal(k.leaf.now.temp, "14°", "today's leaf has the weather now")
+  assert.ok(Ky.url(25.6, 85.1).includes("forecast_days=16") && Ky.url(25.6, 85.1).includes("daily=weather_code"))
+  assert.ok(Ky.geocodeUrl("Patna").endsWith("name=Patna"))
+  assert.deepEqual(Ky.geocoded(JSON.stringify({ results: [{ name: "Patna", country: "India", latitude: 25.6, longitude: 85.1 }] })),
+                   { name: "Patna", country: "India", latitude: 25.6, longitude: 85.1 })
+  assert.equal(Ky.geocoded("{}"), null)
+  assert.equal(Ky.imperial("en_US.UTF-8", ""), true)
+  assert.equal(Ky.imperial("en_US.UTF-8", "India"), false, "the place's country wins")
+  assert.equal(Ky.imperial("de_DE", ""), false)
+})
+
+test("koyomi: the calendar and weather settings, beside the twenty-one", () => {
+  assert.equal(S.resolve({}).calendar, "koyomi")
+  assert.equal(S.resolve({}).weather, "on")
+  assert.equal(S.resolve({ calendar: "week", weather: "off" }).calendar, "week")
+  assert.equal(S.resolve({ calendar: "nope" }).calendar, "koyomi")
+  const d = S.withSetting({}, "calendar", "week")
+  assert.equal(d.calendar, "week")
+  assert.equal(S.withSetting(d, "weather", "off").weather, "off")
+  assert.equal(S.withSetting({}, "calendar", "month"), null)
+  assert.equal(S.resolve(S.withPreset(d, "Quiet")).calendar, "week", "a preset keeps it")
+})
 
 console.log(`${passed} passed${process.exitCode ? ", some failed" : ""}`)

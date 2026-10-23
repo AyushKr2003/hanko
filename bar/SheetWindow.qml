@@ -52,6 +52,10 @@ PanelWindow {
     timeFormat: win.bar.timeFormat,
     zones: Zones.rows(win.bar.now, win.bar.timeFormat === "HH:mm"),
     timeShift: win.bar.timeShift,
+    // Koyomi 暦: the almanac or the week, the picked day, the sky.
+    calendar: Typeset.current.calendar,
+    timePick: win.bar.timePick,
+    sky: Sky.forecast,
     sound: Sound.reading,
     network: Net.reading,
     bluetooth: Blue.reading,

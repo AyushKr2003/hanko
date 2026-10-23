@@ -46,7 +46,10 @@ Item {
   readonly property bool rail: hand === "shoji"
   // The craft hands (Shōgi, Soroban, Odoshi, Kasumi) draw one model of
   // whichever sheet is open (core/Hands.js).
-  readonly property var handModel: Hands.HANDS.indexOf(hand) >= 0
+  // Koyomi 暦 (docs/koyomi/README.md): the Time sheet as the almanac, a
+  // month in every hand, unless the calendar setting keeps the week.
+  readonly property bool koyomi: sheet === "time" && (feed.calendar || "koyomi") === "koyomi"
+  readonly property var handModel: !koyomi && Hands.HANDS.indexOf(hand) >= 0
     ? Hands.model(sheet, sheet === "inbox" ? Object.assign({}, feed, { openLetter: openLetter }) : feed,
                   feed.now || new Date(), { T: TimeJs, St: StatusJs, B: BlueJs }) : null
   // The inbox letter opened to read in full (its stem), in every hand: kept
@@ -66,7 +69,7 @@ Item {
   signal cycle(int delta)
 
   readonly property var info: Sheets.byKey(sheet)
-  readonly property int sheetWidth: rail ? panel.width : Type.px(info ? info.width : 430)
+  readonly property int sheetWidth: rail ? panel.width : Type.px(koyomi ? 660 : info ? info.width : 430)
 
   width: sheetWidth
   implicitWidth: sheetWidth
@@ -150,7 +153,10 @@ Item {
     Loader {
       id: body
       width: card.width
-      sourceComponent: root.rail ? null : root.handModel
+      sourceComponent: root.rail ? null : root.koyomi
+        ? ({ ledger: ledgerKoyomi, tanzaku: tanzakuKoyomi, shogi: shogiKoyomi, soroban: sorobanKoyomi,
+             odoshi: odoshiKoyomi, kasumi: kasumiKoyomi })[root.hand] || ledgerKoyomi
+        : root.handModel
         ? ({ shogi: shogiHand, soroban: sorobanHand, odoshi: odoshiHand, kasumi: kasumiHand })[root.hand]
         : (root.hand === "tanzaku"
           ? { time: timeTanzaku, sound: soundTanzaku, network: networkTanzaku, bluetooth: bluetoothTanzaku,
@@ -176,6 +182,23 @@ Item {
       onRequest: function(what, arg) { root.request("all", what, arg) }
     }
   }
+
+  // ---- Koyomi 暦, the almanac, in each hand
+  Component {
+    id: ledgerKoyomi
+    LedgerKoyomi {
+      now: root.feed.now || new Date()
+      pick: root.feed.timePick || 0
+      sky: root.feed.sky || null
+      zones: root.feed.zones || []
+      onRequest: function(what, arg) { root.request("time", what, arg) }
+    }
+  }
+  Component { id: tanzakuKoyomi; TanzakuKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: shogiKoyomi; ShogiKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: sorobanKoyomi; SorobanKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: odoshiKoyomi; LedgerKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
+  Component { id: kasumiKoyomi; LedgerKoyomi { now: root.feed.now || new Date(); pick: root.feed.timePick || 0; sky: root.feed.sky || null; zones: root.feed.zones || []; onRequest: function(what, arg) { root.request("time", what, arg) } } }
 
   Component {
     id: timeSheet

@@ -188,7 +188,8 @@
      "power": "soroban",
      "display": "soroban",
      "inbox": "soroban"
-    }
+    },
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {

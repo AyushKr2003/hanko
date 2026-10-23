@@ -188,7 +188,8 @@
      "power": "kasumi",
      "display": "kasumi",
      "inbox": "kasumi"
-    }
+    },
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {

@@ -12,3 +12,4 @@ singleton Themes 1.0 Themes.qml
 singleton Machine 1.0 Machine.qml
 singleton Kaze 1.0 Kaze.qml
 singleton Finder 1.0 Finder.qml
+singleton Sky 1.0 Sky.qml

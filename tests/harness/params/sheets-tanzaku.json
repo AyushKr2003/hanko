@@ -188,7 +188,8 @@
      "power": "tanzaku",
      "display": "tanzaku",
      "inbox": "tanzaku"
-    }
+    },
+    "calendar": "week"
    },
    "sheet": "time",
    "feed": {
