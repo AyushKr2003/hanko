@@ -26,6 +26,9 @@ Item {
   property real drawn: 0
   property bool sheathing: false
   property bool kazeStill: false
+  property string launcherMode: "card"
+  property string dialFace: "enso"
+
   FileView {
     path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/hanko/style.json"
     watchChanges: true
@@ -33,6 +36,27 @@ Item {
     onFileChanged: reload()
     onLoaded: root.kazeStill = /"motion"\s*:\s*"still"/.test(text())
     onLoadFailed: root.kazeStill = false
+  }
+
+  FileView {
+    path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/hanko/kaze.json"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: {
+      try {
+        var doc = JSON.parse(text() || "{}")
+        root.launcherMode = doc.launcher || "card"
+        root.dialFace = doc.dialFace || (doc.atmosphere === "sekiro" ? "tsuba" : "enso")
+      } catch (e) {
+        root.launcherMode = "card"
+        root.dialFace = "enso"
+      }
+    }
+    onLoadFailed: {
+      root.launcherMode = "card"
+      root.dialFace = "enso"
+    }
   }
   SequentialAnimation {
     id: drawAnim
@@ -1123,6 +1147,22 @@ Item {
       onClicked: root.cancel()
     }
 
+    // ── Battō Rotary Dial Wheel (when launcherMode === "dial") ────────────
+    LauncherDial {
+      id: dialWheel
+      anchors.fill: parent
+      visible: root.launcherMode === "dial" && (root.opened || root.sheathing)
+      model: displayModel
+      face: root.dialFace
+      roll: root.drawn
+      target: root.selectedIndex
+      query: root.filterText
+      onLaunched: function(idx, item) {
+        root.activateIndex(idx)
+      }
+      onClosed: root.cancel()
+    }
+
     // The blade's edge: a 1 px ink line the card draws out of.
     Rectangle {
       x: drawClip.x
@@ -1130,12 +1170,13 @@ Item {
       width: 1
       height: card.height
       color: root.foreground
-      visible: root.drawn < 1 && (root.opened || root.sheathing)
+      visible: root.launcherMode !== "dial" && root.drawn < 1 && (root.opened || root.sheathing)
     }
 
     // The card opens from its left edge, clipped, so the text never squashes.
     Item {
       id: drawClip
+      visible: root.launcherMode !== "dial"
       x: Math.round((panel.width - root.cardWidth) / 2)
       y: panel.effectiveCardTop
       width: Math.max(1, Math.round(card.width * root.drawn))

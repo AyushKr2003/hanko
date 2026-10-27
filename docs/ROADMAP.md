@@ -184,6 +184,8 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
 
 - ✅ **Sensory Japanese Instrumentation & Atmospheric Shaders (Concept Phase 1)**: WifiFan (folding-fan radar arc across 2.4/5GHz wings with signal tiers and cinnabar active tether) on Network sheet; OrbitMap (celestial tilted elliptical orbits spaced by the golden angle) on Bluetooth sheet; Wabi-sabi washi veil with procedural kintsugi gold seams (`desktop_washi.frag.qsb`) and Sekiro seasonal leaf drift (`desktop_sekiro.frag.qsb`) atmospheric layers in `hanko.background` with CLI `hanko atmosphere wabi|sekiro|none`; `bar/parts/WifiFan.qml`, `bar/parts/OrbitMap.qml`, `assets/shaders/`.
 
+- ✅ **Battō Rotary Dial Launcher (Concept Phase 2)**: LauncherDial (wheel rolling in from left screen margin with apps riding the rim, swelling at 3 o'clock pointer with Fraunces serif hero title); dual authentic Japanese faces: Ensō (washi disc, brushed ensō, cinnabar "選" seal, gold seam) and Tsuba (hammered antique iron sword guard, nanako gold inlay beads, habaki blade collar); integrated into `plugins/hanko.menu/Menu.qml` and `bar/parts/LauncherDial.qml` with CLI `hanko launcher [dial|card]` and `hanko dial [enso|tsuba]`.
+
 ## Dev loop
 
 ```sh

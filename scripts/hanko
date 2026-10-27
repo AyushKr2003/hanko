@@ -857,6 +857,54 @@ cmd_atmosphere() {
   esac
 }
 
+cmd_launcher() {
+  local val="${1:-}"
+  local kaze="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/kaze.json"
+  case "$val" in
+    dial|card)
+      mkdir -p "$(dirname "$kaze")"
+      local cur="{}"
+      [[ -f "$kaze" ]] && cur="$(cat "$kaze")"
+      echo "$cur" | jq --arg l "$val" '.launcher = $l' > "$kaze.tmp" && mv "$kaze.tmp" "$kaze"
+      say "launcher: $val"
+      ;;
+    "")
+      if [[ -f "$kaze" ]]; then
+        jq -r '.launcher // "card"' "$kaze"
+      else
+        say "card"
+      fi
+      ;;
+    *)
+      fail "usage: hanko launcher [dial|card]"
+      ;;
+  esac
+}
+
+cmd_dial() {
+  local val="${1:-}"
+  local kaze="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/kaze.json"
+  case "$val" in
+    enso|tsuba)
+      mkdir -p "$(dirname "$kaze")"
+      local cur="{}"
+      [[ -f "$kaze" ]] && cur="$(cat "$kaze")"
+      echo "$cur" | jq --arg f "$val" '.dialFace = $f' > "$kaze.tmp" && mv "$kaze.tmp" "$kaze"
+      say "dial face: $val"
+      ;;
+    "")
+      if [[ -f "$kaze" ]]; then
+        jq -r '.dialFace // "enso"' "$kaze"
+      else
+        say "enso"
+      fi
+      ;;
+    *)
+      fail "usage: hanko dial [enso|tsuba]"
+      ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -914,6 +962,8 @@ case "${1:-}" in
   cursor) shift; cmd_cursor "$@" ;;
   tools) shift; cmd_tools "$@" ;;
   atmosphere) shift; cmd_atmosphere "$@" ;;
+  launcher) shift; cmd_launcher "$@" ;;
+  dial) shift; cmd_dial "$@" ;;
   theme) shift; cmd_theme "$@" ;;
   boot) shift; cmd_boot "$@" ;;
   doctor) cmd_doctor ;;
