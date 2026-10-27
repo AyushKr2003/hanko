@@ -182,6 +182,8 @@ Spec: `docs/kata/README.md` (also on `revision1`). Margin, Leaf and Shōji becom
   - ✅ **Koyomi 3 · every turn starts**: the turn as a signal; the design doc, pictures and `tests/harness/turn.py`.
   - ✅ **Koyomi 4 · nothing overflows** (asked for: "some places overflowing on changing … the ledger going over the screen height with lots of Elsewhen … handle all edge cases"): one height every day, fitted to the screen (`feed.room`, `KoyomiState.fit`, `compact`), Elsewhen as a grid (`KoyomiZones`), turns clipped, the lead slip's long date set to fit; `tests/koyomi.py` in `tests/run`.
 
+- ✅ **Sensory Japanese Instrumentation & Atmospheric Shaders (Concept Phase 1)**: WifiFan (folding-fan radar arc across 2.4/5GHz wings with signal tiers and cinnabar active tether) on Network sheet; OrbitMap (celestial tilted elliptical orbits spaced by the golden angle) on Bluetooth sheet; Wabi-sabi washi veil with procedural kintsugi gold seams (`desktop_washi.frag.qsb`) and Sekiro seasonal leaf drift (`desktop_sekiro.frag.qsb`) atmospheric layers in `hanko.background` with CLI `hanko atmosphere wabi|sekiro|none`; `bar/parts/WifiFan.qml`, `bar/parts/OrbitMap.qml`, `assets/shaders/`.
+
 ## Dev loop
 
 ```sh

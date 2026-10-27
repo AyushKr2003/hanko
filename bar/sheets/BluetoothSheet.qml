@@ -2,11 +2,13 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 import "../../core/Blue.js" as BlueJs
+import "../parts"
 
 // Bluetooth 藍: what is connected as the title, then your devices in three
 // groups: connected (inverted; a click disconnects), known (a click
 // connects) and nearby, found while the sheet is open (a click pairs).
-// The foot switches Bluetooth on and off. P does too.
+// Supports two views: the celestial orbit map (OrbitMap 軌道) and the
+// classic grouped list. The foot switches Bluetooth on and off. P does too.
 Item {
   id: root
 
@@ -14,6 +16,8 @@ Item {
   property var blue: null
   property int maxKnown: 4
   property int maxFound: 4
+  // "orbit" (celestial orbits) or "list" (classic groups)
+  property string viewMode: "orbit"
 
   // what: power (bool) | device ({ address, action })
   signal request(string what, var arg)
@@ -42,47 +46,81 @@ Item {
       blurb: root.blue ? root.blue.blurb : ""
     }
 
-    // ------------------------------------------------ connected
+    // ------------------------------------------------ View Switcher / Head
     GroupHead {
       visible: root.powered
+      title: "Devices"
+      summary: (root.connected.length + root.known.length + root.found.length) + " total"
+      actions: root.powered ? [
+        { text: root.viewMode === "orbit" ? "List 覧" : "Orbit 軌道", name: "toggleView" }
+      ] : []
+      onPicked: function(name) {
+        if (name === "toggleView") root.viewMode = (root.viewMode === "orbit" ? "list" : "orbit")
+      }
+    }
+
+    // ------------------------------------------------ Celestial Orbit View
+    Item {
+      visible: root.powered && root.viewMode === "orbit"
+      width: parent.width
+      height: orbitMap.implicitHeight + Type.px(14)
+
+      OrbitMap {
+        id: orbitMap
+        anchors.centerIn: parent
+        size: Math.min(parent.width - Type.px(16), Type.px(300))
+        connected: root.connected
+        known: root.known
+        found: root.found
+        powered: root.powered
+        onPicked: function(address, action) {
+          root.request("device", { address: address, action: action })
+        }
+      }
+    }
+
+    // ------------------------------------------------ Classic List View
+    // connected
+    GroupHead {
+      visible: root.powered && root.viewMode === "list"
       title: "Connected"
       summary: root.connected.length + (root.connected.length === 1 ? " device" : " devices")
     }
     SheetRow {
-      visible: root.powered && root.connected.length === 0
+      visible: root.powered && root.viewMode === "list" && root.connected.length === 0
       name: "Nothing connected"
       last: true
     }
     Repeater {
-      model: root.connected
+      model: root.viewMode === "list" ? root.connected : []
       DeviceRow { selected: true }
     }
 
-    // ------------------------------------------------ known
+    // known
     GroupHead {
-      visible: root.powered && root.known.length > 0
+      visible: root.powered && root.viewMode === "list" && root.known.length > 0
       title: "Known"
       summary: root.blue ? root.blue.known.length + " paired" : ""
     }
     Repeater {
-      model: root.known
+      model: root.viewMode === "list" ? root.known : []
       DeviceRow {}
     }
 
-    // ------------------------------------------------ nearby
+    // nearby
     GroupHead {
-      visible: root.powered
+      visible: root.powered && root.viewMode === "list"
       title: "Nearby"
       summary: root.blue && root.blue.scanning ? "Looking…" : root.found.length + " found"
     }
     SheetRow {
-      visible: root.powered && root.found.length === 0
+      visible: root.powered && root.viewMode === "list" && root.found.length === 0
       name: root.blue && root.blue.scanning ? "Looking for devices" : "None found"
       detail: "Put a device in pairing mode to see it here."
       last: true
     }
     Repeater {
-      model: root.found
+      model: root.viewMode === "list" ? root.found : []
       DeviceRow {}
     }
   }
@@ -118,3 +156,4 @@ Item {
     if (event.key === Qt.Key_P) { root.request("power", !root.powered); event.accepted = true }
   }
 }
+

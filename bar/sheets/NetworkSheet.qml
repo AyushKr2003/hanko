@@ -2,12 +2,13 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../core"
 import "../../core/Net.js" as NetJs
+import "../parts"
 
 // Network 網: the connection you are on as the title (red when offline),
 // the Wi-Fi around you with the one in use inverted, and at the foot the
-// Wi-Fi switch, Omarchy's share card and its speed test. A click on a
-// network connects to it (a password, when one is needed, is asked for in
-// a terminal). R rescans.
+// Wi-Fi switch, Omarchy's share card and its speed test. Supports two views:
+// the tactile folding fan radar (WifiFan 扇) and the classic row list.
+// A click on a network connects to it. R rescans.
 Item {
   id: root
 
@@ -15,6 +16,8 @@ Item {
   property var net: null
   // Rows shown at most; the rest are further away anyway.
   property int maxRows: 7
+  // "fan" (folding fan radar) or "list" (classic rows)
+  property string viewMode: "fan"
 
   // what: connect ({ ssid, saved, secure }) | radio (bool) | rescan |
   // share | speedtest
@@ -46,8 +49,14 @@ Item {
     GroupHead {
       title: "Wi-Fi"
       summary: root.networks.length + (root.networks.length === 1 ? " network" : " networks")
-      actions: root.radio ? [{ text: "Rescan", name: "rescan" }] : []
-      onPicked: root.request("rescan", null)
+      actions: root.radio ? [
+        { text: root.viewMode === "fan" ? "List 覧" : "Fan 扇", name: "toggleView" },
+        { text: "Rescan", name: "rescan" }
+      ] : []
+      onPicked: function(name) {
+        if (name === "toggleView") root.viewMode = (root.viewMode === "fan" ? "list" : "fan")
+        else if (name === "rescan") root.request("rescan", null)
+      }
     }
 
     SheetRow {
@@ -57,8 +66,26 @@ Item {
       last: true
     }
 
+    // ── Sensu (Folding fan radar) View ─────────────────────────────────────
+    Item {
+      visible: root.radio && root.networks.length > 0 && root.viewMode === "fan"
+      width: parent.width
+      height: fanRadar.implicitHeight + Type.px(14)
+
+      WifiFan {
+        id: fanRadar
+        anchors.centerIn: parent
+        size: Math.min(parent.width - Type.px(16), Type.px(300))
+        networks: root.net ? root.net.networks : []
+        onPicked: function(ssid, secure, saved) {
+          root.request("connect", { ssid: ssid, saved: saved, secure: secure })
+        }
+      }
+    }
+
+    // ── Classic List View ──────────────────────────────────────────────────
     Repeater {
-      model: root.radio ? root.networks : []
+      model: (root.radio && root.viewMode === "list") ? root.networks : []
       SheetRow {
         id: network
         required property var modelData
@@ -120,3 +147,4 @@ Item {
     if (event.key === Qt.Key_R) { root.request("rescan", null); event.accepted = true }
   }
 }
+

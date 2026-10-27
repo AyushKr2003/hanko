@@ -833,6 +833,30 @@ cmd_cursor() {
   esac
 }
 
+cmd_atmosphere() {
+  local val="${1:-}"
+  local kaze="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/kaze.json"
+  case "$val" in
+    wabi|sekiro|none)
+      mkdir -p "$(dirname "$kaze")"
+      local cur="{}"
+      [[ -f "$kaze" ]] && cur="$(cat "$kaze")"
+      echo "$cur" | jq --arg a "$val" '.atmosphere = $a' > "$kaze.tmp" && mv "$kaze.tmp" "$kaze"
+      say "atmosphere: $val"
+      ;;
+    "")
+      if [[ -f "$kaze" ]]; then
+        jq -r '.atmosphere // "none"' "$kaze"
+      else
+        say "none"
+      fi
+      ;;
+    *)
+      fail "usage: hanko atmosphere [wabi|sekiro|none]"
+      ;;
+  esac
+}
+
 cmd_doctor() {
   local ok=1
   check() { if eval "$2" >/dev/null 2>&1; then say "  ok    $1"; else say "  FAIL  $1"; ok=0; fi; }
@@ -889,6 +913,7 @@ case "${1:-}" in
   sumi) shift; cmd_sumi "$@" ;;
   cursor) shift; cmd_cursor "$@" ;;
   tools) shift; cmd_tools "$@" ;;
+  atmosphere) shift; cmd_atmosphere "$@" ;;
   theme) shift; cmd_theme "$@" ;;
   boot) shift; cmd_boot "$@" ;;
   doctor) cmd_doctor ;;

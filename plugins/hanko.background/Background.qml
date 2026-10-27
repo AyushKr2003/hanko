@@ -42,6 +42,7 @@ Item {
   readonly property string printer: Paths.local(Qt.resolvedUrl("bin/hanko-print"))
   property var kaze: ({})
   readonly property string mode: Print.wallpaperMode(kaze)
+  readonly property string atmosphere: String(kaze.atmosphere || "none")
   // The picture asked for, before printing (currentBackground is the print).
   property string sourcePath: ""
 
@@ -669,6 +670,48 @@ Item {
           GradientStop { position: 0; color: "transparent" }
           GradientStop { position: 0.7; color: Color.background }
         }
+      }
+
+      // ── Atmospheric Desktop Veils (Wabi-sabi washi / Sekiro mist & leaves) ──
+      ShaderEffect {
+        id: washiShader
+        anchors.fill: parent
+        visible: root.atmosphere === "wabi"
+        opacity: 0.94
+
+        property real itemWidth: width
+        property real itemHeight: height
+        property real paper: 1.0
+        property real age: 0.85
+        property real seam: 1.0
+        property real lineScale: 1.0
+        property color paperColor: Ink.paper
+        property color ageColor: "#5a3d22"
+        property color goldColor: "#c29a48"
+        property color goldHi: "#e9cd86"
+
+        fragmentShader: Qt.resolvedUrl("assets/shaders/desktop_washi.frag.qsb")
+      }
+
+      ShaderEffect {
+        id: sekiroShader
+        anchors.fill: parent
+        visible: root.atmosphere === "sekiro"
+        opacity: 0.88
+
+        property real itemWidth: width
+        property real itemHeight: height
+        property real boot: 1.0
+        property real lineScale: 1.0
+        property real fall: 2.0 // autumn seasonal drift
+        property real drift: root.windTime * 25
+        property real chrome: 0.0
+        property real unit: 1.0
+        property color mistColor: Ink.inkDim
+        property color tintA: "#de5a2c"
+        property color tintB: "#a3221a"
+
+        fragmentShader: Qt.resolvedUrl("assets/shaders/desktop_sekiro.frag.qsb")
       }
 
       Connections {
