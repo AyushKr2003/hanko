@@ -741,6 +741,12 @@ var KAZE_SWITCHES = [
     options: ["on", "off"], labels: { on: "On", off: "Off" } },
   { key: "wind", name: "Wind", jp: "嵐", line: "The real wind where you are, always calm, or your own",
     options: ["weather", "calm", "virtual"], labels: { weather: "Weather", calm: "Calm", virtual: "Virtual" } },
+  { key: "atmosphere", name: "Atmosphere", jp: "気", line: "Wabi-sabi washi veil with kintsugi gold, or Sekiro night mist and falling leaves",
+    options: ["none", "wabi", "sekiro"], labels: { none: "None", wabi: "Wabi-sabi", sekiro: "Sekiro" } },
+  { key: "launcher", name: "Launcher", jp: "抜刀", line: "Battō card drawn from a line, or rotary wheel rolling from the left margin",
+    options: ["card", "dial"], labels: { card: "Card", dial: "Dial" } },
+  { key: "dialFace", name: "Dial face", jp: "面", line: "Wabi-sabi washi ensō with seal, or Sekiro antique iron sword guard (tsuba)",
+    options: ["enso", "tsuba"], labels: { enso: "Ensō", tsuba: "Tsuba" } },
   { key: "sound", name: "Sound", jp: "音", line: "Six short sounds: clappers, paper, a bell, a sheath's click",
     options: ["off", "quiet", "on"], labels: { off: "Off", quiet: "Quiet", on: "On" } },
   { key: "osdCard", name: "OSD card", jp: "台", line: "A sheet of paper under volume and brightness, or bare",
@@ -808,10 +814,14 @@ function kazeChange(before, after) {
 function kazeOn(doc, desk, still, sumi, tools) {
   var n = (desk ? 1 : 0) + (still ? 0 : 1) + (sumi ? 1 : 0)
   for (var i = 0; i < KAZE_SWITCHES.length; i++) {
-    var v = kazeValue(doc, KAZE_SWITCHES[i].key)
+    var k = KAZE_SWITCHES[i].key
+    var v = kazeValue(doc, k)
+    if (k === "atmosphere" && v === "none") continue
+    if (k === "launcher" && v === "card") continue
+    if (k === "dialFace" && (doc.launcher !== "dial" || v === "enso")) continue
     if (v !== "off" && v !== "original" && v !== "calm") n++
   }
   var extra = 0
-  for (var k in (tools || {})) { extra++; if (tools[k]) n++ }
+  for (var t in (tools || {})) { extra++; if (tools[t]) n++ }
   return { on: n, of: KAZE_SWITCHES.length + 3 + extra }
 }

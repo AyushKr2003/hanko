@@ -128,7 +128,8 @@ Column {
             anchors.fill: parent
             sourceComponent: ({ desk: deskArt, motion: motionArt, wallpaper: printArt, grass: grassArt,
                                 gusts: grassArt, wind: windArt, sound: soundArt, sumi: sumiArt, osdCard: osdArt,
-                                cursor: cursorArt, tools: toolsArt, theme: themeArt })[card.key] || null
+                                cursor: cursorArt, tools: toolsArt, theme: themeArt,
+                                atmosphere: atmosphereArt, launcher: launcherArt, dialFace: dialFaceArt })[card.key] || null
             onLoaded: {
               item.key = card.key
               item.current = Qt.binding(function() { return card.current })
@@ -669,6 +670,150 @@ Column {
             color: modelData
             border.width: 1; border.color: Ink.lineSoft
           }
+        }
+      }
+    }
+  }
+
+  // Atmosphere: Wabi-sabi kintsugi gold crack or Sekiro falling leaf silhouette.
+  Component {
+    id: atmosphereArt
+    Item {
+      id: at
+      property string key
+      property string current
+      property bool hovered
+      Rectangle {
+        anchors.centerIn: parent
+        width: Type.px(120); height: Type.px(64)
+        color: at.current === "wabi" ? Qt.rgba(0.9, 0.85, 0.75, 0.2) : (at.current === "sekiro" ? Qt.rgba(0.1, 0.08, 0.12, 0.5) : "transparent")
+        border.width: 1
+        border.color: Ink.line
+        // Kintsugi gold seam
+        Rectangle {
+          visible: at.current === "wabi"
+          x: Type.px(24); y: Type.px(18)
+          width: Type.px(72); height: 2
+          rotation: -14
+          color: "#c29a48"
+        }
+        // Sekiro autumn leaves
+        Repeater {
+          model: at.current === "sekiro" ? [0, 1, 2] : []
+          Rectangle {
+            required property int index
+            x: Type.px(20 + index * 32)
+            y: Type.px(14 + (index % 2) * 22)
+            width: Type.px(8); height: Type.px(14)
+            radius: Type.px(4)
+            rotation: (index * 42) - 20
+            color: index === 1 ? Ink.seal : "#de5a2c"
+          }
+        }
+        Text {
+          anchors.centerIn: parent
+          visible: at.current === "none"
+          text: "無"
+          color: Ink.inkFaint
+          font.family: Type.jp
+          font.pixelSize: Type.px(20)
+        }
+      }
+    }
+  }
+
+  // Launcher: card vs rotary dial wheel.
+  Component {
+    id: launcherArt
+    Item {
+      id: la
+      property string key
+      property string current
+      property bool hovered
+      // Card representation
+      Rectangle {
+        visible: la.current === "card"
+        anchors.centerIn: parent
+        width: Type.px(90); height: Type.px(54)
+        radius: 3
+        color: "transparent"
+        border.width: 1
+        border.color: Ink.inkDim
+        Row {
+          x: Type.px(8); y: Type.px(12); spacing: Type.px(6)
+          Text { text: "抜刀"; color: Ink.seal; font.family: Type.jp; font.pixelSize: Type.px(11) }
+          Rectangle { width: Type.px(44); height: 1; color: Ink.line; anchors.verticalCenter: parent.verticalCenter }
+        }
+      }
+      // Rotary wheel arc representation
+      Item {
+        visible: la.current === "dial"
+        anchors.fill: parent
+        Rectangle {
+          x: -Type.px(28)
+          anchors.verticalCenter: parent.verticalCenter
+          width: Type.px(96); height: Type.px(96)
+          radius: width / 2
+          color: "transparent"
+          border.width: 1.5
+          border.color: Ink.seal
+        }
+        Repeater {
+          model: la.current === "dial" ? 5 : 0
+          Rectangle {
+            required property int index
+            readonly property real a: (index - 2) * 0.28
+            x: Type.px(20) + Math.cos(a) * Type.px(46)
+            y: parent.height / 2 + Math.sin(a) * Type.px(46) - height / 2
+            width: index === 2 ? Type.px(10) : Type.px(6)
+            height: width
+            radius: width / 2
+            color: index === 2 ? Ink.seal : Ink.inkDim
+          }
+        }
+      }
+    }
+  }
+
+  // Dial face: Ensō vs Tsuba.
+  Component {
+    id: dialFaceArt
+    Item {
+      id: df
+      property string key
+      property string current
+      property bool hovered
+      // Ensō circle
+      Rectangle {
+        visible: df.current === "enso"
+        anchors.centerIn: parent
+        width: Type.px(54); height: Type.px(54)
+        radius: width / 2
+        color: "transparent"
+        border.width: Type.px(5)
+        border.color: Ink.ink
+        Rectangle {
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
+          width: Type.px(10); height: Type.px(10)
+          radius: 1
+          color: Ink.seal
+        }
+      }
+      // Tsuba sword guard
+      Rectangle {
+        visible: df.current === "tsuba"
+        anchors.centerIn: parent
+        width: Type.px(54); height: Type.px(54)
+        radius: width / 2
+        color: "#1d181a"
+        border.width: 2
+        border.color: "#c9a55c"
+        Rectangle {
+          anchors.centerIn: parent
+          width: Type.px(8); height: Type.px(16)
+          radius: 2
+          color: Ink.paper
         }
       }
     }
