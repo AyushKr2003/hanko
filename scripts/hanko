@@ -837,7 +837,7 @@ cmd_atmosphere() {
   local val="${1:-}"
   local kaze="${XDG_CONFIG_HOME:-$HOME/.config}/hanko/kaze.json"
   case "$val" in
-    wabi|sekiro|none)
+    wabi|sekiro|zen|none)
       mkdir -p "$(dirname "$kaze")"
       local cur="{}"
       [[ -f "$kaze" ]] && cur="$(cat "$kaze")"
@@ -852,7 +852,7 @@ cmd_atmosphere() {
       fi
       ;;
     *)
-      fail "usage: hanko atmosphere [wabi|sekiro|none]"
+      fail "usage: hanko atmosphere [wabi|sekiro|zen|none]"
       ;;
   esac
 }

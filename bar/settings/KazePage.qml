@@ -675,7 +675,7 @@ Column {
     }
   }
 
-  // Atmosphere: Wabi-sabi kintsugi gold crack or Sekiro falling leaf silhouette.
+  // Atmosphere: Wabi-sabi kintsugi gold crack, Sekiro falling leaves, or Zen ensō.
   Component {
     id: atmosphereArt
     Item {
@@ -686,7 +686,7 @@ Column {
       Rectangle {
         anchors.centerIn: parent
         width: Type.px(120); height: Type.px(64)
-        color: at.current === "wabi" ? Qt.rgba(0.9, 0.85, 0.75, 0.2) : (at.current === "sekiro" ? Qt.rgba(0.1, 0.08, 0.12, 0.5) : "transparent")
+        color: at.current === "wabi" ? Qt.rgba(0.9, 0.85, 0.75, 0.2) : (at.current === "sekiro" ? Qt.rgba(0.1, 0.08, 0.12, 0.5) : at.current === "zen" ? Qt.rgba(0.05, 0.05, 0.06, 0.3) : "transparent")
         border.width: 1
         border.color: Ink.line
         // Kintsugi gold seam
@@ -708,6 +708,22 @@ Column {
             radius: Type.px(4)
             rotation: (index * 42) - 20
             color: index === 1 ? Ink.seal : "#de5a2c"
+          }
+        }
+        // Zen Ensō circle
+        Rectangle {
+          visible: at.current === "zen"
+          anchors.centerIn: parent
+          width: Type.px(38); height: Type.px(38)
+          radius: width / 2
+          color: "transparent"
+          border.width: Type.px(3)
+          border.color: Ink.ink
+          Rectangle {
+            anchors.centerIn: parent
+            width: Type.px(6); height: Type.px(6)
+            radius: width / 2
+            color: Ink.seal
           }
         }
         Text {

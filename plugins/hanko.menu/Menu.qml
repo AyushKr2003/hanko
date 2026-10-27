@@ -1151,8 +1151,10 @@ Item {
     LauncherDial {
       id: dialWheel
       anchors.fill: parent
+      z: 10
       visible: root.launcherMode === "dial" && (root.opened || root.sheathing)
       model: displayModel
+      appLibrary: root.appLibrary
       face: root.dialFace
       roll: root.drawn
       target: root.selectedIndex
@@ -1161,6 +1163,85 @@ Item {
         root.activateIndex(idx)
       }
       onClosed: root.cancel()
+    }
+
+    Item {
+      id: keyCatcher
+      anchors.fill: parent
+      z: root.deleteConfirmOpen ? 20 : 5
+      focus: true
+
+      Keys.priority: Keys.BeforeItem
+      Keys.onPressed: function(event) {
+        if (root.deleteConfirmOpen) {
+          if (deleteConfirm.handleKey(event)) event.accepted = true
+          return
+        }
+
+        if (event.key === Qt.Key_Delete) {
+          root.requestDeleteSelected()
+          event.accepted = true
+        } else if (event.key === Qt.Key_Escape) {
+          if (root.filterText) root.setFilter("")
+          else root.cancel()
+          event.accepted = true
+        } else if (Util.editsFilter(event, root.filterText)) {
+          root.setFilter(Util.editedFilter(event, root.filterText))
+          event.accepted = true
+        } else if ((event.key === Qt.Key_Backspace || event.key === Qt.Key_Left) && !root.filterText) {
+          root.goBack()
+          event.accepted = true
+        } else if (event.key === Qt.Key_Up) {
+          if (root.launcherMode === "dial") dialWheel.stepTo(-1)
+          else root.select(-1)
+          event.accepted = true
+        } else if (event.key === Qt.Key_Down) {
+          if (root.launcherMode === "dial") dialWheel.stepTo(1)
+          else root.select(1)
+          event.accepted = true
+        } else if (event.key === Qt.Key_PageUp) {
+          if (root.launcherMode === "dial") dialWheel.stepTo(-5)
+          else root.select(-6)
+          event.accepted = true
+        } else if (event.key === Qt.Key_PageDown) {
+          if (root.launcherMode === "dial") dialWheel.stepTo(5)
+          else root.select(6)
+          event.accepted = true
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Right) {
+          if (root.launcherMode === "dial") {
+            dialWheel.launchCurrent()
+          } else if (root.dmenuActive) {
+            if (root.mode === "input") root.applyDmenuSelection(root.filterText)
+            else if (displayModel.count > 0) root.activateIndex(root.cursorActive ? root.selectedIndex : 0)
+          } else if (root.cursorActive) root.activateIndex(root.selectedIndex)
+          else if (displayModel.count > 0) root.cursorActive = true
+          event.accepted = true
+        } else if (event.text && event.text.length === 1 && event.text.charCodeAt(0) >= 32 && event.text.charCodeAt(0) !== 127 && (event.modifiers === Qt.NoModifier || event.modifiers === Qt.ShiftModifier)) {
+          root.setFilter(root.filterText + event.text)
+          event.accepted = true
+        }
+      }
+
+      ConfirmDialog {
+        id: deleteConfirm
+
+        anchors.centerIn: parent
+        width: Math.min(root.cardWidth, parent.width - 40)
+        height: Math.min(root.cardHeight, parent.height - 40)
+        opened: root.deleteConfirmOpen
+        z: 10
+        message: "Do you want to uninstall " + ((root.deleteTarget && root.deleteTarget.label) || "") + "?"
+        confirmText: "Uninstall"
+        background: root.background
+        foreground: root.foreground
+        scrim: root.scrim
+        selectedBackground: root.selectedBackground
+        selectedText: root.selectedText
+        fontFamily: root.fontFamily
+        cornerRadius: root.cornerRadius
+        onCanceled: root.cancelDelete()
+        onConfirmed: root.confirmDelete()
+      }
     }
 
     // The blade's edge: a 1 px ink line the card draws out of.
@@ -1243,76 +1324,6 @@ Item {
           }
         }
 
-        Item {
-          id: keyCatcher
-          anchors.fill: parent
-          z: root.deleteConfirmOpen ? 20 : 0
-          focus: true
-
-          Keys.priority: Keys.BeforeItem
-          Keys.onPressed: function(event) {
-            if (root.deleteConfirmOpen) {
-              if (deleteConfirm.handleKey(event)) event.accepted = true
-              return
-            }
-
-            if (event.key === Qt.Key_Delete) {
-              root.requestDeleteSelected()
-              event.accepted = true
-            } else if (event.key === Qt.Key_Escape) {
-              if (root.filterText) root.setFilter("")
-              else root.cancel()
-              event.accepted = true
-            } else if (Util.editsFilter(event, root.filterText)) {
-              root.setFilter(Util.editedFilter(event, root.filterText))
-              event.accepted = true
-            } else if ((event.key === Qt.Key_Backspace || event.key === Qt.Key_Left) && !root.filterText) {
-              root.goBack()
-              event.accepted = true
-            } else if (event.key === Qt.Key_Up) {
-              root.select(-1)
-              event.accepted = true
-            } else if (event.key === Qt.Key_Down) {
-              root.select(1)
-              event.accepted = true
-            } else if (event.key === Qt.Key_PageUp) {
-              root.select(-6)
-              event.accepted = true
-            } else if (event.key === Qt.Key_PageDown) {
-              root.select(6)
-              event.accepted = true
-            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Right) {
-              if (root.dmenuActive) {
-                if (root.mode === "input") root.applyDmenuSelection(root.filterText)
-                else if (displayModel.count > 0) root.activateIndex(root.cursorActive ? root.selectedIndex : 0)
-              } else if (root.cursorActive) root.activateIndex(root.selectedIndex)
-              else if (displayModel.count > 0) root.cursorActive = true
-              event.accepted = true
-            } else if (event.text && event.text.length === 1 && event.text.charCodeAt(0) >= 32 && event.text.charCodeAt(0) !== 127 && (event.modifiers === Qt.NoModifier || event.modifiers === Qt.ShiftModifier)) {
-              root.setFilter(root.filterText + event.text)
-              event.accepted = true
-            }
-          }
-
-          ConfirmDialog {
-            id: deleteConfirm
-
-            anchors.fill: parent
-            opened: root.deleteConfirmOpen
-            z: 10
-            message: "Do you want to uninstall " + ((root.deleteTarget && root.deleteTarget.label) || "") + "?"
-            confirmText: "Uninstall"
-            background: root.background
-            foreground: root.foreground
-            scrim: root.scrim
-            selectedBackground: root.selectedBackground
-            selectedText: root.selectedText
-            fontFamily: root.fontFamily
-            cornerRadius: root.cornerRadius
-            onCanceled: root.cancelDelete()
-            onConfirmed: root.confirmDelete()
-          }
-        }
 
         Column {
           anchors.fill: parent

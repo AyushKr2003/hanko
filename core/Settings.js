@@ -726,7 +726,23 @@ function matches(row, query, OPTIONS) {
 // Rail pages matching a query, for the search field.
 function pageMatches(page, query) {
   var q = String(query || "").trim().toLowerCase()
-  return !q || (page.label + " " + page.jp + " " + page.key).toLowerCase().indexOf(q) >= 0
+  if (!q) return true
+  var base = (page.label + " " + page.jp + " " + page.key).toLowerCase()
+  if (base.indexOf(q) >= 0) return true
+  if (page.key === "kaze") {
+    var kazeKeywords = "atmosphere wabi sekiro zen launcher dial enso tsuba print wallpaper grass gusts wind sound desk sumi cursor tools theme"
+    if (kazeKeywords.indexOf(q) >= 0) return true
+  } else if (page.key === "sheets") {
+    var sheetKeywords = "fan radar orbit network wifi bluetooth sound volume battery media time weather calendar"
+    if (sheetKeywords.indexOf(q) >= 0) return true
+  } else if (page.key === "presets") {
+    var presetKeywords = "kamon inkan quiet islet shoji ma shizuka suji inro wabi sekiro zen"
+    if (presetKeywords.indexOf(q) >= 0) return true
+  } else if (page.key === "colour") {
+    var colourKeywords = "kanagawa hanko everforest tokyo night gruvbox themes palette"
+    if (colourKeywords.indexOf(q) >= 0) return true
+  }
+  return false
 }
 
 // Kaze 風 (docs/kaze, settings page): the switches kept in
@@ -741,8 +757,8 @@ var KAZE_SWITCHES = [
     options: ["on", "off"], labels: { on: "On", off: "Off" } },
   { key: "wind", name: "Wind", jp: "嵐", line: "The real wind where you are, always calm, or your own",
     options: ["weather", "calm", "virtual"], labels: { weather: "Weather", calm: "Calm", virtual: "Virtual" } },
-  { key: "atmosphere", name: "Atmosphere", jp: "気", line: "Wabi-sabi washi veil with kintsugi gold, or Sekiro night mist and falling leaves",
-    options: ["none", "wabi", "sekiro"], labels: { none: "None", wabi: "Wabi-sabi", sekiro: "Sekiro" } },
+  { key: "atmosphere", name: "Atmosphere", jp: "気", line: "Wabi-sabi washi veil with gold seams, Sekiro night mist & leaves, or Zen dry garden",
+    options: ["none", "wabi", "sekiro", "zen"], labels: { none: "None", wabi: "Wabi-sabi", sekiro: "Sekiro", zen: "Zen" } },
   { key: "launcher", name: "Launcher", jp: "抜刀", line: "Battō card drawn from a line, or rotary wheel rolling from the left margin",
     options: ["card", "dial"], labels: { card: "Card", dial: "Dial" } },
   { key: "dialFace", name: "Dial face", jp: "面", line: "Wabi-sabi washi ensō with seal, or Sekiro antique iron sword guard (tsuba)",

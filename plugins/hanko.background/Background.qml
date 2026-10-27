@@ -714,6 +714,31 @@ Item {
         fragmentShader: Qt.resolvedUrl("assets/shaders/desktop_sekiro.frag.qsb")
       }
 
+      ShaderEffect {
+        id: zenShader
+        anchors.centerIn: parent
+        width: Math.min(parent.width, parent.height) * 0.52
+        height: width
+        visible: root.atmosphere === "zen"
+        opacity: 0.85
+
+        property real itemWidth: width
+        property real itemHeight: height
+        property real sweep: 0.94
+        property real start: 0.08
+        property real thickness: 0.14
+        property real ghost: 0.15
+        property real bleed: 0.25
+        property real cracks: 2.0
+        property real gold: 0.9
+        property real seed: 42.0
+        property vector4d crackAt: Qt.vector4d(0.24, 0.68, 0.0, 0.0)
+        property color inkColor: Ink.ink
+        property color goldColor: "#c29a48"
+
+        fragmentShader: Qt.resolvedUrl("assets/shaders/enso.frag.qsb")
+      }
+
       Connections {
         target: root
         function onIncomingBackgroundChanged() {

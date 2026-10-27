@@ -19,6 +19,7 @@ Item {
   readonly property int count: model ? (model.count !== undefined ? model.count : model.length) : 0
   property string face: "enso" // "enso" or "tsuba"
   property string query: ""
+  property var appLibrary: null
 
   property real position: 0
   property real target: 0
@@ -39,6 +40,12 @@ Item {
   function stepTo(delta) {
     if (count <= 0) return
     target = wrap(Math.round(target + delta))
+  }
+
+  function launchCurrent() {
+    if (count > 0 && current >= 0 && current < count) {
+      dial.launched(current, activeItem)
+    }
   }
 
   function angleOf(index) {
@@ -313,6 +320,23 @@ Item {
     }
   }
 
+  // ── Wheel Scroll Backdrop ──────────────────────────────────────────────────
+  MouseArea {
+    anchors.fill: parent
+    onWheel: function(wheel) {
+      if (wheel.angleDelta.y > 0) dial.stepTo(-1)
+      else if (wheel.angleDelta.y < 0) dial.stepTo(1)
+    }
+    onClicked: function(mouse) {
+      var dx = mouse.x - dial.cx
+      var dy = mouse.y - dial.cy
+      var dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist > dial.track + Type.px(80) && mouse.x > dial.cx + dial.track + Type.px(200)) {
+        dial.closed()
+      }
+    }
+  }
+
   // ── Apps Riding the Rim ────────────────────────────────────────────────────
   Repeater {
     model: dial.count
@@ -322,8 +346,12 @@ Item {
       required property int index
 
       readonly property var itemData: dial.model.get ? dial.model.get(index) : dial.model[index]
-      readonly property string itemName: itemData ? (itemData.name || itemData.label || "") : ""
-      readonly property string itemIcon: itemData ? (itemData.icon || "") : ""
+      readonly property string itemName: itemData ? (itemData.label || itemData.name || "") : ""
+      readonly property bool isApp: itemData ? (itemData.kind === "app" || !!itemData.appIcon) : false
+      readonly property string appIconName: itemData ? (itemData.appIcon || "") : ""
+      readonly property string rawIcon: itemData ? (itemData.icon || "") : ""
+      readonly property string iconFontName: itemData ? (itemData.iconFont || "") : ""
+
       readonly property real angle: dial.angleOf(index)
       readonly property real away: Math.abs(angle)
       readonly property real rad: angle * Math.PI / 180
@@ -351,14 +379,24 @@ Item {
       }
 
       Image {
+        visible: appItem.isApp && (appItem.appIconName !== "" || appItem.rawIcon.indexOf("/") === 0)
         anchors.centerIn: parent
         width: parent.width * 0.72
         height: width
-        source: appItem.itemIcon ? (appItem.itemIcon.indexOf("/") === 0 ? "file://" + appItem.itemIcon : "image://icon/" + appItem.itemIcon) : ""
+        source: appItem.rawIcon.indexOf("/") === 0 ? ("file://" + appItem.rawIcon) : (dial.appLibrary && appItem.appIconName ? dial.appLibrary.iconSource(appItem.appIconName) : (appItem.appIconName ? ("image://icon/" + appItem.appIconName) : ""))
         fillMode: Image.PreserveAspectFit
         asynchronous: true
         smooth: true
         mipmap: true
+      }
+
+      Text {
+        visible: !appItem.isApp || (appItem.appIconName === "" && appItem.rawIcon.indexOf("/") < 0 && appItem.rawIcon !== "")
+        anchors.centerIn: parent
+        text: appItem.rawIcon
+        color: appItem.near > 0.6 ? Ink.seal : Ink.ink
+        font.family: appItem.iconFontName !== "" ? appItem.iconFontName : Type.display
+        font.pixelSize: Math.round(parent.width * 0.48)
       }
 
       // Small name tag beside off-center apps
@@ -386,115 +424,149 @@ Item {
   }
 
   // ── Active Item Display at 3 o'clock ───────────────────────────────────────
-  Column {
+  Item {
     id: activeDisplay
     x: dial.cx + dial.track + Type.px(68)
     anchors.verticalCenter: parent.verticalCenter
-    spacing: Type.px(6)
     width: Math.min(dial.width - x - Type.px(40), Type.px(420))
+    height: activeColumn.implicitHeight
     visible: dial.activeItem !== null
 
-    readonly property string aName: dial.activeItem ? (dial.activeItem.name || dial.activeItem.label || "") : ""
-    readonly property string aDetail: dial.activeItem ? (dial.activeItem.detail || dial.activeItem.desc || dial.activeItem.command || "") : ""
-    readonly property string aCategory: dial.activeItem ? (dial.activeItem.category || dial.activeItem.section || "APP") : "APP"
+    property string aName: ""
+    property string aDetail: ""
+    property string aCategory: "APP"
 
-    Row {
-      spacing: Type.px(10)
+    Connections {
+      target: dial
+      function onActiveItemChanged() {
+        var it = dial.activeItem
+        if (!it) {
+          activeDisplay.aName = ""
+          activeDisplay.aDetail = ""
+          activeDisplay.aCategory = "APP"
+          return
+        }
+        activeDisplay.aName = String(it.label || it.name || "")
+        activeDisplay.aDetail = String(it.detail || it.desc || it.command || "")
+        activeDisplay.aCategory = String(it.section || it.category || "APP")
+      }
+    }
 
-      // Category / Section tag
-      Rectangle {
-        anchors.verticalCenter: parent.verticalCenter
-        height: Type.px(18)
-        width: tagText.contentWidth + Type.px(12)
-        radius: 2
-        color: Ink.lineSoft
+    Column {
+      id: activeColumn
+      width: parent.width
+      spacing: Type.px(6)
 
+      // Search Filter Tag when query is active
+      Row {
+        visible: dial.query !== ""
+        spacing: Type.px(6)
+        bottomPadding: Type.px(4)
+        Rectangle {
+          anchors.verticalCenter: parent.verticalCenter
+          width: Type.px(6); height: Type.px(6)
+          radius: 3
+          color: Ink.seal
+        }
         Text {
-          id: tagText
-          anchors.centerIn: parent
-          text: activeDisplay.aCategory.toUpperCase()
-          color: Ink.inkDim
+          text: "SEARCH // " + dial.query.toUpperCase()
+          color: Ink.seal
           font.family: Type.mono
           font.pixelSize: Type.tag
           font.letterSpacing: Type.trackTag
+          font.weight: Font.DemiBold
         }
       }
 
-      Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: "//"
-        color: Ink.seal
-        font.family: Type.mono
-        font.pixelSize: Type.eyebrow
-      }
-    }
+      Row {
+        spacing: Type.px(10)
 
-    // Hero title in Fraunces serif
-    Text {
-      width: parent.width
-      text: activeDisplay.aName
-      color: Ink.ink
-      font.family: Type.display
-      font.pixelSize: Type.px(32)
-      font.weight: Font.DemiBold
-      elide: Text.ElideRight
-    }
+        // Category / Section tag
+        Rectangle {
+          anchors.verticalCenter: parent.verticalCenter
+          height: Type.px(18)
+          width: tagText.contentWidth + Type.px(12)
+          radius: 2
+          color: Ink.lineSoft
 
-    // Description / Subtext
-    Text {
-      width: parent.width
-      visible: text !== ""
-      text: activeDisplay.aDetail
-      color: Ink.inkMuted
-      font.family: Type.text
-      font.pixelSize: Type.note
-      wrapMode: Text.Wrap
-      maximumLineCount: 2
-      elide: Text.ElideRight
-    }
+          Text {
+            id: tagText
+            anchors.centerIn: parent
+            text: activeDisplay.aCategory.toUpperCase()
+            color: Ink.inkDim
+            font.family: Type.mono
+            font.pixelSize: Type.tag
+            font.letterSpacing: Type.trackTag
+          }
+        }
 
-    // Launch hint
-    Row {
-      spacing: Type.px(8)
-      topPadding: Type.px(6)
-
-      Rectangle {
-        anchors.verticalCenter: parent.verticalCenter
-        width: enterTag.contentWidth + Type.px(10)
-        height: Type.px(18)
-        radius: 2
-        color: Ink.bone
         Text {
-          id: enterTag
-          anchors.centerIn: parent
-          text: "ENTER"
-          color: Ink.boneInk
+          anchors.verticalCenter: parent.verticalCenter
+          text: "//"
+          color: Ink.seal
+          font.family: Type.mono
+          font.pixelSize: Type.eyebrow
+        }
+      }
+
+      // Hero title in Fraunces serif
+      Text {
+        width: parent.width
+        text: activeDisplay.aName
+        color: Ink.ink
+        font.family: Type.display
+        font.pixelSize: Type.px(32)
+        font.weight: Font.DemiBold
+        elide: Text.ElideRight
+      }
+
+      // Description / Subtext
+      Text {
+        width: parent.width
+        visible: activeDisplay.aDetail !== ""
+        text: activeDisplay.aDetail
+        color: Ink.inkMuted
+        font.family: Type.text
+        font.pixelSize: Type.note
+        wrapMode: Text.Wrap
+        maximumLineCount: 2
+        elide: Text.ElideRight
+      }
+
+      // Launch hint
+      Row {
+        spacing: Type.px(8)
+        topPadding: Type.px(6)
+
+        Rectangle {
+          anchors.verticalCenter: parent.verticalCenter
+          width: enterTag.contentWidth + Type.px(10)
+          height: Type.px(18)
+          radius: 2
+          color: Ink.bone
+          Text {
+            id: enterTag
+            anchors.centerIn: parent
+            text: "ENTER"
+            color: Ink.boneInk
+            font.family: Type.mono
+            font.pixelSize: Type.tag
+            font.weight: Font.Medium
+          }
+        }
+
+        Text {
+          anchors.verticalCenter: parent.verticalCenter
+          text: "to launch"
+          color: Ink.inkFaint
           font.family: Type.mono
           font.pixelSize: Type.tag
-          font.weight: Font.Medium
         }
       }
-
-      Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: "to launch"
-        color: Ink.inkFaint
-        font.family: Type.mono
-        font.pixelSize: Type.tag
-      }
     }
   }
 
-  // ── Wheel and Key Navigation ───────────────────────────────────────────────
-  MouseArea {
-    anchors.fill: parent
-    z: -1
-    onWheel: function(wheel) {
-      if (wheel.angleDelta.y > 0) dial.stepTo(-1)
-      else if (wheel.angleDelta.y < 0) dial.stepTo(1)
-    }
-  }
-
+  // ── Keyboard Navigation ───────────────────────────────────────────────────
   Keys.onPressed: function(event) {
     var k = event.key
     var t = event.text
