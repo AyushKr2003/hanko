@@ -142,7 +142,7 @@ Item {
     anchors.fill: parent
     opacity: root.worn
     color: root.style.surface === "glass" ? Ink.paperAt(0.74) : Ink.paper
-    radius: root.inset ? 7 : 0
+    radius: 0
     border.width: root.inset ? 1 : 0
     border.color: Ink.line
     // washi: Shōji's paper, its long fibres as fine as the grain.
