@@ -22,7 +22,7 @@
 --   * Frames are 1 px hairlines. The focused window is framed in ink, the
 --     others in Ink.line (the foreground at 22%), as the bar's dividers are.
 --   * Corners are square, like the flush bar. With `float: inset` the bar
---     floats 8 px off the screen with 7 px corners, and the windows take the
+--     floats 8 px off the screen with square corners, and the windows take the
 --     same gap and radius so their edges line up with its frame.
 --   * Windows are plain sheets (Kaze's Ha 刃, docs/kaze mockup 05): square
 --     corners, a 1 px edge, no shadow, no blur. Unfocused sheets dim a touch.
@@ -125,7 +125,7 @@ hl.config({
   },
 
   decoration = {
-    rounding = inset and 7 or 0,
+    rounding = 0,
 
     -- Barely there: the focused sheet reads as the lit one.
     dim_inactive = true,

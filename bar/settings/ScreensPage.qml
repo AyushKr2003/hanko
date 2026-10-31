@@ -89,7 +89,7 @@ Column {
           width: parent.width - 2 * x
           height: Math.max(Type.px(5), scr.st.height * plate.k * 2.2)
           y: scr.st.position === "bottom" ? parent.height - height - (scr.st.float === "inset" ? Type.px(5) : 2) : (scr.st.float === "inset" ? Type.px(5) : 2)
-          radius: scr.st.float === "inset" ? 2 : 0
+          radius: 0
           color: Ink.alpha(Ink.ink, 0.13)
           Rectangle { x: Type.px(3); anchors.verticalCenter: parent.verticalCenter; width: Math.max(Type.px(3), parent.height - Type.px(3)); height: width; color: Ink.seal; visible: scr.st.seal !== "none" }
         }

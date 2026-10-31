@@ -228,7 +228,7 @@ The name is in the same ink as the icon styles (red only for a recording or live
 | Option | What it does |
 |---|---|
 | **`flush`** (default) | The bar sits on the screen's edge. |
-| `inset` | Floats 8 px off the screen edges with a hairline frame and 7 px corners, whatever the surface (washi or glass can float too). It was `surface: inset`; a saved one reads as `surface: solid`, `float: inset`, and `hanko style set surface inset` sets `float: inset`. |
+| `inset` | Floats 8 px off the screen edges with a hairline frame and square corners, whatever the surface (washi or glass can float too). It was `surface: inset`; a saved one reads as `surface: solid`, `float: inset`, and `hanko style set surface inset` sets `float: inset`. |
 
 #### Position `position` 位
 
