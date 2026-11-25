@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Kaze (Taiji): the lock clone is back in step with Omarchy's current lock service: a video wallpaper's still frame on the lock, the lock usable after an NVIDIA suspend, kept dark after a media key wakes it, lit again on a resume that found it blanked, each password attempt settled once, and blanked after a quiet spell even when a bound key lit it. The unused live-feed surface Omarchy dropped is gone too.
+
 - Time sheet: an almanac (Koyomi 暦) in every hand. The whole month, not only in Shōji: the day each solar term starts named on it, the 72 microseasons, the moon by its old names, the forecast on the days ahead (from Open-Meteo, at the place Omarchy's weather panel has) and the twelve months by their old names. Click a day for its leaf: its season, term and microseason and how far through each, the moon and the sky. Each hand turns the month its own way, with the wheel, `[` `]`, Page Up/Down or the foot's buttons; T is today. `hanko style set calendar week` (or Settings › Sheets) keeps the sheets as they were; `weather off` fetches nothing.
 
 - Boot screen: the brush only. The seal mark is gone (its pressed frames, its layout and the choice between the two); every boot now writes 始 in the shutdown ceremony's brush, and Settings › Boot has two choices again, the corner and the press. A screen you installed with the seal shows as out of date there until you Redraw.
